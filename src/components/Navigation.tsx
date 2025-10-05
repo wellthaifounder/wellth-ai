@@ -25,10 +25,10 @@ export const Navigation = () => {
         </div>
         
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={() => window.location.href = '/auth'}>
             Sign In
           </Button>
-          <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
+          <Button size="sm" onClick={() => window.location.href = '/auth'}>
             Get Started
           </Button>
         </div>
