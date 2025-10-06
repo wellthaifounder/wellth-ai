@@ -11,6 +11,12 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalExpenses: 0,
+    taxSavings: 0,
+    rewardsEarned: 0,
+    expenseCount: 0,
+  });
 
   useEffect(() => {
     // Check if user is logged in
@@ -27,6 +33,7 @@ const Dashboard = () => {
     };
 
     checkUser();
+    fetchStats();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -39,6 +46,35 @@ const Dashboard = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const fetchStats = async () => {
+    try {
+      const { data: expenses, error } = await supabase
+        .from("expenses")
+        .select("amount, is_hsa_eligible");
+
+      if (error) throw error;
+
+      const totalExpenses = expenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
+      const hsaExpenses = expenses?.filter(exp => exp.is_hsa_eligible)
+        .reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
+      
+      // Estimate tax savings at 30% tax rate for HSA eligible expenses
+      const taxSavings = hsaExpenses * 0.3;
+      
+      // Estimate rewards at 2% for simplicity
+      const rewardsEarned = totalExpenses * 0.02;
+
+      setStats({
+        totalExpenses,
+        taxSavings,
+        rewardsEarned,
+        expenseCount: expenses?.length || 0,
+      });
+    } catch (error) {
+      console.error("Failed to fetch stats:", error);
+    }
+  };
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -93,9 +129,9 @@ const Dashboard = () => {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$0.00</div>
+              <div className="text-2xl font-bold">${stats.totalExpenses.toFixed(2)}</div>
               <p className="text-xs text-muted-foreground">
-                No expenses tracked yet
+                {stats.expenseCount} {stats.expenseCount === 1 ? "expense" : "expenses"} tracked
               </p>
             </CardContent>
           </Card>
@@ -106,7 +142,7 @@ const Dashboard = () => {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$0.00</div>
+              <div className="text-2xl font-bold">${stats.taxSavings.toFixed(2)}</div>
               <p className="text-xs text-muted-foreground">
                 Estimated savings from HSA
               </p>
@@ -119,9 +155,9 @@ const Dashboard = () => {
               <CreditCard className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$0.00</div>
+              <div className="text-2xl font-bold">${stats.rewardsEarned.toFixed(2)}</div>
               <p className="text-xs text-muted-foreground">
-                From payment method rewards
+                Estimated from payment rewards
               </p>
             </CardContent>
           </Card>
@@ -139,7 +175,7 @@ const Dashboard = () => {
               <p className="text-muted-foreground mb-4">
                 Start tracking expenses to see your savings potential
               </p>
-              <Button onClick={() => toast.info("Expense entry coming in Phase 2!")}>
+              <Button onClick={() => navigate("/expenses/new")}>
                 Add Your First Expense
               </Button>
             </div>
