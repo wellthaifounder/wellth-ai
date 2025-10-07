@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, LogOut, DollarSign, TrendingUp, CreditCard } from "lucide-react";
+import { Heart, LogOut, DollarSign, TrendingUp, CreditCard, FileText } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
@@ -19,7 +19,6 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    // Check if user is logged in
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -35,7 +34,6 @@ const Dashboard = () => {
     checkUser();
     fetchStats();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
         navigate("/auth");
@@ -59,10 +57,7 @@ const Dashboard = () => {
       const hsaExpenses = expenses?.filter(exp => exp.is_hsa_eligible)
         .reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
       
-      // Estimate tax savings at 30% tax rate for HSA eligible expenses
       const taxSavings = hsaExpenses * 0.3;
-      
-      // Estimate rewards at 2% for simplicity
       const rewardsEarned = totalExpenses * 0.02;
 
       setStats({
@@ -175,9 +170,15 @@ const Dashboard = () => {
               <p className="text-muted-foreground mb-4">
                 Start tracking expenses to see your savings potential
               </p>
-              <Button onClick={() => navigate("/expenses/new")}>
-                Add Your First Expense
-              </Button>
+              <div className="flex gap-3 justify-center">
+                <Button onClick={() => navigate("/expenses/new")}>
+                  Add Your First Expense
+                </Button>
+                <Button variant="outline" onClick={() => navigate("/hsa-reimbursement")}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  HSA Reimbursement
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

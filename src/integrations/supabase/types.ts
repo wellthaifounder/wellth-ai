@@ -130,6 +130,50 @@ export type Database = {
         }
         Relationships: []
       }
+      receipt_ocr_data: {
+        Row: {
+          confidence_score: number | null
+          extracted_amount: number | null
+          extracted_category: string | null
+          extracted_date: string | null
+          extracted_vendor: string | null
+          id: string
+          processed_at: string
+          raw_response: string | null
+          receipt_id: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          extracted_amount?: number | null
+          extracted_category?: string | null
+          extracted_date?: string | null
+          extracted_vendor?: string | null
+          id?: string
+          processed_at?: string
+          raw_response?: string | null
+          receipt_id: string
+        }
+        Update: {
+          confidence_score?: number | null
+          extracted_amount?: number | null
+          extracted_category?: string | null
+          extracted_date?: string | null
+          extracted_vendor?: string | null
+          id?: string
+          processed_at?: string
+          raw_response?: string | null
+          receipt_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipt_ocr_data_receipt_id_fkey"
+            columns: ["receipt_id"]
+            isOneToOne: false
+            referencedRelation: "receipts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       receipts: {
         Row: {
           expense_id: string
@@ -161,6 +205,69 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      reimbursement_items: {
+        Row: {
+          expense_id: string
+          id: string
+          reimbursement_request_id: string
+        }
+        Insert: {
+          expense_id: string
+          id?: string
+          reimbursement_request_id: string
+        }
+        Update: {
+          expense_id?: string
+          id?: string
+          reimbursement_request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reimbursement_items_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reimbursement_items_reimbursement_request_id_fkey"
+            columns: ["reimbursement_request_id"]
+            isOneToOne: false
+            referencedRelation: "reimbursement_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reimbursement_requests: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          status: string
+          submitted_at: string | null
+          total_amount: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          submitted_at?: string | null
+          total_amount: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          submitted_at?: string | null
+          total_amount?: number
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {

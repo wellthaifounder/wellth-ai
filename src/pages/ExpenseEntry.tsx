@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ArrowLeft, Upload } from "lucide-react";
+import { ArrowLeft, Upload, Sparkles } from "lucide-react";
 import { z } from "zod";
 
 const expenseSchema = z.object({
@@ -35,6 +35,7 @@ const HSA_ELIGIBLE_CATEGORIES = [
 const ExpenseEntry = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [processingOCR, setProcessingOCR] = useState(false);
   const [receipt, setReceipt] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -43,6 +44,56 @@ const ExpenseEntry = () => {
     category: "",
     notes: "",
   });
+
+  const handleReceiptOCR = async (file: File) => {
+    setProcessingOCR(true);
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      
+      const base64 = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+      });
+
+      const { data, error } = await supabase.functions.invoke('process-receipt-ocr', {
+        body: { imageBase64: base64 }
+      });
+
+      if (error) throw error;
+
+      if (data?.success && data?.data) {
+        const { amount, vendor, date, category } = data.data;
+        
+        setFormData(prev => ({
+          ...prev,
+          ...(amount && { amount: amount.toString() }),
+          ...(vendor && { vendor }),
+          ...(date && { date }),
+          ...(category && HSA_ELIGIBLE_CATEGORIES.includes(category) && { category }),
+        }));
+
+        toast.success('Receipt processed', {
+          description: 'Information extracted from receipt',
+        });
+      }
+    } catch (error) {
+      console.error('Error processing receipt:', error);
+      toast.error('OCR failed', {
+        description: 'Could not extract information. Please enter manually.',
+      });
+    } finally {
+      setProcessingOCR(false);
+    }
+  };
+
+  const handleReceiptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setReceipt(file);
+      handleReceiptOCR(file);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,6 +183,38 @@ const ExpenseEntry = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="receipt">Receipt (Upload for Auto-Fill)</Label>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="receipt"
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={handleReceiptChange}
+                      disabled={processingOCR}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('receipt')?.click()}
+                      className="w-full"
+                      disabled={processingOCR}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {processingOCR ? "Processing..." : receipt ? receipt.name : "Upload Receipt"}
+                      {processingOCR && <Sparkles className="h-4 w-4 ml-2 animate-pulse" />}
+                    </Button>
+                  </div>
+                  {!receipt && (
+                    <p className="text-xs text-muted-foreground">
+                      Upload a receipt to auto-fill expense details
+                    </p>
+                  )}
+                </div>
+              </div>
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="date">Date</Label>
@@ -198,28 +281,6 @@ const ExpenseEntry = () => {
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   maxLength={500}
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="receipt">Receipt (Optional)</Label>
-                <div className="flex items-center gap-4">
-                  <Input
-                    id="receipt"
-                    type="file"
-                    accept="image/*,.pdf"
-                    onChange={(e) => setReceipt(e.target.files?.[0] || null)}
-                    className="hidden"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => document.getElementById('receipt')?.click()}
-                    className="w-full"
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    {receipt ? receipt.name : "Upload Receipt"}
-                  </Button>
-                </div>
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
