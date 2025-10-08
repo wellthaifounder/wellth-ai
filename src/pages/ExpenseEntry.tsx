@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +34,9 @@ const HSA_ELIGIBLE_CATEGORIES = [
 
 const ExpenseEntry = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditMode = Boolean(id);
+  
   const [loading, setLoading] = useState(false);
   const [processingOCR, setProcessingOCR] = useState(false);
   const [receipt, setReceipt] = useState<File | null>(null);
@@ -45,6 +48,41 @@ const ExpenseEntry = () => {
     category: "",
     notes: "",
   });
+
+  useEffect(() => {
+    if (isEditMode && id) {
+      loadExpense(id);
+    }
+  }, [id, isEditMode]);
+
+  const loadExpense = async (expenseId: string) => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("expenses")
+        .select("*")
+        .eq("id", expenseId)
+        .single();
+
+      if (error) throw error;
+      
+      if (data) {
+        setFormData({
+          date: data.date,
+          vendor: data.vendor,
+          amount: data.amount.toString(),
+          category: data.category,
+          notes: data.notes || "",
+        });
+      }
+    } catch (error) {
+      console.error("Error loading expense:", error);
+      toast.error("Failed to load expense");
+      navigate("/expenses");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleReceiptOCR = async (file: File) => {
     setProcessingOCR(true);
@@ -111,22 +149,46 @@ const ExpenseEntry = () => {
 
       const isHsaEligible = HSA_ELIGIBLE_CATEGORIES.includes(validatedData.category);
 
-      const { data: expense, error: expenseError } = await supabase
-        .from("expenses")
-        .insert({
-          user_id: user.id,
-          date: validatedData.date,
-          vendor: validatedData.vendor,
-          amount: validatedData.amount,
-          category: validatedData.category,
-          notes: validatedData.notes || null,
-          is_hsa_eligible: isHsaEligible,
-          is_reimbursed: false,
-        })
-        .select()
-        .single();
+      let expense;
+      
+      if (isEditMode && id) {
+        // Update existing expense
+        const { data, error: expenseError } = await supabase
+          .from("expenses")
+          .update({
+            date: validatedData.date,
+            vendor: validatedData.vendor,
+            amount: validatedData.amount,
+            category: validatedData.category,
+            notes: validatedData.notes || null,
+            is_hsa_eligible: isHsaEligible,
+          })
+          .eq("id", id)
+          .select()
+          .single();
 
-      if (expenseError) throw expenseError;
+        if (expenseError) throw expenseError;
+        expense = data;
+      } else {
+        // Create new expense
+        const { data, error: expenseError } = await supabase
+          .from("expenses")
+          .insert({
+            user_id: user.id,
+            date: validatedData.date,
+            vendor: validatedData.vendor,
+            amount: validatedData.amount,
+            category: validatedData.category,
+            notes: validatedData.notes || null,
+            is_hsa_eligible: isHsaEligible,
+            is_reimbursed: false,
+          })
+          .select()
+          .single();
+
+        if (expenseError) throw expenseError;
+        expense = data;
+      }
 
       if (receipt && expense) {
         const fileExt = receipt.name.split('.').pop();
@@ -150,12 +212,12 @@ const ExpenseEntry = () => {
       }
 
       setSuccess(true);
-      toast.success("Expense added successfully!");
+      toast.success(isEditMode ? "Expense updated successfully!" : "Expense added successfully!");
       
       // Reset form after 2 seconds or navigate
       setTimeout(() => {
         setSuccess(false);
-        navigate("/dashboard");
+        navigate("/expenses");
       }, 2000);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -174,9 +236,9 @@ const ExpenseEntry = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="max-w-md mx-auto text-center p-8">
           <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-4" />
-          <CardTitle className="mb-2">Expense Added!</CardTitle>
+          <CardTitle className="mb-2">{isEditMode ? "Expense Updated!" : "Expense Added!"}</CardTitle>
           <CardDescription>
-            Redirecting to dashboard...
+            Redirecting to expenses...
           </CardDescription>
         </Card>
       </div>
@@ -191,49 +253,51 @@ const ExpenseEntry = () => {
             Dashboard
           </button>
           <span>/</span>
-          <span className="text-foreground">Add Expense</span>
+          <span className="text-foreground">{isEditMode ? "Edit Expense" : "Add Expense"}</span>
         </div>
 
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
-            <CardTitle>Add New Expense</CardTitle>
+            <CardTitle>{isEditMode ? "Edit Expense" : "Add New Expense"}</CardTitle>
             <CardDescription>
-              Track your medical expenses and receipts
+              {isEditMode ? "Update your expense details" : "Track your medical expenses and receipts"}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="receipt">Receipt (Upload for Auto-Fill)</Label>
+              {!isEditMode && (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id="receipt"
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={handleReceiptChange}
-                      disabled={processingOCR}
-                      className="hidden"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => document.getElementById('receipt')?.click()}
-                      className="w-full"
-                      disabled={processingOCR}
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      {processingOCR ? "Processing..." : receipt ? receipt.name : "Upload Receipt"}
-                      {processingOCR && <Sparkles className="h-4 w-4 ml-2 animate-pulse" />}
-                    </Button>
+                  <Label htmlFor="receipt">Receipt (Upload for Auto-Fill)</Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="receipt"
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={handleReceiptChange}
+                        disabled={processingOCR}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById('receipt')?.click()}
+                        className="w-full"
+                        disabled={processingOCR}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        {processingOCR ? "Processing..." : receipt ? receipt.name : "Upload Receipt"}
+                        {processingOCR && <Sparkles className="h-4 w-4 ml-2 animate-pulse" />}
+                      </Button>
+                    </div>
+                    {!receipt && (
+                      <p className="text-xs text-muted-foreground">
+                        Upload a receipt to auto-fill expense details
+                      </p>
+                    )}
                   </div>
-                  {!receipt && (
-                    <p className="text-xs text-muted-foreground">
-                      Upload a receipt to auto-fill expense details
-                    </p>
-                  )}
                 </div>
-              </div>
+              )}
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
@@ -304,7 +368,7 @@ const ExpenseEntry = () => {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Adding..." : "Add Expense"}
+                {loading ? (isEditMode ? "Updating..." : "Adding...") : (isEditMode ? "Update Expense" : "Add Expense")}
               </Button>
             </form>
           </CardContent>

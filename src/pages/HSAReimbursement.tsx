@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, FileText, Download, Send, CheckCircle2 } from 'lucide-react';
 import { generateReimbursementPDF } from '@/lib/pdfGenerator';
@@ -43,6 +44,12 @@ export default function HSAReimbursement() {
   const [submitting, setSubmitting] = useState(false);
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const [user, setUser] = useState<any>(null);
+  
+  // Filters
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"date" | "amount">("date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     fetchHSAExpenses();
@@ -245,6 +252,31 @@ export default function HSAReimbursement() {
     }
   };
 
+  const categories = useMemo(() => {
+    const cats = new Set(expenses.map(e => e.category));
+    return Array.from(cats).sort();
+  }, [expenses]);
+
+  const filteredAndSortedExpenses = useMemo(() => {
+    let filtered = expenses.filter(exp => {
+      if (categoryFilter !== "all" && exp.category !== categoryFilter) return false;
+      if (searchTerm && !exp.vendor.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+      return true;
+    });
+
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      if (sortBy === "date") {
+        comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+      } else if (sortBy === "amount") {
+        comparison = Number(a.amount) - Number(b.amount);
+      }
+      return sortOrder === "asc" ? comparison : -comparison;
+    });
+
+    return filtered;
+  }, [expenses, categoryFilter, searchTerm, sortBy, sortOrder]);
+
   const exportToCSV = () => {
     const selected = expenses.filter(e => selectedExpenses.has(e.id));
     const headers = ['Date', 'Vendor', 'Category', 'Amount', 'Notes'];
@@ -311,8 +343,44 @@ export default function HSAReimbursement() {
         <>
           <Card className="p-6 mb-6">
             <h2 className="text-xl font-semibold mb-4">Select Expenses to Reimburse</h2>
+            
+            {/* Filters */}
+            <div className="mb-4 grid gap-3 md:grid-cols-3">
+              <Input
+                placeholder="Search vendor..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={`${sortBy}-${sortOrder}`} onValueChange={(val) => {
+                const [sort, order] = val.split('-');
+                setSortBy(sort as "date" | "amount");
+                setSortOrder(order as "asc" | "desc");
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date-desc">Date (Newest)</SelectItem>
+                  <SelectItem value="date-asc">Date (Oldest)</SelectItem>
+                  <SelectItem value="amount-desc">Amount (High to Low)</SelectItem>
+                  <SelectItem value="amount-asc">Amount (Low to High)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-3">
-              {expenses.map((expense) => (
+              {filteredAndSortedExpenses.map((expense) => (
                 <div
                   key={expense.id}
                   className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-accent/50 transition-colors"

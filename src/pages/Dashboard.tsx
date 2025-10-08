@@ -120,25 +120,33 @@ const Dashboard = () => {
             <span className="text-xl font-bold">HSA Buddy</span>
           </div>
           
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/analytics")}>
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Analytics
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/payment-methods")}>
-              <Wallet className="h-4 w-4 mr-2" />
-              Payment Methods
-            </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="hidden md:flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => navigate("/analytics")}>
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Analytics
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/payment-methods")}>
+                <Wallet className="h-4 w-4 mr-2" />
+                Payment Methods
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/reimbursement-requests")}>
+                <FileText className="h-4 w-4 mr-2" />
+                Requests
+              </Button>
+            </div>
             <Button variant="default" size="sm" onClick={() => navigate("/expenses/new")}>
-              Add Expense
+              <span className="hidden sm:inline">Add Expense</span>
+              <span className="sm:hidden">Add</span>
             </Button>
             <Button variant="outline" size="sm" onClick={() => navigate("/hsa-reimbursement")}>
-              New Reimbursement
+              <span className="hidden sm:inline">New Reimbursement</span>
+              <span className="sm:hidden">Reimburse</span>
             </Button>
             <span className="text-sm text-muted-foreground hidden lg:inline">{user?.email}</span>
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline ml-2">Sign Out</span>
             </Button>
           </div>
         </div>
