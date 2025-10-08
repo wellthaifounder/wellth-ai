@@ -114,12 +114,15 @@ const Dashboard = () => {
       <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between gap-2">
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <button 
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition-opacity"
+            >
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
                 <Heart className="h-5 w-5 fill-current" />
               </div>
               <span className="text-lg md:text-xl font-bold whitespace-nowrap">HSA Buddy</span>
-            </div>
+            </button>
             
             <div className="flex items-center gap-1 md:gap-2">
               <div className="hidden lg:flex items-center gap-2">

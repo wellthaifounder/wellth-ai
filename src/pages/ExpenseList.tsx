@@ -41,7 +41,13 @@ const ExpenseList = () => {
     try {
       const { data, error } = await supabase
         .from("expenses")
-        .select("*")
+        .select(`
+          *,
+          reimbursement_items(
+            reimbursement_request_id,
+            reimbursement_requests(status)
+          )
+        `)
         .order("date", { ascending: false });
 
       if (error) throw error;
@@ -143,7 +149,8 @@ const ExpenseList = () => {
       
       // Status column filter
       if (statusColumnFilter) {
-        const status = exp.is_reimbursed ? "reimbursed" : exp.is_hsa_eligible ? "hsa" : "pending";
+        const reimbursementStatus = (exp as any).reimbursement_items?.[0]?.reimbursement_requests?.status;
+        const status = reimbursementStatus || (exp.is_hsa_eligible ? "hsa-eligible" : "not-submitted");
         if (!status.toLowerCase().includes(statusColumnFilter.toLowerCase())) return false;
       }
       
@@ -162,8 +169,8 @@ const ExpenseList = () => {
       } else if (sortBy === "category") {
         comparison = a.category.localeCompare(b.category);
       } else if (sortBy === "status") {
-        const statusA = a.is_reimbursed ? "reimbursed" : a.is_hsa_eligible ? "hsa" : "pending";
-        const statusB = b.is_reimbursed ? "reimbursed" : b.is_hsa_eligible ? "hsa" : "pending";
+        const statusA = (a as any).reimbursement_items?.[0]?.reimbursement_requests?.status || (a.is_hsa_eligible ? "hsa-eligible" : "not-submitted");
+        const statusB = (b as any).reimbursement_items?.[0]?.reimbursement_requests?.status || (b.is_hsa_eligible ? "hsa-eligible" : "not-submitted");
         comparison = statusA.localeCompare(statusB);
       }
       return sortOrder === "asc" ? comparison : -comparison;
@@ -372,14 +379,24 @@ const ExpenseList = () => {
                         <TableCell>{expense.category}</TableCell>
                         <TableCell>${Number(expense.amount).toFixed(2)}</TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
-                            {expense.is_hsa_eligible && (
-                              <Badge variant="secondary">HSA</Badge>
-                            )}
-                            {expense.is_reimbursed && (
-                              <Badge>Reimbursed</Badge>
-                            )}
-                          </div>
+                          {(() => {
+                            const reimbursementStatus = (expense as any).reimbursement_items?.[0]?.reimbursement_requests?.status;
+                            if (reimbursementStatus) {
+                              return (
+                                <Badge variant={
+                                  reimbursementStatus === "approved" ? "default" :
+                                  reimbursementStatus === "submitted" ? "secondary" :
+                                  reimbursementStatus === "denied" ? "destructive" : "outline"
+                                }>
+                                  {reimbursementStatus.charAt(0).toUpperCase() + reimbursementStatus.slice(1)}
+                                </Badge>
+                              );
+                            }
+                            if (expense.is_hsa_eligible) {
+                              return <Badge variant="secondary">HSA Eligible</Badge>;
+                            }
+                            return <Badge variant="outline">Not Submitted</Badge>;
+                          })()}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
