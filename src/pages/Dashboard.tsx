@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, LogOut, DollarSign, TrendingUp, CreditCard, FileText, BarChart3, Wallet, Plus, Bell } from "lucide-react";
+import { Heart, LogOut, DollarSign, TrendingUp, CreditCard, FileText, BarChart3, Wallet, Plus } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
@@ -129,10 +129,6 @@ const Dashboard = () => {
                 <Button variant="ghost" size="sm" onClick={() => navigate("/analytics")}>
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Analytics
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => navigate("/budget-alerts")}>
-                  <Bell className="h-4 w-4 mr-2" />
-                  Budgets
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => navigate("/payment-methods")}>
                   <Wallet className="h-4 w-4 mr-2" />

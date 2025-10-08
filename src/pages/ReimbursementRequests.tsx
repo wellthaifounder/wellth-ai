@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, FileText, Eye } from "lucide-react";
+import { ArrowLeft, FileText, Eye, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { TableColumnHeader } from "@/components/ui/table-column-header";
 
@@ -54,6 +54,15 @@ const ReimbursementRequests = () => {
       setLoading(false);
     }
   };
+
+  // Get unique values for autocomplete
+  const uniqueProviders = useMemo(() => {
+    return Array.from(new Set(requests.map(r => r.hsa_provider).filter(Boolean) as string[])).sort();
+  }, [requests]);
+
+  const uniqueStatuses = useMemo(() => {
+    return Array.from(new Set(requests.map(r => r.status.charAt(0).toUpperCase() + r.status.slice(1)))).sort();
+  }, [requests]);
 
   const filteredAndSortedRequests = useMemo(() => {
     let filtered = requests.filter(req => {
@@ -120,6 +129,21 @@ const ReimbursementRequests = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-50">
+        <div className="container mx-auto px-4">
+          <div className="flex h-16 items-center gap-4">
+            <button 
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                <Heart className="h-5 w-5 fill-current" />
+              </div>
+              <span className="text-xl font-bold whitespace-nowrap">HSA Buddy</span>
+            </button>
+          </div>
+        </div>
+      </nav>
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
@@ -189,6 +213,7 @@ const ReimbursementRequests = () => {
                           sortable
                           filterable
                           filterType="text"
+                          filterOptions={uniqueProviders}
                           currentSort={sortBy === "provider" ? sortOrder : null}
                           onSort={(direction) => {
                             setSortBy("provider");
@@ -219,6 +244,7 @@ const ReimbursementRequests = () => {
                           sortable
                           filterable
                           filterType="text"
+                          filterOptions={uniqueStatuses}
                           currentSort={sortBy === "status" ? sortOrder : null}
                           onSort={(direction) => {
                             setSortBy("status");

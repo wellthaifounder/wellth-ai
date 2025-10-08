@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, FileText, Download, Send, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, FileText, Download, Send, CheckCircle2, Heart } from 'lucide-react';
 import { generateReimbursementPDF } from '@/lib/pdfGenerator';
 
 interface HSAExpense {
@@ -313,14 +313,26 @@ export default function HSAReimbursement() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => navigate('/dashboard')} className="hover:text-foreground">
-          Dashboard
-        </button>
-        <span>/</span>
-        <span className="text-foreground">HSA Reimbursement</span>
-      </div>
+    <div className="min-h-screen bg-background">
+      <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-50">
+        <div className="container mx-auto px-4">
+          <div className="flex h-16 items-center gap-4">
+            <button 
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                <Heart className="h-5 w-5 fill-current" />
+              </div>
+              <span className="text-xl font-bold whitespace-nowrap">HSA Buddy</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <span className="text-foreground">HSA Reimbursement</span>
+        </div>
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">HSA Reimbursement Request</h1>
@@ -503,6 +515,7 @@ export default function HSAReimbursement() {
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }

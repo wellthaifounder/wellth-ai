@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Plus, Download, Trash2, Edit } from "lucide-react";
+import { ArrowLeft, Plus, Download, Trash2, Edit, Heart } from "lucide-react";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 import { TableColumnHeader } from "@/components/ui/table-column-header";
@@ -118,6 +118,30 @@ const ExpenseList = () => {
     return Array.from(cats).sort();
   }, [expenses]);
 
+  // Get unique values for autocomplete
+  const uniqueVendors = useMemo(() => {
+    return Array.from(new Set(expenses.map(e => e.vendor))).sort();
+  }, [expenses]);
+
+  const uniqueCategories = useMemo(() => {
+    return Array.from(new Set(expenses.map(e => e.category))).sort();
+  }, [expenses]);
+
+  const uniqueStatuses = useMemo(() => {
+    const statuses = new Set<string>();
+    expenses.forEach(exp => {
+      const reimbursementStatus = (exp as any).reimbursement_items?.[0]?.reimbursement_requests?.status;
+      if (reimbursementStatus) {
+        statuses.add(reimbursementStatus.charAt(0).toUpperCase() + reimbursementStatus.slice(1));
+      } else if (exp.is_hsa_eligible) {
+        statuses.add("HSA Eligible");
+      } else {
+        statuses.add("Not Submitted");
+      }
+    });
+    return Array.from(statuses).sort();
+  }, [expenses]);
+
   const filteredAndSortedExpenses = useMemo(() => {
     let filtered = expenses.filter(exp => {
       // Category filter
@@ -215,6 +239,21 @@ const ExpenseList = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-50">
+        <div className="container mx-auto px-4">
+          <div className="flex h-16 items-center gap-4">
+            <button 
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                <Heart className="h-5 w-5 fill-current" />
+              </div>
+              <span className="text-xl font-bold whitespace-nowrap">HSA Buddy</span>
+            </button>
+          </div>
+        </div>
+      </nav>
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
@@ -312,6 +351,7 @@ const ExpenseList = () => {
                           sortable
                           filterable
                           filterType="text"
+                          filterOptions={uniqueVendors}
                           currentSort={sortBy === "vendor" ? sortOrder : null}
                           onSort={(direction) => {
                             setSortBy("vendor");
@@ -325,11 +365,15 @@ const ExpenseList = () => {
                         <TableColumnHeader
                           title="Category"
                           sortable
+                          filterable
+                          filterType="text"
+                          filterOptions={uniqueCategories}
                           currentSort={sortBy === "category" ? sortOrder : null}
                           onSort={(direction) => {
                             setSortBy("category");
                             setSortOrder(direction);
                           }}
+                          onFilter={(value) => setCategoryFilter(value === "" ? "all" : value)}
                         />
                       </TableHead>
                       <TableHead>
@@ -353,6 +397,7 @@ const ExpenseList = () => {
                           sortable
                           filterable
                           filterType="text"
+                          filterOptions={uniqueStatuses}
                           currentSort={sortBy === "status" ? sortOrder : null}
                           onSort={(direction) => {
                             setSortBy("status");

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowUpDown, ArrowUp, ArrowDown, Filter, Calendar } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, Filter, Calendar, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,6 +14,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
@@ -22,6 +23,7 @@ interface TableColumnHeaderProps {
   sortable?: boolean;
   filterable?: boolean;
   filterType?: "text" | "date" | "number";
+  filterOptions?: string[]; // Available options for text filters (autocomplete)
   currentSort?: "asc" | "desc" | null;
   onSort?: (direction: "asc" | "desc") => void;
   onFilter?: (value: any) => void;
@@ -33,6 +35,7 @@ export function TableColumnHeader({
   sortable = false,
   filterable = false,
   filterType = "text",
+  filterOptions = [],
   currentSort,
   onSort,
   onFilter,
@@ -41,6 +44,7 @@ export function TableColumnHeader({
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [textFilter, setTextFilter] = useState(filterValue || "");
+  const [comboboxOpen, setComboboxOpen] = useState(false);
 
   const handleTextFilterApply = () => {
     onFilter?.(textFilter);
@@ -99,7 +103,54 @@ export function TableColumnHeader({
         {sortable && filterable && <DropdownMenuSeparator />}
         {filterable && (
           <>
-            {filterType === "text" && (
+            {filterType === "text" && filterOptions.length > 0 && (
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filter
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="w-56 p-0">
+                  <Command>
+                    <CommandInput placeholder={`Search ${title.toLowerCase()}...`} />
+                    <CommandList>
+                      <CommandEmpty>No results found.</CommandEmpty>
+                      <CommandGroup>
+                        {filterOptions.map((option) => (
+                          <CommandItem
+                            key={option}
+                            value={option}
+                            onSelect={(currentValue) => {
+                              const newValue = currentValue === textFilter.toLowerCase() ? "" : option;
+                              setTextFilter(newValue);
+                              onFilter?.(newValue);
+                              setComboboxOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                textFilter.toLowerCase() === option.toLowerCase()
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                            {option}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                  {textFilter && (
+                    <div className="p-2 border-t">
+                      <Button size="sm" variant="ghost" onClick={handleClearFilter} className="w-full">
+                        Clear Filter
+                      </Button>
+                    </div>
+                  )}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            )}
+            {filterType === "text" && filterOptions.length === 0 && (
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
                   <Filter className="mr-2 h-4 w-4" />
