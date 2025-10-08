@@ -13,6 +13,7 @@ import ReimbursementDetails from "./pages/ReimbursementDetails";
 import ReimbursementRequests from "./pages/ReimbursementRequests";
 import PaymentMethods from "./pages/PaymentMethods";
 import Analytics from "./pages/Analytics";
+import BudgetAlerts from "./pages/BudgetAlerts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/reimbursement-requests" element={<ReimbursementRequests />} />
           <Route path="/payment-methods" element={<PaymentMethods />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/budget-alerts" element={<BudgetAlerts />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

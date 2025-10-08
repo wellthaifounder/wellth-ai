@@ -30,7 +30,8 @@ const ReimbursementRequests = () => {
   const [providerFilter, setProviderFilter] = useState("");
   const [dateFilter, setDateFilter] = useState<any>(null);
   const [amountFilter, setAmountFilter] = useState("");
-  const [sortBy, setSortBy] = useState<"date" | "amount" | "provider">("date");
+  const [statusColumnFilter, setStatusColumnFilter] = useState("");
+  const [sortBy, setSortBy] = useState<"date" | "amount" | "provider" | "status">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
@@ -77,6 +78,9 @@ const ReimbursementRequests = () => {
       // Amount filter
       if (amountFilter && !req.total_amount.toString().includes(amountFilter)) return false;
       
+      // Status column filter
+      if (statusColumnFilter && !req.status.toLowerCase().includes(statusColumnFilter.toLowerCase())) return false;
+      
       return true;
     });
 
@@ -88,12 +92,14 @@ const ReimbursementRequests = () => {
         comparison = Number(a.total_amount) - Number(b.total_amount);
       } else if (sortBy === "provider") {
         comparison = (a.hsa_provider || "").localeCompare(b.hsa_provider || "");
+      } else if (sortBy === "status") {
+        comparison = a.status.localeCompare(b.status);
       }
       return sortOrder === "asc" ? comparison : -comparison;
     });
 
     return filtered;
-  }, [requests, statusFilter, providerFilter, dateFilter, amountFilter, sortBy, sortOrder]);
+  }, [requests, statusFilter, providerFilter, dateFilter, amountFilter, statusColumnFilter, sortBy, sortOrder]);
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive"> = {
@@ -207,7 +213,21 @@ const ReimbursementRequests = () => {
                           filterValue={amountFilter}
                         />
                       </TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>
+                        <TableColumnHeader
+                          title="Status"
+                          sortable
+                          filterable
+                          filterType="text"
+                          currentSort={sortBy === "status" ? sortOrder : null}
+                          onSort={(direction) => {
+                            setSortBy("status");
+                            setSortOrder(direction);
+                          }}
+                          onFilter={(value) => setStatusColumnFilter(value || "")}
+                          filterValue={statusColumnFilter}
+                        />
+                      </TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>

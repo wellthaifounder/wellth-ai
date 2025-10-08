@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, LogOut, DollarSign, TrendingUp, CreditCard, FileText, BarChart3, Wallet } from "lucide-react";
+import { Heart, LogOut, DollarSign, TrendingUp, CreditCard, FileText, BarChart3, Wallet, Plus, Bell } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
@@ -111,43 +111,46 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="border-b border-border/40 bg-background/95 backdrop-blur">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4 gap-4">
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <Heart className="h-5 w-5 fill-current" />
+      <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-50">
+        <div className="container mx-auto px-4">
+          <div className="flex h-16 items-center justify-between gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                <Heart className="h-5 w-5 fill-current" />
+              </div>
+              <span className="text-lg md:text-xl font-bold whitespace-nowrap">HSA Buddy</span>
             </div>
-            <span className="text-xl font-bold whitespace-nowrap">HSA Buddy</span>
-          </div>
-          
-          <div className="flex items-center gap-2 flex-wrap justify-end flex-1">
-            <div className="hidden md:flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/analytics")}>
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Analytics
+            
+            <div className="flex items-center gap-1 md:gap-2">
+              <div className="hidden lg:flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={() => navigate("/analytics")}>
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Analytics
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => navigate("/budget-alerts")}>
+                  <Bell className="h-4 w-4 mr-2" />
+                  Budgets
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => navigate("/payment-methods")}>
+                  <Wallet className="h-4 w-4 mr-2" />
+                  Payment Methods
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => navigate("/reimbursement-requests")}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Requests
+                </Button>
+              </div>
+              <Button className="hidden sm:flex" variant="default" size="sm" onClick={() => navigate("/expenses/new")}>
+                Add Expense
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/payment-methods")}>
-                <Wallet className="h-4 w-4 mr-2" />
-                Payment Methods
+              <Button className="sm:hidden" variant="default" size="icon" onClick={() => navigate("/expenses/new")}>
+                <Plus className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/reimbursement-requests")}>
-                <FileText className="h-4 w-4 mr-2" />
-                Requests
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4" />
+                <span className="hidden md:inline ml-2">Sign Out</span>
               </Button>
             </div>
-            <Button variant="default" size="sm" onClick={() => navigate("/expenses/new")}>
-              <span className="hidden sm:inline">Add Expense</span>
-              <span className="sm:hidden">Add</span>
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate("/hsa-reimbursement")}>
-              <span className="hidden sm:inline">New Reimbursement</span>
-              <span className="sm:hidden">Reimburse</span>
-            </Button>
-            <span className="text-sm text-muted-foreground hidden lg:inline">{user?.email}</span>
-            <Button variant="ghost" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline ml-2">Sign Out</span>
-            </Button>
           </div>
         </div>
       </nav>
