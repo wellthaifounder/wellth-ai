@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, FileText, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { TableColumnHeader } from "@/components/ui/table-column-header";
 
 type ReimbursementRequest = {
   id: string;
@@ -26,7 +27,10 @@ const ReimbursementRequests = () => {
   
   // Filters
   const [statusFilter, setStatusFilter] = useState("all");
-  const [sortBy, setSortBy] = useState<"date" | "amount">("date");
+  const [providerFilter, setProviderFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState<any>(null);
+  const [amountFilter, setAmountFilter] = useState("");
+  const [sortBy, setSortBy] = useState<"date" | "amount" | "provider">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
@@ -53,6 +57,26 @@ const ReimbursementRequests = () => {
   const filteredAndSortedRequests = useMemo(() => {
     let filtered = requests.filter(req => {
       if (statusFilter !== "all" && req.status !== statusFilter) return false;
+      
+      // Provider filter
+      if (providerFilter && req.hsa_provider && !req.hsa_provider.toLowerCase().includes(providerFilter.toLowerCase())) return false;
+      
+      // Date filter
+      if (dateFilter) {
+        const reqDate = new Date(req.submitted_at || req.created_at);
+        if (dateFilter.from && dateFilter.to) {
+          const from = new Date(dateFilter.from);
+          const to = new Date(dateFilter.to);
+          if (reqDate < from || reqDate > to) return false;
+        } else if (dateFilter instanceof Date) {
+          const filterDate = new Date(dateFilter);
+          if (reqDate.toDateString() !== filterDate.toDateString()) return false;
+        }
+      }
+      
+      // Amount filter
+      if (amountFilter && !req.total_amount.toString().includes(amountFilter)) return false;
+      
       return true;
     });
 
@@ -62,12 +86,14 @@ const ReimbursementRequests = () => {
         comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       } else if (sortBy === "amount") {
         comparison = Number(a.total_amount) - Number(b.total_amount);
+      } else if (sortBy === "provider") {
+        comparison = (a.hsa_provider || "").localeCompare(b.hsa_provider || "");
       }
       return sortOrder === "asc" ? comparison : -comparison;
     });
 
     return filtered;
-  }, [requests, statusFilter, sortBy, sortOrder]);
+  }, [requests, statusFilter, providerFilter, dateFilter, amountFilter, sortBy, sortOrder]);
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive"> = {
@@ -119,10 +145,10 @@ const ReimbursementRequests = () => {
               </div>
             ) : (
               <>
-                {/* Filters */}
-                <div className="mb-6 grid gap-4 md:grid-cols-2">
+                {/* Quick Filter */}
+                <div className="mb-6">
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full md:w-64">
                       <SelectValue placeholder="All Status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -132,29 +158,55 @@ const ReimbursementRequests = () => {
                       <SelectItem value="rejected">Rejected</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Select value={`${sortBy}-${sortOrder}`} onValueChange={(val) => {
-                    const [sort, order] = val.split('-');
-                    setSortBy(sort as "date" | "amount");
-                    setSortOrder(order as "asc" | "desc");
-                  }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="date-desc">Date (Newest)</SelectItem>
-                      <SelectItem value="date-asc">Date (Oldest)</SelectItem>
-                      <SelectItem value="amount-desc">Amount (High to Low)</SelectItem>
-                      <SelectItem value="amount-asc">Amount (Low to High)</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>HSA Provider</TableHead>
-                      <TableHead>Amount</TableHead>
+                      <TableHead>
+                        <TableColumnHeader
+                          title="Date"
+                          sortable
+                          filterable
+                          filterType="date"
+                          currentSort={sortBy === "date" ? sortOrder : null}
+                          onSort={(direction) => {
+                            setSortBy("date");
+                            setSortOrder(direction);
+                          }}
+                          onFilter={setDateFilter}
+                        />
+                      </TableHead>
+                      <TableHead>
+                        <TableColumnHeader
+                          title="HSA Provider"
+                          sortable
+                          filterable
+                          filterType="text"
+                          currentSort={sortBy === "provider" ? sortOrder : null}
+                          onSort={(direction) => {
+                            setSortBy("provider");
+                            setSortOrder(direction);
+                          }}
+                          onFilter={(value) => setProviderFilter(value || "")}
+                          filterValue={providerFilter}
+                        />
+                      </TableHead>
+                      <TableHead>
+                        <TableColumnHeader
+                          title="Amount"
+                          sortable
+                          filterable
+                          filterType="text"
+                          currentSort={sortBy === "amount" ? sortOrder : null}
+                          onSort={(direction) => {
+                            setSortBy("amount");
+                            setSortOrder(direction);
+                          }}
+                          onFilter={(value) => setAmountFilter(value || "")}
+                          filterValue={amountFilter}
+                        />
+                      </TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>

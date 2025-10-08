@@ -8,9 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Plus, Download, Trash2, Edit, ArrowUpDown } from "lucide-react";
+import { ArrowLeft, Plus, Download, Trash2, Edit } from "lucide-react";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
+import { TableColumnHeader } from "@/components/ui/table-column-header";
 
 type Expense = Tables<"expenses">;
 
@@ -23,10 +24,12 @@ const ExpenseList = () => {
   // Filters
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [vendorFilter, setVendorFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState<any>(null);
+  const [amountFilter, setAmountFilter] = useState("");
   
   // Sort
-  const [sortBy, setSortBy] = useState<"date" | "amount" | "vendor">("date");
+  const [sortBy, setSortBy] = useState<"date" | "amount" | "vendor" | "category">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
@@ -118,8 +121,24 @@ const ExpenseList = () => {
       if (statusFilter === "reimbursed" && !exp.is_reimbursed) return false;
       if (statusFilter === "pending" && exp.is_reimbursed) return false;
       
-      // Search term
-      if (searchTerm && !exp.vendor.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+      // Vendor filter
+      if (vendorFilter && !exp.vendor.toLowerCase().includes(vendorFilter.toLowerCase())) return false;
+      
+      // Date filter
+      if (dateFilter) {
+        const expDate = new Date(exp.date);
+        if (dateFilter.from && dateFilter.to) {
+          const from = new Date(dateFilter.from);
+          const to = new Date(dateFilter.to);
+          if (expDate < from || expDate > to) return false;
+        } else if (dateFilter instanceof Date) {
+          const filterDate = new Date(dateFilter);
+          if (expDate.toDateString() !== filterDate.toDateString()) return false;
+        }
+      }
+      
+      // Amount filter
+      if (amountFilter && !exp.amount.toString().includes(amountFilter)) return false;
       
       return true;
     });
@@ -133,12 +152,14 @@ const ExpenseList = () => {
         comparison = Number(a.amount) - Number(b.amount);
       } else if (sortBy === "vendor") {
         comparison = a.vendor.localeCompare(b.vendor);
+      } else if (sortBy === "category") {
+        comparison = a.category.localeCompare(b.category);
       }
       return sortOrder === "asc" ? comparison : -comparison;
     });
 
     return filtered;
-  }, [expenses, categoryFilter, statusFilter, searchTerm, sortBy, sortOrder]);
+  }, [expenses, categoryFilter, statusFilter, vendorFilter, dateFilter, amountFilter, sortBy, sortOrder]);
 
   const exportToCSV = () => {
     const headers = ["Date", "Vendor", "Category", "Amount", "HSA Eligible", "Reimbursed", "Notes"];
@@ -218,15 +239,8 @@ const ExpenseList = () => {
               </div>
             ) : (
               <>
-                {/* Filters and Sort */}
-                <div className="mb-6 grid gap-4 md:grid-cols-4">
-                  <div>
-                    <Input
-                      placeholder="Search vendor..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
+                {/* Quick Filters */}
+                <div className="mb-6 grid gap-4 md:grid-cols-2">
                   <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                     <SelectTrigger>
                       <SelectValue placeholder="All Categories" />
@@ -249,23 +263,6 @@ const ExpenseList = () => {
                       <SelectItem value="pending">Pending</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Select value={`${sortBy}-${sortOrder}`} onValueChange={(val) => {
-                    const [sort, order] = val.split('-');
-                    setSortBy(sort as "date" | "amount" | "vendor");
-                    setSortOrder(order as "asc" | "desc");
-                  }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="date-desc">Date (Newest)</SelectItem>
-                      <SelectItem value="date-asc">Date (Oldest)</SelectItem>
-                      <SelectItem value="amount-desc">Amount (High to Low)</SelectItem>
-                      <SelectItem value="amount-asc">Amount (Low to High)</SelectItem>
-                      <SelectItem value="vendor-asc">Vendor (A-Z)</SelectItem>
-                      <SelectItem value="vendor-desc">Vendor (Z-A)</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 <Table>
@@ -277,10 +274,61 @@ const ExpenseList = () => {
                           onCheckedChange={toggleSelectAll}
                         />
                       </TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Vendor</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Amount</TableHead>
+                      <TableHead>
+                        <TableColumnHeader
+                          title="Date"
+                          sortable
+                          filterable
+                          filterType="date"
+                          currentSort={sortBy === "date" ? sortOrder : null}
+                          onSort={(direction) => {
+                            setSortBy("date");
+                            setSortOrder(direction);
+                          }}
+                          onFilter={setDateFilter}
+                        />
+                      </TableHead>
+                      <TableHead>
+                        <TableColumnHeader
+                          title="Vendor"
+                          sortable
+                          filterable
+                          filterType="text"
+                          currentSort={sortBy === "vendor" ? sortOrder : null}
+                          onSort={(direction) => {
+                            setSortBy("vendor");
+                            setSortOrder(direction);
+                          }}
+                          onFilter={(value) => setVendorFilter(value || "")}
+                          filterValue={vendorFilter}
+                        />
+                      </TableHead>
+                      <TableHead>
+                        <TableColumnHeader
+                          title="Category"
+                          sortable
+                          currentSort={sortBy === "category" ? sortOrder : null}
+                          onSort={(direction) => {
+                            setSortBy("category");
+                            setSortOrder(direction);
+                          }}
+                        />
+                      </TableHead>
+                      <TableHead>
+                        <TableColumnHeader
+                          title="Amount"
+                          sortable
+                          filterable
+                          filterType="text"
+                          currentSort={sortBy === "amount" ? sortOrder : null}
+                          onSort={(direction) => {
+                            setSortBy("amount");
+                            setSortOrder(direction);
+                          }}
+                          onFilter={(value) => setAmountFilter(value || "")}
+                          filterValue={amountFilter}
+                        />
+                      </TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>

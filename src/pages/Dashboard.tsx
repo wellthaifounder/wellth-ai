@@ -112,15 +112,15 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <nav className="border-b border-border/40 bg-background/95 backdrop-blur">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4 gap-4">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <Heart className="h-5 w-5 fill-current" />
             </div>
-            <span className="text-xl font-bold">HSA Buddy</span>
+            <span className="text-xl font-bold whitespace-nowrap">HSA Buddy</span>
           </div>
           
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap justify-end flex-1">
             <div className="hidden md:flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={() => navigate("/analytics")}>
                 <BarChart3 className="h-4 w-4 mr-2" />
@@ -272,9 +272,14 @@ const Dashboard = () => {
                 </CardDescription>
               </div>
               {reimbursementRequests.length > 0 && (
-                <Button variant="outline" size="sm" onClick={() => navigate("/hsa-reimbursement")}>
-                  New Request
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => navigate("/reimbursement-requests")}>
+                    View All
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => navigate("/hsa-reimbursement")}>
+                    New Request
+                  </Button>
+                </div>
               )}
             </div>
           </CardHeader>
