@@ -18,6 +18,7 @@ const Dashboard = () => {
     expenseCount: 0,
   });
   const [recentExpenses, setRecentExpenses] = useState<any[]>([]);
+  const [reimbursementRequests, setReimbursementRequests] = useState<any[]>([]);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -34,6 +35,7 @@ const Dashboard = () => {
 
     checkUser();
     fetchStats();
+    fetchReimbursementRequests();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
@@ -75,6 +77,21 @@ const Dashboard = () => {
     }
   };
 
+  const fetchReimbursementRequests = async () => {
+    try {
+      const { data: requests, error } = await supabase
+        .from("reimbursement_requests")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      if (error) throw error;
+      setReimbursementRequests(requests || []);
+    } catch (error) {
+      console.error("Failed to fetch reimbursement requests:", error);
+    }
+  };
+
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -106,6 +123,9 @@ const Dashboard = () => {
           <div className="flex items-center gap-3">
             <Button variant="default" size="sm" onClick={() => navigate("/expenses/new")}>
               Add Expense
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate("/hsa-reimbursement")}>
+              New Reimbursement
             </Button>
             <span className="text-sm text-muted-foreground">{user?.email}</span>
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
@@ -219,6 +239,64 @@ const Dashboard = () => {
                       </p>
                     </div>
                     <p className="font-semibold">${Number(expense.amount).toFixed(2)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="mt-8">
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>Reimbursement Requests</CardTitle>
+                <CardDescription>
+                  {reimbursementRequests.length > 0 ? "Track your HSA reimbursement submissions" : "No reimbursement requests yet"}
+                </CardDescription>
+              </div>
+              {reimbursementRequests.length > 0 && (
+                <Button variant="outline" size="sm" onClick={() => navigate("/hsa-reimbursement")}>
+                  New Request
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {reimbursementRequests.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground mb-4">
+                  Create your first HSA reimbursement request
+                </p>
+                <Button onClick={() => navigate("/hsa-reimbursement")}>
+                  Create Reimbursement Request
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {reimbursementRequests.map((request) => (
+                  <div 
+                    key={request.id} 
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/reimbursement/${request.id}`)}
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{request.hsa_provider || "HSA Provider"}</p>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          request.status === 'submitted' ? 'bg-primary/10 text-primary' :
+                          request.status === 'approved' ? 'bg-green-500/10 text-green-600' :
+                          request.status === 'paid' ? 'bg-blue-500/10 text-blue-600' :
+                          'bg-muted text-muted-foreground'
+                        }`}>
+                          {request.status}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(request.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <p className="font-semibold">${Number(request.total_amount).toFixed(2)}</p>
                   </div>
                 ))}
               </div>

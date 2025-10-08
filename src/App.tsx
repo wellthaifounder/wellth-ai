@@ -9,6 +9,9 @@ import Dashboard from "./pages/Dashboard";
 import ExpenseEntry from "./pages/ExpenseEntry";
 import ExpenseList from "./pages/ExpenseList";
 import HSAReimbursement from "./pages/HSAReimbursement";
+import ReimbursementDetails from "./pages/ReimbursementDetails";
+import PaymentMethods from "./pages/PaymentMethods";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +29,9 @@ const App = () => (
         <Route path="/expenses" element={<ExpenseList />} />
         <Route path="/expenses/new" element={<ExpenseEntry />} />
         <Route path="/hsa-reimbursement" element={<HSAReimbursement />} />
+        <Route path="/reimbursement/:id" element={<ReimbursementDetails />} />
+        <Route path="/payment-methods" element={<PaymentMethods />} />
+        <Route path="/analytics" element={<Analytics />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
