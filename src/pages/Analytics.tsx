@@ -15,7 +15,8 @@ const Analytics = () => {
   const [stats, setStats] = useState({
     totalExpenses: 0,
     hsaEligible: 0,
-    taxSavings: 0,
+    projectedSavings: 0,
+    actualSavings: 0,
     avgMonthly: 0
   });
 
@@ -38,6 +39,8 @@ const Analytics = () => {
       const monthlyTotals: Record<string, number> = {};
       const categoryTotals: Record<string, number> = {};
       let hsaTotal = 0;
+      let unreimbursedHsaTotal = 0;
+      let reimbursedHsaTotal = 0;
 
       expenses?.forEach(exp => {
         const month = new Date(exp.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
@@ -45,6 +48,11 @@ const Analytics = () => {
         categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + Number(exp.amount);
         if (exp.is_hsa_eligible) {
           hsaTotal += Number(exp.amount);
+          if (exp.is_reimbursed) {
+            reimbursedHsaTotal += Number(exp.amount);
+          } else {
+            unreimbursedHsaTotal += Number(exp.amount);
+          }
         }
       });
 
@@ -68,7 +76,8 @@ const Analytics = () => {
       setStats({
         totalExpenses,
         hsaEligible: hsaTotal,
-        taxSavings: hsaTotal * 0.3,
+        projectedSavings: unreimbursedHsaTotal * 0.3,
+        actualSavings: reimbursedHsaTotal * 0.3,
         avgMonthly
       });
     } catch (error) {
@@ -113,7 +122,7 @@ const Analytics = () => {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-4 mb-8">
+        <div className="grid gap-6 md:grid-cols-5 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
@@ -136,12 +145,23 @@ const Analytics = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Tax Savings</CardTitle>
+              <CardTitle className="text-sm font-medium">Projected Savings</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${stats.taxSavings.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">Estimated 30% savings</p>
+              <div className="text-2xl font-bold">${stats.projectedSavings.toFixed(2)}</div>
+              <p className="text-xs text-muted-foreground">Not yet reimbursed</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Actual Savings</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">${stats.actualSavings.toFixed(2)}</div>
+              <p className="text-xs text-muted-foreground">From reimbursements</p>
             </CardContent>
           </Card>
 

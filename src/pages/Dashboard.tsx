@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, LogOut, DollarSign, TrendingUp, CreditCard, FileText } from "lucide-react";
+import { Heart, LogOut, DollarSign, TrendingUp, CreditCard, FileText, BarChart3, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
@@ -121,13 +121,21 @@ const Dashboard = () => {
           </div>
           
           <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/analytics")}>
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Analytics
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/payment-methods")}>
+              <Wallet className="h-4 w-4 mr-2" />
+              Payment Methods
+            </Button>
             <Button variant="default" size="sm" onClick={() => navigate("/expenses/new")}>
               Add Expense
             </Button>
             <Button variant="outline" size="sm" onClick={() => navigate("/hsa-reimbursement")}>
               New Reimbursement
             </Button>
-            <span className="text-sm text-muted-foreground">{user?.email}</span>
+            <span className="text-sm text-muted-foreground hidden lg:inline">{user?.email}</span>
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out
