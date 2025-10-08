@@ -242,27 +242,39 @@ export type Database = {
       reimbursement_requests: {
         Row: {
           created_at: string
+          hsa_provider: string | null
           id: string
           notes: string | null
+          pdf_file_path: string | null
           status: string
+          submission_email: string | null
+          submission_method: string | null
           submitted_at: string | null
           total_amount: number
           user_id: string
         }
         Insert: {
           created_at?: string
+          hsa_provider?: string | null
           id?: string
           notes?: string | null
+          pdf_file_path?: string | null
           status?: string
+          submission_email?: string | null
+          submission_method?: string | null
           submitted_at?: string | null
           total_amount: number
           user_id: string
         }
         Update: {
           created_at?: string
+          hsa_provider?: string | null
           id?: string
           notes?: string | null
+          pdf_file_path?: string | null
           status?: string
+          submission_email?: string | null
+          submission_method?: string | null
           submitted_at?: string | null
           total_amount?: number
           user_id?: string

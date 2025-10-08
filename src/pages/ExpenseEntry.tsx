@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ArrowLeft, Upload, Sparkles } from "lucide-react";
+import { ArrowLeft, Upload, Sparkles, CheckCircle2 } from "lucide-react";
 import { z } from "zod";
 
 const expenseSchema = z.object({
@@ -37,6 +37,7 @@ const ExpenseEntry = () => {
   const [loading, setLoading] = useState(false);
   const [processingOCR, setProcessingOCR] = useState(false);
   const [receipt, setReceipt] = useState<File | null>(null);
+  const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     vendor: "",
@@ -148,8 +149,14 @@ const ExpenseEntry = () => {
         if (receiptError) throw receiptError;
       }
 
+      setSuccess(true);
       toast.success("Expense added successfully!");
-      navigate("/expenses");
+      
+      // Reset form after 2 seconds or navigate
+      setTimeout(() => {
+        setSuccess(false);
+        navigate("/dashboard");
+      }, 2000);
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
@@ -162,17 +169,30 @@ const ExpenseEntry = () => {
     }
   };
 
+  if (success) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="max-w-md mx-auto text-center p-8">
+          <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-4" />
+          <CardTitle className="mb-2">Expense Added!</CardTitle>
+          <CardDescription>
+            Redirecting to dashboard...
+          </CardDescription>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/dashboard")}
-          className="mb-6"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Dashboard
-        </Button>
+        <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <button onClick={() => navigate("/dashboard")} className="hover:text-foreground">
+            Dashboard
+          </button>
+          <span>/</span>
+          <span className="text-foreground">Add Expense</span>
+        </div>
 
         <Card className="max-w-2xl mx-auto">
           <CardHeader>

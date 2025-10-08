@@ -6,7 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, FileText, Download } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { ArrowLeft, FileText, Download, Send, CheckCircle2 } from 'lucide-react';
+import { generateReimbursementPDF } from '@/lib/pdfGenerator';
 
 interface HSAExpense {
   id: string;
@@ -17,14 +20,29 @@ interface HSAExpense {
   notes: string | null;
 }
 
+const HSA_PROVIDERS = [
+  'HSA Bank',
+  'HealthEquity',
+  'Fidelity HSA',
+  'Optum Bank',
+  'Lively',
+  'WageWorks',
+  'PayFlex',
+  'Further',
+  'Other',
+];
+
 export default function HSAReimbursement() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [expenses, setExpenses] = useState<HSAExpense[]>([]);
   const [selectedExpenses, setSelectedExpenses] = useState<Set<string>>(new Set());
   const [notes, setNotes] = useState('');
+  const [hsaProvider, setHsaProvider] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     fetchHSAExpenses();
@@ -32,16 +50,17 @@ export default function HSAReimbursement() {
 
   const fetchHSAExpenses = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) {
         navigate('/auth');
         return;
       }
+      setUser(currentUser);
 
       const { data, error } = await supabase
         .from('expenses')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', currentUser.id)
         .eq('is_hsa_eligible', true)
         .eq('is_reimbursed', false)
         .order('date', { ascending: false });
@@ -76,6 +95,53 @@ export default function HSAReimbursement() {
       .reduce((sum, e) => sum + Number(e.amount), 0);
   };
 
+  const generatePDF = async () => {
+    if (selectedExpenses.size === 0) {
+      toast({
+        title: 'No expenses selected',
+        description: 'Please select at least one expense',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setGeneratingPDF(true);
+    try {
+      const selectedExpensesList = expenses.filter(e => selectedExpenses.has(e.id));
+      
+      const pdfBlob = await generateReimbursementPDF({
+        expenses: selectedExpensesList,
+        totalAmount: calculateTotal(),
+        notes,
+        hsaProvider: hsaProvider || undefined,
+        userName: user?.user_metadata?.full_name || user?.email || 'HSA Member',
+        userEmail: user?.email || '',
+      });
+
+      // Download PDF
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `HSA-Reimbursement-${new Date().toISOString().split('T')[0]}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: 'PDF Generated',
+        description: 'Your reimbursement package has been downloaded',
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to generate PDF',
+        variant: 'destructive',
+      });
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
+
   const handleSubmitRequest = async () => {
     if (selectedExpenses.size === 0) {
       toast({
@@ -86,21 +152,43 @@ export default function HSAReimbursement() {
       return;
     }
 
+    if (!hsaProvider) {
+      toast({
+        title: 'HSA Provider Required',
+        description: 'Please select your HSA provider',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) throw new Error('Not authenticated');
 
       const total = calculateTotal();
+
+      // Generate PDF first
+      const selectedExpensesList = expenses.filter(e => selectedExpenses.has(e.id));
+      const pdfBlob = await generateReimbursementPDF({
+        expenses: selectedExpensesList,
+        totalAmount: total,
+        notes,
+        hsaProvider,
+        userName: currentUser?.user_metadata?.full_name || currentUser?.email || 'HSA Member',
+        userEmail: currentUser?.email || '',
+      });
 
       // Create reimbursement request
       const { data: request, error: requestError } = await supabase
         .from('reimbursement_requests')
         .insert({
-          user_id: user.id,
+          user_id: currentUser.id,
           total_amount: total,
           status: 'pending',
           notes,
+          hsa_provider: hsaProvider,
+          submission_method: 'manual',
           submitted_at: new Date().toISOString(),
         })
         .select()
@@ -128,12 +216,23 @@ export default function HSAReimbursement() {
 
       if (updateError) throw updateError;
 
+      // Download PDF
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `HSA-Reimbursement-${request.id}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+
       toast({
         title: 'Success',
-        description: 'Reimbursement request submitted successfully',
+        description: 'Reimbursement request created and PDF downloaded',
       });
 
-      navigate('/dashboard');
+      // Show success state briefly before redirecting
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
     } catch (error) {
       console.error('Error submitting reimbursement:', error);
       toast({
@@ -168,7 +267,7 @@ export default function HSAReimbursement() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `hsa-reimbursement-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `hsa-expenses-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -183,16 +282,20 @@ export default function HSAReimbursement() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <Button
-        variant="ghost"
-        onClick={() => navigate('/dashboard')}
-        className="mb-6"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Dashboard
-      </Button>
+      <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
+        <button onClick={() => navigate('/dashboard')} className="hover:text-foreground">
+          Dashboard
+        </button>
+        <span>/</span>
+        <span className="text-foreground">HSA Reimbursement</span>
+      </div>
 
-      <h1 className="text-3xl font-bold mb-6">HSA Reimbursement Request</h1>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">HSA Reimbursement Request</h1>
+        <p className="text-muted-foreground">
+          Select expenses and generate a professional reimbursement package
+        </p>
+      </div>
 
       {expenses.length === 0 ? (
         <Card className="p-8 text-center">
@@ -225,6 +328,9 @@ export default function HSAReimbursement() {
                         <p className="text-sm text-muted-foreground">
                           {expense.category} • {new Date(expense.date).toLocaleDateString()}
                         </p>
+                        {expense.notes && (
+                          <p className="text-xs text-muted-foreground mt-1">{expense.notes}</p>
+                        )}
                       </div>
                       <p className="font-semibold">${Number(expense.amount).toFixed(2)}</p>
                     </div>
@@ -235,28 +341,65 @@ export default function HSAReimbursement() {
           </Card>
 
           {selectedExpenses.size > 0 && (
-            <Card className="p-6 mb-6">
-              <h2 className="text-xl font-semibold mb-4">Request Details</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Notes (Optional)
-                  </label>
-                  <Textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Add any additional notes for this reimbursement request..."
-                    rows={3}
-                  />
+            <>
+              <Card className="p-6 mb-6">
+                <h2 className="text-xl font-semibold mb-4">Reimbursement Details</h2>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="hsa-provider">HSA Provider *</Label>
+                    <Select value={hsaProvider} onValueChange={setHsaProvider}>
+                      <SelectTrigger id="hsa-provider" className="mt-1">
+                        <SelectValue placeholder="Select your HSA provider" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {HSA_PROVIDERS.map((provider) => (
+                          <SelectItem key={provider} value={provider}>
+                            {provider}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This helps generate provider-specific instructions
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="notes">Additional Notes (Optional)</Label>
+                    <Textarea
+                      id="notes"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Add any additional notes for this reimbursement request..."
+                      rows={3}
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div className="flex justify-between items-center pt-4 border-t">
+                    <p className="text-lg font-semibold">Total Amount:</p>
+                    <p className="text-2xl font-bold text-primary">
+                      ${calculateTotal().toFixed(2)}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center pt-4 border-t">
-                  <p className="text-lg font-semibold">Total Amount:</p>
-                  <p className="text-2xl font-bold text-primary">
-                    ${calculateTotal().toFixed(2)}
-                  </p>
+              </Card>
+
+              <div className="bg-muted/50 border rounded-lg p-4 mb-6">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold mb-1">What happens next?</h3>
+                    <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                      <li>A professional PDF package will be generated with all expense details</li>
+                      <li>The PDF will include provider-specific submission instructions</li>
+                      <li>Your expenses will be marked as submitted in the system</li>
+                      <li>You'll need to submit the PDF to your HSA provider</li>
+                    </ol>
+                  </div>
                 </div>
               </div>
-            </Card>
+            </>
           )}
 
           <div className="flex gap-3">
@@ -271,11 +414,21 @@ export default function HSAReimbursement() {
                   Export CSV
                 </Button>
                 <Button
-                  onClick={handleSubmitRequest}
-                  disabled={submitting}
+                  onClick={generatePDF}
+                  variant="outline"
+                  disabled={generatingPDF}
                   className="flex-1"
                 >
-                  {submitting ? 'Submitting...' : 'Submit Reimbursement Request'}
+                  <FileText className="mr-2 h-4 w-4" />
+                  {generatingPDF ? 'Generating...' : 'Generate PDF Only'}
+                </Button>
+                <Button
+                  onClick={handleSubmitRequest}
+                  disabled={submitting || !hsaProvider}
+                  className="flex-1"
+                >
+                  <Send className="mr-2 h-4 w-4" />
+                  {submitting ? 'Submitting...' : 'Submit & Download Package'}
                 </Button>
               </>
             )}

@@ -17,6 +17,7 @@ const Dashboard = () => {
     rewardsEarned: 0,
     expenseCount: 0,
   });
+  const [recentExpenses, setRecentExpenses] = useState<any[]>([]);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -49,7 +50,8 @@ const Dashboard = () => {
     try {
       const { data: expenses, error } = await supabase
         .from("expenses")
-        .select("amount, is_hsa_eligible");
+        .select("*")
+        .order("date", { ascending: false });
 
       if (error) throw error;
 
@@ -66,6 +68,8 @@ const Dashboard = () => {
         rewardsEarned,
         expenseCount: expenses?.length || 0,
       });
+
+      setRecentExpenses(expenses?.slice(0, 5) || []);
     } catch (error) {
       console.error("Failed to fetch stats:", error);
     }
@@ -100,6 +104,9 @@ const Dashboard = () => {
           </div>
           
           <div className="flex items-center gap-3">
+            <Button variant="default" size="sm" onClick={() => navigate("/expenses/new")}>
+              Add Expense
+            </Button>
             <span className="text-sm text-muted-foreground">{user?.email}</span>
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-2" />
@@ -160,26 +167,62 @@ const Dashboard = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Expenses</CardTitle>
-            <CardDescription>
-              You haven't tracked any expenses yet
-            </CardDescription>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>Recent Expenses</CardTitle>
+                <CardDescription>
+                  {recentExpenses.length > 0 ? "Your latest tracked expenses" : "You haven't tracked any expenses yet"}
+                </CardDescription>
+              </div>
+              {recentExpenses.length > 0 && (
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => navigate("/expenses")}>
+                    View All
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => navigate("/hsa-reimbursement")}>
+                    <FileText className="mr-2 h-4 w-4" />
+                    HSA Reimbursement
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-12">
-              <p className="text-muted-foreground mb-4">
-                Start tracking expenses to see your savings potential
-              </p>
-              <div className="flex gap-3 justify-center">
-                <Button onClick={() => navigate("/expenses/new")}>
-                  Add Your First Expense
-                </Button>
-                <Button variant="outline" onClick={() => navigate("/hsa-reimbursement")}>
-                  <FileText className="mr-2 h-4 w-4" />
-                  HSA Reimbursement
-                </Button>
+            {recentExpenses.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground mb-4">
+                  Start tracking expenses to see your savings potential
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <Button onClick={() => navigate("/expenses/new")}>
+                    Add Your First Expense
+                  </Button>
+                  <Button variant="outline" onClick={() => navigate("/hsa-reimbursement")}>
+                    <FileText className="mr-2 h-4 w-4" />
+                    HSA Reimbursement
+                  </Button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-3">
+                {recentExpenses.map((expense) => (
+                  <div key={expense.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{expense.vendor}</p>
+                        {expense.is_hsa_eligible && (
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">HSA</span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {expense.category} • {new Date(expense.date).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <p className="font-semibold">${Number(expense.amount).toFixed(2)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </main>
