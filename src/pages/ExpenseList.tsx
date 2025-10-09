@@ -26,7 +26,7 @@ const ExpenseList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [vendorFilter, setVendorFilter] = useState("");
   const [dateFilter, setDateFilter] = useState<any>(null);
-  const [amountFilter, setAmountFilter] = useState("");
+  const [amountFilter, setAmountFilter] = useState<any>(null);
   
   // Sort
   const [sortBy, setSortBy] = useState<"date" | "amount" | "vendor" | "category" | "status">("date");
@@ -142,6 +142,16 @@ const ExpenseList = () => {
     return Array.from(statuses).sort();
   }, [expenses]);
 
+  // Get min and max amounts for the filter
+  const { minAmount, maxAmount } = useMemo(() => {
+    if (expenses.length === 0) return { minAmount: 0, maxAmount: 1000 };
+    const amounts = expenses.map(e => Number(e.amount));
+    return {
+      minAmount: Math.min(...amounts),
+      maxAmount: Math.max(...amounts)
+    };
+  }, [expenses]);
+
   const filteredAndSortedExpenses = useMemo(() => {
     let filtered = expenses.filter(exp => {
       // Category filter
@@ -169,7 +179,11 @@ const ExpenseList = () => {
       }
       
       // Amount filter
-      if (amountFilter && !exp.amount.toString().includes(amountFilter)) return false;
+      if (amountFilter) {
+        const amount = Number(exp.amount);
+        if (amountFilter.from !== undefined && amount < amountFilter.from) return false;
+        if (amountFilter.to !== undefined && amount > amountFilter.to) return false;
+      }
       
       // Status column filter
       if (statusColumnFilter) {
@@ -381,14 +395,15 @@ const ExpenseList = () => {
                           title="Amount"
                           sortable
                           filterable
-                          filterType="text"
+                          filterType="number"
+                          minValue={minAmount}
+                          maxValue={maxAmount}
                           currentSort={sortBy === "amount" ? sortOrder : null}
                           onSort={(direction) => {
                             setSortBy("amount");
                             setSortOrder(direction);
                           }}
-                          onFilter={(value) => setAmountFilter(value || "")}
-                          filterValue={amountFilter}
+                          onFilter={setAmountFilter}
                         />
                       </TableHead>
                       <TableHead>

@@ -149,6 +149,10 @@ const ExpenseEntry = () => {
 
       const isHsaEligible = HSA_ELIGIBLE_CATEGORIES.includes(validatedData.category);
 
+      // Format date to ensure it's stored consistently in UTC
+      const dateObj = new Date(validatedData.date + 'T00:00:00');
+      const formattedDate = dateObj.toISOString().split('T')[0];
+
       let expense;
       
       if (isEditMode && id) {
@@ -156,7 +160,7 @@ const ExpenseEntry = () => {
         const { data, error: expenseError } = await supabase
           .from("expenses")
           .update({
-            date: validatedData.date,
+            date: formattedDate,
             vendor: validatedData.vendor,
             amount: validatedData.amount,
             category: validatedData.category,
@@ -175,7 +179,7 @@ const ExpenseEntry = () => {
           .from("expenses")
           .insert({
             user_id: user.id,
-            date: validatedData.date,
+            date: formattedDate,
             vendor: validatedData.vendor,
             amount: validatedData.amount,
             category: validatedData.category,

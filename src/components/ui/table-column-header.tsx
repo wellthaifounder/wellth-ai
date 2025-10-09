@@ -24,6 +24,8 @@ interface TableColumnHeaderProps {
   filterable?: boolean;
   filterType?: "text" | "date" | "number";
   filterOptions?: string[]; // Available options for text filters (autocomplete)
+  minValue?: number; // Min value for number filters
+  maxValue?: number; // Max value for number filters
   currentSort?: "asc" | "desc" | null;
   onSort?: (direction: "asc" | "desc") => void;
   onFilter?: (value: any) => void;
@@ -36,6 +38,8 @@ export function TableColumnHeader({
   filterable = false,
   filterType = "text",
   filterOptions = [],
+  minValue,
+  maxValue,
   currentSort,
   onSort,
   onFilter,
@@ -44,6 +48,8 @@ export function TableColumnHeader({
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [textFilter, setTextFilter] = useState(filterValue || "");
+  const [numberFrom, setNumberFrom] = useState<string>("");
+  const [numberTo, setNumberTo] = useState<string>("");
   const [comboboxOpen, setComboboxOpen] = useState(false);
 
   const handleTextFilterApply = () => {
@@ -58,10 +64,18 @@ export function TableColumnHeader({
     }
   };
 
+  const handleNumberRangeApply = () => {
+    const from = numberFrom ? parseFloat(numberFrom) : minValue;
+    const to = numberTo ? parseFloat(numberTo) : maxValue;
+    onFilter?.({ from, to });
+  };
+
   const handleClearFilter = () => {
     setTextFilter("");
     setDateFrom(undefined);
     setDateTo(undefined);
+    setNumberFrom("");
+    setNumberTo("");
     onFilter?.(null);
   };
 
@@ -224,6 +238,46 @@ export function TableColumnHeader({
                     </div>
                     <div className="flex gap-2 pt-2">
                       <Button size="sm" onClick={handleDateRangeApply} className="flex-1">
+                        Apply
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={handleClearFilter} className="flex-1">
+                        Clear
+                      </Button>
+                    </div>
+                  </div>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            )}
+            {filterType === "number" && (
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filter Range
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="w-56 p-3">
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Min Amount</label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder={minValue ? `${minValue}` : "Min"}
+                        value={numberFrom}
+                        onChange={(e) => setNumberFrom(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Max Amount</label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder={maxValue ? `${maxValue}` : "Max"}
+                        value={numberTo}
+                        onChange={(e) => setNumberTo(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <Button size="sm" onClick={handleNumberRangeApply} className="flex-1">
                         Apply
                       </Button>
                       <Button size="sm" variant="outline" onClick={handleClearFilter} className="flex-1">
