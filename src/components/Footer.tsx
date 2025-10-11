@@ -1,4 +1,4 @@
-import { Heart } from "lucide-react";
+import { WellbieAvatar } from "./WellbieAvatar";
 
 export const Footer = () => {
   return (
@@ -6,17 +6,18 @@ export const Footer = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="grid gap-8 md:grid-cols-4">
           <div className="md:col-span-2">
-            <div className="mb-4 flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                <Heart className="h-5 w-5 fill-current" />
+            <div className="mb-4 flex items-center gap-3">
+              <WellbieAvatar size="sm" />
+              <div className="flex flex-col">
+                <span className="text-xl font-heading font-bold">Wellth.ai</span>
+                <span className="text-xs text-muted-foreground -mt-0.5">Smarter health. Wealthier you.</span>
               </div>
-              <span className="text-xl font-bold">HSA Buddy</span>
             </div>
             <p className="mb-4 text-sm text-muted-foreground">
-              Smart HSA management for healthcare savings. Optimize every medical expense with tax-free benefits and credit card rewards.
+              Your financial health companion. Optimize medical spending, maximize HSA benefits and rewards through smart automation and AI insights.
             </p>
             <p className="text-xs text-muted-foreground">
-              © 2025 HSA Buddy. All rights reserved.
+              © 2025 Wellth.ai. All rights reserved.
             </p>
           </div>
           

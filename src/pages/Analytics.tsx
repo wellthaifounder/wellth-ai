@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, ArrowLeft, TrendingUp, DollarSign, PieChart } from "lucide-react";
+import { WellbieAvatar } from "@/components/WellbieAvatar";
+import { ArrowLeft, TrendingUp, DollarSign, PieChart } from "lucide-react";
 import { toast } from "sonner";
 import { BarChart, Bar, LineChart, Line, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
@@ -104,10 +105,8 @@ const Analytics = () => {
             onClick={() => navigate("/dashboard")}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <Heart className="h-5 w-5 fill-current" />
-            </div>
-            <span className="text-xl font-bold whitespace-nowrap">HSA Buddy</span>
+            <WellbieAvatar size="sm" />
+            <span className="text-xl font-heading font-bold whitespace-nowrap">Wellth.ai</span>
           </button>
           
           <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>

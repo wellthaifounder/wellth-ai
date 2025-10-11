@@ -3,7 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, ArrowLeft, Download, Mail, FileText } from "lucide-react";
+import { WellbieAvatar } from "@/components/WellbieAvatar";
+import { ArrowLeft, Download, Mail, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { generateReimbursementPDF } from "@/lib/pdfGenerator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -144,10 +145,8 @@ const ReimbursementDetails = () => {
             onClick={() => navigate("/dashboard")}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <Heart className="h-5 w-5 fill-current" />
-            </div>
-            <span className="text-xl font-bold whitespace-nowrap">HSA Buddy</span>
+            <WellbieAvatar size="sm" />
+            <span className="text-xl font-heading font-bold whitespace-nowrap">Wellth.ai</span>
           </button>
           
           <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>

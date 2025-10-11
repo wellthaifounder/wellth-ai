@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, LogOut, DollarSign, TrendingUp, CreditCard, FileText, BarChart3, Wallet, Plus } from "lucide-react";
+import { WellbieAvatar } from "@/components/WellbieAvatar";
+import { LogOut, DollarSign, TrendingUp, CreditCard, FileText, BarChart3, Wallet, Plus } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
@@ -118,10 +119,8 @@ const Dashboard = () => {
               onClick={() => navigate("/dashboard")}
               className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition-opacity"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                <Heart className="h-5 w-5 fill-current" />
-              </div>
-              <span className="text-lg md:text-xl font-bold whitespace-nowrap">HSA Buddy</span>
+              <WellbieAvatar size="sm" />
+              <span className="text-lg md:text-xl font-heading font-bold whitespace-nowrap">Wellth.ai</span>
             </button>
             
             <div className="flex items-center gap-1 md:gap-2">

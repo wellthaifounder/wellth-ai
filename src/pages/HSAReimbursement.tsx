@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, FileText, Download, Send, CheckCircle2, Heart } from 'lucide-react';
+import { WellbieAvatar } from '@/components/WellbieAvatar';
+import { ArrowLeft, FileText, Download, Send, CheckCircle2 } from 'lucide-react';
 import { generateReimbursementPDF } from '@/lib/pdfGenerator';
 
 interface HSAExpense {
@@ -321,10 +322,8 @@ export default function HSAReimbursement() {
               onClick={() => navigate("/dashboard")}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                <Heart className="h-5 w-5 fill-current" />
-              </div>
-              <span className="text-xl font-bold whitespace-nowrap">HSA Buddy</span>
+              <WellbieAvatar size="sm" />
+              <span className="text-xl font-heading font-bold whitespace-nowrap">Wellth.ai</span>
             </button>
           </div>
         </div>

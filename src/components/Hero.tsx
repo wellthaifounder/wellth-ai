@@ -21,7 +21,7 @@ export const Hero = () => {
           </h1>
           
           <p className="mb-10 text-lg text-white/90 sm:text-xl">
-            HSA Buddy automatically categorizes medical expenses, identifies HSA-eligible purchases, 
+            Wellth.ai automatically categorizes medical expenses, identifies HSA-eligible purchases, 
             and recommends the smartest payment strategy—saving you 20-40% instantly.
           </p>
           

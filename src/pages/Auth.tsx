@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart } from "lucide-react";
+import { WellbieAvatar } from "@/components/WellbieAvatar";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Separator } from "@/components/ui/separator";
@@ -179,11 +179,9 @@ const Auth = () => {
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
             <div className="flex items-center justify-center mb-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                <Heart className="h-6 w-6 fill-current" />
-              </div>
+              <WellbieAvatar size="md" />
             </div>
-            <CardTitle className="text-2xl text-center">Reset Password</CardTitle>
+            <CardTitle className="text-2xl text-center font-heading">Reset Password</CardTitle>
             <CardDescription className="text-center">
               Enter your email to receive a password reset link
             </CardDescription>
@@ -226,13 +224,11 @@ const Auth = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <Heart className="h-6 w-6 fill-current" />
-            </div>
+            <WellbieAvatar size="md" animate />
           </div>
-          <CardTitle className="text-2xl text-center">HSA Buddy</CardTitle>
+          <CardTitle className="text-2xl text-center font-heading">Wellth.ai</CardTitle>
           <CardDescription className="text-center">
-            Maximize your HSA savings with smart payment strategies
+            Smarter health. Wealthier you.
           </CardDescription>
         </CardHeader>
         <CardContent>

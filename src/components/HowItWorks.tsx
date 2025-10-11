@@ -9,7 +9,7 @@ const steps = [
   {
     icon: Sparkles,
     title: "Automatic Categorization",
-    description: "HSA Buddy analyzes each expense and determines HSA eligibility using IRS guidelines.",
+    description: "Wellth.ai analyzes each expense and determines HSA eligibility using IRS guidelines.",
   },
   {
     icon: CreditCard,
@@ -29,7 +29,7 @@ export const HowItWorks = () => {
       <div className="container mx-auto px-4">
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-            How HSA Buddy Works
+            How Wellth.ai Works
           </h2>
           <p className="text-lg text-muted-foreground">
             Four simple steps to optimize your healthcare spending
