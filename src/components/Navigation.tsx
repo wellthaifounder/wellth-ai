@@ -1,16 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
+import { WellbieAvatar } from "./WellbieAvatar";
 
 export const Navigation = () => {
   return (
-    <nav className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-50 border-b border-border/40 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2 cursor-pointer">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Heart className="h-5 w-5 fill-current" />
+        <Link to="/" className="flex items-center gap-3 cursor-pointer group">
+          <WellbieAvatar size="sm" className="transition-transform group-hover:scale-110" />
+          <div className="flex flex-col">
+            <span className="text-xl font-heading font-bold text-foreground">Wellth.ai</span>
+            <span className="text-[10px] text-muted-foreground -mt-1">Smarter health. Wealthier you.</span>
           </div>
-          <span className="text-xl font-bold">HSA Buddy</span>
         </Link>
         
         <div className="hidden items-center gap-8 md:flex">

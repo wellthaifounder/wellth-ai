@@ -2,45 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Wellth.ai Design System - All colors MUST be HSL */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 215 25% 27%;
+    /* Neutral Canvas */
+    --background: 216 33% 97%;
+    --foreground: 228 36% 16%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 27%;
+    --card-foreground: 228 36% 16%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 27%;
+    --popover-foreground: 228 36% 16%;
 
-    --primary: 186 100% 40%;
+    /* Primary - Calm Confidence Teal */
+    --primary: 178 100% 33%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 214 95% 97%;
-    --secondary-foreground: 215 25% 27%;
+    /* Secondary - Professional Navy */
+    --secondary: 228 36% 16%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 214 32% 95%;
-    --muted-foreground: 215 15% 50%;
+    /* Muted - Subtle grays */
+    --muted: 216 20% 92%;
+    --muted-foreground: 228 15% 45%;
 
-    --accent: 27 96% 61%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent - Optimistic Gold */
+    --accent: 43 88% 61%;
+    --accent-foreground: 228 36% 16%;
 
-    --destructive: 0 84.2% 60.2%;
+    /* Success - Balanced Green */
+    --success: 122 39% 49%;
+    --success-foreground: 0 0% 100%;
+
+    /* Destructive - Alert Red */
+    --destructive: 357 79% 59%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 186 100% 40%;
+    --border: 216 20% 88%;
+    --input: 216 20% 88%;
+    --ring: 178 100% 33%;
 
     --radius: 0.75rem;
     
-    /* Custom gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(186 100% 40%) 0%, hsl(186 80% 55%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(214 95% 97%) 100%);
+    /* Wellth.ai Custom Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(178 100% 33%) 0%, hsl(178 80% 45%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(216 33% 97%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(43 88% 61%) 0%, hsl(43 95% 70%) 100%);
 
     --sidebar-background: 0 0% 98%;
 
@@ -60,37 +69,46 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 215 28% 17%;
+    --background: 228 36% 12%;
     --foreground: 0 0% 98%;
 
-    --card: 215 28% 17%;
+    --card: 228 36% 16%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 215 28% 17%;
+    --popover: 228 36% 16%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 186 100% 40%;
+    /* Primary - Calm Confidence Teal */
+    --primary: 178 100% 33%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 215 25% 25%;
+    /* Secondary - Professional Navy (lighter in dark) */
+    --secondary: 228 30% 25%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 215 25% 25%;
-    --muted-foreground: 214 15% 65%;
+    --muted: 228 25% 20%;
+    --muted-foreground: 228 15% 65%;
 
-    --accent: 27 96% 61%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent - Optimistic Gold */
+    --accent: 43 88% 61%;
+    --accent-foreground: 228 36% 16%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    /* Success - Balanced Green */
+    --success: 122 39% 49%;
+    --success-foreground: 0 0% 100%;
 
-    --border: 215 25% 25%;
-    --input: 215 25% 25%;
-    --ring: 186 100% 40%;
+    /* Destructive - Alert Red */
+    --destructive: 357 79% 59%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 228 25% 25%;
+    --input: 228 25% 25%;
+    --ring: 178 100% 33%;
     
-    /* Custom gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(186 100% 40%) 0%, hsl(186 80% 55%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(215 28% 17%) 0%, hsl(215 25% 25%) 100%);
+    /* Wellth.ai Dark Mode Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(178 100% 28%) 0%, hsl(178 80% 38%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(228 36% 16%) 0%, hsl(228 30% 20%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(43 88% 55%) 0%, hsl(43 95% 65%) 100%);
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -108,6 +126,11 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading tracking-tight;
   }
 }
