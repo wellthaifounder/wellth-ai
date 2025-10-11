@@ -29,16 +29,18 @@ export const Hero = () => {
             <Button
               size="lg"
               className="group bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg shadow-accent/25"
+              onClick={() => window.location.href = '/calculator'}
             >
-              Try HSA Buddy Free
+              See Your Savings Potential
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button
               size="lg"
               variant="outline"
               className="border-white/20 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20"
+              onClick={() => window.location.href = '/auth'}
             >
-              See How It Works
+              I Already Know My Savings - Sign Up
             </Button>
           </div>
           
