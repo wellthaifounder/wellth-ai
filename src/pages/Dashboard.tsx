@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { WellbieAvatar } from "@/components/WellbieAvatar";
+import { WellthLogo } from "@/components/WellthLogo";
 import { LogOut, DollarSign, TrendingUp, CreditCard, FileText, BarChart3, Wallet, Plus } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
@@ -117,10 +117,9 @@ const Dashboard = () => {
           <div className="flex h-16 items-center justify-between gap-2">
             <button 
               onClick={() => navigate("/dashboard")}
-              className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition-opacity"
+              className="flex-shrink-0 hover:opacity-80 transition-opacity"
             >
-              <WellbieAvatar size="sm" />
-              <span className="text-lg md:text-xl font-heading font-bold whitespace-nowrap">Wellth.ai</span>
+              <WellthLogo size="sm" showTagline />
             </button>
             
             <div className="flex items-center gap-1 md:gap-2">

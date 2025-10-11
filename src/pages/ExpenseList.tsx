@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { WellbieAvatar } from "@/components/WellbieAvatar";
+import { WellthLogo } from "@/components/WellthLogo";
 import { ArrowLeft, Plus, Download, Trash2, Edit } from "lucide-react";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
@@ -259,10 +259,9 @@ const ExpenseList = () => {
           <div className="flex h-16 items-center gap-4">
             <button 
               onClick={() => navigate("/dashboard")}
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              className="hover:opacity-80 transition-opacity"
             >
-              <WellbieAvatar size="sm" />
-              <span className="text-xl font-heading font-bold whitespace-nowrap">Wellth.ai</span>
+              <WellthLogo size="sm" showTagline />
             </button>
           </div>
         </div>

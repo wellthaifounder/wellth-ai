@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { WellbieAvatar } from "@/components/WellbieAvatar";
+import { WellthLogo } from "@/components/WellthLogo";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Separator } from "@/components/ui/separator";
@@ -178,8 +178,8 @@ const Auth = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
-            <div className="flex items-center justify-center mb-4">
-              <WellbieAvatar size="md" />
+          <div className="flex justify-center mb-4">
+              <WellthLogo size="md" />
             </div>
             <CardTitle className="text-2xl text-center font-heading">Reset Password</CardTitle>
             <CardDescription className="text-center">
@@ -223,13 +223,9 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-4">
-            <WellbieAvatar size="md" animate />
+          <div className="flex justify-center mb-2">
+            <WellthLogo size="md" showTagline />
           </div>
-          <CardTitle className="text-2xl text-center font-heading">Wellth.ai</CardTitle>
-          <CardDescription className="text-center">
-            Smarter health. Wealthier you.
-          </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">

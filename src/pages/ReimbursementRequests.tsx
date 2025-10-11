@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { WellbieAvatar } from "@/components/WellbieAvatar";
+import { WellthLogo } from "@/components/WellthLogo";
 import { ArrowLeft, FileText, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { TableColumnHeader } from "@/components/ui/table-column-header";
@@ -135,10 +135,9 @@ const ReimbursementRequests = () => {
           <div className="flex h-16 items-center gap-4">
             <button 
               onClick={() => navigate("/dashboard")}
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              className="hover:opacity-80 transition-opacity"
             >
-              <WellbieAvatar size="sm" />
-              <span className="text-xl font-heading font-bold whitespace-nowrap">Wellth.ai</span>
+              <WellthLogo size="sm" showTagline />
             </button>
           </div>
         </div>

@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { WellbieAvatar } from '@/components/WellbieAvatar';
+import { WellthLogo } from '@/components/WellthLogo';
 import { ArrowLeft, FileText, Download, Send, CheckCircle2 } from 'lucide-react';
 import { generateReimbursementPDF } from '@/lib/pdfGenerator';
 
@@ -320,10 +320,9 @@ export default function HSAReimbursement() {
           <div className="flex h-16 items-center gap-4">
             <button 
               onClick={() => navigate("/dashboard")}
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              className="hover:opacity-80 transition-opacity"
             >
-              <WellbieAvatar size="sm" />
-              <span className="text-xl font-heading font-bold whitespace-nowrap">Wellth.ai</span>
+              <WellthLogo size="sm" showTagline />
             </button>
           </div>
         </div>

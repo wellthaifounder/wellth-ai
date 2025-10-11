@@ -1,16 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { WellbieAvatar } from "./WellbieAvatar";
+import { WellthLogo } from "./WellthLogo";
 
 export const Navigation = () => {
   return (
     <nav className="sticky top-0 z-50 border-b border-border/40 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-3 cursor-pointer group">
-          <WellbieAvatar size="sm" className="transition-transform group-hover:scale-110" />
-          <div className="flex flex-col">
-            <span className="text-xl font-heading font-bold text-foreground">Wellth.ai</span>
-            <span className="text-[10px] text-muted-foreground -mt-1">Smarter health. Wealthier you.</span>
+        <Link to="/" className="cursor-pointer group">
+          {/* Show full logo on desktop, icon only on mobile */}
+          <div className="hidden md:block">
+            <WellthLogo size="sm" showTagline className="transition-transform group-hover:scale-105" />
+          </div>
+          <div className="md:hidden">
+            <WellthLogo variant="icon" size="sm" className="transition-transform group-hover:scale-110" />
           </div>
         </Link>
         

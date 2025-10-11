@@ -1,4 +1,4 @@
-import { WellbieAvatar } from "./WellbieAvatar";
+import { WellthLogo } from "./WellthLogo";
 
 export const Footer = () => {
   return (
@@ -6,12 +6,8 @@ export const Footer = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="grid gap-8 md:grid-cols-4">
           <div className="md:col-span-2">
-            <div className="mb-4 flex items-center gap-3">
-              <WellbieAvatar size="sm" />
-              <div className="flex flex-col">
-                <span className="text-xl font-heading font-bold">Wellth.ai</span>
-                <span className="text-xs text-muted-foreground -mt-0.5">Smarter health. Wealthier you.</span>
-              </div>
+            <div className="mb-4">
+              <WellthLogo size="sm" showTagline />
             </div>
             <p className="mb-4 text-sm text-muted-foreground">
               Your financial health companion. Optimize medical spending, maximize HSA benefits and rewards through smart automation and AI insights.

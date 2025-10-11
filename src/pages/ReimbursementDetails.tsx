@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { WellbieAvatar } from "@/components/WellbieAvatar";
+import { WellthLogo } from "@/components/WellthLogo";
 import { ArrowLeft, Download, Mail, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { generateReimbursementPDF } from "@/lib/pdfGenerator";
@@ -143,10 +143,9 @@ const ReimbursementDetails = () => {
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <button 
             onClick={() => navigate("/dashboard")}
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            className="hover:opacity-80 transition-opacity"
           >
-            <WellbieAvatar size="sm" />
-            <span className="text-xl font-heading font-bold whitespace-nowrap">Wellth.ai</span>
+            <WellthLogo size="sm" showTagline />
           </button>
           
           <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>

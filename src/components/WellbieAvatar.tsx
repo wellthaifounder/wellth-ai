@@ -1,12 +1,28 @@
+/**
+ * WellbieAvatar - AI Companion Mascot
+ * 
+ * USAGE GUIDE:
+ * ------------
+ * - Use for conversational moments, chat interfaces, and onboarding
+ * - Use for loading/thinking states with the "thinking" variant
+ * - NOT for navigation or branding (use WellthLogo instead)
+ * 
+ * PERSONALITY: Supportive coach + analytical guide
+ * - Calm, helpful, slightly playful
+ * - Appears during results explanations, tips, and notifications
+ */
+
 interface WellbieAvatarProps {
   size?: "sm" | "md" | "lg";
   animate?: boolean;
+  state?: "default" | "thinking" | "success";
   className?: string;
 }
 
 export const WellbieAvatar = ({ 
   size = "md", 
   animate = false,
+  state = "default",
   className = "" 
 }: WellbieAvatarProps) => {
   const sizes = {
@@ -15,44 +31,79 @@ export const WellbieAvatar = ({
     lg: "h-16 w-16"
   };
 
+  const getAnimation = () => {
+    if (animate) return "animate-bounce";
+    if (state === "thinking") return "animate-pulse";
+    return "";
+  };
+
   return (
     <div className={`${sizes[size]} ${className}`}>
       <svg
         viewBox="0 0 100 100"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className={animate ? "animate-bounce" : ""}
+        className={getAnimation()}
       >
-        {/* Wellbie - Friendly teal orb with gold accent */}
+        {/* Wellbie - Refined geometric orb with sophisticated gradient */}
         <defs>
           <linearGradient id="wellbie-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="hsl(178, 100%, 33%)" />
-            <stop offset="100%" stopColor="hsl(178, 80%, 45%)" />
+            <stop offset="0%" stopColor="hsl(178, 100%, 38%)" />
+            <stop offset="50%" stopColor="hsl(178, 90%, 35%)" />
+            <stop offset="100%" stopColor="hsl(178, 80%, 42%)" />
+          </linearGradient>
+          <linearGradient id="accent-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="hsl(43, 88%, 65%)" />
+            <stop offset="100%" stopColor="hsl(43, 88%, 58%)" />
           </linearGradient>
         </defs>
         
-        {/* Main body - rounded friendly shape */}
-        <circle cx="50" cy="50" r="40" fill="url(#wellbie-gradient)" />
-        
-        {/* Gold accent - small leaf/heartbeat shape */}
-        <path
-          d="M 50 30 Q 58 30 58 38 Q 58 42 54 46 L 50 50 L 46 46 Q 42 42 42 38 Q 42 30 50 30 Z"
-          fill="hsl(43, 88%, 61%)"
+        {/* Main body - smooth geometric circle */}
+        <circle 
+          cx="50" 
+          cy="50" 
+          r="38" 
+          fill="url(#wellbie-gradient)"
+          className="transition-all duration-300"
         />
         
-        {/* Friendly eyes */}
-        <circle cx="40" cy="45" r="3" fill="white" opacity="0.9" />
-        <circle cx="60" cy="45" r="3" fill="white" opacity="0.9" />
-        
-        {/* Gentle smile */}
+        {/* Gold accent - refined wellness symbol */}
         <path
-          d="M 38 58 Q 50 65 62 58"
-          stroke="white"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          fill="none"
-          opacity="0.8"
+          d="M 50 28 Q 56 28 56 36 Q 56 40 53 44 L 50 47 L 47 44 Q 44 40 44 36 Q 44 28 50 28 Z"
+          fill="url(#accent-gradient)"
+          opacity="0.95"
         />
+        
+        {/* Eyes - simplified and geometric */}
+        <circle cx="40" cy="46" r="2.5" fill="white" opacity="0.85" />
+        <circle cx="60" cy="46" r="2.5" fill="white" opacity="0.85" />
+        
+        {/* Expression based on state */}
+        {state === "success" ? (
+          <path
+            d="M 36 56 Q 50 66 64 56"
+            stroke="white"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            fill="none"
+            opacity="0.8"
+          />
+        ) : state === "thinking" ? (
+          <>
+            <circle cx="42" cy="60" r="1.5" fill="white" opacity="0.6" />
+            <circle cx="50" cy="60" r="1.5" fill="white" opacity="0.6" />
+            <circle cx="58" cy="60" r="1.5" fill="white" opacity="0.6" />
+          </>
+        ) : (
+          <path
+            d="M 38 58 Q 50 64 62 58"
+            stroke="white"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            fill="none"
+            opacity="0.75"
+          />
+        )}
       </svg>
     </div>
   );
