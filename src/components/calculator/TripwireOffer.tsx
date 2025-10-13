@@ -16,9 +16,11 @@ export const TripwireOffer = ({ estimatedSavings, onPurchaseComplete }: Tripwire
 
   const handlePurchase = async () => {
     setIsProcessing(true);
-    
+
+    // Open a new tab immediately to avoid popup blockers
+    const popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
+
     try {
-      // Create Stripe checkout for tripwire offer
       const { data, error } = await supabase.functions.invoke('create-tripwire-checkout', {
         body: { estimatedSavings }
       });
@@ -26,11 +28,26 @@ export const TripwireOffer = ({ estimatedSavings, onPurchaseComplete }: Tripwire
       if (error) throw error;
 
       if (data?.url) {
-        window.location.href = data.url;
+        if (popup) {
+          popup.location.href = data.url;
+        } else {
+          // Fallback: escape iframe
+          if (window.top) {
+            window.top.location.href = data.url;
+          } else {
+            window.location.href = data.url;
+          }
+        }
+        return;
       }
+
+      throw new Error('No checkout URL returned');
     } catch (error) {
       console.error('Purchase error:', error);
+      // Close the pre-opened tab if we failed
+      try { popup?.close(); } catch {}
       toast.error("Something went wrong. Please try again.");
+    } finally {
       setIsProcessing(false);
     }
   };
