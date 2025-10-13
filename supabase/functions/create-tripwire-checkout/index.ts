@@ -24,14 +24,7 @@ serve(async (req) => {
       payment_method_types: ['card'],
       line_items: [
         {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: 'HSA Maximizer Report',
-              description: `Personalized report showing how to save $${estimatedSavings}/year`,
-            },
-            unit_amount: 1700, // $17.00
-          },
+          price: 'price_1SHqtu2Oq7FyVuCtDeoE6FUX',
           quantity: 1,
         },
       ],
