@@ -13,30 +13,37 @@ interface TripwireOfferProps {
 
 export const TripwireOffer = ({ estimatedSavings, onPurchaseComplete }: TripwireOfferProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
 
   const handlePurchase = async () => {
     setIsProcessing(true);
 
-    // Open a new tab immediately to avoid popup blockers
-    const popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
-
     try {
+      console.log('Creating checkout for savings:', estimatedSavings);
+      
       const { data, error } = await supabase.functions.invoke('create-tripwire-checkout', {
         body: { estimatedSavings }
       });
 
-      if (error) throw error;
+      console.log('Checkout response:', { data, error });
+
+      if (error) {
+        console.error('Checkout error:', error);
+        throw error;
+      }
 
       if (data?.url) {
-        if (popup) {
-          popup.location.href = data.url;
-        } else {
-          // Fallback: escape iframe
-          if (window.top) {
-            window.top.location.href = data.url;
-          } else {
-            window.location.href = data.url;
-          }
+        console.log('Redirecting to checkout URL:', data.url);
+        setCheckoutUrl(data.url);
+        
+        // For development, let's just show the URL for now
+        toast.success(`Checkout URL created: ${data.url.substring(0, 50)}...`);
+        
+        // Try opening in new window
+        const newWindow = window.open(data.url, '_blank');
+        if (!newWindow) {
+          // If popup blocked, try navigating the whole page
+          window.location.href = data.url;
         }
         return;
       }
@@ -44,9 +51,7 @@ export const TripwireOffer = ({ estimatedSavings, onPurchaseComplete }: Tripwire
       throw new Error('No checkout URL returned');
     } catch (error) {
       console.error('Purchase error:', error);
-      // Close the pre-opened tab if we failed
-      try { popup?.close(); } catch {}
-      toast.error("Something went wrong. Please try again.");
+      toast.error(`Error: ${error instanceof Error ? error.message : 'Something went wrong'}`);
     } finally {
       setIsProcessing(false);
     }
@@ -145,6 +150,13 @@ export const TripwireOffer = ({ estimatedSavings, onPurchaseComplete }: Tripwire
         >
           {isProcessing ? "Processing..." : "Get Instant Access - Only $17"}
         </Button>
+
+        {/* Debug info */}
+        {checkoutUrl && (
+          <div className="mt-4 rounded bg-muted p-3 text-xs">
+            <p className="font-mono break-all">Checkout URL: {checkoutUrl}</p>
+          </div>
+        )}
 
         {/* Trust Badges */}
         <div className="grid grid-cols-3 gap-4 border-t pt-4 text-center">
