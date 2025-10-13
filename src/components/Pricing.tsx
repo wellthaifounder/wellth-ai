@@ -25,9 +25,11 @@ const pricingTiers = [
   },
   {
     name: "Plus",
-    price: "$8",
+    price: "$19",
     period: "per month",
     description: "For active HSA users who want automation",
+    annualPrice: "$15/mo",
+    annualSavings: "Save $48/year",
     features: [
       { text: "Unlimited expenses", included: true },
       { text: "Receipt OCR automation", included: true },
@@ -45,9 +47,11 @@ const pricingTiers = [
   },
   {
     name: "Premium",
-    price: "$16",
+    price: "$49",
     period: "per month",
     description: "Maximum automation and insights for power users",
+    annualPrice: "$39/mo",
+    annualSavings: "Save $120/year",
     features: [
       { text: "Everything in Plus", included: true },
       { text: "Auto-submit reimbursements", included: true },
@@ -62,7 +66,6 @@ const pricingTiers = [
     ],
     cta: "Start 14-Day Trial",
     popular: false,
-    annualSavings: "$38/year",
   },
 ];
 
@@ -107,8 +110,13 @@ export const Pricing = () => {
                   {tier.period && (
                     <span className="text-muted-foreground"> /{tier.period}</span>
                   )}
+                  {tier.annualPrice && (
+                    <p className="mt-2 text-sm font-medium text-primary">
+                      or {tier.annualPrice} billed annually
+                    </p>
+                  )}
                   {tier.annualSavings && (
-                    <p className="mt-1 text-sm text-primary">{tier.annualSavings} with annual billing</p>
+                    <p className="text-xs text-muted-foreground">{tier.annualSavings}</p>
                   )}
                 </div>
               </CardHeader>
@@ -167,7 +175,7 @@ export const Pricing = () => {
             <div>
               <h4 className="mb-2 font-semibold">Do you offer annual billing?</h4>
               <p className="text-muted-foreground">
-                Yes! Premium users save $38/year with annual billing. Plus users can also choose annual billing for similar savings.
+                Yes! Save 20% with annual billing on both Plus ($180/year vs $228) and Premium ($468/year vs $588).
               </p>
             </div>
             <div>

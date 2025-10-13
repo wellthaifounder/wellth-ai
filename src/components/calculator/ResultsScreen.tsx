@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { TripwireOffer } from "./TripwireOffer";
 
 interface ResultsScreenProps {
   data: CalculatorData;
@@ -56,8 +57,15 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
   };
 
   return (
-    <div className="space-y-8 rounded-2xl bg-card p-8 shadow-lg animate-scale-in">
-      <div className="space-y-4 text-center">
+    <div className="space-y-8">
+      {/* Tripwire Offer - Primary CTA */}
+      <div className="animate-scale-in">
+        <TripwireOffer estimatedSavings={savings.total} />
+      </div>
+
+      {/* Original Results - Now Secondary */}
+      <div className="space-y-8 rounded-2xl bg-card p-8 shadow-lg">
+        <div className="space-y-4 text-center">
         <h1 className="text-2xl font-bold">🎉 Your Personalized Savings</h1>
         <div className="rounded-xl bg-primary/10 p-8">
           <div className="text-5xl font-bold text-primary">
@@ -138,9 +146,10 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
         </Dialog>
       </div>
 
-      <p className="text-center text-xs text-muted-foreground">
-        You can always update these answers later
-      </p>
+        <p className="text-center text-xs text-muted-foreground">
+          You can always update these answers later
+        </p>
+      </div>
     </div>
   );
 };

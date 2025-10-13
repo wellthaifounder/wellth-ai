@@ -14,6 +14,7 @@ import ReimbursementDetails from "./pages/ReimbursementDetails";
 import ReimbursementRequests from "./pages/ReimbursementRequests";
 import PaymentMethods from "./pages/PaymentMethods";
 import Analytics from "./pages/Analytics";
+import TripwireSuccess from "./pages/TripwireSuccess";
 
 import NotFound from "./pages/NotFound";
 
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/reimbursement-requests" element={<ReimbursementRequests />} />
           <Route path="/payment-methods" element={<PaymentMethods />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/tripwire-success" element={<TripwireSuccess />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
