@@ -14,6 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
+      email_sequence_sends: {
+        Row: {
+          clicked_at: string | null
+          email_type: string
+          id: string
+          opened_at: string | null
+          sent_at: string
+          sequence_day: number
+          subscriber_id: string
+        }
+        Insert: {
+          clicked_at?: string | null
+          email_type: string
+          id?: string
+          opened_at?: string | null
+          sent_at?: string
+          sequence_day: number
+          subscriber_id: string
+        }
+        Update: {
+          clicked_at?: string | null
+          email_type?: string
+          id?: string
+          opened_at?: string | null
+          sent_at?: string
+          sequence_day?: number
+          subscriber_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sequence_sends_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "email_subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_subscribers: {
+        Row: {
+          calculator_data: Json | null
+          email: string
+          estimated_savings: number | null
+          id: string
+          is_active: boolean | null
+          source: string | null
+          subscribed_at: string
+        }
+        Insert: {
+          calculator_data?: Json | null
+          email: string
+          estimated_savings?: number | null
+          id?: string
+          is_active?: boolean | null
+          source?: string | null
+          subscribed_at?: string
+        }
+        Update: {
+          calculator_data?: Json | null
+          email?: string
+          estimated_savings?: number | null
+          id?: string
+          is_active?: boolean | null
+          source?: string | null
+          subscribed_at?: string
+        }
+        Relationships: []
+      }
       expenses: {
         Row: {
           amount: number

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { TripwireOffer } from "./TripwireOffer";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ResultsScreenProps {
   data: CalculatorData;
@@ -51,9 +52,25 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
       return;
     }
     
-    // Store in session for now (could save to database later)
-    sessionStorage.setItem("leadEmail", email);
-    toast.success("Results sent! Check your inbox.");
+    try {
+      // Send nurture email sequence
+      const { error } = await supabase.functions.invoke('send-nurture-email', {
+        body: {
+          email,
+          estimatedSavings: savings.total,
+          calculatorData: data,
+          sequenceDay: 0,
+        }
+      });
+
+      if (error) throw error;
+
+      sessionStorage.setItem("leadEmail", email);
+      toast.success("Results sent! Check your inbox.");
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast.error("Something went wrong. Please try again.");
+    }
   };
 
   return (
