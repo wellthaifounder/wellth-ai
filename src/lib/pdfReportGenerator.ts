@@ -44,7 +44,8 @@ export const generateHSAMaximizerReport = async (
   
   pdf.setFontSize(12);
   pdf.setTextColor(100, 100, 100);
-  pdf.text(`${data.householdSize} ${data.householdSize === "individual" ? "Person" : "People"} | $${annualSpending.toLocaleString()}/year Healthcare Spending`, pageWidth / 2, 150, { align: "center" });
+  const householdText = data.householdSize === 1 ? "1 Person" : `${data.householdSize} People`;
+  pdf.text(`${householdText} | $${annualSpending.toLocaleString()}/year Healthcare Spending`, pageWidth / 2, 150, { align: "center" });
   
   if (userEmail) {
     pdf.setFontSize(10);
@@ -63,7 +64,8 @@ export const generateHSAMaximizerReport = async (
   
   pdf.setFontSize(12);
   pdf.setFont(undefined, "normal");
-  const summaryText = `Based on your ${data.householdSize} household's healthcare spending of $${annualSpending.toLocaleString()}/year, we've identified $${savings.total.toLocaleString()} in potential annual savings through three key strategies:`;
+  const householdLabel = data.householdSize === 1 ? "individual" : "family";
+  const summaryText = `Based on your ${householdLabel} household's healthcare spending of $${annualSpending.toLocaleString()}/year, we've identified $${savings.total.toLocaleString()} in potential annual savings through three key strategies:`;
   pdf.text(summaryText, 20, 50, { maxWidth: pageWidth - 40 });
   
   let yPos = 75;
@@ -124,8 +126,8 @@ export const generateHSAMaximizerReport = async (
   pdf.setFontSize(11);
   yPos += 10;
   
-  const hsaMaxContribution = data.householdSize === "individual" ? 4150 : 8300;
-  const taxBracket = data.householdSize === "individual" ? "22%" : "24%";
+  const hsaMaxContribution = data.householdSize === 1 ? 4150 : 8300;
+  const taxBracket = data.householdSize === 1 ? "22%" : "24%";
   pdf.text(`• Annual healthcare spending: $${annualSpending.toLocaleString()}`, 25, yPos);
   yPos += 8;
   pdf.text(`• Current HSA status: ${data.hasHSA === "yes" ? "Active" : data.hasHSA === "no" ? "Not enrolled" : "Uncertain"}`, 25, yPos);
@@ -149,7 +151,7 @@ export const generateHSAMaximizerReport = async (
   const currentMethod = data.paymentMethod === "credit-rewards" ? "Rewards credit card" : 
                         data.paymentMethod === "credit-no-rewards" ? "Credit card (no rewards)" :
                         data.paymentMethod === "debit" ? "Debit card" : "HSA card";
-  const rewardsRate = data.paymentMethod === "credit-rewards" ? (data.earnRewards === "yes" ? "2-3%" : "0%") : "0%";
+  const rewardsRate = data.paymentMethod === "credit-rewards" ? (data.hasRewards === "yes" ? "2-3%" : "0%") : "0%";
   
   pdf.text(`• Current payment method: ${currentMethod}`, 25, yPos);
   yPos += 8;
@@ -489,8 +491,9 @@ export const generateHSAMaximizerReport = async (
     yPos += 10;
   });
   
-  // Page 4: Month-by-Month Action Plan
+  // Page 9: 12-Month Action Plan
   pdf.addPage();
+  addPageHeader(9);
   pdf.setFontSize(24);
   pdf.setFont(undefined, "bold");
   pdf.text("Your 12-Month Action Plan", 20, 30);
@@ -500,30 +503,44 @@ export const generateHSAMaximizerReport = async (
   yPos = 50;
   
   const actionPlan = [
-    { month: "Month 1", action: "Open/optimize HSA account, set up automatic contributions" },
-    { month: "Month 2", action: "Apply for recommended rewards credit card" },
-    { month: "Month 3", action: "Implement expense tracking system (Wellth.ai)" },
-    { month: "Month 4", action: "Review Q1 savings, adjust strategy if needed" },
-    { month: "Month 5-6", action: "Maximize mid-year HSA contributions" },
-    { month: "Month 7", action: "Mid-year review and optimization" },
-    { month: "Month 10", action: "Plan for open enrollment (if applicable)" },
-    { month: "Month 12", action: "Year-end tax optimization, file reimbursements" },
+    { month: "Month 1-2", action: "Foundation Setup", tasks: ["Open/optimize HSA account", "Set up automatic contributions", "Apply for recommended rewards credit card"] },
+    { month: "Month 3", action: "System Implementation", tasks: ["Implement expense tracking (Wellth.ai)", "Link all payment methods", "Create receipt storage system"] },
+    { month: "Month 4", action: "Q1 Review", tasks: ["Review savings vs. projections", "Adjust contribution amounts if needed", "Verify credit card rewards posting"] },
+    { month: "Month 5-6", action: "Mid-Year Push", tasks: ["Maximize HSA contributions", "Schedule any pending procedures", "Review insurance for next year"] },
+    { month: "Month 7", action: "Mid-Year Assessment", tasks: ["Calculate YTD savings", "Adjust strategy based on results", "Plan Q4 optimization moves"] },
+    { month: "Month 8-9", action: "Preparation Phase", tasks: ["Research open enrollment options", "Calculate next year's HSA strategy", "Review FSA vs HSA decision"] },
+    { month: "Month 10-11", action: "Open Enrollment", tasks: ["Select optimal health plan", "Adjust HSA contribution elections", "Plan January deductible strategy"] },
+    { month: "Month 12", action: "Year-End Optimization", tasks: ["Max out HSA by Dec 31", "Use remaining FSA balance", "File pending reimbursements", "Schedule January procedures"] }
   ];
   
   actionPlan.forEach(item => {
-    if (yPos > pageHeight - 40) {
+    if (yPos > pageHeight - 50) {
       pdf.addPage();
+      addPageHeader(9);
       yPos = 30;
     }
+    
     pdf.setFont(undefined, "bold");
+    pdf.setFontSize(12);
     pdf.text(item.month, 20, yPos);
     pdf.setFont(undefined, "normal");
-    pdf.text(item.action, 50, yPos, { maxWidth: pageWidth - 70 });
-    yPos += 15;
+    pdf.setFontSize(11);
+    pdf.setTextColor(59, 130, 246);
+    pdf.text(item.action, 55, yPos);
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFontSize(10);
+    yPos += 8;
+    
+    item.tasks.forEach(task => {
+      pdf.text(`  • ${task}`, 25, yPos, { maxWidth: pageWidth - 50 });
+      yPos += 7;
+    });
+    yPos += 8;
   });
   
-  // Page 5: Tax Optimization Checklist
+  // Page 10: Tax Optimization Checklist
   pdf.addPage();
+  addPageHeader(10);
   pdf.setFontSize(24);
   pdf.setFont(undefined, "bold");
   pdf.text("Tax Optimization Checklist", 20, 30);
@@ -532,39 +549,366 @@ export const generateHSAMaximizerReport = async (
   pdf.setFont(undefined, "normal");
   yPos = 50;
   
-  const checklist = [
-    "☐ Maximize HSA contributions ($4,150 individual / $8,300 family for 2024)",
-    "☐ Keep detailed records of all medical expenses",
-    "☐ Save receipts for potential future reimbursements",
-    "☐ Consider delaying HSA reimbursements for investment growth",
-    "☐ Use HSA for qualified medical expenses only",
-    "☐ Track miles driven for medical appointments (65.5¢/mile deduction)",
-    "☐ File Form 8889 with your tax return",
-    "☐ Review employer HSA match opportunities",
+  const checklists = [
+    {
+      title: "Before Tax Season:",
+      items: [
+        "Maximize HSA contributions ($4,150 individual / $8,300 family for 2024)",
+        "Keep detailed records of all medical expenses",
+        "Save receipts for potential future reimbursements",
+        "Track miles driven for medical appointments (67¢/mile deduction for 2024)"
+      ]
+    },
+    {
+      title: "During Tax Filing:",
+      items: [
+        "File Form 8889 with your tax return",
+        "Report all HSA contributions (employer + personal)",
+        "Document HSA distributions if any",
+        "Claim medical expense deductions if over 7.5% AGI"
+      ]
+    },
+    {
+      title: "Year-Round Strategy:",
+      items: [
+        "Consider delaying HSA reimbursements for investment growth",
+        "Use HSA for qualified medical expenses only",
+        "Review employer HSA match opportunities",
+        "Keep HSA funds invested for long-term growth"
+      ]
+    }
   ];
   
-  checklist.forEach(item => {
-    pdf.text(item, 20, yPos, { maxWidth: pageWidth - 40 });
+  checklists.forEach(section => {
+    if (yPos > pageHeight - 60) {
+      pdf.addPage();
+      addPageHeader(10);
+      yPos = 30;
+    }
+    
+    pdf.setFont(undefined, "bold");
+    pdf.setFontSize(13);
+    pdf.text(section.title, 20, yPos);
+    pdf.setFont(undefined, "normal");
+    pdf.setFontSize(10);
+    yPos += 12;
+    
+    section.items.forEach(item => {
+      pdf.text(`☐ ${item}`, 25, yPos, { maxWidth: pageWidth - 50 });
+      yPos += 10;
+    });
+    yPos += 10;
+  });
+  
+  // Page 11: HSA Investment Strategy
+  pdf.addPage();
+  addPageHeader(11);
+  pdf.setFontSize(24);
+  pdf.setFont(undefined, "bold");
+  pdf.text("HSA Investment Strategy", 20, 30);
+  
+  yPos = 50;
+  pdf.setFontSize(12);
+  pdf.setFont(undefined, "normal");
+  pdf.text("Your HSA isn't just a savings account - it's a powerful investment vehicle.", 20, yPos, { maxWidth: pageWidth - 40 });
+  yPos += 20;
+  
+  pdf.setFont(undefined, "bold");
+  pdf.text("The Long-Term Opportunity:", 20, yPos);
+  pdf.setFont(undefined, "normal");
+  yPos += 10;
+  
+  const investmentPoints = [
+    "Unlike FSAs, HSA funds roll over year after year",
+    "Investment gains grow tax-free forever",
+    "After age 65, HSA becomes like a traditional IRA for non-medical expenses",
+    "Medical expenses can be reimbursed decades later (keep receipts!)"
+  ];
+  
+  investmentPoints.forEach(point => {
+    pdf.text(`• ${point}`, 25, yPos, { maxWidth: pageWidth - 50 });
+    yPos += 10;
+  });
+  
+  yPos += 10;
+  pdf.setFont(undefined, "bold");
+  pdf.text("Recommended HSA Investment Providers:", 20, yPos);
+  pdf.setFont(undefined, "normal");
+  yPos += 12;
+  
+  const hsaProviders = [
+    { name: "Fidelity", pros: "No fees, excellent fund selection, great platform", min: "$0" },
+    { name: "Lively", pros: "Modern interface, low fees, good investment options", min: "$0" },
+    { name: "HealthEquity", pros: "Most employer integrations, solid platform", min: "$0" }
+  ];
+  
+  hsaProviders.forEach(provider => {
+    pdf.setFont(undefined, "bold");
+    pdf.text(`${provider.name}`, 25, yPos);
+    pdf.setFont(undefined, "normal");
+    pdf.setFontSize(9);
+    pdf.text(`  ${provider.pros} | Minimum: ${provider.min}`, 25, yPos + 6);
+    pdf.setFontSize(10);
+    yPos += 16;
+  });
+  
+  yPos += 10;
+  pdf.setFillColor(255, 250, 230);
+  pdf.rect(15, yPos, pageWidth - 30, 35, "F");
+  yPos += 10;
+  pdf.setFontSize(10);
+  pdf.setFont(undefined, "bold");
+  pdf.text("💡 The \"Pay & Delay\" Strategy:", 20, yPos);
+  pdf.setFont(undefined, "normal");
+  pdf.text("Pay medical expenses out-of-pocket with rewards card → Keep receipts → Let HSA", 20, yPos + 8, { maxWidth: pageWidth - 40 });
+  pdf.text("investments grow tax-free → Reimburse yourself years later when you need the cash.", 20, yPos + 16, { maxWidth: pageWidth - 40 });
+  
+  yPos += 45;
+  pdf.setFontSize(11);
+  const projectedGrowth = Math.round(annualSpending * 0.07 * 10);
+  pdf.text(`Example: If you invest $${annualSpending.toLocaleString()} at 7% annual return, in 10 years you'll have`, 20, yPos, { maxWidth: pageWidth - 40 });
+  yPos += 8;
+  pdf.setFont(undefined, "bold");
+  pdf.text(`$${(annualSpending * 2).toLocaleString()} - all tax-free for medical expenses!`, 20, yPos);
+  
+  // Page 12: Common Mistakes to Avoid
+  pdf.addPage();
+  addPageHeader(12);
+  pdf.setFontSize(24);
+  pdf.setFont(undefined, "bold");
+  pdf.text("Common Mistakes to Avoid", 20, 30);
+  
+  yPos = 50;
+  pdf.setFontSize(12);
+  pdf.setFont(undefined, "normal");
+  
+  const mistakes = [
+    {
+      mistake: "Not maximizing HSA contributions",
+      fix: "Many people only contribute enough to cover current expenses. Max it out! The tax benefits are too good to pass up.",
+      cost: `Potential lost savings: $${Math.round(savings.taxSavings * 0.5).toLocaleString()}/year`
+    },
+    {
+      mistake: "Using HSA card for everything",
+      fix: "Use rewards credit cards instead, then reimburse from HSA. You get rewards + tax benefits.",
+      cost: `Lost rewards: $${savings.rewardsSavings.toLocaleString()}/year`
+    },
+    {
+      mistake: "Not keeping receipts",
+      fix: "Without receipts, you can't prove expenses were qualified. Keep digital copies in cloud storage.",
+      cost: "Risk: IRS penalties + back taxes"
+    },
+    {
+      mistake: "Confusing FSA and HSA",
+      fix: "FSAs are \"use it or lose it.\" HSAs roll over forever. Know which you have!",
+      cost: "Average FSA forfeiture: $500/year"
+    },
+    {
+      mistake: "Paying annual fees for low rewards",
+      fix: "If your card annual fee > your rewards earned, switch cards immediately.",
+      cost: "Wasted fees: $95-$550/year"
+    },
+    {
+      mistake: "Not reviewing insurance annually",
+      fix: "Healthcare costs change. What was optimal last year might not be this year.",
+      cost: `Potential overspend: $${Math.round(annualSpending * 0.15).toLocaleString()}/year`
+    }
+  ];
+  
+  mistakes.forEach((item, index) => {
+    if (yPos > pageHeight - 55) {
+      pdf.addPage();
+      addPageHeader(12);
+      yPos = 30;
+    }
+    
+    pdf.setFillColor(index % 2 === 0 ? 250 : 245, 245, 245);
+    pdf.rect(15, yPos - 3, pageWidth - 30, 42, "F");
+    
+    pdf.setFont(undefined, "bold");
+    pdf.setFontSize(11);
+    pdf.setTextColor(220, 38, 38);
+    pdf.text(`❌ ${item.mistake}`, 20, yPos);
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont(undefined, "normal");
+    pdf.setFontSize(9);
+    pdf.text(`✓ Fix: ${item.fix}`, 25, yPos + 8, { maxWidth: pageWidth - 50 });
+    pdf.setFont(undefined, "italic");
+    pdf.setTextColor(100, 100, 100);
+    pdf.text(`${item.cost}`, 25, yPos + 24);
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont(undefined, "normal");
+    
+    yPos += 47;
+  });
+  
+  // Page 13: Qualified Medical Expenses Reference
+  pdf.addPage();
+  addPageHeader(13);
+  pdf.setFontSize(24);
+  pdf.setFont(undefined, "bold");
+  pdf.text("Qualified Medical Expenses", 20, 30);
+  
+  yPos = 45;
+  pdf.setFontSize(10);
+  pdf.setFont(undefined, "normal");
+  pdf.text("What you CAN pay for with HSA funds (tax-free):", 20, yPos);
+  yPos += 15;
+  
+  const qualifiedExpenses = {
+    "Doctor Visits & Services": [
+      "Primary care visits",
+      "Specialist consultations",
+      "Mental health therapy",
+      "Chiropractic care"
+    ],
+    "Prescriptions & OTC": [
+      "Prescription medications",
+      "Over-the-counter meds (with Rx)",
+      "Insulin (no Rx needed)",
+      "Medical supplies"
+    ],
+    "Dental & Vision": [
+      "Cleanings & exams",
+      "Fillings & crowns",
+      "Orthodontia (braces)",
+      "Eye exams, glasses, contacts",
+      "LASIK surgery"
+    ],
+    "Unexpected Eligible Items": [
+      "Acupuncture",
+      "Guide dogs",
+      "Smoking cessation programs",
+      "Weight loss programs (if prescribed)",
+      "Sunscreen (SPF 15+)",
+      "First aid kits"
+    ]
+  };
+  
+  Object.entries(qualifiedExpenses).forEach(([category, items]) => {
+    if (yPos > pageHeight - 50) {
+      pdf.addPage();
+      addPageHeader(13);
+      yPos = 30;
+    }
+    
+    pdf.setFont(undefined, "bold");
+    pdf.setFontSize(11);
+    pdf.text(category, 20, yPos);
+    pdf.setFont(undefined, "normal");
+    pdf.setFontSize(9);
+    yPos += 8;
+    
+    items.forEach(item => {
+      pdf.text(`• ${item}`, 25, yPos);
+      yPos += 6;
+    });
+    yPos += 8;
+  });
+  
+  yPos += 5;
+  pdf.setFillColor(255, 240, 240);
+  pdf.rect(15, yPos, pageWidth - 30, 30, "F");
+  yPos += 10;
+  pdf.setFont(undefined, "bold");
+  pdf.setFontSize(10);
+  pdf.text("⚠️ NOT Qualified (Will Trigger Penalties):", 20, yPos);
+  pdf.setFont(undefined, "normal");
+  pdf.setFontSize(9);
+  yPos += 8;
+  const notQualified = ["Gym memberships", "Vitamins (unless prescribed)", "Cosmetic procedures", "Most insurance premiums"];
+  notQualified.forEach(item => {
+    pdf.text(`• ${item}`, 25, yPos);
+    yPos += 6;
+  });
+  
+  // Page 14: Tools & Resources
+  pdf.addPage();
+  addPageHeader(14);
+  pdf.setFontSize(24);
+  pdf.setFont(undefined, "bold");
+  pdf.text("Tools & Resources", 20, 30);
+  
+  yPos = 50;
+  pdf.setFontSize(12);
+  pdf.setFont(undefined, "normal");
+  
+  const resources = [
+    {
+      title: "Wellth.ai Platform (Your 14-Day Trial)",
+      features: [
+        "Automatic expense tracking & categorization",
+        "Receipt OCR (snap photos, we extract data)",
+        "Smart rewards optimization alerts",
+        "One-click HSA reimbursement requests",
+        "Advanced analytics & tax reports"
+      ]
+    },
+    {
+      title: "Recommended Apps & Tools",
+      features: [
+        "Mint or YNAB for budget tracking",
+        "Keeper Tax for mileage tracking",
+        "Google Drive or Dropbox for receipt storage",
+        "IRS Publication 502 (qualified expenses list)"
+      ]
+    },
+    {
+      title: "Helpful Websites",
+      features: [
+        "IRS.gov/forms/form-8889 (HSA tax form)",
+        "Healthcare.gov (plan comparisons)",
+        "HSAStore.com (eligible products)",
+        "Your HSA provider's online portal"
+      ]
+    }
+  ];
+  
+  resources.forEach(section => {
+    if (yPos > pageHeight - 60) {
+      pdf.addPage();
+      addPageHeader(14);
+      yPos = 30;
+    }
+    
+    pdf.setFont(undefined, "bold");
+    pdf.setFontSize(13);
+    pdf.text(section.title, 20, yPos);
+    pdf.setFont(undefined, "normal");
+    pdf.setFontSize(10);
+    yPos += 10;
+    
+    section.features.forEach(feature => {
+      pdf.text(`✓ ${feature}`, 25, yPos, { maxWidth: pageWidth - 50 });
+      yPos += 8;
+    });
     yPos += 12;
   });
   
-  // Final page: Next Steps
+  // Page 15: Next Steps & Activation
   pdf.addPage();
+  addPageHeader(15);
   pdf.setFillColor(59, 130, 246);
-  pdf.rect(0, 0, pageWidth, 60, "F");
+  pdf.rect(0, 0, pageWidth, 70, "F");
   
   pdf.setTextColor(255, 255, 255);
   pdf.setFontSize(28);
+  pdf.setFont(undefined, "bold");
   pdf.text("Ready to Start Saving?", pageWidth / 2, 35, { align: "center" });
+  pdf.setFontSize(16);
+  pdf.setFont(undefined, "normal");
+  pdf.text(`Your $${savings.total.toLocaleString()}/year is waiting`, pageWidth / 2, 55, { align: "center" });
   
   pdf.setTextColor(0, 0, 0);
-  pdf.setFontSize(14);
-  yPos = 80;
-  pdf.text("Your 14-Day Plus Trial is Ready!", 20, yPos);
+  pdf.setFontSize(16);
+  yPos = 90;
+  pdf.setFont(undefined, "bold");
+  pdf.text("Your 14-Day Wellth.ai Plus Trial is Active!", 20, yPos);
   
-  pdf.setFontSize(12);
+  pdf.setFontSize(11);
+  pdf.setFont(undefined, "normal");
   yPos += 15;
-  pdf.text("As a thank you for purchasing this report, you have access to:", 20, yPos, { maxWidth: pageWidth - 40 });
+  pdf.text("As a thank you for purchasing this report, you have immediate access to:", 20, yPos, { maxWidth: pageWidth - 40 });
   
   yPos += 15;
   const benefits = [
@@ -573,17 +917,70 @@ export const generateHSAMaximizerReport = async (
     "✓ Smart rewards optimization alerts",
     "✓ One-click HSA reimbursement requests",
     "✓ Advanced analytics and tax reports",
+    "✓ Monthly savings progress dashboard"
   ];
   
   benefits.forEach(benefit => {
+    pdf.setFontSize(11);
     pdf.text(benefit, 25, yPos);
+    yPos += 9;
+  });
+  
+  yPos += 15;
+  pdf.setFillColor(59, 130, 246);
+  pdf.rect(15, yPos, pageWidth - 30, 35, "F");
+  yPos += 12;
+  pdf.setTextColor(255, 255, 255);
+  pdf.setFontSize(14);
+  pdf.setFont(undefined, "bold");
+  pdf.text("🚀 Activate Your Account Now", pageWidth / 2, yPos, { align: "center" });
+  pdf.setFont(undefined, "normal");
+  pdf.setFontSize(12);
+  pdf.text("Visit wellth.ai/activate to claim your trial", pageWidth / 2, yPos + 12, { align: "center" });
+  
+  pdf.setTextColor(0, 0, 0);
+  yPos += 45;
+  pdf.setFontSize(12);
+  pdf.setFont(undefined, "bold");
+  pdf.text("Your Next 3 Actions:", 20, yPos);
+  pdf.setFont(undefined, "normal");
+  pdf.setFontSize(10);
+  yPos += 12;
+  
+  const nextActions = data.hasHSA === "no" 
+    ? [
+        "1. Open your HSA account this week (see page 5 for providers)",
+        "2. Apply for recommended rewards credit card (see page 7)",
+        "3. Activate Wellth.ai trial at wellth.ai/activate"
+      ]
+    : [
+        "1. Apply for recommended rewards credit card (see page 7)",
+        "2. Set up automatic max HSA contributions (see page 5)",
+        "3. Activate Wellth.ai trial at wellth.ai/activate"
+      ];
+  
+  nextActions.forEach(action => {
+    pdf.text(action, 25, yPos, { maxWidth: pageWidth - 50 });
     yPos += 10;
   });
   
   yPos += 15;
-  pdf.setFontSize(14);
+  pdf.setFillColor(240, 250, 240);
+  pdf.rect(15, yPos, pageWidth - 30, 40, "F");
+  yPos += 12;
   pdf.setFont(undefined, "bold");
-  pdf.text("Visit wellth.ai/activate to claim your trial", pageWidth / 2, yPos, { align: "center" });
+  pdf.setFontSize(11);
+  pdf.text("📧 Questions or Need Help?", 20, yPos);
+  pdf.setFont(undefined, "normal");
+  pdf.setFontSize(9);
+  pdf.text("Email: support@wellth.ai", 20, yPos + 10);
+  pdf.text("We typically respond within 2 hours during business hours.", 20, yPos + 18);
+  
+  // Footer
+  pdf.setFontSize(8);
+  pdf.setTextColor(150, 150, 150);
+  pdf.text("This report is for educational purposes. Consult a tax professional for personalized advice.", pageWidth / 2, pageHeight - 15, { align: "center" });
+  pdf.text(`© ${new Date().getFullYear()} Wellth.ai | All rights reserved`, pageWidth / 2, pageHeight - 8, { align: "center" });
   
   return pdf.output("blob");
 };
