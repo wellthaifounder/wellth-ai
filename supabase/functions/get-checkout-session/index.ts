@@ -12,43 +12,30 @@ serve(async (req) => {
   }
 
   try {
-    const { estimatedSavings, calculatorData } = await req.json();
+    const { sessionId } = await req.json();
     
-    console.log('Creating checkout session for savings:', estimatedSavings);
+    console.log('Retrieving checkout session:', sessionId);
     
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2025-08-27.basil',
     });
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: 'price_1SHqtu2Oq7FyVuCtDeoE6FUX',
-          quantity: 1,
-        },
-      ],
-      mode: 'payment',
-      success_url: `${req.headers.get('origin')}/tripwire-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get('origin')}/calculator`,
-      metadata: {
-        type: 'tripwire',
-        estimatedSavings: estimatedSavings.toString(),
-        calculatorData: JSON.stringify(calculatorData),
-      },
-    });
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    console.log('Checkout session created:', session.id);
+    console.log('Session retrieved:', session.id);
 
     return new Response(
-      JSON.stringify({ url: session.url }),
+      JSON.stringify({ 
+        metadata: session.metadata,
+        payment_status: session.payment_status 
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       },
     );
   } catch (error) {
-    console.error('Error creating checkout session:', error);
+    console.error('Error retrieving checkout session:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
       JSON.stringify({ error: errorMessage }),

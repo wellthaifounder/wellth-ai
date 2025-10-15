@@ -3,30 +3,62 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { CheckCircle2, Download, ArrowRight } from "lucide-react";
+import { CheckCircle2, Download, ArrowRight, Loader2 } from "lucide-react";
 import { generateHSAMaximizerReport } from "@/lib/pdfReportGenerator";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const TripwireSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [calculatorData, setCalculatorData] = useState<any>(null);
   const sessionId = searchParams.get("session_id");
 
-  const handleDownloadReport = async () => {
-    setIsGenerating(true);
-    try {
-      // Get calculator data from session
-      const savedData = sessionStorage.getItem("calculatorResults");
-      if (!savedData) {
-        toast.error("Calculator data not found. Please retake the quiz.");
+  useEffect(() => {
+    const fetchSessionData = async () => {
+      if (!sessionId) {
+        toast.error("No session ID found");
+        setIsLoading(false);
         return;
       }
 
-      const data = JSON.parse(savedData);
+      try {
+        const { data, error } = await supabase.functions.invoke('get-checkout-session', {
+          body: { sessionId }
+        });
+
+        if (error) throw error;
+
+        if (data?.metadata?.calculatorData) {
+          const parsedData = JSON.parse(data.metadata.calculatorData);
+          setCalculatorData(parsedData);
+          // Also save to sessionStorage as backup
+          sessionStorage.setItem("calculatorResults", data.metadata.calculatorData);
+        }
+      } catch (error) {
+        console.error('Error fetching session:', error);
+        toast.error("Failed to load your data. Please contact support.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSessionData();
+  }, [sessionId]);
+
+  const handleDownloadReport = async () => {
+    if (!calculatorData) {
+      toast.error("Calculator data not found. Please contact support.");
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
       const email = sessionStorage.getItem("leadEmail") || undefined;
 
-      const pdfBlob = await generateHSAMaximizerReport(data, email);
+      const pdfBlob = await generateHSAMaximizerReport(calculatorData, email);
       
       // Create download link
       const url = URL.createObjectURL(pdfBlob);
@@ -46,6 +78,22 @@ const TripwireSuccess = () => {
       setIsGenerating(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="container mx-auto px-4 py-12 lg:py-20">
+          <div className="mx-auto max-w-2xl">
+            <Card className="p-8 text-center">
+              <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
+              <p className="mt-4 text-muted-foreground">Loading your report...</p>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

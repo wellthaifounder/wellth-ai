@@ -8,10 +8,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface TripwireOfferProps {
   estimatedSavings: number;
+  calculatorData?: any;
   onPurchaseComplete?: () => void;
 }
 
-export const TripwireOffer = ({ estimatedSavings, onPurchaseComplete }: TripwireOfferProps) => {
+export const TripwireOffer = ({ estimatedSavings, calculatorData, onPurchaseComplete }: TripwireOfferProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
 
@@ -22,7 +23,10 @@ export const TripwireOffer = ({ estimatedSavings, onPurchaseComplete }: Tripwire
       console.log('Creating checkout for savings:', estimatedSavings);
       
       const { data, error } = await supabase.functions.invoke('create-tripwire-checkout', {
-        body: { estimatedSavings }
+        body: { 
+          estimatedSavings,
+          calculatorData 
+        }
       });
 
       console.log('Checkout response:', { data, error });

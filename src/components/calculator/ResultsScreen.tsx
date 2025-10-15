@@ -77,7 +77,7 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
     <div className="space-y-8">
       {/* Tripwire Offer - Primary CTA */}
       <div className="animate-scale-in">
-        <TripwireOffer estimatedSavings={savings.total} />
+        <TripwireOffer estimatedSavings={savings.total} calculatorData={data} />
       </div>
 
       {/* Original Results - Now Secondary */}
