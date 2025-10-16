@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { WellthLogo } from "@/components/WellthLogo";
-import { ArrowLeft, Plus, Download, Trash2, Edit } from "lucide-react";
+import { ArrowLeft, Plus, Download, Trash2, Edit, Upload } from "lucide-react";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 import { TableColumnHeader } from "@/components/ui/table-column-header";
@@ -282,6 +282,10 @@ const ExpenseList = () => {
             <Button variant="outline" onClick={exportToCSV}>
               <Download className="h-4 w-4 mr-2" />
               Export CSV
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/expenses/import")}>
+              <Upload className="h-4 w-4 mr-2" />
+              Bulk Import
             </Button>
             <Button onClick={() => navigate("/expenses/new")}>
               <Plus className="h-4 w-4 mr-2" />

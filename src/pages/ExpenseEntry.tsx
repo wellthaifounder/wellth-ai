@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { ArrowLeft, Upload, Sparkles, CheckCircle2 } from "lucide-react";
 import { z } from "zod";
+import { getPaymentRecommendation } from "@/lib/paymentRecommendation";
+import { PaymentRecommendation } from "@/components/expense/PaymentRecommendation";
 
 const expenseSchema = z.object({
   date: z.string().min(1, "Date is required"),
@@ -41,6 +43,7 @@ const ExpenseEntry = () => {
   const [processingOCR, setProcessingOCR] = useState(false);
   const [receipt, setReceipt] = useState<File | null>(null);
   const [success, setSuccess] = useState(false);
+  const [showRecommendation, setShowRecommendation] = useState(false);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     vendor: "",
@@ -48,6 +51,15 @@ const ExpenseEntry = () => {
     category: "",
     notes: "",
   });
+
+  // Generate payment recommendation when amount and category are set
+  const recommendation = formData.amount && formData.category && parseFloat(formData.amount) > 0
+    ? getPaymentRecommendation({
+        amount: parseFloat(formData.amount),
+        category: formData.category,
+        isHsaEligible: HSA_ELIGIBLE_CATEGORIES.includes(formData.category),
+      })
+    : null;
 
   useEffect(() => {
     if (isEditMode && id) {
@@ -370,6 +382,10 @@ const ExpenseEntry = () => {
                   maxLength={500}
                 />
               </div>
+
+              {recommendation && !isEditMode && (
+                <PaymentRecommendation recommendation={recommendation} />
+              )}
 
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? (isEditMode ? "Updating..." : "Adding...") : (isEditMode ? "Update Expense" : "Add Expense")}
