@@ -61,15 +61,19 @@ serve(async (req) => {
   "amount": <number or null>,
   "vendor": "<string or null>",
   "date": "<YYYY-MM-DD or null>",
-  "category": "<one of: Medical, Dental, Vision, Pharmacy, Other or null>",
+  "category": "<one of: Medical, Dental, Vision, Pharmacy, Prescription, Therapy, Chiropractic, Food & Dining, Groceries, Transportation, Other or null>",
+  "isHSAEligible": <boolean>,
   "confidence": <number 0-1>
 }
 
 Rules:
 - Return ONLY the JSON object, no other text
 - Use null for any field you cannot extract
-- For category, choose the best match from: Medical, Dental, Vision, Pharmacy, Other
-- confidence should be 0-1 representing how confident you are in the extraction`
+- For category, choose the best match from the available categories
+- Set isHSAEligible to true ONLY for medical, dental, vision, prescription, pharmacy, therapy, or chiropractic expenses
+- Set isHSAEligible to false for food, groceries, gas, retail, or non-healthcare expenses
+- confidence should be 0-1 representing how confident you are in the extraction
+- Analyze vendor name and any visible text to determine HSA eligibility`
               },
               {
                 type: 'image_url',
@@ -131,6 +135,7 @@ Rules:
           vendor: extractedData.vendor,
           date: extractedData.date,
           category: extractedData.category,
+          isHSAEligible: extractedData.isHSAEligible || false,
           confidence: extractedData.confidence || 0.5
         }
       }),

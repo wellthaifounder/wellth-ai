@@ -8,6 +8,9 @@ import { ArrowLeft, TrendingUp, DollarSign, PieChart } from "lucide-react";
 import { toast } from "sonner";
 import { BarChart, Bar, LineChart, Line, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { HSAInvestmentTracker } from "@/components/analytics/HSAInvestmentTracker";
+import { ReimbursementTimingOptimizer } from "@/components/analytics/ReimbursementTimingOptimizer";
+import { RewardsOptimizationDashboard } from "@/components/analytics/RewardsOptimizationDashboard";
+import { YearOverYearComparison } from "@/components/analytics/YearOverYearComparison";
 
 const Analytics = () => {
   const navigate = useNavigate();
@@ -22,6 +25,8 @@ const Analytics = () => {
     avgMonthly: 0,
     unreimbursedHsaTotal: 0
   });
+  const [paymentMethodsRewards, setPaymentMethodsRewards] = useState<any[]>([]);
+  const [yearlyData, setYearlyData] = useState<any[]>([]);
 
   const COLORS = ['hsl(186 100% 40%)', 'hsl(27 96% 61%)', 'hsl(214 95% 50%)', 'hsl(120 60% 50%)', 'hsl(0 84% 60%)'];
 
@@ -35,6 +40,10 @@ const Analytics = () => {
         .from("expenses")
         .select("*")
         .order("date", { ascending: true });
+
+      const { data: paymentMethods } = await supabase
+        .from("payment_methods")
+        .select("*");
 
       if (error) throw error;
 
@@ -84,6 +93,52 @@ const Analytics = () => {
         avgMonthly,
         unreimbursedHsaTotal
       });
+
+      // Calculate rewards by payment method
+      if (paymentMethods && expenses) {
+        const rewardsByMethod = paymentMethods.map(pm => {
+          const pmExpenses = expenses.filter(exp => exp.payment_method_id === pm.id);
+          const totalSpent = pmExpenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
+          const rewardsEarned = totalSpent * (Number(pm.rewards_rate) / 100);
+          
+          return {
+            name: pm.name,
+            rewardsEarned,
+            rewardsRate: Number(pm.rewards_rate),
+            totalSpent,
+          };
+        });
+        setPaymentMethodsRewards(rewardsByMethod);
+      }
+
+      // Calculate yearly data
+      if (expenses) {
+        const yearlyStats = expenses.reduce((acc: any, exp) => {
+          const year = new Date(exp.date).getFullYear();
+          if (!acc[year]) {
+            acc[year] = {
+              year,
+              totalExpenses: 0,
+              taxSavings: 0,
+              rewardsEarned: 0,
+              hsaEligible: 0,
+            };
+          }
+          
+          const amount = Number(exp.amount);
+          acc[year].totalExpenses += amount;
+          acc[year].rewardsEarned += amount * 0.02;
+          
+          if (exp.is_hsa_eligible) {
+            acc[year].hsaEligible += amount;
+            acc[year].taxSavings += amount * 0.22;
+          }
+          
+          return acc;
+        }, {});
+
+        setYearlyData(Object.values(yearlyStats).sort((a: any, b: any) => a.year - b.year));
+      }
     } catch (error) {
       console.error("Failed to fetch analytics:", error);
       toast.error("Failed to load analytics");
@@ -276,9 +331,16 @@ const Analytics = () => {
           </CardContent>
         </Card>
 
-        {stats.unreimbursedHsaTotal > 0 && (
-          <HSAInvestmentTracker unreimbursedTotal={stats.unreimbursedHsaTotal} />
-        )}
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <HSAInvestmentTracker unreimbursedTotal={stats.unreimbursedHsaTotal} />
+            <ReimbursementTimingOptimizer unreimbursedTotal={stats.unreimbursedHsaTotal} />
+          </div>
+          
+          <RewardsOptimizationDashboard paymentMethods={paymentMethodsRewards} />
+          
+          <YearOverYearComparison yearlyData={yearlyData} />
+        </div>
       </main>
     </div>
   );
