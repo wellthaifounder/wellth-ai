@@ -1,10 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema - limit image size to 10MB base64
+const ocrSchema = z.object({
+  imageBase64: z.string()
+    .min(100, 'Image data too small')
+    .max(13500000, 'Image size exceeds 10MB limit')
+    .regex(/^data:image\/(png|jpeg|jpg|gif|webp);base64,/, 'Invalid image format'),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,14 +21,19 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64 } = await req.json();
+    const body = await req.json();
     
-    if (!imageBase64) {
+    // Validate input
+    const validation = ocrSchema.safeParse(body);
+    if (!validation.success) {
+      console.error('Validation error:', validation.error);
       return new Response(
-        JSON.stringify({ error: 'Image data is required' }),
+        JSON.stringify({ error: 'Invalid image data or size exceeds limit' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+    
+    const { imageBase64 } = validation.data;
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -131,7 +145,7 @@ Rules:
     return new Response(
       JSON.stringify({ 
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to process receipt' 
+        error: 'Unable to process receipt'
       }),
       { 
         status: 500, 

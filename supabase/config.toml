@@ -2,3 +2,12 @@ project_id = "eipwebpvpadugddmepnr"
 
 [functions.process-receipt-ocr]
 verify_jwt = true
+
+[functions.send-nurture-email]
+verify_jwt = false
+
+[functions.create-tripwire-checkout]
+verify_jwt = false
+
+[functions.get-checkout-session]
+verify_jwt = false

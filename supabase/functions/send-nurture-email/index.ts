@@ -1,13 +1,25 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@4.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Input validation schema
+const emailSchema = z.object({
+  email: z.string().email('Invalid email format').max(255),
+  estimatedSavings: z.number().min(0).max(1000000),
+  calculatorData: z.object({
+    healthcarePlan: z.string().max(100).optional(),
+    hsaContribution: z.number().min(0).max(100000).optional(),
+    paymentMethod: z.string().max(100).optional(),
+    expenses: z.number().min(0).max(100000).optional(),
+  }).passthrough().optional(),
+  sequenceDay: z.number().int().min(0).max(10).optional().default(0),
+});
 
 interface NurtureEmailRequest {
   email: string;
@@ -137,12 +149,35 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    const body = await req.json();
+    
+    // Validate input
+    const validation = emailSchema.safeParse(body);
+    if (!validation.success) {
+      console.error('Validation error:', validation.error);
+      return new Response(
+        JSON.stringify({ error: 'Invalid email data' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const { email, estimatedSavings, calculatorData, sequenceDay } = validation.data;
+    
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    if (!resendApiKey) {
+      console.error('RESEND_API_KEY not configured');
+      return new Response(
+        JSON.stringify({ error: 'Service configuration error' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const resend = new Resend(resendApiKey);
+    
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
-
-    const { email, estimatedSavings, calculatorData, sequenceDay = 0 }: NurtureEmailRequest = await req.json();
 
     console.log(`Sending nurture email to ${email}, day ${sequenceDay}`);
 
@@ -209,7 +244,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error in send-nurture-email:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Unable to send email' }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
