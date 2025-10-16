@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { WellthLogo } from "@/components/WellthLogo";
-import { LogOut, DollarSign, TrendingUp, CreditCard, FileText, BarChart3, Wallet, Plus } from "lucide-react";
+import { LogOut, DollarSign, TrendingUp, CreditCard, FileText, BarChart3, Wallet, Plus, Calculator } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
@@ -124,6 +124,10 @@ const Dashboard = () => {
             
             <div className="flex items-center gap-1 md:gap-2">
               <div className="hidden lg:flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={() => navigate("/decision-tool")}>
+                  <Calculator className="h-4 w-4 mr-2" />
+                  Decision Tool
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => navigate("/analytics")}>
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Analytics

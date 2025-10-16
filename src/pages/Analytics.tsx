@@ -7,6 +7,7 @@ import { WellthLogo } from "@/components/WellthLogo";
 import { ArrowLeft, TrendingUp, DollarSign, PieChart } from "lucide-react";
 import { toast } from "sonner";
 import { BarChart, Bar, LineChart, Line, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { HSAInvestmentTracker } from "@/components/analytics/HSAInvestmentTracker";
 
 const Analytics = () => {
   const navigate = useNavigate();
@@ -18,7 +19,8 @@ const Analytics = () => {
     hsaEligible: 0,
     projectedSavings: 0,
     actualSavings: 0,
-    avgMonthly: 0
+    avgMonthly: 0,
+    unreimbursedHsaTotal: 0
   });
 
   const COLORS = ['hsl(186 100% 40%)', 'hsl(27 96% 61%)', 'hsl(214 95% 50%)', 'hsl(120 60% 50%)', 'hsl(0 84% 60%)'];
@@ -79,7 +81,8 @@ const Analytics = () => {
         hsaEligible: hsaTotal,
         projectedSavings: unreimbursedHsaTotal * 0.3,
         actualSavings: reimbursedHsaTotal * 0.3,
-        avgMonthly
+        avgMonthly,
+        unreimbursedHsaTotal
       });
     } catch (error) {
       console.error("Failed to fetch analytics:", error);
@@ -272,6 +275,10 @@ const Analytics = () => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
+        {stats.unreimbursedHsaTotal > 0 && (
+          <HSAInvestmentTracker unreimbursedTotal={stats.unreimbursedHsaTotal} />
+        )}
       </main>
     </div>
   );

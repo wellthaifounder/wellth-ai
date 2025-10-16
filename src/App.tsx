@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import ExpenseEntry from "./pages/ExpenseEntry";
 import ExpenseList from "./pages/ExpenseList";
 import BulkImport from "./pages/BulkImport";
+import PrePurchaseDecision from "./pages/PrePurchaseDecision";
 import HSAReimbursement from "./pages/HSAReimbursement";
 import ReimbursementDetails from "./pages/ReimbursementDetails";
 import ReimbursementRequests from "./pages/ReimbursementRequests";
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/expenses/new" element={<ExpenseEntry />} />
           <Route path="/expenses/edit/:id" element={<ExpenseEntry />} />
           <Route path="/expenses/import" element={<BulkImport />} />
+          <Route path="/decision-tool" element={<PrePurchaseDecision />} />
           <Route path="/hsa-reimbursement" element={<HSAReimbursement />} />
           <Route path="/reimbursement/:id" element={<ReimbursementDetails />} />
           <Route path="/reimbursement-requests" element={<ReimbursementRequests />} />
