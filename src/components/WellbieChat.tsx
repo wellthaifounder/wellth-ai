@@ -41,18 +41,28 @@ export const WellbieChat = () => {
         </div>
       </button>
 
-      {/* Chat Panel */}
+      {/* Chat Panel with Backdrop */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[400px] h-[600px] max-w-[calc(100vw-3rem)] max-h-[calc(100vh-3rem)] animate-slide-in-right md:w-[400px] md:h-[600px]">
-          <WellbieChatPanel
-            messages={messages}
-            isLoading={isLoading}
-            error={error}
-            onSendMessage={sendMessage}
-            onClose={handleClose}
-            onMinimize={handleMinimize}
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 animate-fade-in"
+            onClick={handleClose}
+            aria-hidden="true"
           />
-        </div>
+          
+          {/* Chat Panel */}
+          <div className="fixed bottom-6 right-6 z-50 w-[400px] h-[600px] max-w-[calc(100vw-3rem)] max-h-[calc(100vh-3rem)] animate-slide-in-right md:w-[400px] md:h-[600px]">
+            <WellbieChatPanel
+              messages={messages}
+              isLoading={isLoading}
+              error={error}
+              onSendMessage={sendMessage}
+              onClose={handleClose}
+              onMinimize={handleMinimize}
+            />
+          </div>
+        </>
       )}
 
       {/* Minimized State */}
