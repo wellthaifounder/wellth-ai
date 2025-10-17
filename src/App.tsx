@@ -19,6 +19,7 @@ import Analytics from "./pages/Analytics";
 import TripwireSuccess from "./pages/TripwireSuccess";
 
 import NotFound from "./pages/NotFound";
+import { WellbieChat } from "./components/WellbieChat";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <WellbieChat />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
