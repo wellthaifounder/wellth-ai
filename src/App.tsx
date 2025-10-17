@@ -28,8 +28,8 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <WellbieChat />
       <BrowserRouter>
+        <WellbieChat />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
