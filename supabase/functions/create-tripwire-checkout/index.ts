@@ -11,11 +11,11 @@ const corsHeaders = {
 const checkoutSchema = z.object({
   estimatedSavings: z.number().min(0).max(1000000),
   calculatorData: z.object({
-    healthcarePlan: z.string().max(100),
-    hsaContribution: z.number().min(0).max(100000),
-    paymentMethod: z.string().max(100),
-    expenses: z.number().min(0).max(100000),
-  }).passthrough(),
+    healthcarePlan: z.string().max(100).optional(),
+    hsaContribution: z.number().min(0).max(100000).optional(),
+    paymentMethod: z.string().max(100).optional(),
+    expenses: z.number().min(0).max(100000).optional(),
+  }).passthrough().optional(),
 });
 
 serve(async (req) => {
