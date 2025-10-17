@@ -9,12 +9,8 @@ interface EmbeddedCheckoutProps {
   onComplete?: () => void;
 }
 
-const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+const stripeKey = "pk_test_51SHqh32Oq7FyVuCtKXpEc9rlEqa7NhrxnfacTjGjZwY01Xfkxny6zpFU4SQqvmeH30qgwDOF6JdtmPoBBKoTssmM00BBOHEBdH";
 console.log('Stripe publishable key available:', !!stripeKey);
-
-if (!stripeKey) {
-  console.error('VITE_STRIPE_PUBLISHABLE_KEY is not set');
-}
 
 const stripePromise = loadStripe(stripeKey || "");
 
