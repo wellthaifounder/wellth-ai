@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { WellthLogo } from "@/components/WellthLogo";
-import { ArrowLeft, Plus, Download, Trash2, Edit, Upload } from "lucide-react";
+import { ArrowLeft, Plus, Download, Trash2, Edit, Upload, FileText } from "lucide-react";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 import { TableColumnHeader } from "@/components/ui/table-column-header";
@@ -47,7 +47,8 @@ const ExpenseList = () => {
           reimbursement_items(
             reimbursement_request_id,
             reimbursement_requests(status)
-          )
+          ),
+          receipts(count)
         `)
         .order("date", { ascending: false });
 
@@ -439,7 +440,17 @@ const ExpenseList = () => {
                         <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
                         <TableCell>{expense.vendor}</TableCell>
                         <TableCell>{expense.category}</TableCell>
-                        <TableCell>${Number(expense.amount).toFixed(2)}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span>${Number(expense.amount).toFixed(2)}</span>
+                            {(expense as any).receipts?.[0]?.count > 0 && (
+                              <Badge variant="outline" className="flex items-center gap-1">
+                                <FileText className="h-3 w-3" />
+                                {(expense as any).receipts[0].count}
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell>
                           {(() => {
                             const reimbursementStatus = (expense as any).reimbursement_items?.[0]?.reimbursement_requests?.status;

@@ -12,6 +12,10 @@ import { ArrowLeft, Upload, Sparkles, CheckCircle2 } from "lucide-react";
 import { z } from "zod";
 import { getPaymentRecommendation } from "@/lib/paymentRecommendation";
 import { PaymentRecommendation } from "@/components/expense/PaymentRecommendation";
+import { ReceiptGallery } from "@/components/expense/ReceiptGallery";
+import { DocumentChecklist } from "@/components/expense/DocumentChecklist";
+import { MultiFileUpload } from "@/components/expense/MultiFileUpload";
+import { PaymentPlanFields } from "@/components/expense/PaymentPlanFields";
 
 const expenseSchema = z.object({
   date: z.string().min(1, "Date is required"),
@@ -41,15 +45,19 @@ const ExpenseEntry = () => {
   
   const [loading, setLoading] = useState(false);
   const [processingOCR, setProcessingOCR] = useState(false);
-  const [receipt, setReceipt] = useState<File | null>(null);
+  const [receipts, setReceipts] = useState<any[]>([]);
+  const [newFiles, setNewFiles] = useState<any[]>([]);
   const [success, setSuccess] = useState(false);
-  const [showRecommendation, setShowRecommendation] = useState(false);
+  const [hasPaymentPlan, setHasPaymentPlan] = useState(false);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     vendor: "",
     amount: "",
     category: "",
     notes: "",
+    paymentPlanTotalAmount: "",
+    paymentPlanInstallments: "",
+    paymentPlanNotes: "",
   });
 
   // Generate payment recommendation when amount and category are set
@@ -85,7 +93,22 @@ const ExpenseEntry = () => {
           amount: data.amount.toString(),
           category: data.category,
           notes: data.notes || "",
+          paymentPlanTotalAmount: data.payment_plan_total_amount?.toString() || "",
+          paymentPlanInstallments: data.payment_plan_installments?.toString() || "",
+          paymentPlanNotes: data.payment_plan_notes || "",
         });
+        setHasPaymentPlan(!!data.payment_plan_total_amount);
+        
+        // Load existing receipts
+        const { data: receiptsData } = await supabase
+          .from("receipts")
+          .select("*")
+          .eq("expense_id", expenseId)
+          .order("display_order");
+        
+        if (receiptsData) {
+          setReceipts(receiptsData);
+        }
       }
     } catch (error) {
       console.error("Error loading expense:", error);
@@ -96,55 +119,6 @@ const ExpenseEntry = () => {
     }
   };
 
-  const handleReceiptOCR = async (file: File) => {
-    setProcessingOCR(true);
-    try {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      
-      const base64 = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-      });
-
-      const { data, error } = await supabase.functions.invoke('process-receipt-ocr', {
-        body: { imageBase64: base64 }
-      });
-
-      if (error) throw error;
-
-      if (data?.success && data?.data) {
-        const { amount, vendor, date, category } = data.data;
-        
-        setFormData(prev => ({
-          ...prev,
-          ...(amount && { amount: amount.toString() }),
-          ...(vendor && { vendor }),
-          ...(date && { date }),
-          ...(category && HSA_ELIGIBLE_CATEGORIES.includes(category) && { category }),
-        }));
-
-        toast.success('Receipt processed', {
-          description: 'Information extracted from receipt',
-        });
-      }
-    } catch (error) {
-      console.error('Error processing receipt:', error);
-      toast.error('OCR failed', {
-        description: 'Could not extract information. Please enter manually.',
-      });
-    } finally {
-      setProcessingOCR(false);
-    }
-  };
-
-  const handleReceiptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setReceipt(file);
-      handleReceiptOCR(file);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -178,6 +152,13 @@ const ExpenseEntry = () => {
             category: validatedData.category,
             notes: validatedData.notes || null,
             is_hsa_eligible: isHsaEligible,
+            payment_plan_total_amount: hasPaymentPlan && formData.paymentPlanTotalAmount 
+              ? parseFloat(formData.paymentPlanTotalAmount) 
+              : null,
+            payment_plan_installments: hasPaymentPlan && formData.paymentPlanInstallments 
+              ? parseInt(formData.paymentPlanInstallments) 
+              : null,
+            payment_plan_notes: hasPaymentPlan ? formData.paymentPlanNotes : null,
           })
           .eq("id", id)
           .select()
@@ -198,6 +179,13 @@ const ExpenseEntry = () => {
             notes: validatedData.notes || null,
             is_hsa_eligible: isHsaEligible,
             is_reimbursed: false,
+            payment_plan_total_amount: hasPaymentPlan && formData.paymentPlanTotalAmount 
+              ? parseFloat(formData.paymentPlanTotalAmount) 
+              : null,
+            payment_plan_installments: hasPaymentPlan && formData.paymentPlanInstallments 
+              ? parseInt(formData.paymentPlanInstallments) 
+              : null,
+            payment_plan_notes: hasPaymentPlan ? formData.paymentPlanNotes : null,
           })
           .select()
           .single();
@@ -206,25 +194,33 @@ const ExpenseEntry = () => {
         expense = data;
       }
 
-      if (receipt && expense) {
-        const fileExt = receipt.name.split('.').pop();
-        const filePath = `${user.id}/${expense.id}.${fileExt}`;
+      // Upload new files
+      if (newFiles.length > 0 && expense) {
+        for (let i = 0; i < newFiles.length; i++) {
+          const fileData = newFiles[i];
+          const fileExt = fileData.file.name.split('.').pop();
+          const timestamp = Date.now();
+          const filePath = `${user.id}/${expense.id}/${fileData.documentType}_${timestamp}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('receipts')
-          .upload(filePath, receipt);
+          const { error: uploadError } = await supabase.storage
+            .from('receipts')
+            .upload(filePath, fileData.file);
 
-        if (uploadError) throw uploadError;
+          if (uploadError) throw uploadError;
 
-        const { error: receiptError } = await supabase
-          .from("receipts")
-          .insert({
-            expense_id: expense.id,
-            file_path: filePath,
-            file_type: receipt.type,
-          });
+          const { error: receiptError } = await supabase
+            .from("receipts")
+            .insert({
+              expense_id: expense.id,
+              file_path: filePath,
+              file_type: fileData.file.type,
+              document_type: fileData.documentType,
+              description: fileData.description || null,
+              display_order: i,
+            });
 
-        if (receiptError) throw receiptError;
+          if (receiptError) throw receiptError;
+        }
       }
 
       setSuccess(true);
@@ -281,39 +277,33 @@ const ExpenseEntry = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {!isEditMode && (
+              {isEditMode && receipts.length > 0 && (
                 <div className="space-y-2">
-                  <Label htmlFor="receipt">Receipt (Upload for Auto-Fill)</Label>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Input
-                        id="receipt"
-                        type="file"
-                        accept="image/*,.pdf"
-                        onChange={handleReceiptChange}
-                        disabled={processingOCR}
-                        className="hidden"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById('receipt')?.click()}
-                        className="w-full"
-                        disabled={processingOCR}
-                      >
-                        <Upload className="h-4 w-4 mr-2" />
-                        {processingOCR ? "Processing..." : receipt ? receipt.name : "Upload Receipt"}
-                        {processingOCR && <Sparkles className="h-4 w-4 ml-2 animate-pulse" />}
-                      </Button>
-                    </div>
-                    {!receipt && (
-                      <p className="text-xs text-muted-foreground">
-                        Upload a receipt to auto-fill expense details
-                      </p>
-                    )}
-                  </div>
+                  <Label>Existing Documents</Label>
+                  <ReceiptGallery 
+                    expenseId={id!} 
+                    receipts={receipts}
+                    onReceiptDeleted={() => loadExpense(id!)}
+                  />
                 </div>
               )}
+
+              <MultiFileUpload
+                onFilesChange={setNewFiles}
+                disabled={loading}
+              />
+
+              <PaymentPlanFields
+                hasPaymentPlan={hasPaymentPlan}
+                onHasPaymentPlanChange={setHasPaymentPlan}
+                totalAmount={formData.paymentPlanTotalAmount}
+                onTotalAmountChange={(value) => setFormData({ ...formData, paymentPlanTotalAmount: value })}
+                installments={formData.paymentPlanInstallments}
+                onInstallmentsChange={(value) => setFormData({ ...formData, paymentPlanInstallments: value })}
+                notes={formData.paymentPlanNotes}
+                onNotesChange={(value) => setFormData({ ...formData, paymentPlanNotes: value })}
+                currentAmount={formData.amount}
+              />
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
@@ -382,6 +372,15 @@ const ExpenseEntry = () => {
                   maxLength={500}
                 />
               </div>
+
+              {formData.category && formData.amount && parseFloat(formData.amount) > 0 && (
+                <DocumentChecklist
+                  category={formData.category}
+                  amount={parseFloat(formData.amount)}
+                  receipts={[...receipts, ...newFiles]}
+                  hasPaymentPlan={hasPaymentPlan}
+                />
+              )}
 
               {recommendation && !isEditMode && (
                 <PaymentRecommendation recommendation={recommendation} />

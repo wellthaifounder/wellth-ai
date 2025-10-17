@@ -93,6 +93,9 @@ export type Database = {
           is_reimbursed: boolean | null
           notes: string | null
           payment_method_id: string | null
+          payment_plan_installments: number | null
+          payment_plan_notes: string | null
+          payment_plan_total_amount: number | null
           updated_at: string
           user_id: string
           vendor: string
@@ -107,6 +110,9 @@ export type Database = {
           is_reimbursed?: boolean | null
           notes?: string | null
           payment_method_id?: string | null
+          payment_plan_installments?: number | null
+          payment_plan_notes?: string | null
+          payment_plan_total_amount?: number | null
           updated_at?: string
           user_id: string
           vendor: string
@@ -121,6 +127,9 @@ export type Database = {
           is_reimbursed?: boolean | null
           notes?: string | null
           payment_method_id?: string | null
+          payment_plan_installments?: number | null
+          payment_plan_notes?: string | null
+          payment_plan_total_amount?: number | null
           updated_at?: string
           user_id?: string
           vendor?: string
@@ -244,6 +253,9 @@ export type Database = {
       }
       receipts: {
         Row: {
+          description: string | null
+          display_order: number | null
+          document_type: string | null
           expense_id: string
           file_path: string
           file_type: string
@@ -251,6 +263,9 @@ export type Database = {
           uploaded_at: string
         }
         Insert: {
+          description?: string | null
+          display_order?: number | null
+          document_type?: string | null
           expense_id: string
           file_path: string
           file_type: string
@@ -258,6 +273,9 @@ export type Database = {
           uploaded_at?: string
         }
         Update: {
+          description?: string | null
+          display_order?: number | null
+          document_type?: string | null
           expense_id?: string
           file_path?: string
           file_type?: string

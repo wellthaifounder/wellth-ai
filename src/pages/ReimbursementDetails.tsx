@@ -8,6 +8,7 @@ import { ArrowLeft, Download, Mail, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { generateReimbursementPDF } from "@/lib/pdfGenerator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ReceiptGallery } from "@/components/expense/ReceiptGallery";
 
 const ReimbursementDetails = () => {
   const { id } = useParams();
@@ -15,6 +16,7 @@ const ReimbursementDetails = () => {
   const [loading, setLoading] = useState(true);
   const [request, setRequest] = useState<any>(null);
   const [expenses, setExpenses] = useState<any[]>([]);
+  const [allReceipts, setAllReceipts] = useState<any[]>([]);
 
   useEffect(() => {
     fetchRequestDetails();
@@ -40,7 +42,22 @@ const ReimbursementDetails = () => {
         .eq("reimbursement_request_id", id);
 
       if (itemsError) throw itemsError;
-      setExpenses(itemsData?.map((item: any) => item.expense) || []);
+      const expensesList = itemsData?.map((item: any) => item.expense) || [];
+      setExpenses(expensesList);
+
+      // Fetch all receipts for these expenses
+      const expenseIds = expensesList.map((e: any) => e.id);
+      if (expenseIds.length > 0) {
+        const { data: receiptsData } = await supabase
+          .from("receipts")
+          .select("*")
+          .in("expense_id", expenseIds)
+          .order("display_order");
+        
+        if (receiptsData) {
+          setAllReceipts(receiptsData);
+        }
+      }
     } catch (error) {
       console.error("Failed to fetch request details:", error);
       toast.error("Failed to load reimbursement details");
@@ -245,7 +262,7 @@ const ReimbursementDetails = () => {
           </Card>
         )}
 
-        <Card>
+        <Card className="mb-6">
           <CardHeader>
             <CardTitle>Attached Expenses</CardTitle>
             <CardDescription>Expenses included in this reimbursement request</CardDescription>
@@ -274,6 +291,22 @@ const ReimbursementDetails = () => {
             </div>
           </CardContent>
         </Card>
+
+        {allReceipts.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Supporting Documents</CardTitle>
+              <CardDescription>All receipts and documentation for this reimbursement</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ReceiptGallery
+                expenseId={id!}
+                receipts={allReceipts}
+                onReceiptDeleted={fetchRequestDetails}
+              />
+            </CardContent>
+          </Card>
+        )}
       </main>
     </div>
   );
