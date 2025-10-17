@@ -21,21 +21,7 @@ export const useWellbieChat = () => {
   const location = useLocation();
   const { toast } = useToast();
 
-  // Load conversations on mount
-  useEffect(() => {
-    loadConversations();
-  }, []);
-
-  // Load messages when conversation changes
-  useEffect(() => {
-    if (currentConversationId) {
-      loadMessages(currentConversationId);
-    } else {
-      setMessages([]);
-    }
-  }, [currentConversationId]);
-
-  const loadConversations = async () => {
+  const loadConversations = useCallback(async () => {
     const { data, error } = await supabase
       .from("wellbie_conversations")
       .select("*")
@@ -46,9 +32,9 @@ export const useWellbieChat = () => {
     } else {
       setConversations(data || []);
     }
-  };
+  }, []);
 
-  const loadMessages = async (conversationId: string) => {
+  const loadMessages = useCallback(async (conversationId: string) => {
     const { data, error } = await supabase
       .from("wellbie_messages")
       .select("*")
@@ -60,7 +46,21 @@ export const useWellbieChat = () => {
     } else {
       setMessages(data?.map(m => ({ role: m.role as "user" | "assistant", content: m.content })) || []);
     }
-  };
+  }, []);
+
+  // Load conversations on mount
+  useEffect(() => {
+    loadConversations();
+  }, [loadConversations]);
+
+  // Load messages when conversation changes
+  useEffect(() => {
+    if (currentConversationId) {
+      loadMessages(currentConversationId);
+    } else {
+      setMessages([]);
+    }
+  }, [currentConversationId, loadMessages]);
 
   const createNewConversation = async (firstMessage: string) => {
     const { data: { user } } = await supabase.auth.getUser();
