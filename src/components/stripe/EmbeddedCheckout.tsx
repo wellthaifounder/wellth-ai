@@ -9,18 +9,43 @@ interface EmbeddedCheckoutProps {
   onComplete?: () => void;
 }
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "");
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+console.log('Stripe publishable key available:', !!stripeKey);
+
+if (!stripeKey) {
+  console.error('VITE_STRIPE_PUBLISHABLE_KEY is not set');
+}
+
+const stripePromise = loadStripe(stripeKey || "");
 
 export const EmbeddedCheckout = ({ clientSecret, onComplete }: EmbeddedCheckoutProps) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!stripeKey) {
+      setError('Stripe configuration error. Please contact support.');
+      setIsLoading(false);
+      return;
+    }
+
     if (clientSecret) {
+      console.log('Client secret received, loading checkout');
       setIsLoading(false);
     }
   }, [clientSecret]);
 
   const options = { clientSecret };
+
+  if (error) {
+    return (
+      <Card className="flex min-h-[400px] items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      </Card>
+    );
+  }
 
   if (isLoading) {
     return (
