@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, Sparkles, FileText, TrendingUp, Shield, ArrowLeft } from "lucide-react";
@@ -14,6 +15,7 @@ interface TripwireOfferProps {
 }
 
 export const TripwireOffer = ({ estimatedSavings, calculatorData, onPurchaseComplete }: TripwireOfferProps) => {
+  const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [showCheckout, setShowCheckout] = useState(false);
@@ -40,8 +42,8 @@ export const TripwireOffer = ({ estimatedSavings, calculatorData, onPurchaseComp
 
       if (data?.clientSecret) {
         console.log('Embedded checkout session created');
-        setClientSecret(data.clientSecret);
-        setShowCheckout(true);
+        sessionStorage.setItem('stripe_tripwire_client_secret', data.clientSecret);
+        navigate('/checkout');
         return;
       }
 

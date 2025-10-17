@@ -17,8 +17,9 @@ import ReimbursementRequests from "./pages/ReimbursementRequests";
 import PaymentMethods from "./pages/PaymentMethods";
 import Analytics from "./pages/Analytics";
 import TripwireSuccess from "./pages/TripwireSuccess";
-
-import NotFound from "./pages/NotFound";
+import Checkout from "./pages/Checkout";
+ 
+ import NotFound from "./pages/NotFound";
 import { WellbieChat } from "./components/WellbieChat";
 
 const queryClient = new QueryClient();
@@ -46,8 +47,9 @@ const App = () => (
           <Route path="/payment-methods" element={<PaymentMethods />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/tripwire-success" element={<TripwireSuccess />} />
+          <Route path="/checkout" element={<Checkout />} />
           
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
