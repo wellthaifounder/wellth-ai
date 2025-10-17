@@ -54,6 +54,7 @@ serve(async (req) => {
     });
 
     const session = await stripe.checkout.sessions.create({
+      ui_mode: 'embedded',
       payment_method_types: ['card'],
       line_items: [
         {
@@ -62,8 +63,7 @@ serve(async (req) => {
         },
       ],
       mode: 'payment',
-      success_url: `${req.headers.get('origin')}/tripwire-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get('origin')}/calculator`,
+      return_url: `${req.headers.get('origin')}/tripwire-success?session_id={CHECKOUT_SESSION_ID}`,
       metadata: {
         type: 'tripwire',
         estimatedSavings: estimatedSavings.toString(),
@@ -74,7 +74,10 @@ serve(async (req) => {
     console.log('Checkout session created:', session.id);
 
     return new Response(
-      JSON.stringify({ url: session.url }),
+      JSON.stringify({ 
+        clientSecret: session.client_secret,
+        sessionId: session.id 
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,

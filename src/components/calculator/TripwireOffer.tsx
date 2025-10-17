@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { CheckCircle2, Sparkles, FileText, CreditCard, TrendingUp, Shield } from "lucide-react";
+import { CheckCircle2, Sparkles, FileText, TrendingUp, Shield, ArrowLeft } from "lucide-react";
 import { CountdownTimer } from "./CountdownTimer";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { EmbeddedCheckout } from "@/components/stripe/EmbeddedCheckout";
 
 interface TripwireOfferProps {
   estimatedSavings: number;
@@ -14,13 +15,14 @@ interface TripwireOfferProps {
 
 export const TripwireOffer = ({ estimatedSavings, calculatorData, onPurchaseComplete }: TripwireOfferProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   const handlePurchase = async () => {
     setIsProcessing(true);
 
     try {
-      console.log('Creating checkout for savings:', estimatedSavings);
+      console.log('Creating embedded checkout for savings:', estimatedSavings);
       
       const { data, error } = await supabase.functions.invoke('create-tripwire-checkout', {
         body: { 
@@ -36,23 +38,14 @@ export const TripwireOffer = ({ estimatedSavings, calculatorData, onPurchaseComp
         throw error;
       }
 
-      if (data?.url) {
-        console.log('Redirecting to checkout URL:', data.url);
-        setCheckoutUrl(data.url);
-        
-        // For development, let's just show the URL for now
-        toast.success(`Checkout URL created: ${data.url.substring(0, 50)}...`);
-        
-        // Try opening in new window
-        const newWindow = window.open(data.url, '_blank');
-        if (!newWindow) {
-          // If popup blocked, try navigating the whole page
-          window.location.href = data.url;
-        }
+      if (data?.clientSecret) {
+        console.log('Embedded checkout session created');
+        setClientSecret(data.clientSecret);
+        setShowCheckout(true);
         return;
       }
 
-      throw new Error('No checkout URL returned');
+      throw new Error('No client secret returned');
     } catch (error) {
       console.error('Purchase error:', error);
       toast.error(`Error: ${error instanceof Error ? error.message : 'Something went wrong'}`);
@@ -60,6 +53,22 @@ export const TripwireOffer = ({ estimatedSavings, calculatorData, onPurchaseComp
       setIsProcessing(false);
     }
   };
+
+  if (showCheckout && clientSecret) {
+    return (
+      <div className="space-y-4">
+        <Button
+          variant="outline"
+          onClick={() => setShowCheckout(false)}
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Offer
+        </Button>
+        <EmbeddedCheckout clientSecret={clientSecret} onComplete={onPurchaseComplete} />
+      </div>
+    );
+  }
 
   return (
     <Card className="border-2 border-primary bg-gradient-to-br from-primary/5 to-primary/10 p-6 shadow-xl">
@@ -152,15 +161,8 @@ export const TripwireOffer = ({ estimatedSavings, calculatorData, onPurchaseComp
           onClick={handlePurchase}
           disabled={isProcessing}
         >
-          {isProcessing ? "Processing..." : "Get Instant Access - Only $17"}
+          {isProcessing ? "Loading Secure Checkout..." : "Get Instant Access - Only $17"}
         </Button>
-
-        {/* Debug info */}
-        {checkoutUrl && (
-          <div className="mt-4 rounded bg-muted p-3 text-xs">
-            <p className="font-mono break-all">Checkout URL: {checkoutUrl}</p>
-          </div>
-        )}
 
         {/* Trust Badges */}
         <div className="grid grid-cols-3 gap-4 border-t pt-4 text-center">
