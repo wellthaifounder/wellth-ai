@@ -48,7 +48,7 @@ const PaymentMethods = () => {
   const fetchRecommendations = async () => {
     try {
       const { data: expenses, error } = await supabase
-        .from("expenses")
+        .from("expense_reports")
         .select("category, amount")
         .order("date", { ascending: false })
         .limit(100);

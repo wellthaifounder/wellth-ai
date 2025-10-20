@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 import { TableColumnHeader } from "@/components/ui/table-column-header";
 
-type Expense = Tables<"expenses">;
+type Expense = Tables<"expense_reports">;
 
 const ExpenseList = () => {
   const navigate = useNavigate();
@@ -41,7 +41,7 @@ const ExpenseList = () => {
   const fetchExpenses = async () => {
     try {
       const { data, error } = await supabase
-        .from("expenses")
+        .from("expense_reports")
         .select(`
           *,
           reimbursement_items(
@@ -65,7 +65,7 @@ const ExpenseList = () => {
   const handleDelete = async (id: string) => {
     try {
       const { error } = await supabase
-        .from("expenses")
+        .from("expense_reports")
         .delete()
         .eq("id", id);
 
@@ -83,7 +83,7 @@ const ExpenseList = () => {
     
     try {
       const { error } = await supabase
-        .from("expenses")
+        .from("expense_reports")
         .delete()
         .in("id", Array.from(selectedIds));
 

@@ -82,13 +82,15 @@ export type Database = {
         }
         Relationships: []
       }
-      expenses: {
+      expense_reports: {
         Row: {
           amount: number
           category: string
           created_at: string
           date: string
           id: string
+          invoice_date: string | null
+          invoice_number: string | null
           is_hsa_eligible: boolean | null
           is_reimbursed: boolean | null
           notes: string | null
@@ -96,6 +98,7 @@ export type Database = {
           payment_plan_installments: number | null
           payment_plan_notes: string | null
           payment_plan_total_amount: number | null
+          total_amount: number | null
           updated_at: string
           user_id: string
           vendor: string
@@ -106,6 +109,8 @@ export type Database = {
           created_at?: string
           date: string
           id?: string
+          invoice_date?: string | null
+          invoice_number?: string | null
           is_hsa_eligible?: boolean | null
           is_reimbursed?: boolean | null
           notes?: string | null
@@ -113,6 +118,7 @@ export type Database = {
           payment_plan_installments?: number | null
           payment_plan_notes?: string | null
           payment_plan_total_amount?: number | null
+          total_amount?: number | null
           updated_at?: string
           user_id: string
           vendor: string
@@ -123,6 +129,8 @@ export type Database = {
           created_at?: string
           date?: string
           id?: string
+          invoice_date?: string | null
+          invoice_number?: string | null
           is_hsa_eligible?: boolean | null
           is_reimbursed?: boolean | null
           notes?: string | null
@@ -130,6 +138,7 @@ export type Database = {
           payment_plan_installments?: number | null
           payment_plan_notes?: string | null
           payment_plan_total_amount?: number | null
+          total_amount?: number | null
           updated_at?: string
           user_id?: string
           vendor?: string
@@ -182,6 +191,63 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          expense_report_id: string
+          id: string
+          notes: string | null
+          payment_date: string
+          payment_method_id: string | null
+          payment_source: string
+          plaid_transaction_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          expense_report_id: string
+          id?: string
+          notes?: string | null
+          payment_date: string
+          payment_method_id?: string | null
+          payment_source: string
+          plaid_transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          expense_report_id?: string
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method_id?: string | null
+          payment_source?: string
+          plaid_transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_expense_report_id_fkey"
+            columns: ["expense_report_id"]
+            isOneToOne: false
+            referencedRelation: "expense_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_payment_method_id_fkey"
+            columns: ["payment_method_id"]
+            isOneToOne: false
+            referencedRelation: "payment_methods"
             referencedColumns: ["id"]
           },
         ]
@@ -260,6 +326,7 @@ export type Database = {
           file_path: string
           file_type: string
           id: string
+          payment_transaction_id: string | null
           uploaded_at: string
         }
         Insert: {
@@ -270,6 +337,7 @@ export type Database = {
           file_path: string
           file_type: string
           id?: string
+          payment_transaction_id?: string | null
           uploaded_at?: string
         }
         Update: {
@@ -280,6 +348,7 @@ export type Database = {
           file_path?: string
           file_type?: string
           id?: string
+          payment_transaction_id?: string | null
           uploaded_at?: string
         }
         Relationships: [
@@ -287,7 +356,14 @@ export type Database = {
             foreignKeyName: "receipts_expense_id_fkey"
             columns: ["expense_id"]
             isOneToOne: false
-            referencedRelation: "expenses"
+            referencedRelation: "expense_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_payment_transaction_id_fkey"
+            columns: ["payment_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "payment_transactions"
             referencedColumns: ["id"]
           },
         ]
@@ -313,7 +389,7 @@ export type Database = {
             foreignKeyName: "reimbursement_items_expense_id_fkey"
             columns: ["expense_id"]
             isOneToOne: false
-            referencedRelation: "expenses"
+            referencedRelation: "expense_reports"
             referencedColumns: ["id"]
           },
           {

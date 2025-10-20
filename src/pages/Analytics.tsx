@@ -37,7 +37,7 @@ const Analytics = () => {
   const fetchAnalytics = async () => {
     try {
       const { data: expenses, error } = await supabase
-        .from("expenses")
+        .from("expense_reports")
         .select("*")
         .order("date", { ascending: true });
 
