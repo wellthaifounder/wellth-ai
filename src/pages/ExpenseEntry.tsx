@@ -103,7 +103,7 @@ const ExpenseEntry = () => {
         const { data: receiptsData } = await supabase
           .from("receipts")
           .select("*")
-          .eq("expense_id", expenseId)
+          .eq("invoice_id", expenseId)
           .order("display_order");
         
         if (receiptsData) {

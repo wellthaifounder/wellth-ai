@@ -88,7 +88,7 @@ const PaymentEntry = () => {
       const { data, error } = await supabase
         .from("payment_transactions")
         .select("*")
-        .eq("expense_report_id", invoiceId)
+        .eq("invoice_id", invoiceId)
         .order("payment_date", { ascending: false });
 
       if (error) throw error;
