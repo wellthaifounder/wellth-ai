@@ -216,7 +216,7 @@ const Dashboard = () => {
               </div>
               {recentExpenses.length > 0 && (
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => navigate("/expenses")}>
+                  <Button variant="outline" size="sm" onClick={() => navigate("/invoices")}>
                     View All
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => navigate("/hsa-reimbursement")}>

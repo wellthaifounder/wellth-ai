@@ -86,6 +86,7 @@ export type Database = {
         Row: {
           amount: number
           category: string
+          complexity_level: string
           created_at: string
           date: string
           id: string
@@ -93,6 +94,7 @@ export type Database = {
           invoice_number: string | null
           is_hsa_eligible: boolean | null
           is_reimbursed: boolean | null
+          medical_incident_id: string | null
           notes: string | null
           payment_method_id: string | null
           payment_plan_installments: number | null
@@ -106,6 +108,7 @@ export type Database = {
         Insert: {
           amount: number
           category: string
+          complexity_level?: string
           created_at?: string
           date: string
           id?: string
@@ -113,6 +116,7 @@ export type Database = {
           invoice_number?: string | null
           is_hsa_eligible?: boolean | null
           is_reimbursed?: boolean | null
+          medical_incident_id?: string | null
           notes?: string | null
           payment_method_id?: string | null
           payment_plan_installments?: number | null
@@ -126,6 +130,7 @@ export type Database = {
         Update: {
           amount?: number
           category?: string
+          complexity_level?: string
           created_at?: string
           date?: string
           id?: string
@@ -133,6 +138,7 @@ export type Database = {
           invoice_number?: string | null
           is_hsa_eligible?: boolean | null
           is_reimbursed?: boolean | null
+          medical_incident_id?: string | null
           notes?: string | null
           payment_method_id?: string | null
           payment_plan_installments?: number | null
@@ -144,6 +150,13 @@ export type Database = {
           vendor?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "expense_reports_medical_incident_id_fkey"
+            columns: ["medical_incident_id"]
+            isOneToOne: false
+            referencedRelation: "medical_incidents"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "expenses_payment_method_id_fkey"
             columns: ["payment_method_id"]
@@ -159,6 +172,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      medical_incidents: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          incident_date: string
+          incident_type: string
+          is_hsa_eligible: boolean
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          incident_date: string
+          incident_type?: string
+          is_hsa_eligible?: boolean
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          incident_date?: string
+          incident_type?: string
+          is_hsa_eligible?: boolean
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       payment_methods: {
         Row: {
@@ -201,11 +250,14 @@ export type Database = {
           created_at: string
           expense_report_id: string
           id: string
+          is_reimbursed: boolean
           notes: string | null
           payment_date: string
           payment_method_id: string | null
           payment_source: string
           plaid_transaction_id: string | null
+          reimbursed_date: string | null
+          reimbursement_request_id: string | null
           updated_at: string
           user_id: string
         }
@@ -214,11 +266,14 @@ export type Database = {
           created_at?: string
           expense_report_id: string
           id?: string
+          is_reimbursed?: boolean
           notes?: string | null
           payment_date: string
           payment_method_id?: string | null
           payment_source: string
           plaid_transaction_id?: string | null
+          reimbursed_date?: string | null
+          reimbursement_request_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -227,11 +282,14 @@ export type Database = {
           created_at?: string
           expense_report_id?: string
           id?: string
+          is_reimbursed?: boolean
           notes?: string | null
           payment_date?: string
           payment_method_id?: string | null
           payment_source?: string
           plaid_transaction_id?: string | null
+          reimbursed_date?: string | null
+          reimbursement_request_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -248,6 +306,13 @@ export type Database = {
             columns: ["payment_method_id"]
             isOneToOne: false
             referencedRelation: "payment_methods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_reimbursement_request_id_fkey"
+            columns: ["reimbursement_request_id"]
+            isOneToOne: false
+            referencedRelation: "reimbursement_requests"
             referencedColumns: ["id"]
           },
         ]

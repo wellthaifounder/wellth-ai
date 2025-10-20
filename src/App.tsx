@@ -9,6 +9,13 @@ import Calculator from "./pages/Calculator";
 import Dashboard from "./pages/Dashboard";
 import ExpenseEntry from "./pages/ExpenseEntry";
 import ExpenseList from "./pages/ExpenseList";
+import ExpenseDecision from "./pages/ExpenseDecision";
+import SimpleExpenseEntry from "./pages/SimpleExpenseEntry";
+import MedicalIncidentEntry from "./pages/MedicalIncidentEntry";
+import MedicalIncidentDetails from "./pages/MedicalIncidentDetails";
+import InvoiceEntry from "./pages/InvoiceEntry";
+import InvoicePaymentListEnhanced from "./pages/InvoicePaymentListEnhanced";
+import PaymentEntry from "./pages/PaymentEntry";
 import BulkImport from "./pages/BulkImport";
 import PrePurchaseDecision from "./pages/PrePurchaseDecision";
 import HSAReimbursement from "./pages/HSAReimbursement";
@@ -36,8 +43,23 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/calculator" element={<Calculator />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          
+          {/* New Expense Management Routes */}
+          <Route path="/invoices" element={<InvoicePaymentListEnhanced />} />
+          <Route path="/invoice/new" element={<InvoiceEntry />} />
+          <Route path="/invoice/:id" element={<InvoiceEntry />} />
+          <Route path="/payment/new" element={<PaymentEntry />} />
+          
+          {/* Dual-Path Expense Entry */}
+          <Route path="/expenses/new" element={<ExpenseDecision />} />
+          <Route path="/expense/quick" element={<SimpleExpenseEntry />} />
+          
+          {/* Medical Incident Routes */}
+          <Route path="/incident/new" element={<MedicalIncidentEntry />} />
+          <Route path="/incident/:id" element={<MedicalIncidentDetails />} />
+          
+          {/* Legacy Expense Routes (keep for backward compatibility) */}
           <Route path="/expenses" element={<ExpenseList />} />
-          <Route path="/expenses/new" element={<ExpenseEntry />} />
           <Route path="/expenses/edit/:id" element={<ExpenseEntry />} />
           <Route path="/expenses/import" element={<BulkImport />} />
           <Route path="/decision-tool" element={<PrePurchaseDecision />} />
