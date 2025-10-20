@@ -47,8 +47,8 @@ const PaymentMethods = () => {
 
   const fetchRecommendations = async () => {
     try {
-      const { data: expenses, error } = await supabase
-        .from("expense_reports")
+      const { data: invoices, error } = await supabase
+        .from("invoices")
         .select("category, amount")
         .order("date", { ascending: false })
         .limit(100);
@@ -57,8 +57,8 @@ const PaymentMethods = () => {
 
       // Analyze spending patterns
       const categoryTotals: Record<string, number> = {};
-      expenses?.forEach(exp => {
-        categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + Number(exp.amount);
+      invoices?.forEach(inv => {
+        categoryTotals[inv.category] = (categoryTotals[inv.category] || 0) + Number(inv.amount);
       });
 
       const sortedCategories = Object.entries(categoryTotals)

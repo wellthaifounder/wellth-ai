@@ -20,14 +20,14 @@ import { toast } from "sonner";
 import { FolderHeart } from "lucide-react";
 
 interface LinkToIncidentDialogProps {
-  expenseId: string;
+  invoiceId: string;
   currentIncidentId?: string;
   onLinked?: () => void;
   trigger?: React.ReactNode;
 }
 
 export function LinkToIncidentDialog({ 
-  expenseId, 
+  invoiceId, 
   currentIncidentId,
   onLinked,
   trigger 
@@ -66,22 +66,22 @@ export function LinkToIncidentDialog({
         : { medical_incident_id: selectedIncident, complexity_level: 'complex' };
 
       const { error } = await supabase
-        .from("expense_reports")
+        .from("invoices")
         .update(updateData)
-        .eq("id", expenseId);
+        .eq("id", invoiceId);
 
       if (error) throw error;
 
       toast.success(
         selectedIncident === "none" 
-          ? "Expense unlinked from medical incident" 
-          : "Expense linked to medical incident"
+          ? "Invoice unlinked from medical incident" 
+          : "Invoice linked to medical incident"
       );
       setOpen(false);
       onLinked?.();
     } catch (error) {
-      console.error("Failed to link expense:", error);
-      toast.error("Failed to link expense");
+      console.error("Failed to link invoice:", error);
+      toast.error("Failed to link invoice");
     } finally {
       setLoading(false);
     }
@@ -102,7 +102,7 @@ export function LinkToIncidentDialog({
         <DialogHeader>
           <DialogTitle>Link to Medical Incident</DialogTitle>
           <DialogDescription>
-            Group this expense with a medical incident to track related costs together
+            Group this invoice with a medical incident to track related costs together
           </DialogDescription>
         </DialogHeader>
 
@@ -113,7 +113,7 @@ export function LinkToIncidentDialog({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">
-                <span className="text-muted-foreground">Unlink (Simple Expense)</span>
+                <span className="text-muted-foreground">Unlink (Simple Invoice)</span>
               </SelectItem>
               {incidents.map((incident) => (
                 <SelectItem key={incident.id} value={incident.id}>
@@ -125,7 +125,7 @@ export function LinkToIncidentDialog({
 
           {incidents.length === 0 && (
             <p className="text-sm text-muted-foreground">
-              No medical incidents found. Create one first to link expenses.
+              No medical incidents found. Create one first to link invoices.
             </p>
           )}
         </div>
@@ -138,7 +138,7 @@ export function LinkToIncidentDialog({
             onClick={handleLink} 
             disabled={loading || !selectedIncident}
           >
-            {loading ? "Linking..." : "Link Expense"}
+            {loading ? "Linking..." : "Link Invoice"}
           </Button>
         </DialogFooter>
       </DialogContent>

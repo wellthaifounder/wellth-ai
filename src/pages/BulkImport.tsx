@@ -163,7 +163,7 @@ const BulkImport = () => {
       }));
 
       const { error } = await supabase
-        .from("expense_reports")
+        .from("invoices")
         .insert(expenses);
 
       if (error) throw error;

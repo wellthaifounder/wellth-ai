@@ -82,7 +82,7 @@ export type Database = {
         }
         Relationships: []
       }
-      expense_reports: {
+      invoices: {
         Row: {
           amount: number
           category: string
@@ -248,8 +248,8 @@ export type Database = {
         Row: {
           amount: number
           created_at: string
-          expense_report_id: string
           id: string
+          invoice_id: string
           is_reimbursed: boolean
           notes: string | null
           payment_date: string
@@ -264,8 +264,8 @@ export type Database = {
         Insert: {
           amount: number
           created_at?: string
-          expense_report_id: string
           id?: string
+          invoice_id: string
           is_reimbursed?: boolean
           notes?: string | null
           payment_date: string
@@ -280,8 +280,8 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string
-          expense_report_id?: string
           id?: string
+          invoice_id?: string
           is_reimbursed?: boolean
           notes?: string | null
           payment_date?: string
@@ -296,9 +296,9 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "payment_transactions_expense_report_id_fkey"
-            columns: ["expense_report_id"]
+            columns: ["invoice_id"]
             isOneToOne: false
-            referencedRelation: "expense_reports"
+            referencedRelation: "invoices"
             referencedColumns: ["id"]
           },
           {
@@ -387,10 +387,10 @@ export type Database = {
           description: string | null
           display_order: number | null
           document_type: string | null
-          expense_id: string | null
           file_path: string
           file_type: string
           id: string
+          invoice_id: string | null
           payment_transaction_id: string | null
           uploaded_at: string
         }
@@ -398,10 +398,10 @@ export type Database = {
           description?: string | null
           display_order?: number | null
           document_type?: string | null
-          expense_id?: string | null
           file_path: string
           file_type: string
           id?: string
+          invoice_id?: string | null
           payment_transaction_id?: string | null
           uploaded_at?: string
         }
@@ -409,19 +409,19 @@ export type Database = {
           description?: string | null
           display_order?: number | null
           document_type?: string | null
-          expense_id?: string | null
           file_path?: string
           file_type?: string
           id?: string
+          invoice_id?: string | null
           payment_transaction_id?: string | null
           uploaded_at?: string
         }
         Relationships: [
           {
             foreignKeyName: "receipts_expense_id_fkey"
-            columns: ["expense_id"]
+            columns: ["invoice_id"]
             isOneToOne: false
-            referencedRelation: "expense_reports"
+            referencedRelation: "invoices"
             referencedColumns: ["id"]
           },
           {
@@ -435,26 +435,26 @@ export type Database = {
       }
       reimbursement_items: {
         Row: {
-          expense_id: string
           id: string
+          invoice_id: string
           reimbursement_request_id: string
         }
         Insert: {
-          expense_id: string
           id?: string
+          invoice_id: string
           reimbursement_request_id: string
         }
         Update: {
-          expense_id?: string
           id?: string
+          invoice_id?: string
           reimbursement_request_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "reimbursement_items_expense_id_fkey"
-            columns: ["expense_id"]
+            columns: ["invoice_id"]
             isOneToOne: false
-            referencedRelation: "expense_reports"
+            referencedRelation: "invoices"
             referencedColumns: ["id"]
           },
           {

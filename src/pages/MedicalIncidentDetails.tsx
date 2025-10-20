@@ -43,7 +43,7 @@ const MedicalIncidentDetails = () => {
       setIncident(incidentData);
 
       const { data: invoiceData, error: invoiceError } = await supabase
-        .from("expense_reports")
+        .from("invoices")
         .select(`
           *,
           payment_transactions (

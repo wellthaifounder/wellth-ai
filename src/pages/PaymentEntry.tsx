@@ -57,7 +57,7 @@ const PaymentEntry = () => {
   const fetchInvoices = async () => {
     try {
       const { data, error } = await supabase
-        .from("expense_reports")
+        .from("invoices")
         .select("*")
         .order("invoice_date", { ascending: false });
 
@@ -131,7 +131,7 @@ const PaymentEntry = () => {
       const { data: payment, error: paymentError } = await supabase
         .from("payment_transactions")
         .insert({
-          expense_report_id: selectedInvoice,
+          invoice_id: selectedInvoice,
           user_id: user.id,
           payment_date: formattedDate,
           amount: validatedData.amount,

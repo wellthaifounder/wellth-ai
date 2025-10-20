@@ -24,7 +24,7 @@ const InvoicePaymentList = () => {
   const fetchInvoices = async () => {
     try {
       const { data: invoiceData, error } = await supabase
-        .from("expense_reports")
+        .from("invoices")
         .select(`
           *,
           payment_transactions (

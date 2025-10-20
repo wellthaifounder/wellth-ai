@@ -66,7 +66,7 @@ export default function HSAReimbursement() {
       setUser(currentUser);
 
       const { data, error } = await supabase
-        .from('expense_reports')
+        .from('invoices')
         .select('*')
         .eq('user_id', currentUser.id)
         .eq('is_hsa_eligible', true)
@@ -207,7 +207,7 @@ export default function HSAReimbursement() {
       // Create reimbursement items
       const items = Array.from(selectedExpenses).map(expenseId => ({
         reimbursement_request_id: request.id,
-        expense_id: expenseId,
+        invoice_id: expenseId,
       }));
 
       const { error: itemsError } = await supabase
@@ -218,7 +218,7 @@ export default function HSAReimbursement() {
 
       // Mark expenses as reimbursed
       const { error: updateError } = await supabase
-        .from('expense_reports')
+        .from('invoices')
         .update({ is_reimbursed: true })
         .in('id', Array.from(selectedExpenses));
 

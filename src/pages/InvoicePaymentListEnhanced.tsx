@@ -37,7 +37,7 @@ const InvoicePaymentListEnhanced = () => {
         .from("medical_incidents")
         .select(`
           *,
-          expense_reports (
+          invoices (
             *,
             payment_transactions (
               id,
@@ -55,7 +55,7 @@ const InvoicePaymentListEnhanced = () => {
 
       // Fetch simple expenses (not linked to incidents)
       const { data: simpleData, error: simpleError } = await supabase
-        .from("expense_reports")
+        .from("invoices")
         .select(`
           *,
           payment_transactions (
@@ -98,7 +98,7 @@ const InvoicePaymentListEnhanced = () => {
     let totalPaidOther = 0;
     let totalUnpaid = 0;
 
-    incident.expense_reports?.forEach((invoice: any) => {
+    incident.invoices?.forEach((invoice: any) => {
       const breakdown = calculateHSAEligibility(invoice, invoice.payment_transactions || []);
       totalInvoiced += breakdown.totalInvoiced;
       totalPaidHSA += breakdown.paidViaHSA;
@@ -173,7 +173,7 @@ const InvoicePaymentListEnhanced = () => {
     let totalHSAEligible = 0;
 
     incidents.forEach(incident => {
-      incident.expense_reports?.forEach((invoice: any) => {
+      incident.invoices?.forEach((invoice: any) => {
         const breakdown = calculateHSAEligibility(invoice, invoice.payment_transactions || []);
         totalInvoiced += breakdown.totalInvoiced;
         totalPaidHSA += breakdown.paidViaHSA;
@@ -231,7 +231,7 @@ const InvoicePaymentListEnhanced = () => {
             </Button>
             <Button onClick={() => navigate("/expenses/new")}>
               <Plus className="h-4 w-4 mr-2" />
-              Add Expense
+              Add Invoice
             </Button>
           </div>
         </div>
@@ -386,10 +386,10 @@ const InvoicePaymentListEnhanced = () => {
                                     <span>•</span>
                                     <span>{new Date(incident.incident_date).toLocaleDateString()}</span>
                                     <span>•</span>
-                                    <span>{incident.expense_reports?.length || 0} invoice(s)</span>
-                                  </div>
-                                </div>
-                              </div>
+                                     <span>{incident.invoices?.length || 0} invoice(s)</span>
+                                   </div>
+                                 </div>
+                               </div>
 
                               <div className="text-right">
                                 <div className="text-lg font-bold">${stats.totalInvoiced.toFixed(2)}</div>
@@ -428,9 +428,9 @@ const InvoicePaymentListEnhanced = () => {
         {filteredSimpleExpenses.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Simple Expenses (Flat List)</CardTitle>
+              <CardTitle>Simple Invoices (Flat List)</CardTitle>
               <CardDescription>
-                Straightforward one-time medical expenses
+                Standalone medical bills and invoices
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -466,11 +466,11 @@ const InvoicePaymentListEnhanced = () => {
                       </div>
                       <div className="flex items-center gap-3">
                         <p className="font-semibold">${breakdown.totalInvoiced.toFixed(2)}</p>
-                        <LinkToIncidentDialog 
-                          expenseId={expense.id}
-                          currentIncidentId={expense.medical_incident_id}
-                          onLinked={fetchData}
-                        />
+                      <LinkToIncidentDialog 
+                        invoiceId={expense.id}
+                        currentIncidentId={expense.medical_incident_id}
+                        onLinked={fetchData}
+                      />
                       </div>
                     </div>
                   );

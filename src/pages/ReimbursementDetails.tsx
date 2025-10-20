@@ -51,7 +51,7 @@ const ReimbursementDetails = () => {
         const { data: receiptsData } = await supabase
           .from("receipts")
           .select("*")
-          .in("expense_id", expenseIds)
+          .in("invoice_id", expenseIds)
           .order("display_order");
         
         if (receiptsData) {

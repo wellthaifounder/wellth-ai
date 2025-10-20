@@ -82,7 +82,7 @@ const InvoiceEntry = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from("expense_reports")
+        .from("invoices")
         .select("*")
         .eq("id", invoiceId)
         .single();
@@ -108,7 +108,7 @@ const InvoiceEntry = () => {
         const { data: receiptsData } = await supabase
           .from("receipts")
           .select("*")
-          .eq("expense_id", invoiceId)
+          .eq("invoice_id", invoiceId)
           .order("display_order");
         
         if (receiptsData) {
@@ -148,8 +148,8 @@ const InvoiceEntry = () => {
       let expenseReport;
       
       if (isEditMode && id) {
-        const { data, error: expenseError } = await supabase
-          .from("expense_reports")
+        const { data, error: invoiceError } = await supabase
+          .from("invoices")
           .update({
             date: formattedDate,
             vendor: validatedData.vendor,
@@ -172,11 +172,11 @@ const InvoiceEntry = () => {
           .select()
           .single();
 
-        if (expenseError) throw expenseError;
+        if (invoiceError) throw invoiceError;
         expenseReport = data;
       } else {
-        const { data, error: expenseError } = await supabase
-          .from("expense_reports")
+        const { data, error: invoiceError } = await supabase
+          .from("invoices")
           .insert({
             user_id: user.id,
             date: formattedDate,
@@ -200,7 +200,7 @@ const InvoiceEntry = () => {
           .select()
           .single();
 
-        if (expenseError) throw expenseError;
+        if (invoiceError) throw invoiceError;
         expenseReport = data;
       }
 
@@ -220,7 +220,7 @@ const InvoiceEntry = () => {
           const { error: receiptError } = await supabase
             .from("receipts")
             .insert({
-              expense_id: expenseReport.id,
+              invoice_id: expenseReport.id,
               file_path: filePath,
               file_type: fileData.file.type,
               document_type: fileData.documentType,
@@ -258,7 +258,7 @@ const InvoiceEntry = () => {
           <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-4" />
           <CardTitle className="mb-2">{isEditMode ? "Invoice Updated!" : "Invoice Added!"}</CardTitle>
           <CardDescription>
-            Redirecting to expenses...
+            Redirecting to invoices...
           </CardDescription>
         </Card>
       </div>
@@ -287,7 +287,7 @@ const InvoiceEntry = () => {
               </div>
               {isEditMode && (
                 <LinkToIncidentDialog 
-                  expenseId={id!}
+                  invoiceId={id!}
                   currentIncidentId={currentIncidentId}
                   onLinked={() => loadInvoice(id!)}
                 />

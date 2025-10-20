@@ -68,8 +68,8 @@ const SimpleExpenseEntry = () => {
       const dateObj = new Date(validatedData.date + 'T00:00:00');
       const formattedDate = dateObj.toISOString().split('T')[0];
 
-      const { data: expenseReport, error: expenseError } = await supabase
-        .from("expense_reports")
+      const { data: invoice, error: invoiceError } = await supabase
+        .from("invoices")
         .insert({
           user_id: user.id,
           date: formattedDate,
@@ -84,12 +84,12 @@ const SimpleExpenseEntry = () => {
         .select()
         .single();
 
-      if (expenseError) throw expenseError;
+      if (invoiceError) throw invoiceError;
 
-      if (receiptFile && expenseReport) {
+      if (receiptFile && invoice) {
         const fileExt = receiptFile.name.split('.').pop();
         const timestamp = Date.now();
-        const filePath = `${user.id}/${expenseReport.id}/receipt_${timestamp}.${fileExt}`;
+        const filePath = `${user.id}/${invoice.id}/receipt_${timestamp}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from('receipts')
@@ -100,7 +100,7 @@ const SimpleExpenseEntry = () => {
         const { error: receiptError } = await supabase
           .from("receipts")
           .insert({
-            expense_id: expenseReport.id,
+            invoice_id: invoice.id,
             file_path: filePath,
             file_type: receiptFile.type,
             document_type: 'receipt',
@@ -111,7 +111,7 @@ const SimpleExpenseEntry = () => {
       }
 
       setSuccess(true);
-      toast.success("Expense added successfully!");
+      toast.success("Invoice added successfully!");
       
       setTimeout(() => {
         navigate("/invoices");
@@ -133,9 +133,9 @@ const SimpleExpenseEntry = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="max-w-md mx-auto text-center p-8">
           <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-4" />
-          <CardTitle className="mb-2">Expense Added!</CardTitle>
+          <CardTitle className="mb-2">Invoice Added!</CardTitle>
           <CardDescription>
-            Redirecting to dashboard...
+            Redirecting to invoices...
           </CardDescription>
         </Card>
       </div>
@@ -165,9 +165,9 @@ const SimpleExpenseEntry = () => {
 
         <Card className="max-w-xl mx-auto">
           <CardHeader>
-            <CardTitle>Quick Add - Simple Expense</CardTitle>
+            <CardTitle>Quick Add - Simple Invoice</CardTitle>
             <CardDescription>
-              Add a straightforward medical expense in seconds
+              Add a straightforward medical bill or invoice in seconds
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -268,7 +268,7 @@ const SimpleExpenseEntry = () => {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Adding..." : "Add Expense"}
+                {loading ? "Adding..." : "Add Invoice"}
               </Button>
             </form>
           </CardContent>

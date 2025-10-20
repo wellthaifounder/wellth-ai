@@ -15,7 +15,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { TableColumnHeader } from "@/components/ui/table-column-header";
 import { LinkToIncidentDialog } from "@/components/expense/LinkToIncidentDialog";
 
-type Expense = Tables<"expense_reports">;
+type Expense = Tables<"invoices">;
 
 const ExpenseList = () => {
   const navigate = useNavigate();
@@ -42,7 +42,7 @@ const ExpenseList = () => {
   const fetchExpenses = async () => {
     try {
       const { data, error } = await supabase
-        .from("expense_reports")
+        .from("invoices")
         .select(`
           *,
           reimbursement_items(
@@ -66,7 +66,7 @@ const ExpenseList = () => {
   const handleDelete = async (id: string) => {
     try {
       const { error } = await supabase
-        .from("expense_reports")
+        .from("invoices")
         .delete()
         .eq("id", id);
 
@@ -84,7 +84,7 @@ const ExpenseList = () => {
     
     try {
       const { error } = await supabase
-        .from("expense_reports")
+        .from("invoices")
         .delete()
         .in("id", Array.from(selectedIds));
 
@@ -479,11 +479,11 @@ const ExpenseList = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
-                            <LinkToIncidentDialog 
-                              expenseId={expense.id}
-                              currentIncidentId={expense.medical_incident_id}
-                              onLinked={fetchExpenses}
-                              trigger={
+                      <LinkToIncidentDialog 
+                        invoiceId={expense.id}
+                        currentIncidentId={expense.medical_incident_id}
+                        onLinked={fetchExpenses}
+                        trigger={
                                 <Button
                                   variant="ghost"
                                   size="sm"

@@ -53,28 +53,28 @@ const Dashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const { data: expenses, error } = await supabase
-        .from("expense_reports")
+      const { data: invoices, error } = await supabase
+        .from("invoices")
         .select("*")
         .order("date", { ascending: false });
 
       if (error) throw error;
 
-      const totalExpenses = expenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
-      const hsaExpenses = expenses?.filter(exp => exp.is_hsa_eligible)
-        .reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
+      const totalInvoiced = invoices?.reduce((sum, inv) => sum + Number(inv.amount), 0) || 0;
+      const hsaEligible = invoices?.filter(inv => inv.is_hsa_eligible)
+        .reduce((sum, inv) => sum + Number(inv.amount), 0) || 0;
       
-      const taxSavings = hsaExpenses * 0.3;
-      const rewardsEarned = totalExpenses * 0.02;
+      const taxSavings = hsaEligible * 0.3;
+      const rewardsEarned = totalInvoiced * 0.02;
 
       setStats({
-        totalExpenses,
+        totalExpenses: totalInvoiced,
         taxSavings,
         rewardsEarned,
-        expenseCount: expenses?.length || 0,
+        expenseCount: invoices?.length || 0,
       });
 
-      setRecentExpenses(expenses?.slice(0, 5) || []);
+      setRecentExpenses(invoices?.slice(0, 5) || []);
     } catch (error) {
       console.error("Failed to fetch stats:", error);
     }
@@ -101,7 +101,7 @@ const Dashboard = () => {
         .from("medical_incidents")
         .select(`
           *,
-          expense_reports (
+          invoices (
             amount,
             is_hsa_eligible,
             payment_transactions (
@@ -117,13 +117,13 @@ const Dashboard = () => {
       if (error) throw error;
 
       const incidentsWithStats = incidents?.map(incident => {
-        const expenses = incident.expense_reports || [];
-        const totalAmount = expenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
+        const invoices = incident.invoices || [];
+        const totalAmount = invoices.reduce((sum, inv) => sum + Number(inv.amount), 0);
         
         let paidViaHSA = 0;
         let paidViaOther = 0;
-        expenses.forEach(exp => {
-          exp.payment_transactions?.forEach((payment: any) => {
+        invoices.forEach(inv => {
+          inv.payment_transactions?.forEach((payment: any) => {
             const amount = Number(payment.amount);
             if (payment.payment_source === 'HSA') {
               paidViaHSA += amount;
@@ -137,7 +137,7 @@ const Dashboard = () => {
 
         return {
           ...incident,
-          expense_count: expenses.length,
+          invoice_count: invoices.length,
           total_amount: totalAmount,
           paid_via_hsa: paidViaHSA,
           paid_via_other: paidViaOther,
@@ -213,7 +213,7 @@ const Dashboard = () => {
                 </Button>
               </div>
               <Button className="hidden sm:flex" variant="default" size="sm" onClick={() => navigate("/expenses/new")}>
-                Add Expense
+                New Entry
               </Button>
               <Button className="sm:hidden" variant="default" size="icon" onClick={() => navigate("/expenses/new")}>
                 <Plus className="h-4 w-4" />
@@ -231,20 +231,20 @@ const Dashboard = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
           <p className="text-muted-foreground">
-            Track your expenses and maximize your HSA savings
+            Track your medical invoices, payments, and maximize your HSA savings
           </p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Invoiced</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">${stats.totalExpenses.toFixed(2)}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.expenseCount} {stats.expenseCount === 1 ? "expense" : "expenses"} tracked
+                {stats.expenseCount} {stats.expenseCount === 1 ? "invoice" : "invoices"} tracked
               </p>
             </CardContent>
           </Card>
@@ -283,7 +283,7 @@ const Dashboard = () => {
               <div>
                 <CardTitle>Medical Incidents</CardTitle>
                 <CardDescription>
-                  {medicalIncidents.length > 0 ? "Complex medical events with multiple expenses" : "No medical incidents yet"}
+                  {medicalIncidents.length > 0 ? "Complex medical events with multiple invoices" : "No medical incidents yet"}
                 </CardDescription>
               </div>
               {medicalIncidents.length > 0 && (
@@ -297,7 +297,7 @@ const Dashboard = () => {
             {medicalIncidents.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-muted-foreground mb-4">
-                  Create medical incidents to group related expenses
+                  Create medical incidents to group related invoices
                 </p>
                 <Button onClick={() => navigate("/incident/new")}>
                   Create Medical Incident
@@ -321,7 +321,7 @@ const Dashboard = () => {
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {incident.incident_type.replace('_', ' ')} • {new Date(incident.incident_date).toLocaleDateString()} • {incident.expense_count || 0} expense(s)
+                          {incident.incident_type.replace('_', ' ')} • {new Date(incident.incident_date).toLocaleDateString()} • {incident.invoice_count || 0} invoice(s)
                         </p>
                       </div>
                       <div className="text-right">
@@ -342,9 +342,9 @@ const Dashboard = () => {
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle>Recent Expenses</CardTitle>
+                <CardTitle>Recent Invoices</CardTitle>
                 <CardDescription>
-                  {recentExpenses.length > 0 ? "Your latest tracked expenses" : "You haven't tracked any expenses yet"}
+                  {recentExpenses.length > 0 ? "Your latest invoices and bills" : "You haven't added any invoices yet"}
                 </CardDescription>
               </div>
               {recentExpenses.length > 0 && (
@@ -364,11 +364,11 @@ const Dashboard = () => {
             {recentExpenses.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-muted-foreground mb-4">
-                  Start tracking expenses to see your savings potential
+                  Start adding invoices and bills to track your medical costs
                 </p>
                 <div className="flex gap-3 justify-center">
                   <Button onClick={() => navigate("/expenses/new")}>
-                    Add Your First Expense
+                    Add Your First Invoice
                   </Button>
                   <Button variant="outline" onClick={() => navigate("/hsa-reimbursement")}>
                     <FileText className="mr-2 h-4 w-4" />

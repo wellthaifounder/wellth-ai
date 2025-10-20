@@ -36,8 +36,8 @@ const Analytics = () => {
 
   const fetchAnalytics = async () => {
     try {
-      const { data: expenses, error } = await supabase
-        .from("expense_reports")
+      const { data: invoices, error } = await supabase
+        .from("invoices")
         .select("*")
         .order("date", { ascending: true });
 
@@ -54,16 +54,16 @@ const Analytics = () => {
       let unreimbursedHsaTotal = 0;
       let reimbursedHsaTotal = 0;
 
-      expenses?.forEach(exp => {
-        const month = new Date(exp.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
-        monthlyTotals[month] = (monthlyTotals[month] || 0) + Number(exp.amount);
-        categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + Number(exp.amount);
-        if (exp.is_hsa_eligible) {
-          hsaTotal += Number(exp.amount);
-          if (exp.is_reimbursed) {
-            reimbursedHsaTotal += Number(exp.amount);
+      invoices?.forEach(inv => {
+        const month = new Date(inv.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+        monthlyTotals[month] = (monthlyTotals[month] || 0) + Number(inv.amount);
+        categoryTotals[inv.category] = (categoryTotals[inv.category] || 0) + Number(inv.amount);
+        if (inv.is_hsa_eligible) {
+          hsaTotal += Number(inv.amount);
+          if (inv.is_reimbursed) {
+            reimbursedHsaTotal += Number(inv.amount);
           } else {
-            unreimbursedHsaTotal += Number(exp.amount);
+            unreimbursedHsaTotal += Number(inv.amount);
           }
         }
       });
@@ -80,7 +80,7 @@ const Analytics = () => {
         }))
         .sort((a, b) => b.total - a.total);
 
-      const totalExpenses = expenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
+      const totalExpenses = invoices?.reduce((sum, inv) => sum + Number(inv.amount), 0) || 0;
       const avgMonthly = monthlyChartData.length > 0 ? totalExpenses / monthlyChartData.length : 0;
 
       setMonthlyData(monthlyChartData);
@@ -95,10 +95,10 @@ const Analytics = () => {
       });
 
       // Calculate rewards by payment method
-      if (paymentMethods && expenses) {
+      if (paymentMethods && invoices) {
         const rewardsByMethod = paymentMethods.map(pm => {
-          const pmExpenses = expenses.filter(exp => exp.payment_method_id === pm.id);
-          const totalSpent = pmExpenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
+          const pmInvoices = invoices.filter(inv => inv.payment_method_id === pm.id);
+          const totalSpent = pmInvoices.reduce((sum, inv) => sum + Number(inv.amount), 0);
           const rewardsEarned = totalSpent * (Number(pm.rewards_rate) / 100);
           
           return {
@@ -112,9 +112,9 @@ const Analytics = () => {
       }
 
       // Calculate yearly data
-      if (expenses) {
-        const yearlyStats = expenses.reduce((acc: any, exp) => {
-          const year = new Date(exp.date).getFullYear();
+      if (invoices) {
+        const yearlyStats = invoices.reduce((acc: any, inv) => {
+          const year = new Date(inv.date).getFullYear();
           if (!acc[year]) {
             acc[year] = {
               year,
@@ -125,11 +125,11 @@ const Analytics = () => {
             };
           }
           
-          const amount = Number(exp.amount);
+          const amount = Number(inv.amount);
           acc[year].totalExpenses += amount;
           acc[year].rewardsEarned += amount * 0.02;
           
-          if (exp.is_hsa_eligible) {
+          if (inv.is_hsa_eligible) {
             acc[year].hsaEligible += amount;
             acc[year].taxSavings += amount * 0.22;
           }
@@ -177,14 +177,14 @@ const Analytics = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Analytics</h1>
           <p className="text-muted-foreground">
-            Insights into your spending and HSA savings
+            Insights into your invoices, payments, and HSA savings
           </p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-5 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Invoiced</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -238,8 +238,8 @@ const Analytics = () => {
         <div className="grid gap-6 md:grid-cols-2 mb-8">
           <Card>
             <CardHeader>
-              <CardTitle>Monthly Spending Trend</CardTitle>
-              <CardDescription>Your expenses over time</CardDescription>
+              <CardTitle>Monthly Invoice Trend</CardTitle>
+              <CardDescription>Your invoices over time</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -260,7 +260,7 @@ const Analytics = () => {
                     dataKey="total" 
                     stroke="hsl(var(--primary))" 
                     strokeWidth={2}
-                    name="Total Expenses"
+                    name="Total Invoiced"
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -269,8 +269,8 @@ const Analytics = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Spending by Category</CardTitle>
-              <CardDescription>Breakdown of your expenses</CardDescription>
+              <CardTitle>Invoices by Category</CardTitle>
+              <CardDescription>Breakdown of your invoices</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>

@@ -29,7 +29,7 @@ const ExpenseDecision = () => {
         </Button>
 
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">How complex is this medical expense?</h1>
+          <h1 className="text-3xl font-bold mb-2">Add a Medical Invoice or Bill</h1>
           <p className="text-muted-foreground">
             Choose the right entry method based on your situation
           </p>
@@ -44,8 +44,8 @@ const ExpenseDecision = () => {
               <div className="mx-auto mb-4 p-4 bg-primary/10 rounded-full w-fit group-hover:bg-primary/20 transition-colors">
                 <Zap className="h-8 w-8 text-primary" />
               </div>
-              <CardTitle className="text-xl">Quick Add - Simple Expense</CardTitle>
-              <CardDescription>Perfect for straightforward transactions</CardDescription>
+              <CardTitle className="text-xl">Quick Add - Simple Invoice</CardTitle>
+              <CardDescription>Perfect for straightforward bills</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-sm text-muted-foreground font-medium">Best for:</p>
@@ -64,7 +64,7 @@ const ExpenseDecision = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">✓</span>
-                  <span>Simple one-time expenses</span>
+                  <span>Simple one-time invoices</span>
                 </li>
               </ul>
               <div className="pt-4">
@@ -118,8 +118,8 @@ const ExpenseDecision = () => {
         <div className="mt-8 p-6 bg-muted/50 rounded-lg">
           <h3 className="font-semibold mb-2">💡 Not sure which to choose?</h3>
           <p className="text-sm text-muted-foreground">
-            Start with <strong>Quick Add</strong> for simple expenses. You can always create a Medical Incident later 
-            to group related expenses together for better tracking and HSA reimbursement optimization.
+            Start with <strong>Quick Add</strong> for simple invoices. You can always create a Medical Incident later 
+            to group related invoices together for better tracking and HSA reimbursement optimization.
           </p>
         </div>
       </div>

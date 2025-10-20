@@ -79,7 +79,7 @@ const ExpenseEntry = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from("expense_reports")
+        .from("invoices")
         .select("*")
         .eq("id", expenseId)
         .single();
@@ -144,7 +144,7 @@ const ExpenseEntry = () => {
       if (isEditMode && id) {
         // Update existing expense
         const { data, error: expenseError } = await supabase
-          .from("expense_reports")
+          .from("invoices")
           .update({
             date: formattedDate,
             vendor: validatedData.vendor,
@@ -169,7 +169,7 @@ const ExpenseEntry = () => {
       } else {
         // Create new expense
         const { data, error: expenseError } = await supabase
-          .from("expense_reports")
+          .from("invoices")
           .insert({
             user_id: user.id,
             date: formattedDate,
