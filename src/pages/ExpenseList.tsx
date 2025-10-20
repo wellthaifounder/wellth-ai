@@ -9,10 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { WellthLogo } from "@/components/WellthLogo";
-import { ArrowLeft, Plus, Download, Trash2, Edit, Upload, FileText } from "lucide-react";
+import { ArrowLeft, Plus, Download, Trash2, Edit, Upload, FileText, FolderHeart } from "lucide-react";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 import { TableColumnHeader } from "@/components/ui/table-column-header";
+import { LinkToIncidentDialog } from "@/components/expense/LinkToIncidentDialog";
 
 type Expense = Tables<"expense_reports">;
 
@@ -440,14 +441,19 @@ const ExpenseList = () => {
                         <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
                         <TableCell>{expense.vendor}</TableCell>
                         <TableCell>{expense.category}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <span>${Number(expense.amount).toFixed(2)}</span>
-                            {(expense as any).receipts?.[0]?.count > 0 && (
-                              <Badge variant="outline" className="flex items-center gap-1">
+                         <TableCell>
+                           <div className="flex items-center gap-2">
+                             <span>${Number(expense.amount).toFixed(2)}</span>
+                             {(expense as any).receipts?.[0]?.count > 0 && (
+                               <Button 
+                                 variant="ghost" 
+                                 size="sm"
+                                 onClick={() => navigate(`/invoice/${expense.id}`)}
+                                 className="flex items-center gap-1"
+                               >
                                 <FileText className="h-3 w-3" />
                                 {(expense as any).receipts[0].count}
-                              </Badge>
+                              </Button>
                             )}
                           </div>
                         </TableCell>
@@ -473,10 +479,23 @@ const ExpenseList = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
+                            <LinkToIncidentDialog 
+                              expenseId={expense.id}
+                              currentIncidentId={expense.medical_incident_id}
+                              onLinked={fetchExpenses}
+                              trigger={
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                >
+                                  <FolderHeart className="h-4 w-4" />
+                                </Button>
+                              }
+                            />
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => navigate(`/expenses/edit/${expense.id}`)}
+                              onClick={() => navigate(`/invoice/${expense.id}`)}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>

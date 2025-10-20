@@ -11,6 +11,7 @@ import { ArrowLeft, Plus, DollarSign, AlertCircle, ChevronDown, ChevronUp, Folde
 import { toast } from "sonner";
 import { calculateHSAEligibility } from "@/lib/hsaCalculations";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { LinkToIncidentDialog } from "@/components/expense/LinkToIncidentDialog";
 
 const InvoicePaymentListEnhanced = () => {
   const navigate = useNavigate();
@@ -441,10 +442,12 @@ const InvoicePaymentListEnhanced = () => {
                   return (
                     <div 
                       key={expense.id} 
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
-                      onClick={() => navigate(`/invoice/${expense.id}`)}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors"
                     >
-                      <div className="flex-1">
+                      <div 
+                        className="flex-1 cursor-pointer"
+                        onClick={() => navigate(`/invoice/${expense.id}`)}
+                      >
                         <div className="flex items-center gap-2">
                           <span className="text-lg">{emoji}</span>
                           <p className="font-medium">{expense.vendor}</p>
@@ -461,7 +464,14 @@ const InvoicePaymentListEnhanced = () => {
                           {breakdown.unpaidBalance > 0 && <> • Unpaid: ${breakdown.unpaidBalance.toFixed(2)} (🎯 Pay & Reimburse)</>}
                         </div>
                       </div>
-                      <p className="font-semibold">${breakdown.totalInvoiced.toFixed(2)}</p>
+                      <div className="flex items-center gap-3">
+                        <p className="font-semibold">${breakdown.totalInvoiced.toFixed(2)}</p>
+                        <LinkToIncidentDialog 
+                          expenseId={expense.id}
+                          currentIncidentId={expense.medical_incident_id}
+                          onLinked={fetchData}
+                        />
+                      </div>
                     </div>
                   );
                 })}

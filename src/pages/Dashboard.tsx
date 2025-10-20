@@ -20,6 +20,7 @@ const Dashboard = () => {
   });
   const [recentExpenses, setRecentExpenses] = useState<any[]>([]);
   const [reimbursementRequests, setReimbursementRequests] = useState<any[]>([]);
+  const [medicalIncidents, setMedicalIncidents] = useState<any[]>([]);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -37,6 +38,7 @@ const Dashboard = () => {
     checkUser();
     fetchStats();
     fetchReimbursementRequests();
+    fetchMedicalIncidents();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
@@ -91,6 +93,75 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Failed to fetch reimbursement requests:", error);
     }
+  };
+
+  const fetchMedicalIncidents = async () => {
+    try {
+      const { data: incidents, error } = await supabase
+        .from("medical_incidents")
+        .select(`
+          *,
+          expense_reports (
+            amount,
+            is_hsa_eligible,
+            payment_transactions (
+              amount,
+              payment_source,
+              is_reimbursed
+            )
+          )
+        `)
+        .order("incident_date", { ascending: false })
+        .limit(5);
+
+      if (error) throw error;
+
+      const incidentsWithStats = incidents?.map(incident => {
+        const expenses = incident.expense_reports || [];
+        const totalAmount = expenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
+        
+        let paidViaHSA = 0;
+        let paidViaOther = 0;
+        expenses.forEach(exp => {
+          exp.payment_transactions?.forEach((payment: any) => {
+            const amount = Number(payment.amount);
+            if (payment.payment_source === 'HSA') {
+              paidViaHSA += amount;
+            } else {
+              paidViaOther += amount;
+            }
+          });
+        });
+
+        const reimbursableAmount = incident.is_hsa_eligible ? paidViaOther : 0;
+
+        return {
+          ...incident,
+          expense_count: expenses.length,
+          total_amount: totalAmount,
+          paid_via_hsa: paidViaHSA,
+          paid_via_other: paidViaOther,
+          reimbursable_amount: reimbursableAmount,
+        };
+      }) || [];
+
+      setMedicalIncidents(incidentsWithStats);
+    } catch (error) {
+      console.error("Failed to fetch medical incidents:", error);
+    }
+  };
+
+  const getIncidentStatusEmoji = (incident: any) => {
+    const total = incident.total_amount || 0;
+    const paidHSA = incident.paid_via_hsa || 0;
+    const paidOther = incident.paid_via_other || 0;
+    const unpaid = total - paidHSA - paidOther;
+
+    if (paidHSA === total && total > 0) return "🟢"; // Fully reimbursed via HSA
+    if (paidOther > 0 && unpaid === 0) return "🟡"; // Paid via other, recoverable
+    if (unpaid > 0) return "🔴"; // Unpaid - strategic opportunity
+    if (paidHSA > 0 && paidOther > 0) return "⚪"; // Partially paid mix
+    return "🚫"; // Not HSA eligible or no data
   };
 
   const handleSignOut = async () => {
@@ -204,6 +275,68 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Medical Incidents Section */}
+        <Card className="mb-8">
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>Medical Incidents</CardTitle>
+                <CardDescription>
+                  {medicalIncidents.length > 0 ? "Complex medical events with multiple expenses" : "No medical incidents yet"}
+                </CardDescription>
+              </div>
+              {medicalIncidents.length > 0 && (
+                <Button variant="outline" size="sm" onClick={() => navigate("/invoices")}>
+                  View All
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {medicalIncidents.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground mb-4">
+                  Create medical incidents to group related expenses
+                </p>
+                <Button onClick={() => navigate("/incident/new")}>
+                  Create Medical Incident
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {medicalIncidents.map((incident) => {
+                  const emoji = getIncidentStatusEmoji(incident);
+                  return (
+                    <div 
+                      key={incident.id} 
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
+                      onClick={() => navigate(`/incident/${incident.id}`)}
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{emoji} {incident.title}</p>
+                          {incident.is_hsa_eligible && (
+                            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">HSA</span>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {incident.incident_type.replace('_', ' ')} • {new Date(incident.incident_date).toLocaleDateString()} • {incident.expense_count || 0} expense(s)
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold">${incident.total_amount?.toFixed(2) || '0.00'}</p>
+                        {incident.reimbursable_amount > 0 && (
+                          <p className="text-xs text-primary">💰 ${incident.reimbursable_amount.toFixed(2)} eligible</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

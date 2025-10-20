@@ -16,6 +16,7 @@ import { PaymentRecommendation } from "@/components/expense/PaymentRecommendatio
 import { ReceiptGallery } from "@/components/expense/ReceiptGallery";
 import { MultiFileUpload } from "@/components/expense/MultiFileUpload";
 import { PaymentPlanFields } from "@/components/expense/PaymentPlanFields";
+import { LinkToIncidentDialog } from "@/components/expense/LinkToIncidentDialog";
 
 const invoiceSchema = z.object({
   date: z.string().min(1, "Date is required"),
@@ -49,6 +50,7 @@ const InvoiceEntry = () => {
   const [newFiles, setNewFiles] = useState<any[]>([]);
   const [success, setSuccess] = useState(false);
   const [hasPaymentPlan, setHasPaymentPlan] = useState(false);
+  const [currentIncidentId, setCurrentIncidentId] = useState<string | undefined>(undefined);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     vendor: "",
@@ -101,6 +103,7 @@ const InvoiceEntry = () => {
           paymentPlanNotes: data.payment_plan_notes || "",
         });
         setHasPaymentPlan(!!data.payment_plan_total_amount);
+        setCurrentIncidentId(data.medical_incident_id || undefined);
         
         const { data: receiptsData } = await supabase
           .from("receipts")
@@ -115,7 +118,7 @@ const InvoiceEntry = () => {
     } catch (error) {
       console.error("Error loading invoice:", error);
       toast.error("Failed to load invoice");
-      navigate("/expenses");
+      navigate("/invoices");
     } finally {
       setLoading(false);
     }
@@ -234,7 +237,7 @@ const InvoiceEntry = () => {
       
       setTimeout(() => {
         setSuccess(false);
-        navigate("/expenses");
+        navigate("/invoices");
       }, 2000);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -275,10 +278,21 @@ const InvoiceEntry = () => {
 
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
-            <CardTitle>{isEditMode ? "Edit Invoice" : "Add New Invoice/Bill"}</CardTitle>
-            <CardDescription>
-              {isEditMode ? "Update your invoice details" : "Track medical bills and invoices for strategic payment optimization"}
-            </CardDescription>
+            <div className="flex items-start justify-between">
+              <div>
+                <CardTitle>{isEditMode ? "Edit Invoice" : "Add New Invoice/Bill"}</CardTitle>
+                <CardDescription>
+                  {isEditMode ? "Update your invoice details" : "Track medical bills and invoices for strategic payment optimization"}
+                </CardDescription>
+              </div>
+              {isEditMode && (
+                <LinkToIncidentDialog 
+                  expenseId={id!}
+                  currentIncidentId={currentIncidentId}
+                  onLinked={() => loadInvoice(id!)}
+                />
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">

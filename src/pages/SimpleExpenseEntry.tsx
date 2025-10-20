@@ -114,7 +114,7 @@ const SimpleExpenseEntry = () => {
       toast.success("Expense added successfully!");
       
       setTimeout(() => {
-        navigate("/dashboard");
+        navigate("/invoices");
       }, 2000);
     } catch (error) {
       if (error instanceof z.ZodError) {
