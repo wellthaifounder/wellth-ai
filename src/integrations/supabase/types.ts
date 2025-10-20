@@ -322,7 +322,7 @@ export type Database = {
           description: string | null
           display_order: number | null
           document_type: string | null
-          expense_id: string
+          expense_id: string | null
           file_path: string
           file_type: string
           id: string
@@ -333,7 +333,7 @@ export type Database = {
           description?: string | null
           display_order?: number | null
           document_type?: string | null
-          expense_id: string
+          expense_id?: string | null
           file_path: string
           file_type: string
           id?: string
@@ -344,7 +344,7 @@ export type Database = {
           description?: string | null
           display_order?: number | null
           document_type?: string | null
-          expense_id?: string
+          expense_id?: string | null
           file_path?: string
           file_type?: string
           id?: string
