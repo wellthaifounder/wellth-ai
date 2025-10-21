@@ -17,6 +17,8 @@ import { ReceiptGallery } from "@/components/expense/ReceiptGallery";
 import { MultiFileUpload } from "@/components/expense/MultiFileUpload";
 import { PaymentPlanFields } from "@/components/expense/PaymentPlanFields";
 import { LinkToIncidentDialog } from "@/components/expense/LinkToIncidentDialog";
+import { AttachDocumentDialog } from "@/components/documents/AttachDocumentDialog";
+import { Paperclip } from "lucide-react";
 
 const invoiceSchema = z.object({
   date: z.string().min(1, "Date is required"),
@@ -51,6 +53,7 @@ const InvoiceEntry = () => {
   const [success, setSuccess] = useState(false);
   const [hasPaymentPlan, setHasPaymentPlan] = useState(false);
   const [currentIncidentId, setCurrentIncidentId] = useState<string | undefined>(undefined);
+  const [showAttachDialog, setShowAttachDialog] = useState(false);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     vendor: "",
@@ -308,6 +311,20 @@ const InvoiceEntry = () => {
                 </div>
               )}
 
+              {isEditMode && (
+                <div className="space-y-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowAttachDialog(true)}
+                    className="w-full"
+                  >
+                    <Paperclip className="h-4 w-4 mr-2" />
+                    Attach Existing Documents
+                  </Button>
+                </div>
+              )}
+
               <MultiFileUpload
                 onFilesChange={setNewFiles}
                 disabled={loading}
@@ -416,6 +433,15 @@ const InvoiceEntry = () => {
             </form>
           </CardContent>
         </Card>
+
+        {isEditMode && (
+          <AttachDocumentDialog
+            invoiceId={id!}
+            open={showAttachDialog}
+            onOpenChange={setShowAttachDialog}
+            onAttached={() => loadInvoice(id!)}
+          />
+        )}
       </div>
     </div>
   );
