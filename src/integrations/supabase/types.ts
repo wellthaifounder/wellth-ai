@@ -393,6 +393,7 @@ export type Database = {
           invoice_id: string | null
           payment_transaction_id: string | null
           uploaded_at: string
+          user_id: string
         }
         Insert: {
           description?: string | null
@@ -404,6 +405,7 @@ export type Database = {
           invoice_id?: string | null
           payment_transaction_id?: string | null
           uploaded_at?: string
+          user_id: string
         }
         Update: {
           description?: string | null
@@ -415,6 +417,7 @@ export type Database = {
           invoice_id?: string | null
           payment_transaction_id?: string | null
           uploaded_at?: string
+          user_id?: string
         }
         Relationships: [
           {

@@ -160,6 +160,7 @@ const PaymentEntry = () => {
           const { error: receiptError } = await supabase
             .from("receipts")
             .insert({
+              user_id: user.id,
               payment_transaction_id: payment.id,
               file_path: filePath,
               file_type: fileData.file.type,

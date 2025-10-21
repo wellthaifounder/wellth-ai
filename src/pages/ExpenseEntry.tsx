@@ -16,6 +16,7 @@ import { ReceiptGallery } from "@/components/expense/ReceiptGallery";
 import { DocumentChecklist } from "@/components/expense/DocumentChecklist";
 import { MultiFileUpload } from "@/components/expense/MultiFileUpload";
 import { PaymentPlanFields } from "@/components/expense/PaymentPlanFields";
+import { AttachDocumentDialog } from "@/components/documents/AttachDocumentDialog";
 
 const expenseSchema = z.object({
   date: z.string().min(1, "Date is required"),
@@ -49,6 +50,7 @@ const ExpenseEntry = () => {
   const [newFiles, setNewFiles] = useState<any[]>([]);
   const [success, setSuccess] = useState(false);
   const [hasPaymentPlan, setHasPaymentPlan] = useState(false);
+  const [showAttachDialog, setShowAttachDialog] = useState(false);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     vendor: "",
@@ -211,7 +213,8 @@ const ExpenseEntry = () => {
           const { error: receiptError } = await supabase
             .from("receipts")
             .insert({
-              expense_id: expense.id,
+              user_id: user.id,
+              invoice_id: expense.id,
               file_path: filePath,
               file_type: fileData.file.type,
               document_type: fileData.documentType,
@@ -288,10 +291,25 @@ const ExpenseEntry = () => {
                 </div>
               )}
 
-              <MultiFileUpload
-                onFilesChange={setNewFiles}
-                disabled={loading}
-              />
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Documents</Label>
+                  {isEditMode && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowAttachDialog(true)}
+                    >
+                      Attach Existing Documents
+                    </Button>
+                  )}
+                </div>
+                <MultiFileUpload
+                  onFilesChange={setNewFiles}
+                  disabled={loading}
+                />
+              </div>
 
               <PaymentPlanFields
                 hasPaymentPlan={hasPaymentPlan}
@@ -393,6 +411,15 @@ const ExpenseEntry = () => {
           </CardContent>
         </Card>
       </div>
+
+      {isEditMode && (
+        <AttachDocumentDialog
+          invoiceId={id!}
+          open={showAttachDialog}
+          onOpenChange={setShowAttachDialog}
+          onAttached={() => loadExpense(id!)}
+        />
+      )}
     </div>
   );
 };

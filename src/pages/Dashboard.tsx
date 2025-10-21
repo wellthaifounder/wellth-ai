@@ -199,6 +199,10 @@ const Dashboard = () => {
                   <Calculator className="h-4 w-4 mr-2" />
                   Decision Tool
                 </Button>
+                <Button variant="ghost" size="sm" onClick={() => navigate("/documents")}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Documents
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => navigate("/analytics")}>
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Analytics
