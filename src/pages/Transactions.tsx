@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { Plus, Search, ArrowLeft } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { TransactionCard } from "@/components/transactions/TransactionCard";
 import { TransactionDetailDialog } from "@/components/transactions/TransactionDetailDialog";
 import { QuickAddTransactionDialog } from "@/components/transactions/QuickAddTransactionDialog";
+import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 
 type Transaction = {
   id: string;
@@ -148,17 +149,10 @@ export default function Transactions() {
 
   return (
     <div className="min-h-screen bg-background">
+      <AuthenticatedNav unreviewedTransactions={stats.unlinked} />
+      
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/")}
-            className="mb-4"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
-          
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-foreground">Transactions</h1>
