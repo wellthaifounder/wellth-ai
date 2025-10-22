@@ -25,6 +25,7 @@ import TripwireSuccess from "./pages/TripwireSuccess";
 import Checkout from "./pages/Checkout";
 import Documents from "./pages/Documents";
 import Transactions from "./pages/Transactions";
+import Settings from "./pages/Settings";
  
  import NotFound from "./pages/NotFound";
 import { WellbieChat } from "./components/WellbieChat";
@@ -66,6 +67,7 @@ const App = () => (
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/documents" element={<Documents />} />
           <Route path="/transactions" element={<Transactions />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/tripwire-success" element={<TripwireSuccess />} />
           <Route path="/checkout" element={<Checkout />} />
           
