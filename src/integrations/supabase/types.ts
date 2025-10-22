@@ -82,11 +82,46 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_labels: {
+        Row: {
+          created_at: string
+          id: string
+          invoice_id: string
+          label_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invoice_id: string
+          label_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          label_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_labels_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_labels_label_id_fkey"
+            columns: ["label_id"]
+            isOneToOne: false
+            referencedRelation: "labels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           amount: number
           category: string
-          complexity_level: string
           created_at: string
           date: string
           id: string
@@ -94,7 +129,6 @@ export type Database = {
           invoice_number: string | null
           is_hsa_eligible: boolean | null
           is_reimbursed: boolean | null
-          medical_incident_id: string | null
           notes: string | null
           payment_method_id: string | null
           payment_plan_installments: number | null
@@ -108,7 +142,6 @@ export type Database = {
         Insert: {
           amount: number
           category: string
-          complexity_level?: string
           created_at?: string
           date: string
           id?: string
@@ -116,7 +149,6 @@ export type Database = {
           invoice_number?: string | null
           is_hsa_eligible?: boolean | null
           is_reimbursed?: boolean | null
-          medical_incident_id?: string | null
           notes?: string | null
           payment_method_id?: string | null
           payment_plan_installments?: number | null
@@ -130,7 +162,6 @@ export type Database = {
         Update: {
           amount?: number
           category?: string
-          complexity_level?: string
           created_at?: string
           date?: string
           id?: string
@@ -138,7 +169,6 @@ export type Database = {
           invoice_number?: string | null
           is_hsa_eligible?: boolean | null
           is_reimbursed?: boolean | null
-          medical_incident_id?: string | null
           notes?: string | null
           payment_method_id?: string | null
           payment_plan_installments?: number | null
@@ -150,13 +180,6 @@ export type Database = {
           vendor?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "expense_reports_medical_incident_id_fkey"
-            columns: ["medical_incident_id"]
-            isOneToOne: false
-            referencedRelation: "medical_incidents"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "expenses_payment_method_id_fkey"
             columns: ["payment_method_id"]
@@ -173,41 +196,65 @@ export type Database = {
           },
         ]
       }
-      medical_incidents: {
+      labels: {
         Row: {
+          color: string
           created_at: string
-          description: string | null
           id: string
-          incident_date: string
-          incident_type: string
-          is_hsa_eligible: boolean
-          title: string
-          updated_at: string
+          name: string
           user_id: string
         }
         Insert: {
+          color?: string
           created_at?: string
-          description?: string | null
           id?: string
-          incident_date: string
-          incident_type?: string
-          is_hsa_eligible?: boolean
-          title: string
-          updated_at?: string
+          name: string
           user_id: string
         }
         Update: {
+          color?: string
           created_at?: string
-          description?: string | null
           id?: string
-          incident_date?: string
-          incident_type?: string
-          is_hsa_eligible?: boolean
-          title?: string
-          updated_at?: string
+          name?: string
           user_id?: string
         }
         Relationships: []
+      }
+      payment_labels: {
+        Row: {
+          created_at: string
+          id: string
+          label_id: string
+          payment_transaction_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label_id: string
+          payment_transaction_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label_id?: string
+          payment_transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_labels_label_id_fkey"
+            columns: ["label_id"]
+            isOneToOne: false
+            referencedRelation: "labels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_labels_payment_transaction_id_fkey"
+            columns: ["payment_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "payment_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_methods: {
         Row: {

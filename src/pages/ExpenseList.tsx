@@ -13,7 +13,6 @@ import { ArrowLeft, Plus, Download, Trash2, Edit, Upload, FileText, FolderHeart 
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 import { TableColumnHeader } from "@/components/ui/table-column-header";
-import { LinkToIncidentDialog } from "@/components/expense/LinkToIncidentDialog";
 
 type Expense = Tables<"invoices">;
 
@@ -479,19 +478,6 @@ const ExpenseList = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
-                      <LinkToIncidentDialog 
-                        invoiceId={expense.id}
-                        currentIncidentId={expense.medical_incident_id}
-                        onLinked={fetchExpenses}
-                        trigger={
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                >
-                                  <FolderHeart className="h-4 w-4" />
-                                </Button>
-                              }
-                            />
                             <Button
                               variant="ghost"
                               size="sm"

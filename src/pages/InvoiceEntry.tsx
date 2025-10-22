@@ -16,8 +16,8 @@ import { PaymentRecommendation } from "@/components/expense/PaymentRecommendatio
 import { ReceiptGallery } from "@/components/expense/ReceiptGallery";
 import { MultiFileUpload } from "@/components/expense/MultiFileUpload";
 import { PaymentPlanFields } from "@/components/expense/PaymentPlanFields";
-import { LinkToIncidentDialog } from "@/components/expense/LinkToIncidentDialog";
 import { AttachDocumentDialog } from "@/components/documents/AttachDocumentDialog";
+import { LabelSelector } from "@/components/labels/LabelSelector";
 import { Paperclip } from "lucide-react";
 
 const invoiceSchema = z.object({
@@ -52,8 +52,8 @@ const InvoiceEntry = () => {
   const [newFiles, setNewFiles] = useState<any[]>([]);
   const [success, setSuccess] = useState(false);
   const [hasPaymentPlan, setHasPaymentPlan] = useState(false);
-  const [currentIncidentId, setCurrentIncidentId] = useState<string | undefined>(undefined);
   const [showAttachDialog, setShowAttachDialog] = useState(false);
+  const [selectedLabels, setSelectedLabels] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     vendor: "",
@@ -106,7 +106,6 @@ const InvoiceEntry = () => {
           paymentPlanNotes: data.payment_plan_notes || "",
         });
         setHasPaymentPlan(!!data.payment_plan_total_amount);
-        setCurrentIncidentId(data.medical_incident_id || undefined);
         
         const { data: receiptsData } = await supabase
           .from("receipts")
@@ -289,13 +288,6 @@ const InvoiceEntry = () => {
                   {isEditMode ? "Update your invoice details" : "Track medical bills and invoices for strategic payment optimization"}
                 </CardDescription>
               </div>
-              {isEditMode && (
-                <LinkToIncidentDialog 
-                  invoiceId={id!}
-                  currentIncidentId={currentIncidentId}
-                  onLinked={() => loadInvoice(id!)}
-                />
-              )}
             </div>
           </CardHeader>
           <CardContent>
@@ -422,6 +414,18 @@ const InvoiceEntry = () => {
                   maxLength={500}
                 />
               </div>
+
+              {isEditMode && (
+                <div className="space-y-2">
+                  <Label>Labels</Label>
+                  <LabelSelector
+                    resourceId={id!}
+                    resourceType="invoice"
+                    selectedLabels={selectedLabels}
+                    onLabelsChange={setSelectedLabels}
+                  />
+                </div>
+              )}
 
               {recommendation && !isEditMode && (
                 <PaymentRecommendation recommendation={recommendation} />

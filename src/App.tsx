@@ -11,8 +11,6 @@ import ExpenseEntry from "./pages/ExpenseEntry";
 import ExpenseList from "./pages/ExpenseList";
 import ExpenseDecision from "./pages/ExpenseDecision";
 import SimpleExpenseEntry from "./pages/SimpleExpenseEntry";
-import MedicalIncidentEntry from "./pages/MedicalIncidentEntry";
-import MedicalIncidentDetails from "./pages/MedicalIncidentDetails";
 import InvoiceEntry from "./pages/InvoiceEntry";
 import InvoicePaymentListEnhanced from "./pages/InvoicePaymentListEnhanced";
 import PaymentEntry from "./pages/PaymentEntry";
@@ -54,10 +52,6 @@ const App = () => (
           {/* Dual-Path Expense Entry */}
           <Route path="/expenses/new" element={<ExpenseDecision />} />
           <Route path="/expense/quick" element={<SimpleExpenseEntry />} />
-          
-          {/* Medical Incident Routes */}
-          <Route path="/incident/new" element={<MedicalIncidentEntry />} />
-          <Route path="/incident/:id" element={<MedicalIncidentDetails />} />
           
           {/* Legacy Expense Routes (keep for backward compatibility) */}
           <Route path="/expenses" element={<ExpenseList />} />
