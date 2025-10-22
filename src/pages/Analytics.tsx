@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { WellthLogo } from "@/components/WellthLogo";
 import { ArrowLeft, TrendingUp, DollarSign, PieChart } from "lucide-react";
 import { toast } from "sonner";
 import { BarChart, Bar, LineChart, Line, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -11,6 +10,7 @@ import { HSAInvestmentTracker } from "@/components/analytics/HSAInvestmentTracke
 import { ReimbursementTimingOptimizer } from "@/components/analytics/ReimbursementTimingOptimizer";
 import { RewardsOptimizationDashboard } from "@/components/analytics/RewardsOptimizationDashboard";
 import { YearOverYearComparison } from "@/components/analytics/YearOverYearComparison";
+import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 
 const Analytics = () => {
   const navigate = useNavigate();
@@ -157,23 +157,16 @@ const Analytics = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-50">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <button 
-            onClick={() => navigate("/dashboard")}
-            className="hover:opacity-80 transition-opacity"
-          >
-            <WellthLogo size="sm" showTagline />
-          </button>
-          
-          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+      <AuthenticatedNav />
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <Button variant="ghost" onClick={() => navigate("/dashboard")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
         </div>
-      </nav>
-
-      <main className="container mx-auto px-4 py-8">
+        
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Analytics</h1>
           <p className="text-muted-foreground">

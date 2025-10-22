@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Upload, Search, FileText, Calendar, Tag } from "lucide-react";
+import { Upload, Search, FileText, Calendar, Tag, ArrowLeft } from "lucide-react";
 import { DocumentCard } from "@/components/documents/DocumentCard";
 import { EditDocumentDialog } from "@/components/documents/EditDocumentDialog";
 import { MultiFileUpload } from "@/components/expense/MultiFileUpload";
 import { Badge } from "@/components/ui/badge";
+import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 
 interface Receipt {
   id: string;
@@ -163,10 +164,13 @@ const Documents = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <AuthenticatedNav />
+      
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
-            ← Back to Dashboard
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
           </Button>
         </div>
 

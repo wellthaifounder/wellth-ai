@@ -6,10 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { WellthLogo } from "@/components/WellthLogo";
-import { ArrowLeft, Plus, DollarSign, AlertCircle } from "lucide-react";
+import { Plus, DollarSign, AlertCircle, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { calculateHSAEligibility } from "@/lib/hsaCalculations";
+import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 
 const InvoicePaymentListEnhanced = () => {
   const navigate = useNavigate();
@@ -114,18 +114,7 @@ const InvoicePaymentListEnhanced = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-50">
-        <div className="container mx-auto px-4">
-          <div className="flex h-16 items-center gap-4">
-            <button 
-              onClick={() => navigate("/dashboard")}
-              className="hover:opacity-80 transition-opacity"
-            >
-              <WellthLogo size="sm" showTagline />
-            </button>
-          </div>
-        </div>
-      </nav>
+      <AuthenticatedNav />
 
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
