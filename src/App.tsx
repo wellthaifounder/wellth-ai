@@ -24,6 +24,7 @@ import Analytics from "./pages/Analytics";
 import TripwireSuccess from "./pages/TripwireSuccess";
 import Checkout from "./pages/Checkout";
 import Documents from "./pages/Documents";
+import Transactions from "./pages/Transactions";
  
  import NotFound from "./pages/NotFound";
 import { WellbieChat } from "./components/WellbieChat";
@@ -64,6 +65,7 @@ const App = () => (
           <Route path="/payment-methods" element={<PaymentMethods />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/documents" element={<Documents />} />
+          <Route path="/transactions" element={<Transactions />} />
           <Route path="/tripwire-success" element={<TripwireSuccess />} />
           <Route path="/checkout" element={<Checkout />} />
           

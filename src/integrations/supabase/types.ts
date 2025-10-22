@@ -305,6 +305,7 @@ export type Database = {
           plaid_transaction_id: string | null
           reimbursed_date: string | null
           reimbursement_request_id: string | null
+          transaction_id: string | null
           updated_at: string
           user_id: string
         }
@@ -321,6 +322,7 @@ export type Database = {
           plaid_transaction_id?: string | null
           reimbursed_date?: string | null
           reimbursement_request_id?: string | null
+          transaction_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -337,6 +339,7 @@ export type Database = {
           plaid_transaction_id?: string | null
           reimbursed_date?: string | null
           reimbursement_request_id?: string | null
+          transaction_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -360,6 +363,13 @@ export type Database = {
             columns: ["reimbursement_request_id"]
             isOneToOne: false
             referencedRelation: "reimbursement_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
             referencedColumns: ["id"]
           },
         ]
@@ -557,6 +567,123 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      transaction_invoice_suggestions: {
+        Row: {
+          confidence_score: number
+          created_at: string
+          id: string
+          invoice_id: string
+          match_reason: string | null
+          transaction_id: string
+        }
+        Insert: {
+          confidence_score: number
+          created_at?: string
+          id?: string
+          invoice_id: string
+          match_reason?: string | null
+          transaction_id: string
+        }
+        Update: {
+          confidence_score?: number
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          match_reason?: string | null
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_invoice_suggestions_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_invoice_suggestions_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string | null
+          is_hsa_eligible: boolean | null
+          is_medical: boolean | null
+          notes: string | null
+          payment_method_id: string | null
+          plaid_transaction_id: string | null
+          reconciliation_status: string | null
+          source: string | null
+          transaction_date: string
+          updated_at: string
+          user_id: string
+          vendor: string | null
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          invoice_id?: string | null
+          is_hsa_eligible?: boolean | null
+          is_medical?: boolean | null
+          notes?: string | null
+          payment_method_id?: string | null
+          plaid_transaction_id?: string | null
+          reconciliation_status?: string | null
+          source?: string | null
+          transaction_date: string
+          updated_at?: string
+          user_id: string
+          vendor?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string | null
+          is_hsa_eligible?: boolean | null
+          is_medical?: boolean | null
+          notes?: string | null
+          payment_method_id?: string | null
+          plaid_transaction_id?: string | null
+          reconciliation_status?: string | null
+          source?: string | null
+          transaction_date?: string
+          updated_at?: string
+          user_id?: string
+          vendor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_payment_method_id_fkey"
+            columns: ["payment_method_id"]
+            isOneToOne: false
+            referencedRelation: "payment_methods"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wellbie_conversations: {
         Row: {

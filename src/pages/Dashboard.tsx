@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { WellthLogo } from "@/components/WellthLogo";
-import { LogOut, DollarSign, TrendingUp, CreditCard, FileText, BarChart3, Wallet, Plus, Calculator } from "lucide-react";
+import { LogOut, DollarSign, TrendingUp, CreditCard, FileText, BarChart3, Wallet, Plus, Calculator, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
@@ -17,6 +17,7 @@ const Dashboard = () => {
     taxSavings: 0,
     rewardsEarned: 0,
     expenseCount: 0,
+    unreviewedTransactions: 0,
   });
   const [recentExpenses, setRecentExpenses] = useState<any[]>([]);
   const [reimbursementRequests, setReimbursementRequests] = useState<any[]>([]);
@@ -37,6 +38,7 @@ const Dashboard = () => {
     checkUser();
     fetchStats();
     fetchReimbursementRequests();
+    fetchTransactionStats();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
@@ -70,6 +72,7 @@ const Dashboard = () => {
         taxSavings,
         rewardsEarned,
         expenseCount: invoices?.length || 0,
+        unreviewedTransactions: 0,
       });
 
       setRecentExpenses(invoices?.slice(0, 5) || []);
@@ -90,6 +93,23 @@ const Dashboard = () => {
       setReimbursementRequests(requests || []);
     } catch (error) {
       console.error("Failed to fetch reimbursement requests:", error);
+    }
+  };
+
+  const fetchTransactionStats = async () => {
+    try {
+      const { data: transactions, error } = await supabase
+        .from("transactions")
+        .select("reconciliation_status")
+        .eq("reconciliation_status", "unlinked");
+
+      if (error) throw error;
+      setStats(prev => ({
+        ...prev,
+        unreviewedTransactions: transactions?.length || 0
+      }));
+    } catch (error) {
+      console.error("Failed to fetch transaction stats:", error);
     }
   };
 
@@ -127,6 +147,15 @@ const Dashboard = () => {
                 <Button variant="ghost" size="sm" onClick={() => navigate("/decision-tool")}>
                   <Calculator className="h-4 w-4 mr-2" />
                   Decision Tool
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => navigate("/transactions")}>
+                  <Receipt className="h-4 w-4 mr-2" />
+                  Transactions
+                  {stats.unreviewedTransactions > 0 && (
+                    <span className="ml-1 bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                      {stats.unreviewedTransactions}
+                    </span>
+                  )}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => navigate("/documents")}>
                   <FileText className="h-4 w-4 mr-2" />
