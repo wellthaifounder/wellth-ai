@@ -26,8 +26,9 @@ import Checkout from "./pages/Checkout";
 import Documents from "./pages/Documents";
 import Transactions from "./pages/Transactions";
 import Settings from "./pages/Settings";
+import BankAccounts from "./pages/BankAccounts";
  
- import NotFound from "./pages/NotFound";
+import NotFound from "./pages/NotFound";
 import { WellbieChat } from "./components/WellbieChat";
 
 const queryClient = new QueryClient();
@@ -68,6 +69,7 @@ const App = () => (
           <Route path="/documents" element={<Documents />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/bank-accounts" element={<BankAccounts />} />
           <Route path="/tripwire-success" element={<TripwireSuccess />} />
           <Route path="/checkout" element={<Checkout />} />
           

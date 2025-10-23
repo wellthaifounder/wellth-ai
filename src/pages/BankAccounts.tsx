@@ -8,13 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Building2, RefreshCw, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { Database } from '@/integrations/supabase/types';
 
-interface PlaidConnection {
-  id: string;
-  institution_name: string;
-  created_at: string;
-  last_synced_at: string | null;
-}
+type PlaidConnection = Database['public']['Tables']['plaid_connections']['Row'];
 
 export default function BankAccounts() {
   const navigate = useNavigate();
