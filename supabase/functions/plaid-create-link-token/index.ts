@@ -14,6 +14,7 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const plaidClientId = Deno.env.get('PLAID_CLIENT_ID')!;
     const plaidSecretKey = Deno.env.get('PLAID_SANDBOX_SECRET_KEY')!;
     
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -36,7 +37,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        client_id: '679b0c9bf18b9c001afa6fdf',
+        client_id: plaidClientId,
         secret: plaidSecretKey,
         user: {
           client_user_id: user.id,
