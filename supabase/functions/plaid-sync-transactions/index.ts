@@ -64,7 +64,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        client_id: '679b0c9bf18b9c001afa6fdf',
+        client_id: plaidClientId,
         secret: plaidSecretKey,
         access_token: connection.access_token,
         start_date: start_date || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
