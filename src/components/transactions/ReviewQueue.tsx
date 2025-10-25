@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SuggestionCard } from "./SuggestionCard";
 import { TransactionDetailDialog } from "./TransactionDetailDialog";
+import { OnboardingDialog } from "./OnboardingDialog";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { getSuggestion, type Transaction as TransactionType, type Invoice } from "@/lib/transactionMatcher";
-import { Loader2 } from "lucide-react";
+import { Loader2, PartyPopper, ArrowLeft } from "lucide-react";
+import confetti from "canvas-confetti";
 
 export function ReviewQueue() {
   const [transactions, setTransactions] = useState<TransactionType[]>([]);
@@ -14,10 +17,29 @@ export function ReviewQueue() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+  const [showCompletion, setShowCompletion] = useState(false);
 
   useEffect(() => {
     fetchData();
+    checkOnboarding();
   }, []);
+
+  const checkOnboarding = () => {
+    const completed = localStorage.getItem('review_queue_onboarding_completed');
+    if (!completed) {
+      setShowOnboarding(true);
+    } else {
+      setHasCompletedOnboarding(true);
+    }
+  };
+
+  const handleCompleteOnboarding = () => {
+    localStorage.setItem('review_queue_onboarding_completed', 'true');
+    setShowOnboarding(false);
+    setHasCompletedOnboarding(true);
+  };
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -90,12 +112,25 @@ export function ReviewQueue() {
         });
 
       if (error) throw error;
+      
+      // Update local state
+      setUserPreferences(prev => {
+        const existing = prev.find(p => p.vendor_pattern === vendorPattern);
+        if (existing) {
+          return prev.map(p => 
+            p.vendor_pattern === vendorPattern 
+              ? { ...p, is_medical: isMedical }
+              : p
+          );
+        }
+        return [...prev, { vendor_pattern: vendorPattern, is_medical: isMedical }];
+      });
     } catch (error) {
       console.error('Error saving preference:', error);
     }
   };
 
-  const handleConfirmMedical = async () => {
+  const handleConfirmMedical = async (rememberChoice?: boolean) => {
     const transaction = transactions[currentIndex];
     if (!transaction) return;
 
@@ -119,10 +154,14 @@ export function ReviewQueue() {
 
       if (error) throw error;
 
-      // Save preference
-      await savePreference(transaction.vendor || transaction.description, true);
-
-      toast.success('Marked as medical expense');
+      // Save preference if requested
+      if (rememberChoice && transaction.vendor) {
+        await savePreference(transaction.vendor, true);
+        toast.success('Marked as medical and saved preference');
+      } else {
+        toast.success('Marked as medical expense');
+      }
+      
       moveToNext();
     } catch (error) {
       console.error('Error updating transaction:', error);
@@ -130,7 +169,7 @@ export function ReviewQueue() {
     }
   };
 
-  const handleNotMedical = async () => {
+  const handleNotMedical = async (rememberChoice?: boolean) => {
     const transaction = transactions[currentIndex];
     if (!transaction) return;
 
@@ -145,10 +184,14 @@ export function ReviewQueue() {
 
       if (error) throw error;
 
-      // Save preference
-      await savePreference(transaction.vendor || transaction.description, false);
-
-      toast.success('Marked as not medical');
+      // Save preference if requested
+      if (rememberChoice && transaction.vendor) {
+        await savePreference(transaction.vendor, false);
+        toast.success('Marked as not medical and saved preference');
+      } else {
+        toast.success('Marked as not medical');
+      }
+      
       moveToNext();
     } catch (error) {
       console.error('Error updating transaction:', error);
@@ -164,9 +207,20 @@ export function ReviewQueue() {
     if (currentIndex < transactions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      // Refresh to check for more
-      fetchData();
-      setCurrentIndex(0);
+      // Show completion celebration
+      setShowCompletion(true);
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+      
+      // Refresh after celebration
+      setTimeout(() => {
+        fetchData();
+        setCurrentIndex(0);
+        setShowCompletion(false);
+      }, 3000);
     }
   };
 
@@ -178,13 +232,40 @@ export function ReviewQueue() {
     );
   }
 
+  if (showCompletion) {
+    return (
+      <div className="text-center py-12 space-y-6">
+        <div className="flex justify-center">
+          <PartyPopper className="h-24 w-24 text-primary animate-bounce" />
+        </div>
+        <div>
+          <h3 className="text-2xl font-bold">Great job! 🎉</h3>
+          <p className="text-muted-foreground mt-2">
+            You've reviewed all your transactions
+          </p>
+          <p className="text-sm text-muted-foreground mt-4">
+            Checking for more transactions...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (transactions.length === 0) {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-12 space-y-4">
         <h3 className="text-lg font-semibold">All caught up! 🎉</h3>
         <p className="text-muted-foreground mt-2">
           No unlinked transactions to review
         </p>
+        <Button
+          variant="outline"
+          onClick={fetchData}
+          className="mt-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to All Transactions
+        </Button>
       </div>
     );
   }
@@ -206,7 +287,13 @@ export function ReviewQueue() {
   } : null;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <>
+      <OnboardingDialog 
+        open={showOnboarding} 
+        onComplete={handleCompleteOnboarding}
+      />
+      
+      <div className="max-w-2xl mx-auto space-y-6">
       {/* Progress */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
@@ -222,10 +309,17 @@ export function ReviewQueue() {
       <SuggestionCard
         transaction={currentTransaction}
         suggestion={suggestion}
-        onConfirmMedical={handleConfirmMedical}
-        onNotMedical={handleNotMedical}
+        onConfirmMedical={() => handleConfirmMedical()}
+        onNotMedical={() => handleNotMedical()}
         onSkip={handleSkip}
         onViewDetails={() => setDetailsOpen(true)}
+        onRememberChoice={(isMedical) => {
+          if (isMedical) {
+            handleConfirmMedical(true);
+          } else {
+            handleNotMedical(true);
+          }
+        }}
       />
 
       {/* Detail Dialog */}
@@ -239,5 +333,6 @@ export function ReviewQueue() {
         />
       )}
     </div>
+    </>
   );
 }

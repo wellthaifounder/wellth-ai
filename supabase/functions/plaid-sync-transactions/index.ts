@@ -6,17 +6,53 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Medical expense keywords for auto-categorization
+// Comprehensive medical expense keywords for auto-categorization
 const MEDICAL_KEYWORDS = [
-  'pharmacy', 'cvs', 'walgreens', 'rite aid', 'medical', 'hospital', 'clinic',
-  'doctor', 'dentist', 'dental', 'orthodont', 'vision', 'optometry', 'physical therapy',
-  'urgent care', 'lab', 'radiology', 'imaging', 'prescription', 'rx', 'health',
-  'kaiser', 'blue cross', 'aetna', 'cigna', 'united health', 'humana'
+  // Pharmacies
+  'cvs', 'walgreens', 'rite aid', 'walmart pharmacy', 'kroger pharmacy',
+  'costco pharmacy', 'target pharmacy', 'publix pharmacy', 'safeway pharmacy',
+  // Healthcare providers
+  'kaiser', 'sutter', 'dignity health', 'adventist health', 'scripps',
+  'sharp', 'hoag', 'cedars-sinai', 'ucla health', 'stanford health',
+  // Labs
+  'quest diagnostics', 'labcorp', 'biomat', 'grifols',
+  // Vision
+  'visionworks', 'lenscrafters', 'pearle vision', 'eyeglass world',
+  // Dental
+  'aspen dental', 'gentle dental', 'bright now dental',
+  // Medical supplies
+  'medline', 'fsa store', 'hsa store', 'direct medical',
+  // Telehealth
+  'teladoc', 'doctor on demand', 'amwell', 'mdlive',
+  // Mental health
+  'talkspace', 'betterhelp', 'cerebral', 'headspace care',
+  // Common terms
+  'pharmacy', 'medical', 'hospital', 'clinic', 'doctor', 'dentist', 'dental',
+  'orthodont', 'vision', 'optometry', 'physical therapy', 'urgent care',
+  'lab', 'radiology', 'imaging', 'prescription', 'rx', 'health',
+  'blue cross', 'aetna', 'cigna', 'united health', 'humana',
+  'dr ', 'dds', 'dmd', 'chiropractic', 'pediatric', 'dermatology',
+  'cardiology', 'orthopedic', 'veterinary'
+];
+
+const MEDICAL_CATEGORIES = [
+  'healthcare', 'pharmacy', 'medical', 'dentist', 'optometrist',
+  'veterinary', 'healthcare services', 'pharmacies', 'medical services'
 ];
 
 function isMedicalTransaction(name: string, category: string[]): boolean {
-  const searchText = `${name} ${category.join(' ')}`.toLowerCase();
-  return MEDICAL_KEYWORDS.some(keyword => searchText.includes(keyword));
+  const searchText = name.toLowerCase();
+  const categoryText = category.join(' ').toLowerCase();
+  
+  // Check vendor name
+  const hasVendorMatch = MEDICAL_KEYWORDS.some(keyword => searchText.includes(keyword));
+  
+  // Check category
+  const hasCategoryMatch = MEDICAL_CATEGORIES.some(medCat => 
+    categoryText.includes(medCat)
+  );
+  
+  return hasVendorMatch || hasCategoryMatch;
 }
 
 serve(async (req) => {
@@ -82,21 +118,50 @@ serve(async (req) => {
 
     console.log('Retrieved transactions:', transactionsData.transactions.length);
 
+    // Get user's vendor preferences for better categorization
+    const { data: userPreferences } = await supabase
+      .from('user_vendor_preferences')
+      .select('vendor_pattern, is_medical')
+      .eq('user_id', user.id);
+
+    // Get user's invoices for matching
+    const { data: userInvoices } = await supabase
+      .from('invoices')
+      .select('id, vendor, amount, date, invoice_date')
+      .eq('user_id', user.id)
+      .eq('is_reimbursed', false);
+
     // Process and store transactions
     const transactionsToInsert = transactionsData.transactions.map((txn: any) => {
-      const isMedical = isMedicalTransaction(txn.name, txn.category || []);
+      const vendorName = txn.merchant_name || txn.name;
+      
+      // Check user's learned preferences first
+      let isMedical = false;
+      if (userPreferences) {
+        const preference = userPreferences.find(p => 
+          vendorName.toLowerCase().includes(p.vendor_pattern.toLowerCase())
+        );
+        if (preference) {
+          isMedical = preference.is_medical;
+        }
+      }
+      
+      // Fall back to keyword detection
+      if (!isMedical) {
+        isMedical = isMedicalTransaction(txn.name, txn.category || []);
+      }
       
       return {
         user_id: user.id,
         plaid_transaction_id: txn.transaction_id,
         transaction_date: txn.date,
-        vendor: txn.merchant_name || txn.name,
+        vendor: vendorName,
         description: txn.name,
         amount: Math.abs(txn.amount),
-        category: txn.category?.[0] || 'Other',
+        category: isMedical ? 'medical' : (txn.category?.[0] || 'Other'),
         is_medical: isMedical,
         is_hsa_eligible: isMedical,
-        reconciliation_status: 'unlinked',
+        reconciliation_status: isMedical ? 'linked' : 'unlinked',
         source: 'plaid',
       };
     });

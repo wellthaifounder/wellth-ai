@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, Clock, Lightbulb } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CheckCircle2, XCircle, Clock, Lightbulb, Brain } from "lucide-react";
 import { format } from "date-fns";
 
 interface SuggestionCardProps {
@@ -26,6 +28,8 @@ interface SuggestionCardProps {
   onNotMedical: () => void;
   onSkip: () => void;
   onViewDetails: () => void;
+  showRememberOption?: boolean;
+  onRememberChoice?: (remember: boolean) => void;
 }
 
 export function SuggestionCard({
@@ -34,8 +38,25 @@ export function SuggestionCard({
   onConfirmMedical,
   onNotMedical,
   onSkip,
-  onViewDetails
+  onViewDetails,
+  showRememberOption = true,
+  onRememberChoice,
 }: SuggestionCardProps) {
+  const [rememberChoice, setRememberChoice] = useState(false);
+
+  const handleConfirmMedical = () => {
+    if (onRememberChoice && rememberChoice) {
+      onRememberChoice(true);
+    }
+    onConfirmMedical();
+  };
+
+  const handleNotMedical = () => {
+    if (onRememberChoice && rememberChoice) {
+      onRememberChoice(false);
+    }
+    onNotMedical();
+  };
   const getSuggestionIcon = () => {
     switch (suggestion.type) {
       case 'link_to_invoice':
@@ -96,11 +117,33 @@ export function SuggestionCard({
         </div>
 
         {/* Actions */}
+        {showRememberOption && transaction.vendor && (
+          <div className="flex items-start gap-2 p-3 bg-primary/5 rounded-lg border border-primary/20">
+            <Checkbox 
+              id="remember" 
+              checked={rememberChoice}
+              onCheckedChange={(checked) => setRememberChoice(checked as boolean)}
+            />
+            <label 
+              htmlFor="remember" 
+              className="text-sm cursor-pointer flex-1 flex items-start gap-2"
+            >
+              <Brain className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+              <span>
+                Remember this choice for <span className="font-medium">{transaction.vendor}</span>
+                <span className="text-muted-foreground block text-xs mt-0.5">
+                  I'll automatically categorize similar transactions in the future
+                </span>
+              </span>
+            </label>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-3">
           {suggestion.type === 'link_to_invoice' || suggestion.type === 'mark_medical' ? (
             <>
               <Button
-                onClick={onConfirmMedical}
+                onClick={handleConfirmMedical}
                 className="w-full"
                 size="lg"
               >
@@ -108,7 +151,7 @@ export function SuggestionCard({
                 Confirm Medical
               </Button>
               <Button
-                onClick={onNotMedical}
+                onClick={handleNotMedical}
                 variant="outline"
                 className="w-full"
                 size="lg"
@@ -120,7 +163,7 @@ export function SuggestionCard({
           ) : (
             <>
               <Button
-                onClick={onConfirmMedical}
+                onClick={handleConfirmMedical}
                 variant="outline"
                 className="w-full"
                 size="lg"
@@ -128,7 +171,7 @@ export function SuggestionCard({
                 Mark Medical
               </Button>
               <Button
-                onClick={onNotMedical}
+                onClick={handleNotMedical}
                 className="w-full"
                 size="lg"
               >
