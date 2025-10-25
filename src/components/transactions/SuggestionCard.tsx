@@ -1,0 +1,168 @@
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, XCircle, Clock, Lightbulb } from "lucide-react";
+import { format } from "date-fns";
+
+interface SuggestionCardProps {
+  transaction: {
+    id: string;
+    vendor: string | null;
+    description: string;
+    amount: number;
+    transaction_date: string;
+  };
+  suggestion: {
+    type: 'link_to_invoice' | 'mark_medical' | 'not_medical' | 'skip';
+    confidence: number;
+    reason: string;
+    invoice?: {
+      id: string;
+      vendor: string;
+      amount: number;
+    };
+  };
+  onConfirmMedical: () => void;
+  onNotMedical: () => void;
+  onSkip: () => void;
+  onViewDetails: () => void;
+}
+
+export function SuggestionCard({
+  transaction,
+  suggestion,
+  onConfirmMedical,
+  onNotMedical,
+  onSkip,
+  onViewDetails
+}: SuggestionCardProps) {
+  const getSuggestionIcon = () => {
+    switch (suggestion.type) {
+      case 'link_to_invoice':
+      case 'mark_medical':
+        return <CheckCircle2 className="h-5 w-5 text-primary" />;
+      case 'not_medical':
+        return <XCircle className="h-5 w-5 text-muted-foreground" />;
+      default:
+        return <Clock className="h-5 w-5 text-muted-foreground" />;
+    }
+  };
+
+  const getSuggestionColor = () => {
+    if (suggestion.confidence > 0.8) return "default";
+    if (suggestion.confidence > 0.5) return "secondary";
+    return "outline";
+  };
+
+  return (
+    <Card className="p-6">
+      <div className="space-y-6">
+        {/* Transaction Header */}
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h3 className="font-semibold text-lg">
+              {transaction.vendor || transaction.description}
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              {format(new Date(transaction.transaction_date), "MMM d, yyyy")}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-bold">${Math.abs(transaction.amount).toFixed(2)}</p>
+          </div>
+        </div>
+
+        {/* Suggestion */}
+        <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Lightbulb className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium">Suggestion</span>
+            <Badge variant={getSuggestionColor()}>
+              {Math.round(suggestion.confidence * 100)}% confidence
+            </Badge>
+          </div>
+          
+          <div className="flex items-start gap-3">
+            {getSuggestionIcon()}
+            <div className="flex-1">
+              <p className="text-sm">{suggestion.reason}</p>
+              {suggestion.invoice && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Invoice: {suggestion.invoice.vendor} • ${suggestion.invoice.amount}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="grid grid-cols-2 gap-3">
+          {suggestion.type === 'link_to_invoice' || suggestion.type === 'mark_medical' ? (
+            <>
+              <Button
+                onClick={onConfirmMedical}
+                className="w-full"
+                size="lg"
+              >
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                Confirm Medical
+              </Button>
+              <Button
+                onClick={onNotMedical}
+                variant="outline"
+                className="w-full"
+                size="lg"
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Not Medical
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                onClick={onConfirmMedical}
+                variant="outline"
+                className="w-full"
+                size="lg"
+              >
+                Mark Medical
+              </Button>
+              <Button
+                onClick={onNotMedical}
+                className="w-full"
+                size="lg"
+              >
+                Not Medical
+              </Button>
+            </>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            onClick={onSkip}
+            variant="ghost"
+            className="w-full"
+          >
+            <Clock className="h-4 w-4 mr-2" />
+            Skip for Now
+          </Button>
+          <Button
+            onClick={onViewDetails}
+            variant="ghost"
+            className="w-full"
+          >
+            View Details
+          </Button>
+        </div>
+
+        {/* Keyboard Hints */}
+        <div className="flex items-center justify-center gap-4 pt-2 text-xs text-muted-foreground">
+          <span><kbd className="px-1.5 py-0.5 bg-muted rounded">M</kbd> Medical</span>
+          <span><kbd className="px-1.5 py-0.5 bg-muted rounded">N</kbd> Not Medical</span>
+          <span><kbd className="px-1.5 py-0.5 bg-muted rounded">S</kbd> Skip</span>
+        </div>
+      </div>
+    </Card>
+  );
+}

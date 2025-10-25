@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { TransactionCard } from "@/components/transactions/TransactionCard";
 import { TransactionDetailDialog } from "@/components/transactions/TransactionDetailDialog";
 import { QuickAddTransactionDialog } from "@/components/transactions/QuickAddTransactionDialog";
+import { ReviewQueue } from "@/components/transactions/ReviewQueue";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 
 type Transaction = {
@@ -45,6 +46,16 @@ export default function Transactions() {
   useEffect(() => {
     filterTransactions();
   }, [transactions, searchQuery, activeTab]);
+
+  useEffect(() => {
+    // Default to review queue if there are unlinked transactions
+    if (transactions.length > 0 && activeTab === "all") {
+      const unlinkedCount = transactions.filter(t => t.reconciliation_status === "unlinked").length;
+      if (unlinkedCount > 0) {
+        setActiveTab("review");
+      }
+    }
+  }, [transactions]);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -203,13 +214,17 @@ export default function Transactions() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6">
+            <TabsTrigger value="review">
+              Review Queue {stats.unlinked > 0 && `(${stats.unlinked})`}
+            </TabsTrigger>
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="medical">Medical</TabsTrigger>
             <TabsTrigger value="non-medical">Non-Medical</TabsTrigger>
-            <TabsTrigger value="unlinked">
-              Unlinked ({stats.unlinked})
-            </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="review" className="space-y-4">
+            <ReviewQueue />
+          </TabsContent>
 
           <TabsContent value={activeTab} className="space-y-4">
             {filteredTransactions.length === 0 ? (

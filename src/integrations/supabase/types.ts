@@ -718,6 +718,39 @@ export type Database = {
           },
         ]
       }
+      user_vendor_preferences: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          id: string
+          is_medical: boolean
+          times_confirmed: number | null
+          updated_at: string
+          user_id: string
+          vendor_pattern: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          is_medical?: boolean
+          times_confirmed?: number | null
+          updated_at?: string
+          user_id: string
+          vendor_pattern: string
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          is_medical?: boolean
+          times_confirmed?: number | null
+          updated_at?: string
+          user_id?: string
+          vendor_pattern?: string
+        }
+        Relationships: []
+      }
       wellbie_conversations: {
         Row: {
           created_at: string
