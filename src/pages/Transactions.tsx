@@ -9,6 +9,7 @@ import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { TransactionCard } from "@/components/transactions/TransactionCard";
 import { TransactionDetailDialog } from "@/components/transactions/TransactionDetailDialog";
+import { TransactionInlineDetail } from "@/components/transactions/TransactionInlineDetail";
 import { QuickAddTransactionDialog } from "@/components/transactions/QuickAddTransactionDialog";
 import { ReviewQueue } from "@/components/transactions/ReviewQueue";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
@@ -35,6 +36,7 @@ export default function Transactions() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [expandedTransactionId, setExpandedTransactionId] = useState<string | null>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
@@ -110,8 +112,32 @@ export default function Transactions() {
   };
 
   const handleViewDetails = (transaction: Transaction) => {
-    setSelectedTransaction(transaction);
-    setDetailDialogOpen(true);
+    if (expandedTransactionId === transaction.id) {
+      setExpandedTransactionId(null);
+    } else {
+      setExpandedTransactionId(transaction.id);
+    }
+  };
+
+  const handleToggleMedical = async (transaction: Transaction) => {
+    try {
+      const { error } = await supabase
+        .from("transactions")
+        .update({ 
+          is_medical: !transaction.is_medical,
+          is_hsa_eligible: !transaction.is_medical,
+          category: !transaction.is_medical ? "medical" : transaction.category,
+          reconciliation_status: !transaction.is_medical ? "linked" : "unlinked"
+        })
+        .eq("id", transaction.id);
+
+      if (error) throw error;
+      toast.success(transaction.is_medical ? "Unmarked as medical" : "Marked as medical expense");
+      fetchTransactions();
+    } catch (error) {
+      console.error("Error toggling medical:", error);
+      toast.error("Failed to update transaction");
+    }
   };
 
   const handleMarkMedical = async (transaction: Transaction) => {
@@ -138,6 +164,25 @@ export default function Transactions() {
     setSelectedTransaction(transaction);
     // TODO: Implement link to invoice dialog
     toast.info("Link to invoice feature coming soon");
+  };
+
+  const handleIgnore = async (transaction: Transaction) => {
+    try {
+      const { error } = await supabase
+        .from("transactions")
+        .update({
+          reconciliation_status: "ignored",
+          is_medical: false
+        })
+        .eq("id", transaction.id);
+
+      if (error) throw error;
+      toast.success("Transaction ignored");
+      fetchTransactions();
+    } catch (error) {
+      console.error("Error ignoring transaction:", error);
+      toast.error("Failed to ignore transaction");
+    }
   };
 
   const stats = {
@@ -240,37 +285,38 @@ export default function Transactions() {
                 </Button>
               </Card>
             ) : (
-              filteredTransactions.map((transaction) => (
-                <TransactionCard
-                  key={transaction.id}
-                  id={transaction.id}
-                  date={transaction.transaction_date}
-                  vendor={transaction.vendor || "Unknown"}
-                  amount={transaction.amount}
-                  description={transaction.description}
-                  isMedical={transaction.is_medical}
-                  reconciliationStatus={transaction.reconciliation_status as any}
-                  isHsaEligible={transaction.is_hsa_eligible}
-                  onViewDetails={() => handleViewDetails(transaction)}
-                  onMarkMedical={() => handleMarkMedical(transaction)}
-                  onLinkToInvoice={() => handleLinkToInvoice(transaction)}
-                />
-              ))
+              <div className="space-y-3">
+                {filteredTransactions.map((transaction) => (
+                  <div key={transaction.id}>
+                    <TransactionCard
+                      id={transaction.id}
+                      date={transaction.transaction_date}
+                      vendor={transaction.vendor || "Unknown"}
+                      amount={transaction.amount}
+                      description={transaction.description}
+                      isMedical={transaction.is_medical}
+                      reconciliationStatus={transaction.reconciliation_status as any}
+                      isHsaEligible={transaction.is_hsa_eligible}
+                      onViewDetails={() => handleViewDetails(transaction)}
+                      onMarkMedical={() => handleMarkMedical(transaction)}
+                      onLinkToInvoice={() => handleLinkToInvoice(transaction)}
+                      onToggleMedical={() => handleToggleMedical(transaction)}
+                      onIgnore={() => handleIgnore(transaction)}
+                    />
+                    {expandedTransactionId === transaction.id && (
+                      <TransactionInlineDetail
+                        transaction={transaction}
+                        onClose={() => setExpandedTransactionId(null)}
+                        onUpdate={fetchTransactions}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
             )}
           </TabsContent>
         </Tabs>
       </div>
-
-      <TransactionDetailDialog
-        open={detailDialogOpen}
-        onOpenChange={setDetailDialogOpen}
-        transaction={selectedTransaction}
-        onUpdate={fetchTransactions}
-        onLinkToInvoice={() => {
-          setDetailDialogOpen(false);
-          handleLinkToInvoice(selectedTransaction!);
-        }}
-      />
 
       <QuickAddTransactionDialog
         open={addDialogOpen}

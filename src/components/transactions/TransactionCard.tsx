@@ -1,7 +1,14 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Link2, Eye, Tag } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreVertical, Eye, Tag, Link2, XCircle } from "lucide-react";
 import { format } from "date-fns";
 
 interface TransactionCardProps {
@@ -14,8 +21,10 @@ interface TransactionCardProps {
   reconciliationStatus: "unlinked" | "linked_to_invoice" | "ignored";
   isHsaEligible: boolean;
   onViewDetails: () => void;
-  onMarkMedical: () => void;
-  onLinkToInvoice: () => void;
+  onMarkMedical?: () => void;
+  onLinkToInvoice?: () => void;
+  onToggleMedical?: () => void;
+  onIgnore?: () => void;
 }
 
 export function TransactionCard({
@@ -29,6 +38,8 @@ export function TransactionCard({
   onViewDetails,
   onMarkMedical,
   onLinkToInvoice,
+  onToggleMedical,
+  onIgnore,
 }: TransactionCardProps) {
   const getStatusBadge = () => {
     switch (reconciliationStatus) {
@@ -53,7 +64,7 @@ export function TransactionCard({
   };
 
   return (
-    <Card className="p-4 hover:shadow-md transition-shadow">
+    <Card className="p-4 hover:shadow-md transition-shadow group">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
@@ -66,8 +77,24 @@ export function TransactionCard({
               {format(new Date(date), "MMM d, yyyy")}
             </p>
             {getStatusBadge()}
-            {isMedical && (
-              <Badge variant="secondary">Medical</Badge>
+            {isMedical ? (
+              <Badge 
+                variant="secondary" 
+                className="cursor-pointer hover:bg-secondary/80 transition-colors"
+                onClick={onToggleMedical}
+                title="Click to toggle medical status"
+              >
+                Medical ✓
+              </Badge>
+            ) : (
+              <Badge 
+                variant="outline"
+                className="cursor-pointer hover:bg-muted transition-colors"
+                onClick={onToggleMedical}
+                title="Click to mark as medical"
+              >
+                Mark Medical
+              </Badge>
             )}
             {isHsaEligible && (
               <Badge className="bg-primary/10 text-primary">HSA Eligible</Badge>
@@ -79,43 +106,53 @@ export function TransactionCard({
           )}
         </div>
 
-        <div className="text-right flex-shrink-0">
-          <p className="text-lg font-semibold text-foreground mb-2">
+        <div className="text-right flex-shrink-0 flex flex-col items-end gap-2">
+          <p className="text-lg font-semibold text-foreground">
             ${Math.abs(amount).toFixed(2)}
           </p>
           
-          <div className="flex gap-1">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={onViewDetails}
-              className="h-8 w-8 p-0"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-            
-            {!isMedical && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={onMarkMedical}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                <Tag className="h-4 w-4" />
+                <MoreVertical className="h-4 w-4" />
+                <span className="sr-only">More actions</span>
               </Button>
-            )}
-            
-            {reconciliationStatus === "unlinked" && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={onLinkToInvoice}
-                className="h-8 w-8 p-0"
-              >
-                <Link2 className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 bg-background z-50">
+              <DropdownMenuItem onClick={onViewDetails}>
+                <Eye className="h-4 w-4 mr-2" />
+                View Details
+              </DropdownMenuItem>
+              
+              {onMarkMedical && !isMedical && (
+                <DropdownMenuItem onClick={onMarkMedical}>
+                  <Tag className="h-4 w-4 mr-2" />
+                  Mark as Medical
+                </DropdownMenuItem>
+              )}
+              
+              {onLinkToInvoice && reconciliationStatus === "unlinked" && (
+                <DropdownMenuItem onClick={onLinkToInvoice}>
+                  <Link2 className="h-4 w-4 mr-2" />
+                  Link to Invoice
+                </DropdownMenuItem>
+              )}
+
+              {onIgnore && reconciliationStatus !== "ignored" && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={onIgnore} className="text-destructive">
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Ignore
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </Card>
