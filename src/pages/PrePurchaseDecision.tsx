@@ -30,6 +30,10 @@ const PrePurchaseDecision = () => {
   const [category, setCategory] = useState("");
   const [hasHsaCard, setHasHsaCard] = useState<boolean | null>(null);
   const [rewardsRate, setRewardsRate] = useState("2");
+  const [investmentReturn, setInvestmentReturn] = useState("7");
+  const [taxRate, setTaxRate] = useState("22");
+  const [yearsUntilReimbursement, setYearsUntilReimbursement] = useState("5");
+  const [timingSavings, setTimingSavings] = useState("");
   const [showRecommendation, setShowRecommendation] = useState(false);
 
   const handleCalculate = () => {
@@ -44,6 +48,10 @@ const PrePurchaseDecision = () => {
         isHsaEligible: category !== "Not HSA Eligible",
         hasRewardsCard: true,
         rewardsRate: parseFloat(rewardsRate) / 100,
+        investmentReturnRate: parseFloat(investmentReturn) / 100,
+        taxRate: parseFloat(taxRate) / 100,
+        yearsUntilReimbursement: parseFloat(yearsUntilReimbursement),
+        timingSavings: timingSavings ? parseFloat(timingSavings) : undefined,
       })
     : null;
 
@@ -130,6 +138,64 @@ const PrePurchaseDecision = () => {
                 <p className="text-xs text-muted-foreground">
                   Enter your card's cash back or points earning rate (e.g., 2 for 2%)
                 </p>
+              </div>
+
+              <div className="border-t pt-4 space-y-4">
+                <h3 className="font-medium text-sm">Advanced Settings (Optional)</h3>
+                
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="investment-return">Expected Investment Return (%/year)</Label>
+                    <Input
+                      id="investment-return"
+                      type="number"
+                      step="0.1"
+                      placeholder="7.0"
+                      value={investmentReturn}
+                      onChange={(e) => setInvestmentReturn(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="tax-rate">Your Tax Rate (%)</Label>
+                    <Input
+                      id="tax-rate"
+                      type="number"
+                      step="0.1"
+                      placeholder="22.0"
+                      value={taxRate}
+                      onChange={(e) => setTaxRate(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="years">Years Until Reimbursement</Label>
+                    <Input
+                      id="years"
+                      type="number"
+                      step="1"
+                      min="1"
+                      placeholder="5"
+                      value={yearsUntilReimbursement}
+                      onChange={(e) => setYearsUntilReimbursement(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="timing-savings">Timing Savings (Optional)</Label>
+                  <Input
+                    id="timing-savings"
+                    type="number"
+                    step="0.01"
+                    placeholder="Enter your estimated timing benefit (e.g., 50.00)"
+                    value={timingSavings}
+                    onChange={(e) => setTimingSavings(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Optional: Add any timing benefits like payment float, 0% APR periods, or strategic reimbursement timing
+                  </p>
+                </div>
               </div>
 
               <Button 

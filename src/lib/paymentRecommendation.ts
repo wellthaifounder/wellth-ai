@@ -8,6 +8,7 @@ export interface PaymentRecommendation {
   savingsAmount: number;
   confidence: "high" | "medium" | "low";
   reasoning: string[];
+  taxSavings?: number;
 }
 
 interface RecommendationInput {
@@ -19,6 +20,9 @@ interface RecommendationInput {
   rewardsRate?: number; // e.g., 0.02 for 2%
   currentHsaBalance?: number;
   taxRate?: number; // e.g., 0.22 for 22%
+  investmentReturnRate?: number; // e.g., 0.07 for 7%
+  yearsUntilReimbursement?: number; // e.g., 5 years
+  timingSavings?: number; // Optional user-defined timing benefit
 }
 
 export const getPaymentRecommendation = (input: RecommendationInput): PaymentRecommendation => {
@@ -28,6 +32,9 @@ export const getPaymentRecommendation = (input: RecommendationInput): PaymentRec
     hasRewardsCard = true,
     rewardsRate = 0.02, // Default 2%
     taxRate = 0.22, // Default 22% marginal tax rate
+    investmentReturnRate = 0.07, // Default 7% annual return
+    yearsUntilReimbursement = 5, // Default 5 years
+    timingSavings = 0, // Optional user-defined timing benefit
   } = input;
 
   if (!isHsaEligible) {
@@ -52,27 +59,38 @@ export const getPaymentRecommendation = (input: RecommendationInput): PaymentRec
   const taxSavings = amount * taxRate;
   
   // The optimal strategy for HSA-eligible expenses:
-  // 1. Pay with rewards card now (get rewards immediately)
+  // 1. Pay with rewards card now (get rewards immediately, pay off card within billing cycle)
   // 2. Let HSA funds stay invested and grow
-  // 3. Reimburse yourself years later when you need the cash
+  // 3. Reimburse yourself later (e.g., in 5-10 years) when you need the cash
   
-  // Conservative estimate: 7% annual growth over 10 years
-  const investmentGrowth = amount * Math.pow(1.07, 10) - amount;
-  const totalBenefit = rewardsValue + investmentGrowth;
+  // Investment growth on HSA funds that remain invested until reimbursement
+  const investmentGrowth = amount * Math.pow(1 + investmentReturnRate, yearsUntilReimbursement) - amount;
+  
+  // Total benefit includes rewards, investment growth, and optional timing savings
+  const totalBenefit = rewardsValue + investmentGrowth + timingSavings;
+
+  const reasoning = [
+    `Credit card rewards: +$${rewardsValue.toFixed(2)} (earned immediately)`,
+    `HSA investment growth: +$${investmentGrowth.toFixed(2)} (${yearsUntilReimbursement} years @ ${(investmentReturnRate * 100).toFixed(1)}% annual return)`,
+  ];
+
+  if (timingSavings > 0) {
+    reasoning.push(`Timing benefits: +$${timingSavings.toFixed(2)}`);
+  }
+
+  reasoning.push(
+    "💡 Pay off your credit card immediately to avoid interest charges",
+    "Track this expense - you can reimburse yourself anytime!"
+  );
 
   return {
     method: "hsa-invest",
     title: "Pay with Rewards Card + Save Receipt",
-    description: `Keep your receipt and let HSA funds grow. Reimburse yourself later for maximum benefit.`,
+    description: `Keep your receipt and let HSA funds grow invested. Reimburse yourself in ${yearsUntilReimbursement} year${yearsUntilReimbursement !== 1 ? 's' : ''} for maximum benefit.`,
     savingsAmount: totalBenefit,
+    taxSavings,
     confidence: "high",
-    reasoning: [
-      `Pay with rewards card: +$${rewardsValue.toFixed(2)} rewards now`,
-      `HSA tax savings: $${taxSavings.toFixed(2)} (when you contribute)`,
-      `Investment growth potential: ~$${investmentGrowth.toFixed(2)} over 10 years`,
-      `Total estimated benefit: $${totalBenefit.toFixed(2)}`,
-      "Track this expense - you can reimburse yourself anytime!",
-    ],
+    reasoning,
   };
 };
 

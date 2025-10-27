@@ -51,11 +51,29 @@ export const PaymentRecommendation = ({ recommendation, className = "" }: Paymen
         </div>
 
         {recommendation.savingsAmount > 0 && (
-          <div className="bg-background/50 rounded-lg p-3 border border-primary/10">
-            <div className="text-2xl font-bold text-primary">
-              ${recommendation.savingsAmount.toFixed(2)}
+          <div className="space-y-2">
+            <div className="bg-background/50 rounded-lg p-3 border border-primary/10">
+              <div className="text-2xl font-bold text-primary">
+                ${recommendation.savingsAmount.toFixed(2)}
+              </div>
+              <div className="text-xs text-muted-foreground">Estimated Total Benefit</div>
             </div>
-            <div className="text-xs text-muted-foreground">Estimated Total Benefit</div>
+            
+            {recommendation.taxSavings && recommendation.taxSavings > 0 && (
+              <div className="bg-accent/30 rounded-lg p-3 border border-primary/10">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-semibold text-foreground">
+                      + ${recommendation.taxSavings.toFixed(2)} Tax Savings
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      Already saved when contributing to HSA (included in total benefit calculation)
+                    </div>
+                  </div>
+                  <Lightbulb className="h-4 w-4 text-primary" />
+                </div>
+              </div>
+            )}
           </div>
         )}
 
