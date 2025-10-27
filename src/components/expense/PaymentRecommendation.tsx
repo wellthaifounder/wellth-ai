@@ -59,18 +59,30 @@ export const PaymentRecommendation = ({ recommendation, className = "" }: Paymen
               <div className="text-xs text-muted-foreground">Estimated Total Benefit</div>
             </div>
             
-            {recommendation.taxSavings && recommendation.taxSavings > 0 && (
-              <div className="bg-accent/30 rounded-lg p-3 border border-primary/10">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-semibold text-foreground">
-                      + ${recommendation.taxSavings.toFixed(2)} Tax Savings
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      Already saved when contributing to HSA (included in total benefit calculation)
-                    </div>
+            {recommendation.breakdown && (
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Breakdown</p>
+                <div className="text-sm space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Rewards:</span>
+                    <span className="font-medium">${recommendation.breakdown.rewards.toFixed(2)}</span>
                   </div>
-                  <Lightbulb className="h-4 w-4 text-primary" />
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Tax Savings:</span>
+                    <span className="font-medium text-green-600">${recommendation.breakdown.taxSavings.toFixed(2)}</span>
+                  </div>
+                  {recommendation.breakdown.timingBenefit > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Timing Growth:</span>
+                      <span className="font-medium">${recommendation.breakdown.timingBenefit.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {recommendation.breakdown.investmentGrowth > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Long-term Growth:</span>
+                      <span className="font-medium">${recommendation.breakdown.investmentGrowth.toFixed(2)}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

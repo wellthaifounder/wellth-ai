@@ -9,6 +9,12 @@ export interface PaymentRecommendation {
   confidence: "high" | "medium" | "low";
   reasoning: string[];
   taxSavings?: number;
+  breakdown: {
+    rewards: number;
+    taxSavings: number;
+    timingBenefit: number;
+    investmentGrowth: number;
+  };
 }
 
 interface RecommendationInput {
@@ -21,9 +27,36 @@ interface RecommendationInput {
   currentHsaBalance?: number;
   taxRate?: number; // e.g., 0.22 for 22%
   investmentReturnRate?: number; // e.g., 0.07 for 7%
-  yearsUntilReimbursement?: number; // e.g., 5 years
-  timingSavings?: number; // Optional user-defined timing benefit
+  cardPayoffMonths?: number; // e.g., 12 months for 0% APR period
+  monthlyPayment?: number; // Optional: if user knows minimum payment
+  hsaInvestmentYears?: number; // e.g., 5 years until reimbursement
 }
+
+// Calculate investment growth with declining principal (if monthly payments exist)
+const calculateInvestmentGrowth = (
+  principal: number,
+  monthlyRate: number,
+  months: number,
+  monthlyPayment: number
+): number => {
+  if (monthlyPayment <= 0) {
+    // No monthly payments - simple compound growth on full principal
+    return principal * Math.pow(1 + monthlyRate, months) - principal;
+  }
+
+  // With monthly payments, calculate growth on declining balance
+  let balance = principal;
+  let totalGrowth = 0;
+
+  for (let month = 0; month < months; month++) {
+    const growth = balance * monthlyRate;
+    totalGrowth += growth;
+    balance = balance + growth - monthlyPayment;
+    if (balance <= 0) break;
+  }
+
+  return totalGrowth;
+};
 
 export const getPaymentRecommendation = (input: RecommendationInput): PaymentRecommendation => {
   const {
@@ -33,8 +66,9 @@ export const getPaymentRecommendation = (input: RecommendationInput): PaymentRec
     rewardsRate = 0.02, // Default 2%
     taxRate = 0.22, // Default 22% marginal tax rate
     investmentReturnRate = 0.07, // Default 7% annual return
-    yearsUntilReimbursement = 5, // Default 5 years
-    timingSavings = 0, // Optional user-defined timing benefit
+    cardPayoffMonths = 12, // Default 12 months
+    monthlyPayment = 0, // Default: no minimum payments (pay in full at end)
+    hsaInvestmentYears = 5, // Default 5 years until reimbursement
   } = input;
 
   if (!isHsaEligible) {
@@ -51,6 +85,12 @@ export const getPaymentRecommendation = (input: RecommendationInput): PaymentRec
         `Earn ${(rewardsRate * 100).toFixed(1)}% back in rewards`,
         `Estimated rewards: $${savingsAmount.toFixed(2)}`,
       ],
+      breakdown: {
+        rewards: savingsAmount,
+        taxSavings: 0,
+        timingBenefit: 0,
+        investmentGrowth: 0,
+      },
     };
   }
 
@@ -58,40 +98,70 @@ export const getPaymentRecommendation = (input: RecommendationInput): PaymentRec
   const rewardsValue = amount * rewardsRate;
   const taxSavings = amount * taxRate;
   
-  // The optimal strategy for HSA-eligible expenses:
-  // 1. Pay with rewards card now (get rewards immediately, pay off card within billing cycle)
-  // 2. Let HSA funds stay invested and grow
-  // 3. Reimburse yourself later (e.g., in 5-10 years) when you need the cash
+  // Timing benefit: Investment growth during card payoff period (on declining balance if monthly payments)
+  const monthlyInvestmentRate = investmentReturnRate / 12;
+  const timingBenefit = calculateInvestmentGrowth(
+    amount,
+    monthlyInvestmentRate,
+    cardPayoffMonths,
+    monthlyPayment
+  );
   
-  // Investment growth on HSA funds that remain invested until reimbursement
-  const investmentGrowth = amount * Math.pow(1 + investmentReturnRate, yearsUntilReimbursement) - amount;
+  // Long-term investment growth: From card payoff to eventual reimbursement
+  const remainingBalance = monthlyPayment > 0 
+    ? Math.max(0, amount - (monthlyPayment * cardPayoffMonths))
+    : amount;
   
-  // Total benefit includes rewards, HSA tax savings, investment growth, and optional timing savings
-  const totalBenefit = rewardsValue + taxSavings + investmentGrowth + timingSavings;
+  const yearsAfterPayoff = hsaInvestmentYears - (cardPayoffMonths / 12);
+  const longTermGrowth = yearsAfterPayoff > 0
+    ? remainingBalance * Math.pow(1 + investmentReturnRate, yearsAfterPayoff) - remainingBalance
+    : 0;
+  
+  const totalInvestmentGrowth = timingBenefit + longTermGrowth;
+  
+  // Total benefit includes rewards, tax savings, and all investment growth
+  const totalBenefit = rewardsValue + taxSavings + totalInvestmentGrowth;
 
   const reasoning = [
-    `Credit card rewards: +$${rewardsValue.toFixed(2)} (earned immediately)`,
-    `HSA tax savings: +$${taxSavings.toFixed(2)} (included in total)`,
-    `HSA investment growth: +$${investmentGrowth.toFixed(2)} (${yearsUntilReimbursement} years @ ${(investmentReturnRate * 100).toFixed(1)}% annual return)`,
+    `💳 Credit card rewards: +$${rewardsValue.toFixed(2)} (earned immediately)`,
+    `🏥 HSA tax savings: +$${taxSavings.toFixed(2)} (${(taxRate * 100).toFixed(0)}% of expense)`,
   ];
 
-  if (timingSavings > 0) {
-    reasoning.push(`Timing benefits: +$${timingSavings.toFixed(2)}`);
+  if (timingBenefit > 0) {
+    reasoning.push(
+      `📈 Growth during payoff: +$${timingBenefit.toFixed(2)} (${cardPayoffMonths} months${monthlyPayment > 0 ? ' with declining balance' : ''})`
+    );
+  }
+
+  if (longTermGrowth > 0) {
+    reasoning.push(
+      `📊 Long-term growth: +$${longTermGrowth.toFixed(2)} (${yearsAfterPayoff.toFixed(1)} years after payoff)`
+    );
   }
 
   reasoning.push(
-    "💡 Pay off your credit card immediately to avoid interest charges",
-    "Track this expense - you can reimburse yourself anytime!"
+    "💡 Pay off card on time to avoid interest charges",
+    "📄 Keep receipts - reimburse from HSA anytime!"
   );
+
+  const payoffDescription = cardPayoffMonths <= 1 
+    ? "immediately" 
+    : `over ${cardPayoffMonths} months`;
 
   return {
     method: "hsa-invest",
     title: "Pay with Rewards Card + Save Receipt",
-    description: `Keep your receipt and let HSA funds grow invested. Reimburse yourself in ${yearsUntilReimbursement} year${yearsUntilReimbursement !== 1 ? 's' : ''} for maximum benefit.`,
+    description: `Pay with rewards card ${payoffDescription}, let HSA grow ${hsaInvestmentYears} years, then reimburse yourself.`,
     savingsAmount: totalBenefit,
     taxSavings,
     confidence: "high",
     reasoning,
+    breakdown: {
+      rewards: rewardsValue,
+      taxSavings,
+      timingBenefit,
+      investmentGrowth: longTermGrowth,
+    },
   };
 };
 
