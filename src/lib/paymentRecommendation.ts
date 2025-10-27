@@ -66,11 +66,12 @@ export const getPaymentRecommendation = (input: RecommendationInput): PaymentRec
   // Investment growth on HSA funds that remain invested until reimbursement
   const investmentGrowth = amount * Math.pow(1 + investmentReturnRate, yearsUntilReimbursement) - amount;
   
-  // Total benefit includes rewards, investment growth, and optional timing savings
-  const totalBenefit = rewardsValue + investmentGrowth + timingSavings;
+  // Total benefit includes rewards, HSA tax savings, investment growth, and optional timing savings
+  const totalBenefit = rewardsValue + taxSavings + investmentGrowth + timingSavings;
 
   const reasoning = [
     `Credit card rewards: +$${rewardsValue.toFixed(2)} (earned immediately)`,
+    `HSA tax savings: +$${taxSavings.toFixed(2)} (included in total)`,
     `HSA investment growth: +$${investmentGrowth.toFixed(2)} (${yearsUntilReimbursement} years @ ${(investmentReturnRate * 100).toFixed(1)}% annual return)`,
   ];
 

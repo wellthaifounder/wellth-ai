@@ -34,11 +34,26 @@ const PrePurchaseDecision = () => {
   const [taxRate, setTaxRate] = useState("22");
   const [yearsUntilReimbursement, setYearsUntilReimbursement] = useState("5");
   const [timingSavings, setTimingSavings] = useState("");
+  const [shortTermYield, setShortTermYield] = useState("4.5");
+  const [floatDays, setFloatDays] = useState("25");
+  const [zeroAprMonths, setZeroAprMonths] = useState("0");
   const [showRecommendation, setShowRecommendation] = useState(false);
 
   const handleCalculate = () => {
     if (!amount || !category) return;
     setShowRecommendation(true);
+  };
+
+  const estimateTiming = () => {
+    const amt = parseFloat(amount || "0");
+    const yieldRate = parseFloat(shortTermYield || "0") / 100;
+    const days = parseFloat(floatDays || "0");
+    const months = parseFloat(zeroAprMonths || "0");
+    if (!amt || amt <= 0) return;
+    const floatBenefit = yieldRate > 0 && days > 0 ? amt * yieldRate * (days / 365) : 0;
+    const zeroAprBenefit = yieldRate > 0 && months > 0 ? amt * yieldRate * (months / 12) : 0;
+    const est = floatBenefit + zeroAprBenefit;
+    setTimingSavings(est.toFixed(2));
   };
 
   const recommendation = amount && category && parseFloat(amount) > 0
@@ -193,8 +208,34 @@ const PrePurchaseDecision = () => {
                     onChange={(e) => setTimingSavings(e.target.value)}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Optional: Add any timing benefits like payment float, 0% APR periods, or strategic reimbursement timing
+                    Optional: Est. dollars saved from short-term cash yield while delaying reimbursement
                   </p>
+
+                  <div className="mt-3 space-y-3 border rounded-md p-3 bg-muted/10">
+                    <p className="text-xs font-medium">Quick Estimator</p>
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="yield">Short-term yield (% APY)</Label>
+                        <Input id="yield" type="number" step="0.1" value={shortTermYield} onChange={(e) => setShortTermYield(e.target.value)} />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="float-days">Days until payment</Label>
+                        <Input id="float-days" type="number" step="1" value={floatDays} onChange={(e) => setFloatDays(e.target.value)} />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="apr-months">0% APR months</Label>
+                        <Input id="apr-months" type="number" step="1" value={zeroAprMonths} onChange={(e) => setZeroAprMonths(e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs text-muted-foreground">
+                        Estimate = Amount × (Yield × Days/365 + Yield × Months/12)
+                      </p>
+                      <Button type="button" variant="outline" size="sm" onClick={estimateTiming}>
+                        Estimate timing savings
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
