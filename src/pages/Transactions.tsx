@@ -12,6 +12,7 @@ import { TransactionDetailDialog } from "@/components/transactions/TransactionDe
 import { TransactionInlineDetail } from "@/components/transactions/TransactionInlineDetail";
 import { QuickAddTransactionDialog } from "@/components/transactions/QuickAddTransactionDialog";
 import { ReviewQueue } from "@/components/transactions/ReviewQueue";
+import { AdvancedFilters, type FilterCriteria } from "@/components/transactions/AdvancedFilters";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 
 type Transaction = {
@@ -40,6 +41,7 @@ export default function Transactions() {
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
+  const [advancedFilters, setAdvancedFilters] = useState<FilterCriteria>({});
 
   useEffect(() => {
     checkAuth();
@@ -47,7 +49,7 @@ export default function Transactions() {
 
   useEffect(() => {
     filterTransactions();
-  }, [transactions, searchQuery, activeTab]);
+  }, [transactions, searchQuery, activeTab, advancedFilters]);
 
   useEffect(() => {
     // Default to review queue if there are unlinked transactions
@@ -92,9 +94,10 @@ export default function Transactions() {
     if (activeTab === "medical") {
       filtered = filtered.filter((t) => t.is_medical);
     } else if (activeTab === "non-medical") {
-      filtered = filtered.filter((t) => !t.is_medical);
-    } else if (activeTab === "unlinked") {
-      filtered = filtered.filter((t) => t.reconciliation_status === "unlinked");
+      filtered = filtered.filter((t) => t.is_medical === false);
+    } else if (activeTab === "all") {
+      // Default view: exclude transactions explicitly marked as non-medical
+      filtered = filtered.filter((t) => t.is_medical !== false);
     }
 
     // Filter by search query
@@ -106,6 +109,50 @@ export default function Transactions() {
           t.description.toLowerCase().includes(query) ||
           t.amount.toString().includes(query)
       );
+    }
+
+    // Apply advanced filters
+    if (advancedFilters.amountOperator) {
+      const { amountOperator, amountMin, amountMax } = advancedFilters;
+      filtered = filtered.filter((t) => {
+        const amount = Number(t.amount);
+        if (amountOperator === "gt" && amountMin !== undefined) {
+          return amount > amountMin;
+        }
+        if (amountOperator === "lt" && amountMin !== undefined) {
+          return amount < amountMin;
+        }
+        if (amountOperator === "equal" && amountMin !== undefined) {
+          return Math.abs(amount - amountMin) < 0.01;
+        }
+        if (amountOperator === "between" && amountMin !== undefined && amountMax !== undefined) {
+          return amount >= amountMin && amount <= amountMax;
+        }
+        return true;
+      });
+    }
+
+    if (advancedFilters.dateOperator && advancedFilters.dateStart) {
+      const { dateOperator, dateStart, dateEnd } = advancedFilters;
+      filtered = filtered.filter((t) => {
+        const transactionDate = new Date(t.transaction_date);
+        const startDate = new Date(dateStart);
+        
+        if (dateOperator === "after") {
+          return transactionDate > startDate;
+        }
+        if (dateOperator === "before") {
+          return transactionDate < startDate;
+        }
+        if (dateOperator === "on") {
+          return transactionDate.toDateString() === startDate.toDateString();
+        }
+        if (dateOperator === "between" && dateEnd) {
+          const endDate = new Date(dateEnd);
+          return transactionDate >= startDate && transactionDate <= endDate;
+        }
+        return true;
+      });
     }
 
     setFilteredTransactions(filtered);
@@ -245,14 +292,20 @@ export default function Transactions() {
           </Card>
         </div>
 
-        {/* Search */}
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Search by vendor, description, or amount..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+        {/* Search and Filters */}
+        <div className="flex gap-3 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search by vendor, description, or amount..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <AdvancedFilters 
+            onFilterChange={setAdvancedFilters}
+            activeFilters={advancedFilters}
           />
         </div>
 
