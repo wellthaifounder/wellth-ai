@@ -80,9 +80,11 @@ const InvoicePaymentList = () => {
     if (!invoice.is_hsa_eligible) return "not-eligible";
     
     if (hsaOpenedDate) {
-      const invoiceDate = new Date(invoice.date);
+      const rawDate = invoice.invoice_date || invoice.date;
+      if (!rawDate) return "not-eligible";
+      const invoiceDate = new Date(rawDate);
       const hsaDate = new Date(hsaOpenedDate);
-      if (invoiceDate < hsaDate) return "pre-hsa";
+      if (!isNaN(invoiceDate.getTime()) && invoiceDate < hsaDate) return "pre-hsa";
     }
     
     return "eligible";

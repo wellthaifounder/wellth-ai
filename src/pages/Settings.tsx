@@ -9,6 +9,7 @@ import { ArrowLeft, User, Mail, Shield, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 
+
 const Settings = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -78,14 +79,21 @@ const Settings = () => {
       // If HSA date changed, update existing invoices
       if (hsaDateChanged && hsaOpenedDate) {
         // Set is_hsa_eligible = false for invoices before HSA opened date
-        const { error: updateError } = await supabase
+        const { error: updateDateError } = await supabase
           .from("invoices")
           .update({ is_hsa_eligible: false })
           .eq("user_id", user.id)
           .lt("date", hsaOpenedDate)
           .eq("is_hsa_eligible", true);
+        if (updateDateError) throw updateDateError;
 
-        if (updateError) throw updateError;
+        const { error: updateInvoiceDateError } = await supabase
+          .from("invoices")
+          .update({ is_hsa_eligible: false })
+          .eq("user_id", user.id)
+          .lt("invoice_date", hsaOpenedDate)
+          .eq("is_hsa_eligible", true);
+        if (updateInvoiceDateError) throw updateInvoiceDateError;
         
         toast.success("Profile updated and expense eligibility recalculated");
       } else {
