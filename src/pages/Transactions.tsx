@@ -51,16 +51,22 @@ export default function Transactions() {
   }, []);
 
   const fetchHSADate = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("hsa_opened_date")
-      .eq("id", user.id)
-      .single();
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("hsa_opened_date")
+        .eq("id", user.id)
+        .maybeSingle();
 
-    setHsaOpenedDate(profile?.hsa_opened_date || null);
+      if (error) console.warn("No profile found or error fetching profile", error);
+      setHsaOpenedDate(profile?.hsa_opened_date || null);
+    } catch (e) {
+      console.error("fetchHSADate failed", e);
+      setHsaOpenedDate(null);
+    }
   };
 
   useEffect(() => {

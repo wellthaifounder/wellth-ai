@@ -66,15 +66,11 @@ const Settings = () => {
       const oldHsaDate = oldProfile?.hsa_opened_date;
       const hsaDateChanged = oldHsaDate !== hsaOpenedDate;
 
-      const { error } = await supabase
+      const { error: upsertError } = await supabase
         .from("profiles")
-        .update({
-          full_name: displayName,
-          hsa_opened_date: hsaOpenedDate || null,
-        })
-        .eq("id", user.id);
+        .upsert({ id: user.id, full_name: displayName, hsa_opened_date: hsaOpenedDate || null }, { onConflict: "id" });
 
-      if (error) throw error;
+      if (upsertError) throw upsertError;
 
       // If HSA date changed, update existing invoices
       if (hsaDateChanged && hsaOpenedDate) {

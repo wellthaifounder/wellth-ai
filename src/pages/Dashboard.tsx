@@ -67,12 +67,13 @@ const Dashboard = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("hsa_opened_date")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
+      if (profileError) console.warn("No profile row or error fetching profile", profileError);
       setHsaOpenedDate(profile?.hsa_opened_date || null);
 
       const { data: invoices, error } = await supabase
@@ -96,9 +97,11 @@ const Dashboard = () => {
         ?.filter(inv => {
           if (!inv.is_hsa_eligible || reimbursedIds.has(inv.id)) return false;
           if (hsaOpenedDate) {
-            const invoiceDate = new Date(inv.date);
+            const rawDate = inv.invoice_date || inv.date;
+            if (!rawDate) return false;
+            const invoiceDate = new Date(rawDate);
             const hsaDate = new Date(hsaOpenedDate);
-            return invoiceDate >= hsaDate;
+            return !isNaN(invoiceDate.getTime()) && invoiceDate >= hsaDate;
           }
           return true;
         })
@@ -308,11 +311,15 @@ const Dashboard = () => {
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
                               <p className="font-medium">{expense.vendor}</p>
-                              {expense.is_hsa_eligible && (
-                                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                                  HSA-eligible ✓
-                                </span>
-                              )}
+                              {(() => {
+                                const rawDate = expense.invoice_date || expense.date;
+                                const eligibleAfter = expense.is_hsa_eligible && (!hsaOpenedDate || (rawDate && new Date(rawDate) >= new Date(hsaOpenedDate)));
+                                return eligibleAfter ? (
+                                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                    HSA-eligible ✓
+                                  </span>
+                                ) : null;
+                              })()}
                             </div>
                             <p className="text-sm text-muted-foreground">
                               {new Date(expense.date).toLocaleDateString()}

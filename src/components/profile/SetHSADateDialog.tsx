@@ -32,11 +32,10 @@ export function SetHSADateDialog({ open, onOpenChange, onSuccess }: SetHSADateDi
 
       const hsaDateString = format(date, "yyyy-MM-dd");
 
-      // Update profile with HSA opened date
+      // Update or create profile with HSA opened date
       const { error: profileError } = await supabase
         .from("profiles")
-        .update({ hsa_opened_date: hsaDateString })
-        .eq("id", user.id);
+        .upsert({ id: user.id, hsa_opened_date: hsaDateString }, { onConflict: "id" });
 
       if (profileError) throw profileError;
 
