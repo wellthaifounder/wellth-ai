@@ -55,6 +55,16 @@ const Settings = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Get the old HSA date to check if it changed
+      const { data: oldProfile } = await supabase
+        .from("profiles")
+        .select("hsa_opened_date")
+        .eq("id", user.id)
+        .single();
+
+      const oldHsaDate = oldProfile?.hsa_opened_date;
+      const hsaDateChanged = oldHsaDate !== hsaOpenedDate;
+
       const { error } = await supabase
         .from("profiles")
         .update({
@@ -64,7 +74,23 @@ const Settings = () => {
         .eq("id", user.id);
 
       if (error) throw error;
-      toast.success("Profile updated successfully");
+
+      // If HSA date changed, update existing invoices
+      if (hsaDateChanged && hsaOpenedDate) {
+        // Set is_hsa_eligible = false for invoices before HSA opened date
+        const { error: updateError } = await supabase
+          .from("invoices")
+          .update({ is_hsa_eligible: false })
+          .eq("user_id", user.id)
+          .lt("date", hsaOpenedDate)
+          .eq("is_hsa_eligible", true);
+
+        if (updateError) throw updateError;
+        
+        toast.success("Profile updated and expense eligibility recalculated");
+      } else {
+        toast.success("Profile updated successfully");
+      }
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error("Failed to update profile");

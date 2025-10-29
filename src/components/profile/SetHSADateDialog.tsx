@@ -30,14 +30,28 @@ export function SetHSADateDialog({ open, onOpenChange, onSuccess }: SetHSADateDi
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { error } = await supabase
+      const hsaDateString = format(date, "yyyy-MM-dd");
+
+      // Update profile with HSA opened date
+      const { error: profileError } = await supabase
         .from("profiles")
-        .update({ hsa_opened_date: format(date, "yyyy-MM-dd") })
+        .update({ hsa_opened_date: hsaDateString })
         .eq("id", user.id);
 
-      if (error) throw error;
+      if (profileError) throw profileError;
 
-      toast.success("HSA opened date saved! We'll now accurately track your reimbursable expenses.");
+      // Retroactively update existing invoices based on HSA opened date
+      // Set is_hsa_eligible = false for invoices before HSA opened date
+      const { error: updateError } = await supabase
+        .from("invoices")
+        .update({ is_hsa_eligible: false })
+        .eq("user_id", user.id)
+        .lt("date", hsaDateString)
+        .eq("is_hsa_eligible", true);
+
+      if (updateError) throw updateError;
+
+      toast.success("HSA opened date saved! We've updated your expense eligibility.");
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
