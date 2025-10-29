@@ -96,8 +96,8 @@ export default function Transactions() {
     } else if (activeTab === "non-medical") {
       filtered = filtered.filter((t) => t.is_medical === false);
     } else if (activeTab === "all") {
-      // Default view: exclude transactions explicitly marked as non-medical
-      filtered = filtered.filter((t) => t.is_medical !== false);
+      // Show all transactions including ignored ones
+      // No filtering needed
     }
 
     // Filter by search query
@@ -174,7 +174,7 @@ export default function Transactions() {
           is_medical: !transaction.is_medical,
           is_hsa_eligible: !transaction.is_medical,
           category: !transaction.is_medical ? "medical" : transaction.category,
-          reconciliation_status: !transaction.is_medical ? "linked" : "unlinked"
+          reconciliation_status: !transaction.is_medical ? "linked_to_invoice" : "unlinked"
         })
         .eq("id", transaction.id);
 
@@ -229,6 +229,43 @@ export default function Transactions() {
     } catch (error) {
       console.error("Error ignoring transaction:", error);
       toast.error("Failed to ignore transaction");
+    }
+  };
+
+  const handleUnignore = async (transaction: Transaction) => {
+    try {
+      const { error } = await supabase
+        .from("transactions")
+        .update({
+          reconciliation_status: "unlinked"
+        })
+        .eq("id", transaction.id);
+
+      if (error) throw error;
+      toast.success("Transaction moved back to review queue");
+      fetchTransactions();
+    } catch (error) {
+      console.error("Error unignoring transaction:", error);
+      toast.error("Failed to update transaction");
+    }
+  };
+
+  const handleAddToReviewQueue = async (transaction: Transaction) => {
+    try {
+      const { error } = await supabase
+        .from("transactions")
+        .update({
+          reconciliation_status: "unlinked",
+          is_medical: false
+        })
+        .eq("id", transaction.id);
+
+      if (error) throw error;
+      toast.success("Transaction added back to review queue");
+      fetchTransactions();
+    } catch (error) {
+      console.error("Error adding to review queue:", error);
+      toast.error("Failed to update transaction");
     }
   };
 
@@ -355,6 +392,8 @@ export default function Transactions() {
                       onLinkToInvoice={() => handleLinkToInvoice(transaction)}
                       onToggleMedical={() => handleToggleMedical(transaction)}
                       onIgnore={() => handleIgnore(transaction)}
+                      onUnignore={() => handleUnignore(transaction)}
+                      onAddToReviewQueue={() => handleAddToReviewQueue(transaction)}
                     />
                     {expandedTransactionId === transaction.id && (
                       <TransactionInlineDetail

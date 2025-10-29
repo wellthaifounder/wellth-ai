@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +43,7 @@ export function SuggestionCard({
   onRememberChoice,
 }: SuggestionCardProps) {
   const [rememberChoice, setRememberChoice] = useState(false);
+  const [activeKey, setActiveKey] = useState<string | null>(null);
 
   const handleConfirmMedical = () => {
     if (onRememberChoice && rememberChoice) {
@@ -57,6 +58,28 @@ export function SuggestionCard({
     }
     onNotMedical();
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+      if (key === 'm' || key === 'n' || key === 's') {
+        setActiveKey(key);
+      }
+    };
+
+    const handleKeyUp = () => {
+      setActiveKey(null);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
   const getSuggestionIcon = () => {
     switch (suggestion.type) {
       case 'link_to_invoice':
@@ -144,7 +167,7 @@ export function SuggestionCard({
             <>
               <Button
                 onClick={handleConfirmMedical}
-                className="w-full"
+                className={`w-full transition-all ${activeKey === 'm' ? 'ring-2 ring-primary ring-offset-2' : ''}`}
                 size="lg"
               >
                 <CheckCircle2 className="h-4 w-4 mr-2" />
@@ -153,7 +176,7 @@ export function SuggestionCard({
               <Button
                 onClick={handleNotMedical}
                 variant="outline"
-                className="w-full"
+                className={`w-full transition-all ${activeKey === 'n' ? 'ring-2 ring-primary ring-offset-2' : ''}`}
                 size="lg"
               >
                 <XCircle className="h-4 w-4 mr-2" />
@@ -165,14 +188,14 @@ export function SuggestionCard({
               <Button
                 onClick={handleConfirmMedical}
                 variant="outline"
-                className="w-full"
+                className={`w-full transition-all ${activeKey === 'm' ? 'ring-2 ring-primary ring-offset-2' : ''}`}
                 size="lg"
               >
                 Mark Medical
               </Button>
               <Button
                 onClick={handleNotMedical}
-                className="w-full"
+                className={`w-full transition-all ${activeKey === 'n' ? 'ring-2 ring-primary ring-offset-2' : ''}`}
                 size="lg"
               >
                 Not Medical
@@ -185,7 +208,7 @@ export function SuggestionCard({
           <Button
             onClick={onSkip}
             variant="ghost"
-            className="w-full"
+            className={`w-full transition-all ${activeKey === 's' ? 'ring-2 ring-primary ring-offset-2' : ''}`}
           >
             <Clock className="h-4 w-4 mr-2" />
             Skip for Now

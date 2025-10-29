@@ -140,7 +140,7 @@ export function ReviewQueue() {
       const updates: any = {
         is_medical: true,
         is_hsa_eligible: true,
-        reconciliation_status: 'linked'
+        reconciliation_status: 'linked_to_invoice'
       };
 
       if (suggestion.invoice) {
@@ -204,10 +204,13 @@ export function ReviewQueue() {
   };
 
   const moveToNext = () => {
-    if (currentIndex < transactions.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    } else {
-      // Show completion celebration
+    // Remove the current transaction from the list
+    const updatedTransactions = transactions.filter((_, idx) => idx !== currentIndex);
+    setTransactions(updatedTransactions);
+    
+    // If there are more transactions and we're not at the end, stay at current index
+    // Otherwise show completion if no more transactions
+    if (updatedTransactions.length === 0) {
       setShowCompletion(true);
       confetti({
         particleCount: 100,
@@ -221,7 +224,11 @@ export function ReviewQueue() {
         setCurrentIndex(0);
         setShowCompletion(false);
       }, 3000);
+    } else if (currentIndex >= updatedTransactions.length) {
+      // If we were at the last item, go to the new last item
+      setCurrentIndex(updatedTransactions.length - 1);
     }
+    // Otherwise currentIndex stays the same, showing the next transaction
   };
 
   if (loading) {

@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Eye, Tag, Link2, XCircle } from "lucide-react";
+import { MoreVertical, Eye, Tag, Link2, XCircle, RotateCcw, ListRestart } from "lucide-react";
 import { format } from "date-fns";
 
 interface TransactionCardProps {
@@ -25,6 +25,8 @@ interface TransactionCardProps {
   onLinkToInvoice?: () => void;
   onToggleMedical?: () => void;
   onIgnore?: () => void;
+  onUnignore?: () => void;
+  onAddToReviewQueue?: () => void;
 }
 
 export function TransactionCard({
@@ -40,6 +42,8 @@ export function TransactionCard({
   onLinkToInvoice,
   onToggleMedical,
   onIgnore,
+  onUnignore,
+  onAddToReviewQueue,
 }: TransactionCardProps) {
   const getStatusBadge = () => {
     switch (reconciliationStatus) {
@@ -48,7 +52,16 @@ export function TransactionCard({
       case "unlinked":
         return <Badge variant="outline" className="border-yellow-500 text-yellow-700 dark:text-yellow-400">Needs Linking</Badge>;
       case "ignored":
-        return <Badge variant="outline">Ignored</Badge>;
+        return (
+          <Badge 
+            variant="outline" 
+            className="cursor-pointer hover:bg-muted transition-colors"
+            onClick={onUnignore}
+            title="Click to unignore"
+          >
+            Ignored ✕
+          </Badge>
+        );
     }
   };
 
@@ -140,6 +153,26 @@ export function TransactionCard({
                   <Link2 className="h-4 w-4 mr-2" />
                   Link to Invoice
                 </DropdownMenuItem>
+              )}
+
+              {reconciliationStatus !== "unlinked" && onAddToReviewQueue && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={onAddToReviewQueue}>
+                    <ListRestart className="h-4 w-4 mr-2" />
+                    Add to Review Queue
+                  </DropdownMenuItem>
+                </>
+              )}
+
+              {reconciliationStatus === "ignored" && onUnignore && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={onUnignore}>
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Unignore
+                  </DropdownMenuItem>
+                </>
               )}
 
               {onIgnore && reconciliationStatus !== "ignored" && (
