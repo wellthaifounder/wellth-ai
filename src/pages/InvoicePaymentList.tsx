@@ -20,6 +20,7 @@ const InvoicePaymentList = () => {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [hsaOpenedDate, setHsaOpenedDate] = useState<string | null>(null);
   const [eligibilityFilter, setEligibilityFilter] = useState<string>("all");
+  const [normalized, setNormalized] = useState(false);
 
   useEffect(() => {
     fetchInvoices();
@@ -60,7 +61,8 @@ const InvoicePaymentList = () => {
             notes
           )
         `)
-        .order("invoice_date", { ascending: false });
+        .order("invoice_date", { ascending: false })
+        .order("date", { ascending: false });
 
       if (error) throw error;
       setInvoices(invoiceData || []);
@@ -100,6 +102,41 @@ const InvoicePaymentList = () => {
     if (eligibilityFilter === "all") return invoices;
     return invoices.filter(invoice => getEligibilityStatus(invoice) === eligibilityFilter);
   }, [invoices, eligibilityFilter, hsaOpenedDate]);
+
+
+  useEffect(() => {
+    const run = async () => {
+      if (!hsaOpenedDate || normalized) return;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const dateStr = hsaOpenedDate;
+
+        // Set ineligible if before HSA date (both columns)
+        const { error: err1 } = await supabase
+          .from("invoices")
+          .update({ is_hsa_eligible: false })
+          .eq("user_id", user.id)
+          .lt("date", dateStr)
+          .eq("is_hsa_eligible", true);
+        if (err1) throw err1;
+
+        const { error: err2 } = await supabase
+          .from("invoices")
+          .update({ is_hsa_eligible: false })
+          .eq("user_id", user.id)
+          .lt("invoice_date", dateStr)
+          .eq("is_hsa_eligible", true);
+        if (err2) throw err2;
+
+        setNormalized(true);
+        fetchInvoices();
+      } catch (e) {
+        console.error("normalizeEligibility failed", e);
+      }
+    };
+    run();
+  }, [hsaOpenedDate, normalized]);
 
   const aggregateStats = useMemo(() => {
     let totalInvoiced = 0;
