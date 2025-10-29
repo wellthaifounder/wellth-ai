@@ -91,9 +91,6 @@ export default function HSAReimbursement() {
       }
       
       setExpenses(filteredExpenses);
-
-      if (error) throw error;
-      setExpenses(data || []);
     } catch (error) {
       console.error('Error fetching HSA expenses:', error);
       toast({

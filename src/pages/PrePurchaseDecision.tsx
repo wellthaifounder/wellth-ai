@@ -7,9 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { getPaymentRecommendation } from "@/lib/paymentRecommendation";
 import { PaymentRecommendation } from "@/components/expense/PaymentRecommendation";
-import { ArrowLeft, CreditCard, Receipt, TrendingUp, ChevronDown, AlertCircle, Calculator } from "lucide-react";
+import { ArrowLeft, CreditCard, Receipt, TrendingUp, ChevronDown, AlertCircle, Calculator, Save, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { WellthLogo } from "@/components/WellthLogo";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const HSA_CATEGORIES = [
   "Doctor Visit",
@@ -41,6 +43,7 @@ const PrePurchaseDecision = () => {
   const [hsaInvestmentYears, setHsaInvestmentYears] = useState("5");
   
   const [showRecommendation, setShowRecommendation] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const handleCalculate = () => {
     if (!amount || !category) return;
@@ -69,6 +72,61 @@ const PrePurchaseDecision = () => {
       hsaInvestmentYears: parseFloat(hsaInvestmentYears),
     });
   }, [amount, category, rewardsRate, taxRate, investmentReturn, cardPayoffMonths, monthlyPayment, hsaInvestmentYears]);
+
+  const handleSaveDecision = async () => {
+    if (!recommendation) return;
+    
+    setSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please sign in to save decisions");
+        return;
+      }
+
+      const { error } = await supabase
+        .from('expense_decisions')
+        .insert({
+          user_id: user.id,
+          expense_amount: parseFloat(amount),
+          payment_strategy: {
+            ...recommendation,
+            inputs: {
+              category,
+              rewardsRate: parseFloat(rewardsRate),
+              taxRate: parseFloat(taxRate),
+              investmentReturn: parseFloat(investmentReturn),
+              cardPayoffMonths: parseFloat(cardPayoffMonths),
+              hsaInvestmentYears: parseFloat(hsaInvestmentYears),
+            }
+          }
+        });
+
+      if (error) throw error;
+      
+      toast.success("Decision saved! You can apply it when entering this expense.", {
+        action: {
+          label: "Enter Expense Now",
+          onClick: () => navigate('/expenses/new', { 
+            state: { 
+              savedDecision: {
+                amount,
+                category,
+                cardPayoffMonths,
+                hsaInvestmentYears,
+                recommendation
+              }
+            }
+          })
+        }
+      });
+    } catch (error) {
+      console.error('Error saving decision:', error);
+      toast.error("Failed to save decision");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -275,6 +333,35 @@ const PrePurchaseDecision = () => {
           {showRecommendation && recommendation && (
             <>
               <PaymentRecommendation recommendation={recommendation} />
+              
+              <div className="flex gap-3">
+                <Button 
+                  onClick={handleSaveDecision}
+                  disabled={saving}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {saving ? "Saving..." : "Save This Decision"}
+                </Button>
+                <Button 
+                  onClick={() => navigate('/expenses/new', { 
+                    state: { 
+                      savedDecision: {
+                        amount,
+                        category,
+                        cardPayoffMonths,
+                        hsaInvestmentYears,
+                        recommendation
+                      }
+                    }
+                  })}
+                  className="flex-1"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Enter Expense Now
+                </Button>
+              </div>
               
               <Card>
                 <CardHeader>

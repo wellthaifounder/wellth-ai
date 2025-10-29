@@ -3,17 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, TrendingUp, Calendar, DollarSign, Clock } from "lucide-react";
+import { ArrowLeft, TrendingUp, Calendar, DollarSign, Clock, CheckSquare } from "lucide-react";
 import { toast } from "sonner";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 import { calculateVaultSummary, calculateExpenseProjectedValue, type VaultExpense } from "@/lib/vaultCalculations";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const VaultTracker = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [expenses, setExpenses] = useState<VaultExpense[]>([]);
   const [investmentReturn, setInvestmentReturn] = useState(0.08);
+  const [selectedExpenses, setSelectedExpenses] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadVaultExpenses();
@@ -72,6 +74,46 @@ const VaultTracker = () => {
     } catch (error) {
       console.error("Error marking expense:", error);
       toast.error("Failed to update expense");
+    }
+  };
+
+  const handleBulkMarkReady = async () => {
+    if (selectedExpenses.size === 0) {
+      toast.error("Please select at least one expense");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("invoices")
+        .update({ reimbursement_strategy: "immediate" })
+        .in("id", Array.from(selectedExpenses));
+
+      if (error) throw error;
+      toast.success(`${selectedExpenses.size} expense(s) marked as ready to reimburse`);
+      setSelectedExpenses(new Set());
+      loadVaultExpenses();
+    } catch (error) {
+      console.error("Error marking expenses:", error);
+      toast.error("Failed to update expenses");
+    }
+  };
+
+  const toggleExpense = (expenseId: string) => {
+    const newSelected = new Set(selectedExpenses);
+    if (newSelected.has(expenseId)) {
+      newSelected.delete(expenseId);
+    } else {
+      newSelected.add(expenseId);
+    }
+    setSelectedExpenses(newSelected);
+  };
+
+  const toggleAll = () => {
+    if (selectedExpenses.size === expenses.length) {
+      setSelectedExpenses(new Set());
+    } else {
+      setSelectedExpenses(new Set(expenses.map(e => e.id)));
     }
   };
 
@@ -176,10 +218,34 @@ const VaultTracker = () => {
         {/* Expenses Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Vault Expenses</CardTitle>
-            <CardDescription>
-              Expenses held for long-term investment growth
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Vault Expenses</CardTitle>
+                <CardDescription>
+                  Expenses held for long-term investment growth
+                </CardDescription>
+              </div>
+              {expenses.length > 0 && (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={toggleAll}
+                  >
+                    <CheckSquare className="h-4 w-4 mr-2" />
+                    {selectedExpenses.size === expenses.length ? "Deselect All" : "Select All"}
+                  </Button>
+                  {selectedExpenses.size > 0 && (
+                    <Button
+                      size="sm"
+                      onClick={handleBulkMarkReady}
+                    >
+                      Mark {selectedExpenses.size} Ready
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {expenses.length === 0 ? (
@@ -200,7 +266,12 @@ const VaultTracker = () => {
 
                   return (
                     <div key={expense.id} className="border rounded-lg p-4 hover:bg-accent/50 transition-colors">
-                      <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3">
+                        <Checkbox
+                          checked={selectedExpenses.has(expense.id)}
+                          onCheckedChange={() => toggleExpense(expense.id)}
+                          className="mt-1"
+                        />
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <p className="font-medium">{expense.vendor}</p>
