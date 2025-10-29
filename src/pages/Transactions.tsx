@@ -168,18 +168,19 @@ export default function Transactions() {
 
   const handleToggleMedical = async (transaction: Transaction) => {
     try {
+      const newIsMedical = !transaction.is_medical;
       const { error } = await supabase
         .from("transactions")
         .update({ 
-          is_medical: !transaction.is_medical,
-          is_hsa_eligible: !transaction.is_medical,
-          category: !transaction.is_medical ? "medical" : transaction.category,
-          reconciliation_status: !transaction.is_medical ? "linked_to_invoice" : "unlinked"
+          is_medical: newIsMedical,
+          is_hsa_eligible: newIsMedical,
+          category: newIsMedical ? "medical" : transaction.category,
+          reconciliation_status: newIsMedical ? "unlinked" : "ignored"
         })
         .eq("id", transaction.id);
 
       if (error) throw error;
-      toast.success(transaction.is_medical ? "Unmarked as medical" : "Marked as medical expense");
+      toast.success(newIsMedical ? "Marked as medical expense" : "Marked as non-medical");
       fetchTransactions();
     } catch (error) {
       console.error("Error toggling medical:", error);
