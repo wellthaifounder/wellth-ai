@@ -208,7 +208,7 @@ const ExpenseEntry = () => {
             amount: validatedData.amount,
             category: validatedData.category,
             notes: validatedData.notes || null,
-            is_hsa_eligible: isHsaEligible,
+            is_hsa_eligible: isTrulyReimbursable,
             payment_plan_total_amount: hasPaymentPlan && formData.paymentPlanTotalAmount 
               ? parseFloat(formData.paymentPlanTotalAmount) 
               : null,
@@ -239,7 +239,7 @@ const ExpenseEntry = () => {
             amount: validatedData.amount,
             category: validatedData.category,
             notes: validatedData.notes || null,
-            is_hsa_eligible: isHsaEligible,
+            is_hsa_eligible: isTrulyReimbursable,
             is_reimbursed: false,
             payment_plan_total_amount: hasPaymentPlan && formData.paymentPlanTotalAmount 
               ? parseFloat(formData.paymentPlanTotalAmount) 
@@ -398,6 +398,38 @@ const ExpenseEntry = () => {
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                     required
                   />
+                  
+                  {/* Warning if expense is before HSA opened date */}
+                  {formData.date && hsaOpenedDate && new Date(formData.date) < new Date(hsaOpenedDate) && (
+                    <Alert variant="destructive" className="mt-2">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Not HSA-Reimbursable</AlertTitle>
+                      <AlertDescription className="space-y-2">
+                        <p>
+                          This expense occurred on {new Date(formData.date).toLocaleDateString()}, but your HSA opened on {new Date(hsaOpenedDate).toLocaleDateString()}.
+                          You can only reimburse expenses that occur after your HSA was opened.
+                        </p>
+                        <p className="text-sm">
+                          You can still save this expense for record-keeping, but it won't be eligible for HSA reimbursement.
+                        </p>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  {/* Warning if HSA date not set */}
+                  {!hsaOpenedDate && formData.category && HSA_ELIGIBLE_CATEGORIES.includes(formData.category) && (
+                    <Alert className="mt-2 bg-yellow-500/10 border-yellow-500/20">
+                      <AlertCircle className="h-4 w-4 text-yellow-600" />
+                      <AlertDescription className="text-yellow-800 dark:text-yellow-200">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm">Set your HSA opened date to verify this expense is eligible for reimbursement.</span>
+                          <Button size="sm" variant="outline" onClick={() => setHsaDateDialogOpen(true)} type="button">
+                            Set Date
+                          </Button>
+                        </div>
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -519,6 +551,14 @@ const ExpenseEntry = () => {
           onAttached={() => loadExpense(id!)}
         />
       )}
+
+      <SetHSADateDialog
+        open={hsaDateDialogOpen}
+        onOpenChange={setHsaDateDialogOpen}
+        onSuccess={() => {
+          loadHsaOpenedDate();
+        }}
+      />
     </div>
   );
 };
