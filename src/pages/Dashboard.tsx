@@ -12,6 +12,7 @@ import { WellbieTip } from "@/components/dashboard/WellbieTip";
 import { EmptyStateOnboarding } from "@/components/dashboard/EmptyStateOnboarding";
 import { getNextAction } from "@/lib/dashboardActions";
 import { calculateProgress, getProgressSteps } from "@/lib/userProgress";
+import { calculateVaultSummary } from "@/lib/vaultCalculations";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -236,6 +237,29 @@ const Dashboard = () => {
                       >
                         Review {stats.unreviewedTransactions} Transaction{stats.unreviewedTransactions === 1 ? '' : 's'}
                       </Button>
+                    </div>
+                  </ActionCard>
+                )}
+
+                {recentExpenses.filter(e => e.reimbursement_strategy === 'vault' || e.reimbursement_strategy === 'medium').length > 0 && (
+                  <ActionCard
+                    icon="💎"
+                    title="Investment Vault"
+                    count={recentExpenses.filter(e => e.reimbursement_strategy === 'vault' || e.reimbursement_strategy === 'medium').length}
+                    actions={
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => navigate("/vault-tracker")}
+                      >
+                        View Vault
+                      </Button>
+                    }
+                  >
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        Track expenses held for long-term HSA investment growth
+                      </p>
                     </div>
                   </ActionCard>
                 )}

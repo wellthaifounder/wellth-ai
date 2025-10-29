@@ -65,6 +65,13 @@ export default function HSAReimbursement() {
       }
       setUser(currentUser);
 
+      // Get HSA opened date
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('hsa_opened_date')
+        .eq('id', currentUser.id)
+        .single();
+
       const { data, error } = await supabase
         .from('invoices')
         .select('*')
@@ -72,6 +79,18 @@ export default function HSAReimbursement() {
         .eq('is_hsa_eligible', true)
         .eq('is_reimbursed', false)
         .order('date', { ascending: false });
+
+      if (error) throw error;
+      
+      // Filter by HSA opened date
+      let filteredExpenses = data || [];
+      if (profile?.hsa_opened_date) {
+        filteredExpenses = filteredExpenses.filter(exp => 
+          new Date(exp.date) >= new Date(profile.hsa_opened_date)
+        );
+      }
+      
+      setExpenses(filteredExpenses);
 
       if (error) throw error;
       setExpenses(data || []);

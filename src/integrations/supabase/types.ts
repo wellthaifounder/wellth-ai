@@ -82,6 +82,41 @@ export type Database = {
         }
         Relationships: []
       }
+      expense_decisions: {
+        Row: {
+          created_at: string | null
+          expense_amount: number
+          id: string
+          payment_strategy: Json
+          used_for_expense_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expense_amount: number
+          id?: string
+          payment_strategy: Json
+          used_for_expense_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expense_amount?: number
+          id?: string
+          payment_strategy?: Json
+          used_for_expense_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_decisions_used_for_expense_id_fkey"
+            columns: ["used_for_expense_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_labels: {
         Row: {
           created_at: string
@@ -121,10 +156,12 @@ export type Database = {
       invoices: {
         Row: {
           amount: number
+          card_payoff_months: number | null
           category: string
           created_at: string
           date: string
           id: string
+          investment_notes: string | null
           invoice_date: string | null
           invoice_number: string | null
           is_hsa_eligible: boolean | null
@@ -134,6 +171,9 @@ export type Database = {
           payment_plan_installments: number | null
           payment_plan_notes: string | null
           payment_plan_total_amount: number | null
+          planned_reimbursement_date: string | null
+          reimbursement_reminder_date: string | null
+          reimbursement_strategy: string | null
           total_amount: number | null
           updated_at: string
           user_id: string
@@ -141,10 +181,12 @@ export type Database = {
         }
         Insert: {
           amount: number
+          card_payoff_months?: number | null
           category: string
           created_at?: string
           date: string
           id?: string
+          investment_notes?: string | null
           invoice_date?: string | null
           invoice_number?: string | null
           is_hsa_eligible?: boolean | null
@@ -154,6 +196,9 @@ export type Database = {
           payment_plan_installments?: number | null
           payment_plan_notes?: string | null
           payment_plan_total_amount?: number | null
+          planned_reimbursement_date?: string | null
+          reimbursement_reminder_date?: string | null
+          reimbursement_strategy?: string | null
           total_amount?: number | null
           updated_at?: string
           user_id: string
@@ -161,10 +206,12 @@ export type Database = {
         }
         Update: {
           amount?: number
+          card_payoff_months?: number | null
           category?: string
           created_at?: string
           date?: string
           id?: string
+          investment_notes?: string | null
           invoice_date?: string | null
           invoice_number?: string | null
           is_hsa_eligible?: boolean | null
@@ -174,6 +221,9 @@ export type Database = {
           payment_plan_installments?: number | null
           payment_plan_notes?: string | null
           payment_plan_total_amount?: number | null
+          planned_reimbursement_date?: string | null
+          reimbursement_reminder_date?: string | null
+          reimbursement_strategy?: string | null
           total_amount?: number | null
           updated_at?: string
           user_id?: string
@@ -411,18 +461,21 @@ export type Database = {
         Row: {
           created_at: string
           full_name: string | null
+          hsa_opened_date: string | null
           id: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           full_name?: string | null
+          hsa_opened_date?: string | null
           id: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           full_name?: string | null
+          hsa_opened_date?: string | null
           id?: string
           updated_at?: string
         }

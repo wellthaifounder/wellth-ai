@@ -33,7 +33,7 @@ interface RecommendationInput {
 }
 
 // Calculate investment growth with declining principal (if monthly payments exist)
-const calculateInvestmentGrowth = (
+export const calculateInvestmentGrowth = (
   principal: number,
   monthlyRate: number,
   months: number,

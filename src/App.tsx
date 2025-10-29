@@ -27,6 +27,7 @@ import Documents from "./pages/Documents";
 import Transactions from "./pages/Transactions";
 import Settings from "./pages/Settings";
 import BankAccounts from "./pages/BankAccounts";
+import VaultTracker from "./pages/VaultTracker";
  
 import NotFound from "./pages/NotFound";
 import { WellbieChat } from "./components/WellbieChat";
@@ -70,6 +71,7 @@ const App = () => (
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/bank-accounts" element={<BankAccounts />} />
+          <Route path="/vault-tracker" element={<VaultTracker />} />
           <Route path="/tripwire-success" element={<TripwireSuccess />} />
           <Route path="/checkout" element={<Checkout />} />
           

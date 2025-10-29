@@ -17,6 +17,8 @@ import { DocumentChecklist } from "@/components/expense/DocumentChecklist";
 import { MultiFileUpload } from "@/components/expense/MultiFileUpload";
 import { PaymentPlanFields } from "@/components/expense/PaymentPlanFields";
 import { AttachDocumentDialog } from "@/components/documents/AttachDocumentDialog";
+import { ReimbursementStrategySelector } from "@/components/expense/ReimbursementStrategySelector";
+import { getDefaultReimbursementDate } from "@/lib/vaultCalculations";
 
 const expenseSchema = z.object({
   date: z.string().min(1, "Date is required"),
@@ -51,6 +53,13 @@ const ExpenseEntry = () => {
   const [success, setSuccess] = useState(false);
   const [hasPaymentPlan, setHasPaymentPlan] = useState(false);
   const [showAttachDialog, setShowAttachDialog] = useState(false);
+  const [useReimbursementStrategy, setUseReimbursementStrategy] = useState(false);
+  const [reimbursementStrategy, setReimbursementStrategy] = useState<'immediate' | 'medium' | 'vault'>('immediate');
+  const [plannedReimbursementDate, setPlannedReimbursementDate] = useState("");
+  const [reminderDate, setReminderDate] = useState("");
+  const [cardPayoffMonths, setCardPayoffMonths] = useState(0);
+  const [investmentNotes, setInvestmentNotes] = useState("");
+  const [hsaOpenedDate, setHsaOpenedDate] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     vendor: "",
@@ -72,10 +81,37 @@ const ExpenseEntry = () => {
     : null;
 
   useEffect(() => {
+    loadHsaOpenedDate();
     if (isEditMode && id) {
       loadExpense(id);
     }
   }, [id, isEditMode]);
+
+  // Auto-set planned reimbursement date when date changes
+  useEffect(() => {
+    if (formData.date && useReimbursementStrategy && !isEditMode) {
+      setPlannedReimbursementDate(getDefaultReimbursementDate(reimbursementStrategy, formData.date));
+    }
+  }, [formData.date, reimbursementStrategy, useReimbursementStrategy, isEditMode]);
+
+  const loadHsaOpenedDate = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("hsa_opened_date")
+        .eq("id", user.id)
+        .single();
+
+      if (profile) {
+        setHsaOpenedDate(profile.hsa_opened_date);
+      }
+    } catch (error) {
+      console.error("Error loading HSA opened date:", error);
+    }
+  };
 
   const loadExpense = async (expenseId: string) => {
     try {
@@ -100,6 +136,16 @@ const ExpenseEntry = () => {
           paymentPlanNotes: data.payment_plan_notes || "",
         });
         setHasPaymentPlan(!!data.payment_plan_total_amount);
+        
+        // Load reimbursement strategy
+        if (data.reimbursement_strategy && data.reimbursement_strategy !== 'immediate') {
+          setUseReimbursementStrategy(true);
+          setReimbursementStrategy(data.reimbursement_strategy as 'immediate' | 'medium' | 'vault');
+          setPlannedReimbursementDate(data.planned_reimbursement_date || "");
+          setReminderDate(data.reimbursement_reminder_date || "");
+          setCardPayoffMonths(data.card_payoff_months || 0);
+          setInvestmentNotes(data.investment_notes || "");
+        }
         
         // Load existing receipts
         const { data: receiptsData } = await supabase
@@ -136,6 +182,12 @@ const ExpenseEntry = () => {
       if (!user) throw new Error("Not authenticated");
 
       const isHsaEligible = HSA_ELIGIBLE_CATEGORIES.includes(validatedData.category);
+      
+      // Check if expense is before HSA opened date
+      let isTrulyReimbursable = isHsaEligible;
+      if (isHsaEligible && hsaOpenedDate) {
+        isTrulyReimbursable = new Date(validatedData.date) >= new Date(hsaOpenedDate);
+      }
 
       // Format date to ensure it's stored consistently in UTC
       const dateObj = new Date(validatedData.date + 'T00:00:00');
@@ -161,6 +213,11 @@ const ExpenseEntry = () => {
               ? parseInt(formData.paymentPlanInstallments) 
               : null,
             payment_plan_notes: hasPaymentPlan ? formData.paymentPlanNotes : null,
+            reimbursement_strategy: useReimbursementStrategy ? reimbursementStrategy : 'immediate',
+            planned_reimbursement_date: useReimbursementStrategy ? plannedReimbursementDate : null,
+            reimbursement_reminder_date: useReimbursementStrategy ? reminderDate : null,
+            card_payoff_months: useReimbursementStrategy ? cardPayoffMonths : 0,
+            investment_notes: useReimbursementStrategy ? investmentNotes : null,
           })
           .eq("id", id)
           .select()
@@ -188,6 +245,11 @@ const ExpenseEntry = () => {
               ? parseInt(formData.paymentPlanInstallments) 
               : null,
             payment_plan_notes: hasPaymentPlan ? formData.paymentPlanNotes : null,
+            reimbursement_strategy: useReimbursementStrategy ? reimbursementStrategy : 'immediate',
+            planned_reimbursement_date: useReimbursementStrategy ? plannedReimbursementDate : null,
+            reimbursement_reminder_date: useReimbursementStrategy ? reminderDate : null,
+            card_payoff_months: useReimbursementStrategy ? cardPayoffMonths : 0,
+            investment_notes: useReimbursementStrategy ? investmentNotes : null,
           })
           .select()
           .single();
@@ -402,6 +464,40 @@ const ExpenseEntry = () => {
 
               {recommendation && !isEditMode && (
                 <PaymentRecommendation recommendation={recommendation} />
+              )}
+
+              {formData.category && HSA_ELIGIBLE_CATEGORIES.includes(formData.category) && !isEditMode && (
+                <>
+                  {hsaOpenedDate && new Date(formData.date) < new Date(hsaOpenedDate) && (
+                    <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
+                      <p className="text-sm font-medium text-yellow-900 dark:text-yellow-100">
+                        ⚠️ Expense before HSA opened
+                      </p>
+                      <p className="text-xs text-yellow-800 dark:text-yellow-200 mt-1">
+                        This expense occurred before your HSA was opened ({new Date(hsaOpenedDate).toLocaleDateString()}). 
+                        It cannot be reimbursed from your HSA.
+                      </p>
+                    </div>
+                  )}
+                  
+                  {(!hsaOpenedDate || new Date(formData.date) >= new Date(hsaOpenedDate)) && (
+                    <ReimbursementStrategySelector
+                      enabled={useReimbursementStrategy}
+                      onEnabledChange={setUseReimbursementStrategy}
+                      strategy={reimbursementStrategy}
+                      onStrategyChange={setReimbursementStrategy}
+                      plannedDate={plannedReimbursementDate}
+                      onPlannedDateChange={setPlannedReimbursementDate}
+                      reminderDate={reminderDate}
+                      onReminderDateChange={setReminderDate}
+                      cardPayoffMonths={cardPayoffMonths}
+                      onCardPayoffMonthsChange={setCardPayoffMonths}
+                      notes={investmentNotes}
+                      onNotesChange={setInvestmentNotes}
+                      expenseDate={formData.date}
+                    />
+                  )}
+                </>
               )}
 
               <Button type="submit" className="w-full" disabled={loading}>

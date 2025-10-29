@@ -10,6 +10,7 @@ import { HSAInvestmentTracker } from "@/components/analytics/HSAInvestmentTracke
 import { ReimbursementTimingOptimizer } from "@/components/analytics/ReimbursementTimingOptimizer";
 import { RewardsOptimizationDashboard } from "@/components/analytics/RewardsOptimizationDashboard";
 import { YearOverYearComparison } from "@/components/analytics/YearOverYearComparison";
+import { PaymentStrategyTimeline } from "@/components/analytics/PaymentStrategyTimeline";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 
 const Analytics = () => {

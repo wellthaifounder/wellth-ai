@@ -5,15 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, User, Mail, Shield } from "lucide-react";
+import { ArrowLeft, User, Mail, Shield, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 
 const Settings = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [hsaOpenedDate, setHsaOpenedDate] = useState("");
 
   useEffect(() => {
     loadUserData();
@@ -27,7 +29,19 @@ const Settings = () => {
         return;
       }
       setEmail(user.email || "");
-      // You can add profile data fetching here if you have a profiles table
+      
+      // Fetch profile data
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+      
+      if (profile) {
+        setDisplayName(profile.full_name || "");
+        setHsaOpenedDate(profile.hsa_opened_date || "");
+      }
+      
       setLoading(false);
     } catch (error) {
       console.error("Error loading user data:", error);
@@ -37,11 +51,25 @@ const Settings = () => {
 
   const handleUpdateProfile = async () => {
     try {
-      // Add profile update logic here
+      setSaving(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: displayName,
+          hsa_opened_date: hsaOpenedDate || null,
+        })
+        .eq("id", user.id);
+
+      if (error) throw error;
       toast.success("Profile updated successfully");
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error("Failed to update profile");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -106,8 +134,37 @@ const Settings = () => {
                   onChange={(e) => setDisplayName(e.target.value)}
                 />
               </div>
-              <Button onClick={handleUpdateProfile}>
-                Save Changes
+              <Button onClick={handleUpdateProfile} disabled={saving}>
+                {saving ? "Saving..." : "Save Changes"}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Heart className="h-5 w-5" />
+                HSA Information
+              </CardTitle>
+              <CardDescription>
+                Track HSA eligibility for expenses
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="hsa-opened">HSA Opened Date</Label>
+                <Input
+                  id="hsa-opened"
+                  type="date"
+                  value={hsaOpenedDate}
+                  onChange={(e) => setHsaOpenedDate(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Only expenses after this date can be reimbursed from your HSA
+                </p>
+              </div>
+              <Button onClick={handleUpdateProfile} disabled={saving}>
+                {saving ? "Saving..." : "Save Changes"}
               </Button>
             </CardContent>
           </Card>
