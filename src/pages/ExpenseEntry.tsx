@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { ArrowLeft, Upload, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Upload, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
 import { z } from "zod";
 import { getPaymentRecommendation } from "@/lib/paymentRecommendation";
 import { PaymentRecommendation } from "@/components/expense/PaymentRecommendation";
@@ -18,6 +19,7 @@ import { MultiFileUpload } from "@/components/expense/MultiFileUpload";
 import { PaymentPlanFields } from "@/components/expense/PaymentPlanFields";
 import { AttachDocumentDialog } from "@/components/documents/AttachDocumentDialog";
 import { ReimbursementStrategySelector } from "@/components/expense/ReimbursementStrategySelector";
+import { SetHSADateDialog } from "@/components/profile/SetHSADateDialog";
 import { getDefaultReimbursementDate } from "@/lib/vaultCalculations";
 
 const expenseSchema = z.object({
@@ -60,6 +62,7 @@ const ExpenseEntry = () => {
   const [cardPayoffMonths, setCardPayoffMonths] = useState(0);
   const [investmentNotes, setInvestmentNotes] = useState("");
   const [hsaOpenedDate, setHsaOpenedDate] = useState<string | null>(null);
+  const [hsaDateDialogOpen, setHsaDateDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     vendor: "",

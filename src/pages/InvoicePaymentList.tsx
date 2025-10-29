@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { WellthLogo } from "@/components/WellthLogo";
+import { MissingHSADateBanner } from "@/components/dashboard/MissingHSADateBanner";
 import { ArrowLeft, Plus, DollarSign, CreditCard, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import { calculateHSAEligibility, getPaymentStatusBadge } from "@/lib/hsaCalculations";
@@ -16,10 +18,26 @@ const InvoicePaymentList = () => {
   const [loading, setLoading] = useState(true);
   const [invoices, setInvoices] = useState<any[]>([]);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [hsaOpenedDate, setHsaOpenedDate] = useState<string | null>(null);
+  const [eligibilityFilter, setEligibilityFilter] = useState<string>("all");
 
   useEffect(() => {
     fetchInvoices();
+    fetchHSADate();
   }, []);
+
+  const fetchHSADate = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("hsa_opened_date")
+      .eq("id", user.id)
+      .single();
+
+    setHsaOpenedDate(profile?.hsa_opened_date || null);
+  };
 
   const fetchInvoices = async () => {
     try {
@@ -58,12 +76,31 @@ const InvoicePaymentList = () => {
     setExpandedRows(newExpanded);
   };
 
+  const getEligibilityStatus = (invoice: any) => {
+    if (!invoice.is_hsa_eligible) return "not-eligible";
+    
+    if (hsaOpenedDate) {
+      const invoiceDate = new Date(invoice.date);
+      const hsaDate = new Date(hsaOpenedDate);
+      if (invoiceDate < hsaDate) return "pre-hsa";
+    }
+    
+    return "eligible";
+  };
+
+  const filteredInvoices = useMemo(() => {
+    if (eligibilityFilter === "all") return invoices;
+    return invoices.filter(invoice => getEligibilityStatus(invoice) === eligibilityFilter);
+  }, [invoices, eligibilityFilter, hsaOpenedDate]);
+
   const aggregateStats = useMemo(() => {
     let totalInvoiced = 0;
     let totalPaidHSA = 0;
     let totalPaidOther = 0;
     let totalUnpaid = 0;
     let totalHSAEligible = 0;
+    let preHSACount = 0;
+    let preHSAAmount = 0;
 
     invoices.forEach(invoice => {
       const breakdown = calculateHSAEligibility(
@@ -74,11 +111,19 @@ const InvoicePaymentList = () => {
       totalPaidHSA += breakdown.paidViaHSA;
       totalPaidOther += breakdown.paidViaOther;
       totalUnpaid += breakdown.unpaidBalance;
-      totalHSAEligible += breakdown.hsaReimbursementEligible;
+      
+      // Only count as HSA eligible if after HSA opened date
+      const status = getEligibilityStatus(invoice);
+      if (status === "eligible") {
+        totalHSAEligible += breakdown.hsaReimbursementEligible;
+      } else if (status === "pre-hsa") {
+        preHSACount++;
+        preHSAAmount += breakdown.totalInvoiced;
+      }
     });
 
-    return { totalInvoiced, totalPaidHSA, totalPaidOther, totalUnpaid, totalHSAEligible };
-  }, [invoices]);
+    return { totalInvoiced, totalPaidHSA, totalPaidOther, totalUnpaid, totalHSAEligible, preHSACount, preHSAAmount };
+  }, [invoices, hsaOpenedDate]);
 
   if (loading) {
     return (
@@ -104,6 +149,8 @@ const InvoicePaymentList = () => {
       </nav>
 
       <div className="container mx-auto px-4 py-8">
+        {!hsaOpenedDate && <MissingHSADateBanner onDateSet={fetchHSADate} />}
+        
         <div className="flex items-center justify-between mb-6">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -169,17 +216,53 @@ const InvoicePaymentList = () => {
           </Card>
         </div>
 
+        {/* Pre-HSA Warning */}
+        {aggregateStats.preHSACount > 0 && (
+          <Card className="mb-6 bg-yellow-500/10 border-yellow-500/20">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-yellow-900 dark:text-yellow-100">
+                    {aggregateStats.preHSACount} expense{aggregateStats.preHSACount > 1 ? 's' : ''} occurred before your HSA was opened
+                  </p>
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-1">
+                    ${aggregateStats.preHSAAmount.toFixed(2)} in expenses are not eligible for HSA reimbursement because they occurred before {hsaOpenedDate ? new Date(hsaOpenedDate).toLocaleDateString() : 'your HSA opened'}.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader>
-            <CardTitle>Medical Invoices & Payments</CardTitle>
-            <CardDescription>
-              Track invoice balances and payment history for HSA reimbursement optimization
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Medical Invoices & Payments</CardTitle>
+                <CardDescription>
+                  Track invoice balances and payment history for HSA reimbursement optimization
+                </CardDescription>
+              </div>
+              <Select value={eligibilityFilter} onValueChange={setEligibilityFilter}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Filter by eligibility" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Invoices</SelectItem>
+                  <SelectItem value="eligible">HSA Eligible</SelectItem>
+                  <SelectItem value="pre-hsa">Pre-HSA</SelectItem>
+                  <SelectItem value="not-eligible">Not Eligible</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent>
-            {invoices.length === 0 ? (
+            {filteredInvoices.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground mb-4">No invoices yet</p>
+                <p className="text-muted-foreground mb-4">
+                  {eligibilityFilter === "all" ? "No invoices yet" : `No ${eligibilityFilter === "eligible" ? "HSA eligible" : eligibilityFilter === "pre-hsa" ? "pre-HSA" : "ineligible"} invoices found`}
+                </p>
                 <Button onClick={() => navigate("/invoice/new")}>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Your First Invoice
@@ -187,7 +270,8 @@ const InvoicePaymentList = () => {
               </div>
             ) : (
               <div className="space-y-2">
-                {invoices.map((invoice) => {
+                {filteredInvoices.map((invoice) => {
+                  const eligibilityStatus = getEligibilityStatus(invoice);
                   const breakdown = calculateHSAEligibility(
                     invoice,
                     invoice.payment_transactions || []
@@ -214,9 +298,19 @@ const InvoicePaymentList = () => {
                                 <div className="text-left">
                                   <div className="flex items-center gap-2">
                                     <p className="font-semibold">{invoice.vendor}</p>
-                                    {invoice.is_hsa_eligible && (
+                                    {eligibilityStatus === "eligible" && (
                                       <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                                        HSA Eligible
+                                        ✅ HSA Eligible
+                                      </Badge>
+                                    )}
+                                    {eligibilityStatus === "pre-hsa" && (
+                                      <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
+                                        ⚠️ Pre-HSA
+                                      </Badge>
+                                    )}
+                                    {eligibilityStatus === "not-eligible" && (
+                                      <Badge variant="outline" className="bg-muted text-muted-foreground">
+                                        Not Eligible
                                       </Badge>
                                     )}
                                   </div>

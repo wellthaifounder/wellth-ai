@@ -10,6 +10,7 @@ import { FriendlyStatsCards } from "@/components/dashboard/FriendlyStatsCards";
 import { ActionCard } from "@/components/dashboard/ActionCard";
 import { WellbieTip } from "@/components/dashboard/WellbieTip";
 import { EmptyStateOnboarding } from "@/components/dashboard/EmptyStateOnboarding";
+import { MissingHSADateBanner } from "@/components/dashboard/MissingHSADateBanner";
 import { getNextAction } from "@/lib/dashboardActions";
 import { calculateProgress, getProgressSteps } from "@/lib/userProgress";
 import { calculateVaultSummary } from "@/lib/vaultCalculations";
@@ -29,6 +30,7 @@ const Dashboard = () => {
   const [recentExpenses, setRecentExpenses] = useState<any[]>([]);
   const [reimbursementRequests, setReimbursementRequests] = useState<any[]>([]);
   const [hasConnectedBank, setHasConnectedBank] = useState(false);
+  const [hsaOpenedDate, setHsaOpenedDate] = useState<string | null>(null);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -62,6 +64,17 @@ const Dashboard = () => {
 
   const fetchStats = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("hsa_opened_date")
+        .eq("id", user.id)
+        .single();
+
+      setHsaOpenedDate(profile?.hsa_opened_date || null);
+
       const { data: invoices, error } = await supabase
         .from("invoices")
         .select("*")
@@ -80,7 +93,15 @@ const Dashboard = () => {
       
       const reimbursedIds = new Set(reimbursedInvoices?.map(r => r.invoice_id) || []);
       const hsaClaimable = invoices
-        ?.filter(inv => inv.is_hsa_eligible && !reimbursedIds.has(inv.id))
+        ?.filter(inv => {
+          if (!inv.is_hsa_eligible || reimbursedIds.has(inv.id)) return false;
+          if (hsaOpenedDate) {
+            const invoiceDate = new Date(inv.date);
+            const hsaDate = new Date(hsaOpenedDate);
+            return invoiceDate >= hsaDate;
+          }
+          return true;
+        })
         .reduce((sum, inv) => sum + Number(inv.amount), 0) || 0;
       
       const taxSavings = hsaEligible * 0.3;
@@ -183,6 +204,8 @@ const Dashboard = () => {
       <AuthenticatedNav unreviewedTransactions={stats.unreviewedTransactions} />
 
       <main className="container mx-auto px-4 py-8 space-y-6">
+        {!hsaOpenedDate && stats.expenseCount > 0 && <MissingHSADateBanner onDateSet={fetchStats} />}
+        
         {isNewUser ? (
           <EmptyStateOnboarding />
         ) : (

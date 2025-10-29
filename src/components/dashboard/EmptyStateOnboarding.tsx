@@ -1,11 +1,15 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { SetHSADateDialog } from "@/components/profile/SetHSADateDialog";
 
 export function EmptyStateOnboarding() {
   const navigate = useNavigate();
+  const [showHSADialog, setShowHSADialog] = useState(false);
 
   return (
+    <>
     <Card className="bg-gradient-to-br from-primary/5 to-primary/10">
       <CardContent className="pt-8 pb-8">
         <div className="text-center space-y-6 max-w-2xl mx-auto">
@@ -19,13 +23,21 @@ export function EmptyStateOnboarding() {
             <div className="flex items-start gap-3">
               <span className="text-2xl">1️⃣</span>
               <div>
+                <p className="font-semibold">Tell us when you opened your HSA (30 seconds)</p>
+                <p className="text-sm text-muted-foreground">So we know which expenses are reimbursable</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">2️⃣</span>
+              <div>
                 <p className="font-semibold">Connect your bank (2 minutes)</p>
                 <p className="text-sm text-muted-foreground">Automatically track your medical expenses</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <span className="text-2xl">2️⃣</span>
+              <span className="text-2xl">3️⃣</span>
               <div>
                 <p className="font-semibold">Review your transactions</p>
                 <p className="text-sm text-muted-foreground">We'll help you find medical ones</p>
@@ -33,7 +45,7 @@ export function EmptyStateOnboarding() {
             </div>
 
             <div className="flex items-start gap-3">
-              <span className="text-2xl">3️⃣</span>
+              <span className="text-2xl">4️⃣</span>
               <div>
                 <p className="font-semibold">Start saving money!</p>
                 <p className="text-sm text-muted-foreground">Track HSA benefits and maximize rewards</p>
@@ -42,7 +54,7 @@ export function EmptyStateOnboarding() {
           </div>
 
           <div className="flex gap-3 justify-center flex-wrap">
-            <Button size="lg" onClick={() => navigate("/bank-accounts")}>
+            <Button size="lg" onClick={() => setShowHSADialog(true)}>
               Get Started
             </Button>
             <Button variant="outline" size="lg" onClick={() => navigate("/expenses/new")}>
@@ -52,5 +64,12 @@ export function EmptyStateOnboarding() {
         </div>
       </CardContent>
     </Card>
+
+    <SetHSADateDialog
+      open={showHSADialog}
+      onOpenChange={setShowHSADialog}
+      onSuccess={() => navigate("/bank-accounts")}
+    />
+    </>
   );
 }

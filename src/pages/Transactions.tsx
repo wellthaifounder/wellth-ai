@@ -14,6 +14,7 @@ import { QuickAddTransactionDialog } from "@/components/transactions/QuickAddTra
 import { ReviewQueue } from "@/components/transactions/ReviewQueue";
 import { AdvancedFilters, type FilterCriteria } from "@/components/transactions/AdvancedFilters";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
+import { MissingHSADateBanner } from "@/components/dashboard/MissingHSADateBanner";
 
 type Transaction = {
   id: string;
@@ -42,10 +43,25 @@ export default function Transactions() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [advancedFilters, setAdvancedFilters] = useState<FilterCriteria>({});
+  const [hsaOpenedDate, setHsaOpenedDate] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
+    fetchHSADate();
   }, []);
+
+  const fetchHSADate = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("hsa_opened_date")
+      .eq("id", user.id)
+      .single();
+
+    setHsaOpenedDate(profile?.hsa_opened_date || null);
+  };
 
   useEffect(() => {
     filterTransactions();
@@ -169,11 +185,23 @@ export default function Transactions() {
   const handleToggleMedical = async (transaction: Transaction) => {
     try {
       const newIsMedical = !transaction.is_medical;
+      
+      // Check if transaction is before HSA opened date
+      let isHsaEligible = newIsMedical;
+      if (newIsMedical && hsaOpenedDate) {
+        const transactionDate = new Date(transaction.transaction_date);
+        const hsaDate = new Date(hsaOpenedDate);
+        if (transactionDate < hsaDate) {
+          isHsaEligible = false;
+          toast.warning(`This transaction occurred before your HSA was opened (${new Date(hsaOpenedDate).toLocaleDateString()}). It's marked as medical but not HSA-eligible.`);
+        }
+      }
+      
       const { error } = await supabase
         .from("transactions")
         .update({ 
           is_medical: newIsMedical,
-          is_hsa_eligible: newIsMedical,
+          is_hsa_eligible: isHsaEligible,
           category: newIsMedical ? "medical" : transaction.category,
           reconciliation_status: newIsMedical ? "unlinked" : "ignored"
         })
@@ -293,6 +321,7 @@ export default function Transactions() {
       <AuthenticatedNav unreviewedTransactions={stats.unlinked} />
       
       <div className="container mx-auto px-4 py-8 max-w-6xl">
+        {!hsaOpenedDate && <MissingHSADateBanner onDateSet={fetchHSADate} />}
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
