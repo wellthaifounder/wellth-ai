@@ -1,17 +1,41 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { ProgressStep } from "@/lib/userProgress";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface ProgressTrackerProps {
   steps: ProgressStep[];
 }
 
 export function ProgressTracker({ steps }: ProgressTrackerProps) {
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    const isDismissed = localStorage.getItem("progressTrackerDismissed") === "true";
+    setDismissed(isDismissed);
+  }, []);
+
+  const handleDismiss = () => {
+    localStorage.setItem("progressTrackerDismissed", "true");
+    setDismissed(true);
+  };
+
+  if (dismissed) return null;
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">Your Health Savings Journey</CardTitle>
+      <CardHeader className="relative">
+        <CardTitle className="text-lg pr-8">Your Health Savings Journey</CardTitle>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleDismiss}
+          className="absolute right-4 top-4 h-8 w-8 p-0"
+        >
+          <X className="h-4 w-4" />
+        </Button>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
