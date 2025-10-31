@@ -234,7 +234,7 @@ const Analytics = () => {
             <div>
               <h1 className="text-3xl font-bold mb-2">Analytics</h1>
               <p className="text-muted-foreground">
-                Insights into your invoices, payments, and HSA savings
+                Insights into your bills, payments, and HSA savings
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
