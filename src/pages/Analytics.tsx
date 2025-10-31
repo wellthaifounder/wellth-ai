@@ -260,7 +260,7 @@ const Analytics = () => {
           <AnalyticsEmptyState />
         ) : (
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
+            <TabsList className="inline-flex w-full justify-start overflow-x-auto">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="insights">Insights</TabsTrigger>
               <TabsTrigger value="goals">Goals</TabsTrigger>
