@@ -27,15 +27,13 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
 
   if (!hasAccess) {
     return (
-      <div className="relative">
+      <div className="space-y-4">
+        <UpgradePrompt feature={feature} requiredTier={requiredTier} description={description} />
         {blur && (
           <div className="blur-sm pointer-events-none select-none opacity-50">
             {children}
           </div>
         )}
-        <div className={blur ? "absolute inset-0 flex items-center justify-center p-4" : ""}>
-          <UpgradePrompt feature={feature} requiredTier={requiredTier} description={description} />
-        </div>
       </div>
     );
   }
