@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, TrendingUp, DollarSign, PieChart } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft, TrendingUp, DollarSign, PieChart, Target, Award, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { BarChart, Bar, LineChart, Line, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { HSAInvestmentTracker } from "@/components/analytics/HSAInvestmentTracker";
@@ -15,6 +16,10 @@ import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 import { AnalyticsEmptyState } from "@/components/analytics/AnalyticsEmptyState";
 import { AnalyticsSettings, AnalyticsAssumptions } from "@/components/analytics/AnalyticsSettings";
 import { TimeRangeFilter, TimeRange } from "@/components/analytics/TimeRangeFilter";
+import { GoalSetting } from "@/components/analytics/GoalSetting";
+import { ExportAnalytics } from "@/components/analytics/ExportAnalytics";
+import { Benchmarking } from "@/components/analytics/Benchmarking";
+import { AIInsights } from "@/components/analytics/AIInsights";
 import { DateRange } from "react-day-picker";
 import { startOfYear, subMonths } from "date-fns";
 
@@ -254,8 +259,36 @@ const Analytics = () => {
         {!hasData ? (
           <AnalyticsEmptyState />
         ) : (
-          <>
-            <div className="grid gap-4 md:gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-8">
+          <Tabs defaultValue="overview" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="insights">Insights</TabsTrigger>
+              <TabsTrigger value="goals">Goals</TabsTrigger>
+              <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>
+              <TabsTrigger value="ai">AI Analysis</TabsTrigger>
+            </TabsList>
+
+            <div className="flex justify-end">
+              <ExportAnalytics
+                data={{
+                  stats,
+                  monthlyData,
+                  categoryData,
+                  paymentMethodsRewards,
+                  yearlyData,
+                }}
+                dateRange={
+                  timeRange === "ytd" ? "Year to Date" :
+                  timeRange === "last12" ? "Last 12 Months" :
+                  timeRange === "custom" && customDateRange?.from ? 
+                    `${customDateRange.from.toLocaleDateString()} - ${customDateRange.to?.toLocaleDateString() || ""}` :
+                  "All Time"
+                }
+              />
+            </div>
+
+            <TabsContent value="overview" className="space-y-6">
+            <div className="grid gap-4 md:gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
 
             <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -406,24 +439,66 @@ const Analytics = () => {
           </CardContent>
         </Card>
 
-            <div className="space-y-6 mt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <HSAInvestmentTracker 
-              unreimbursedTotal={stats.unreimbursedHsaTotal}
-              investmentReturnRate={assumptions.investmentReturnRate}
-            />
-            <ReimbursementTimingOptimizer 
-              unreimbursedTotal={stats.unreimbursedHsaTotal}
-              currentTaxBracket={assumptions.currentTaxBracket}
-              projectedTaxBracket={assumptions.projectedTaxBracket}
-            />
-          </div>
-          
-          <RewardsOptimizationDashboard paymentMethods={paymentMethodsRewards} />
-          
-          <YearOverYearComparison yearlyData={yearlyData} />
-        </div>
-          </>
+            </TabsContent>
+
+            <TabsContent value="insights" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <HSAInvestmentTracker 
+                  unreimbursedTotal={stats.unreimbursedHsaTotal}
+                  investmentReturnRate={assumptions.investmentReturnRate}
+                />
+                <ReimbursementTimingOptimizer 
+                  unreimbursedTotal={stats.unreimbursedHsaTotal}
+                  currentTaxBracket={assumptions.currentTaxBracket}
+                  projectedTaxBracket={assumptions.projectedTaxBracket}
+                />
+              </div>
+              
+              <RewardsOptimizationDashboard paymentMethods={paymentMethodsRewards} />
+              
+              <YearOverYearComparison yearlyData={yearlyData} />
+            </TabsContent>
+
+            <TabsContent value="goals" className="space-y-6">
+              <GoalSetting 
+                currentStats={{
+                  totalExpenses: stats.totalExpenses,
+                  hsaEligible: stats.hsaEligible,
+                  unreimbursedHsaTotal: stats.unreimbursedHsaTotal,
+                  actualSavings: stats.actualSavings,
+                }}
+              />
+            </TabsContent>
+
+            <TabsContent value="benchmarks" className="space-y-6">
+              <Benchmarking
+                userStats={{
+                  savingsRate: stats.totalExpenses > 0 
+                    ? ((stats.actualSavings + stats.projectedSavings) / stats.totalExpenses) * 100 
+                    : 0,
+                  rewardsRate: paymentMethodsRewards.length > 0
+                    ? paymentMethodsRewards.reduce((sum, pm) => sum + pm.rewardsRate, 0) / paymentMethodsRewards.length
+                    : assumptions.defaultRewardsRate,
+                  hsaUtilization: stats.totalExpenses > 0
+                    ? (stats.hsaEligible / stats.totalExpenses) * 100
+                    : 0,
+                  avgMonthlyExpenses: stats.avgMonthly,
+                }}
+              />
+            </TabsContent>
+
+            <TabsContent value="ai" className="space-y-6">
+              <AIInsights 
+                analyticsData={{
+                  stats,
+                  monthlyData,
+                  categoryData,
+                  paymentMethodsRewards,
+                  yearlyData,
+                }}
+              />
+            </TabsContent>
+          </Tabs>
         )}
       </main>
     </div>
