@@ -33,7 +33,7 @@ export const AuthenticatedNav = ({ unreviewedTransactions = 0 }: AuthenticatedNa
     { icon: Home, label: "Dashboard", path: "/dashboard" },
     { icon: Calculator, label: "Decision Tool", path: "/decision-tool" },
     { icon: Receipt, label: "Transactions", path: "/transactions", badge: unreviewedTransactions },
-    { icon: FileText, label: "Invoices", path: "/invoices" },
+    { icon: FileText, label: "Bills", path: "/invoices" },
     { icon: FileText, label: "Documents", path: "/documents" },
     { icon: BarChart3, label: "Analytics", path: "/analytics" },
     { icon: Wallet, label: "Payment Methods", path: "/payment-methods" },

@@ -95,7 +95,7 @@ export const DocumentCard = ({ receipt, onEdit, onDelete }: DocumentCardProps) =
           {isAttached && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 p-2 rounded">
               <Link2 className="h-3 w-3" />
-              <span>Attached to {receipt.invoice_id ? 'invoice' : 'payment'}</span>
+              <span>Attached to {receipt.invoice_id ? 'bill' : 'payment'}</span>
             </div>
           )}
 

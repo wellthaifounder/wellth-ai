@@ -54,14 +54,14 @@ export function PaymentPlanFields({
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              Enter the <strong>full invoice amount</strong> and number of installments. Each payment you make should be tracked as a separate entry with payment receipts.
+              Enter the <strong>full bill amount</strong> and number of installments. Each payment you make should be tracked as a separate entry with payment receipts.
             </AlertDescription>
           </Alert>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="total-amount">
-                Total Invoice Amount
+                Total Bill Amount
               </Label>
               <Input
                 id="total-amount"
@@ -72,7 +72,7 @@ export function PaymentPlanFields({
                 onChange={(e) => onTotalAmountChange(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
-                The full amount from your medical invoice
+                The full amount from your medical bill
               </p>
             </div>
 

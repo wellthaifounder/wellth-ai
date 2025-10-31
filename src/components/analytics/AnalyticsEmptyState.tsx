@@ -44,7 +44,7 @@ export const AnalyticsEmptyState = () => {
           </div>
           <CardTitle className="text-2xl">Start Your Health Savings Journey</CardTitle>
           <CardDescription className="text-base">
-            Add your first invoice or expense to unlock powerful analytics and savings insights
+            Add your first bill or expense to unlock powerful analytics and savings insights
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

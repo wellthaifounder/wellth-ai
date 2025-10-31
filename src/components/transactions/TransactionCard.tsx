@@ -151,7 +151,7 @@ export function TransactionCard({
               {onLinkToInvoice && reconciliationStatus === "unlinked" && (
                 <DropdownMenuItem onClick={onLinkToInvoice}>
                   <Link2 className="h-4 w-4 mr-2" />
-                  Link to Invoice
+                  Link to Bill
                 </DropdownMenuItem>
               )}
 

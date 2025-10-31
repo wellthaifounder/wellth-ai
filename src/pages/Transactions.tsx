@@ -244,8 +244,8 @@ export default function Transactions() {
 
   const handleLinkToInvoice = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
-    // TODO: Implement link to invoice dialog
-    toast.info("Link to invoice feature coming soon");
+    // TODO: Implement link to bill dialog
+    toast.info("Link to bill feature coming soon");
   };
 
   const handleIgnore = async (transaction: Transaction) => {

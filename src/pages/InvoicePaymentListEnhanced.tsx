@@ -207,14 +207,14 @@ const InvoicePaymentListEnhanced = () => {
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle>All Invoices</CardTitle>
+                <CardTitle>All Bills</CardTitle>
                 <CardDescription>
-                  {filteredExpenses.length} invoice{filteredExpenses.length !== 1 ? 's' : ''} shown
+                  {filteredExpenses.length} bill{filteredExpenses.length !== 1 ? 's' : ''} shown
                 </CardDescription>
               </div>
               <Button onClick={() => navigate("/invoice/new")}>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Invoice
+                Add Bill
               </Button>
             </div>
           </CardHeader>

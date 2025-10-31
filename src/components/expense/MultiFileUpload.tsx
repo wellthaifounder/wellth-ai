@@ -20,7 +20,7 @@ interface MultiFileUploadProps {
 }
 
 const DOCUMENT_TYPES = [
-  { value: "invoice", label: "Medical Invoice/Bill" },
+  { value: "invoice", label: "Medical Bill" },
   { value: "payment_receipt", label: "Payment Receipt" },
   { value: "eob", label: "Explanation of Benefits (EOB)" },
   { value: "prescription_label", label: "Prescription Label" },

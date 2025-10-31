@@ -29,7 +29,7 @@ export function DocumentChecklist({ category, amount, receipts, hasPaymentPlan }
     if (amount >= 250) {
       docs.push({
         type: "invoice",
-        label: "Medical Invoice or Itemized Bill",
+        label: "Medical Bill or Itemized Statement",
         required: true,
         reason: "IRS requires itemized documentation for expenses over $250",
       });
@@ -155,7 +155,7 @@ export function DocumentChecklist({ category, amount, receipts, hasPaymentPlan }
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              <strong>Payment Plan Detected:</strong> Upload the original invoice now, then add payment receipts as you make each installment. You can only reimburse the amounts you've actually paid.
+              <strong>Payment Plan Detected:</strong> Upload the original bill now, then add payment receipts as you make each installment. You can only reimburse the amounts you've actually paid.
             </AlertDescription>
           </Alert>
         )}

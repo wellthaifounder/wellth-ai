@@ -221,16 +221,16 @@ const PaymentEntry = () => {
           <CardHeader>
             <CardTitle>Record Payment</CardTitle>
             <CardDescription>
-              Log a payment made toward a medical invoice
+              Log a payment made toward a medical bill
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="invoice">Select Invoice</Label>
+                <Label htmlFor="invoice">Select Bill</Label>
                 <Select value={selectedInvoice} onValueChange={setSelectedInvoice}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose an invoice" />
+                    <SelectValue placeholder="Choose a bill" />
                   </SelectTrigger>
                   <SelectContent>
                     {invoices.map((invoice) => (
@@ -245,11 +245,11 @@ const PaymentEntry = () => {
               {selectedInvoice && selectedInvoiceData && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Invoice Summary</CardTitle>
+                    <CardTitle className="text-base">Bill Summary</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Total Invoiced:</span>
+                      <span className="text-muted-foreground">Total Billed:</span>
                       <span className="font-semibold">${Number(selectedInvoiceData.total_amount || selectedInvoiceData.amount).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm">

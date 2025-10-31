@@ -141,7 +141,7 @@ export function TransactionDetailDialog({
             <Badge variant="secondary">{transaction.category}</Badge>
             {transaction.reconciliation_status === "linked_to_invoice" && (
               <Badge className="bg-green-500/10 text-green-700 dark:text-green-400">
-                Linked to Invoice
+                Linked to Bill
               </Badge>
             )}
           </div>
@@ -175,7 +175,7 @@ export function TransactionDetailDialog({
             {transaction.reconciliation_status === "unlinked" && (
               <Button onClick={onLinkToInvoice} variant="outline">
                 <Link2 className="mr-2 h-4 w-4" />
-                Link to Invoice
+                Link to Bill
               </Button>
             )}
 

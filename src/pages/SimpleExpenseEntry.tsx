@@ -112,7 +112,7 @@ const SimpleExpenseEntry = () => {
       }
 
       setSuccess(true);
-      toast.success("Invoice added successfully!");
+      toast.success("Bill added successfully!");
       
       setTimeout(() => {
         navigate("/invoices");
@@ -134,9 +134,9 @@ const SimpleExpenseEntry = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="max-w-md mx-auto text-center p-8">
           <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-4" />
-          <CardTitle className="mb-2">Invoice Added!</CardTitle>
+          <CardTitle className="mb-2">Bill Added!</CardTitle>
           <CardDescription>
-            Redirecting to invoices...
+            Redirecting to bills...
           </CardDescription>
         </Card>
       </div>
@@ -166,9 +166,9 @@ const SimpleExpenseEntry = () => {
 
         <Card className="max-w-xl mx-auto">
           <CardHeader>
-            <CardTitle>Quick Add - Simple Invoice</CardTitle>
+            <CardTitle>Quick Add - Simple Bill</CardTitle>
             <CardDescription>
-              Add a straightforward medical bill or invoice in seconds
+              Add a straightforward medical bill in seconds
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -269,7 +269,7 @@ const SimpleExpenseEntry = () => {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Adding..." : "Add Invoice"}
+                {loading ? "Adding..." : "Add Bill"}
               </Button>
             </form>
           </CardContent>

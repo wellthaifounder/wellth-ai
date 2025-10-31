@@ -208,7 +208,7 @@ const InvoicePaymentList = () => {
             </Button>
             <Button onClick={() => navigate("/invoice/new")}>
               <Plus className="h-4 w-4 mr-2" />
-              Add Invoice
+              Add Bill
             </Button>
           </div>
         </div>
@@ -284,9 +284,9 @@ const InvoicePaymentList = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Medical Invoices & Payments</CardTitle>
+                <CardTitle>Medical Bills & Payments</CardTitle>
                 <CardDescription>
-                  Track invoice balances and payment history for HSA reimbursement optimization
+                  Track bill balances and payment history for HSA reimbursement optimization
                 </CardDescription>
               </div>
               <Select value={eligibilityFilter} onValueChange={setEligibilityFilter}>

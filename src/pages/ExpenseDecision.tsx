@@ -18,7 +18,7 @@ const ExpenseDecision = () => {
         </Button>
 
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Add a Medical Invoice or Bill</h1>
+          <h1 className="text-3xl font-bold mb-2">Add a Medical Bill</h1>
           <p className="text-muted-foreground">
             Quick entry for all your medical expenses
           </p>
@@ -33,7 +33,7 @@ const ExpenseDecision = () => {
               <div className="mx-auto mb-4 p-4 bg-primary/10 rounded-full w-fit group-hover:bg-primary/20 transition-colors">
                 <Zap className="h-8 w-8 text-primary" />
               </div>
-              <CardTitle className="text-xl">Add Invoice or Bill</CardTitle>
+              <CardTitle className="text-xl">Add Medical Bill</CardTitle>
               <CardDescription>Enter your medical expenses</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -58,7 +58,7 @@ const ExpenseDecision = () => {
               </ul>
               <div className="pt-4">
                 <Button className="w-full" onClick={() => navigate("/invoice/new")}>
-                  Add Invoice
+                  Add Bill
                 </Button>
               </div>
             </CardContent>
@@ -68,7 +68,7 @@ const ExpenseDecision = () => {
         <div className="mt-8 p-6 bg-muted/50 rounded-lg">
           <h3 className="font-semibold mb-2">💡 Track and optimize your medical expenses</h3>
           <p className="text-sm text-muted-foreground">
-            Add all your medical invoices and bills to maximize your HSA reimbursement potential and track your healthcare spending.
+            Add all your medical bills to maximize your HSA reimbursement potential and track your healthcare spending.
           </p>
         </div>
       </div>

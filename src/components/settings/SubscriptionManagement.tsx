@@ -143,7 +143,7 @@ export const SubscriptionManagement = () => {
               Manage Billing & Subscription
             </Button>
             <p className="text-xs text-muted-foreground text-center">
-              Update payment method, view invoices, or cancel subscription
+              Update payment method, view billing history, or cancel subscription
             </p>
           </div>
         )}

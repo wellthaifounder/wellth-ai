@@ -97,7 +97,7 @@ export const AttachDocumentDialog = ({ invoiceId, open, onOpenChange, onAttached
         <DialogHeader>
           <DialogTitle>Attach Existing Documents</DialogTitle>
           <DialogDescription>
-            Select documents from your library to attach to this invoice
+            Select documents from your library to attach to this bill
           </DialogDescription>
         </DialogHeader>
 

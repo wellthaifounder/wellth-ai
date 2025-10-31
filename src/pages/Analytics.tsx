@@ -347,8 +347,8 @@ const Analytics = () => {
         <div className="grid gap-6 lg:grid-cols-2 mb-8">
           <Card>
             <CardHeader>
-              <CardTitle>Monthly Invoice Trend</CardTitle>
-              <CardDescription>Your invoices over time</CardDescription>
+              <CardTitle>Monthly Bill Trend</CardTitle>
+              <CardDescription>Your bills over time</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>

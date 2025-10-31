@@ -80,7 +80,7 @@ export const CreateLabelDialog = ({ open, onOpenChange, onCreated }: CreateLabel
         <DialogHeader>
           <DialogTitle>Create New Label</DialogTitle>
           <DialogDescription>
-            Create a custom label to organize your invoices and payments
+            Create a custom label to organize your bills and payments
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">

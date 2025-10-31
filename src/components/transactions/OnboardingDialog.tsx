@@ -64,7 +64,7 @@ export function OnboardingDialog({ open, onComplete }: OnboardingDialogProps) {
                 </p>
                 <ul className="text-sm text-muted-foreground space-y-1 text-left max-w-sm mx-auto">
                   <li>• Vendor name matching (CVS, Walgreens, etc.)</li>
-                  <li>• Previous expense invoices</li>
+                  <li>• Previous expense bills</li>
                   <li>• Your past categorization choices</li>
                   <li>• Transaction amount and date patterns</li>
                 </ul>

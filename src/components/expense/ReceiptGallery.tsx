@@ -23,7 +23,7 @@ interface ReceiptGalleryProps {
 }
 
 const DOCUMENT_TYPE_LABELS = {
-  invoice: "Invoice",
+  invoice: "Bill",
   payment_receipt: "Payment Receipt",
   eob: "EOB",
   prescription_label: "Prescription Label",

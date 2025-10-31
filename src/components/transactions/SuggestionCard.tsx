@@ -132,7 +132,7 @@ export function SuggestionCard({
               <p className="text-sm">{suggestion.reason}</p>
               {suggestion.invoice && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Invoice: {suggestion.invoice.vendor} • ${suggestion.invoice.amount}
+                  Bill: {suggestion.invoice.vendor} • ${suggestion.invoice.amount}
                 </p>
               )}
             </div>

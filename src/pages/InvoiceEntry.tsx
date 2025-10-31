@@ -236,7 +236,7 @@ const InvoiceEntry = () => {
       }
 
       setSuccess(true);
-      toast.success(isEditMode ? "Invoice updated successfully!" : "Invoice added successfully!");
+      toast.success(isEditMode ? "Bill updated successfully!" : "Bill added successfully!");
       
       setTimeout(() => {
         setSuccess(false);
@@ -246,7 +246,7 @@ const InvoiceEntry = () => {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
       } else {
-        toast.error("Failed to save invoice");
+        toast.error("Failed to save bill");
         console.error(error);
       }
     } finally {
@@ -259,9 +259,9 @@ const InvoiceEntry = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="max-w-md mx-auto text-center p-8">
           <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-4" />
-          <CardTitle className="mb-2">{isEditMode ? "Invoice Updated!" : "Invoice Added!"}</CardTitle>
+          <CardTitle className="mb-2">{isEditMode ? "Bill Updated!" : "Bill Added!"}</CardTitle>
           <CardDescription>
-            Redirecting to invoices...
+            Redirecting to bills...
           </CardDescription>
         </Card>
       </div>
@@ -276,16 +276,16 @@ const InvoiceEntry = () => {
             Dashboard
           </button>
           <span>/</span>
-          <span className="text-foreground">{isEditMode ? "Edit Invoice" : "Add Invoice/Bill"}</span>
+          <span className="text-foreground">{isEditMode ? "Edit Bill" : "Add Bill"}</span>
         </div>
 
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
             <div className="flex items-start justify-between">
               <div>
-                <CardTitle>{isEditMode ? "Edit Invoice" : "Add New Invoice/Bill"}</CardTitle>
+                <CardTitle>{isEditMode ? "Edit Bill" : "Add New Bill"}</CardTitle>
                 <CardDescription>
-                  {isEditMode ? "Update your invoice details" : "Track medical bills and invoices for strategic payment optimization"}
+                  {isEditMode ? "Update your bill details" : "Track medical bills for strategic payment optimization"}
                 </CardDescription>
               </div>
             </div>
@@ -336,7 +336,7 @@ const InvoiceEntry = () => {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="invoiceDate">Invoice Date</Label>
+                  <Label htmlFor="invoiceDate">Bill Date</Label>
                   <Input
                     id="invoiceDate"
                     type="date"
@@ -347,7 +347,7 @@ const InvoiceEntry = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="invoiceNumber">Invoice Number (Optional)</Label>
+                  <Label htmlFor="invoiceNumber">Bill Number (Optional)</Label>
                   <Input
                     id="invoiceNumber"
                     placeholder="e.g., INV-12345"
@@ -391,7 +391,7 @@ const InvoiceEntry = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="totalAmount">Total Invoice Amount</Label>
+                  <Label htmlFor="totalAmount">Total Bill Amount</Label>
                   <Input
                     id="totalAmount"
                     type="number"
@@ -432,7 +432,7 @@ const InvoiceEntry = () => {
               )}
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? (isEditMode ? "Updating..." : "Adding...") : (isEditMode ? "Update Invoice" : "Add Invoice")}
+                {loading ? (isEditMode ? "Updating..." : "Adding...") : (isEditMode ? "Update Bill" : "Add Bill")}
               </Button>
             </form>
           </CardContent>

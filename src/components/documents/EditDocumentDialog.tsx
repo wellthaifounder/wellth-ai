@@ -20,7 +20,7 @@ interface EditDocumentDialogProps {
 
 const DOCUMENT_TYPES = [
   { value: "receipt", label: "Receipt" },
-  { value: "invoice", label: "Invoice/Bill" },
+  { value: "invoice", label: "Bill" },
   { value: "eob", label: "Explanation of Benefits (EOB)" },
   { value: "payment_confirmation", label: "Payment Confirmation" },
   { value: "medical_record", label: "Medical Record" },
