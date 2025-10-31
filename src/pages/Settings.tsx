@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, User, Mail, Shield, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
+import { SubscriptionManagement } from "@/components/settings/SubscriptionManagement";
 
 
 const Settings = () => {
@@ -131,6 +132,8 @@ const Settings = () => {
         </div>
 
         <div className="space-y-6">
+          <SubscriptionManagement />
+          
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

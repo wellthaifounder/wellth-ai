@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, TrendingUp, DollarSign, PieChart, Target, Award, Sparkles } from "lucide-react";
+import { FeatureGate } from "@/components/subscription/FeatureGate";
 import { toast } from "sonner";
 import { BarChart, Bar, LineChart, Line, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { HSAInvestmentTracker } from "@/components/analytics/HSAInvestmentTracker";
@@ -442,21 +443,37 @@ const Analytics = () => {
             </TabsContent>
 
             <TabsContent value="insights" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <HSAInvestmentTracker 
-                  unreimbursedTotal={stats.unreimbursedHsaTotal}
-                  investmentReturnRate={assumptions.investmentReturnRate}
-                />
-                <ReimbursementTimingOptimizer 
-                  unreimbursedTotal={stats.unreimbursedHsaTotal}
-                  currentTaxBracket={assumptions.currentTaxBracket}
-                  projectedTaxBracket={assumptions.projectedTaxBracket}
-                />
-              </div>
+              <ExportAnalytics data={{
+                stats,
+                monthlyData,
+                categoryData,
+                paymentMethodsRewards,
+                yearlyData
+              }} />
               
-              <RewardsOptimizationDashboard paymentMethods={paymentMethodsRewards} />
-              
-              <YearOverYearComparison yearlyData={yearlyData} />
+              <FeatureGate
+                requiredTier="plus"
+                feature="Advanced Analytics"
+                description="Unlock detailed insights including HSA investment tracking, payment strategy timelines, and year-over-year comparisons"
+              >
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <HSAInvestmentTracker 
+                      unreimbursedTotal={stats.unreimbursedHsaTotal}
+                      investmentReturnRate={assumptions.investmentReturnRate}
+                    />
+                    <ReimbursementTimingOptimizer 
+                      unreimbursedTotal={stats.unreimbursedHsaTotal}
+                      currentTaxBracket={assumptions.currentTaxBracket}
+                      projectedTaxBracket={assumptions.projectedTaxBracket}
+                    />
+                  </div>
+                  
+                  <RewardsOptimizationDashboard paymentMethods={paymentMethodsRewards} />
+                  
+                  <YearOverYearComparison yearlyData={yearlyData} />
+                </div>
+              </FeatureGate>
             </TabsContent>
 
             <TabsContent value="goals" className="space-y-6">
@@ -471,32 +488,44 @@ const Analytics = () => {
             </TabsContent>
 
             <TabsContent value="benchmarks" className="space-y-6">
-              <Benchmarking
-                userStats={{
-                  savingsRate: stats.totalExpenses > 0 
-                    ? ((stats.actualSavings + stats.projectedSavings) / stats.totalExpenses) * 100 
-                    : 0,
-                  rewardsRate: paymentMethodsRewards.length > 0
-                    ? paymentMethodsRewards.reduce((sum, pm) => sum + pm.rewardsRate, 0) / paymentMethodsRewards.length
-                    : assumptions.defaultRewardsRate,
-                  hsaUtilization: stats.totalExpenses > 0
-                    ? (stats.hsaEligible / stats.totalExpenses) * 100
-                    : 0,
-                  avgMonthlyExpenses: stats.avgMonthly,
-                }}
-              />
+              <FeatureGate
+                requiredTier="plus"
+                feature="Benchmarking"
+                description="Compare your performance against industry averages and top performers"
+              >
+                <Benchmarking
+                  userStats={{
+                    savingsRate: stats.totalExpenses > 0 
+                      ? ((stats.actualSavings + stats.projectedSavings) / stats.totalExpenses) * 100 
+                      : 0,
+                    rewardsRate: paymentMethodsRewards.length > 0
+                      ? paymentMethodsRewards.reduce((sum, pm) => sum + pm.rewardsRate, 0) / paymentMethodsRewards.length
+                      : assumptions.defaultRewardsRate,
+                    hsaUtilization: stats.totalExpenses > 0
+                      ? (stats.hsaEligible / stats.totalExpenses) * 100
+                      : 0,
+                    avgMonthlyExpenses: stats.avgMonthly,
+                  }}
+                />
+              </FeatureGate>
             </TabsContent>
 
             <TabsContent value="ai" className="space-y-6">
-              <AIInsights 
-                analyticsData={{
-                  stats,
-                  monthlyData,
-                  categoryData,
-                  paymentMethodsRewards,
-                  yearlyData,
-                }}
-              />
+              <FeatureGate
+                requiredTier="premium"
+                feature="AI-Powered Insights"
+                description="Get personalized recommendations and actionable insights powered by advanced AI analysis"
+              >
+                <AIInsights 
+                  analyticsData={{
+                    stats,
+                    monthlyData,
+                    categoryData,
+                    paymentMethodsRewards,
+                    yearlyData,
+                  }}
+                />
+              </FeatureGate>
             </TabsContent>
           </Tabs>
         )}

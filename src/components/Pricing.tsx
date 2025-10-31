@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, X } from "lucide-react";
+import { useSubscription } from "@/contexts/SubscriptionContext";
+import { useNavigate } from "react-router-dom";
 
 const pricingTiers = [
   {
@@ -70,6 +72,19 @@ const pricingTiers = [
 ];
 
 export const Pricing = () => {
+  const { createCheckoutSession, tier } = useSubscription();
+  const navigate = useNavigate();
+
+  const handleCTA = (tierName: string) => {
+    if (tierName === "Starter") {
+      navigate("/auth");
+    } else if (tierName === "Plus") {
+      createCheckoutSession("plus");
+    } else if (tierName === "Premium") {
+      createCheckoutSession("premium");
+    }
+  };
+
   return (
     <section id="pricing" className="py-20 lg:py-32">
       <div className="container mx-auto px-4">
@@ -126,7 +141,7 @@ export const Pricing = () => {
                   className="mb-6 w-full"
                   variant={tier.popular ? "default" : "outline"}
                   size="lg"
-                  onClick={() => window.location.href = '/auth'}
+                  onClick={() => handleCTA(tier.name)}
                 >
                   {tier.cta}
                 </Button>
