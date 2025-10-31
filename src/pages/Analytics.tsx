@@ -442,7 +442,7 @@ const Analytics = () => {
 
             </TabsContent>
 
-            <TabsContent value="insights" className="space-y-6">
+            <TabsContent value="insights" className="space-y-6 scroll-mt-6">
               <ExportAnalytics data={{
                 stats,
                 monthlyData,
@@ -487,7 +487,7 @@ const Analytics = () => {
               />
             </TabsContent>
 
-            <TabsContent value="benchmarks" className="space-y-6">
+            <TabsContent value="benchmarks" className="space-y-6 scroll-mt-6">
               <FeatureGate
                 requiredTier="plus"
                 feature="Benchmarking"
@@ -510,7 +510,7 @@ const Analytics = () => {
               </FeatureGate>
             </TabsContent>
 
-            <TabsContent value="ai" className="space-y-6">
+            <TabsContent value="ai" className="space-y-6 scroll-mt-6">
               <FeatureGate
                 requiredTier="premium"
                 feature="AI-Powered Insights"

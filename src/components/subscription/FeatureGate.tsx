@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { UpgradePrompt } from './UpgradePrompt';
 
@@ -18,16 +18,23 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   blur = true,
 }) => {
   const { checkFeatureAccess, loading } = useSubscription();
+  const promptRef = useRef<HTMLDivElement>(null);
+
+  const hasAccess = checkFeatureAccess(requiredTier);
+
+  useEffect(() => {
+    if (!loading && !hasAccess && promptRef.current) {
+      promptRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [loading, hasAccess]);
 
   if (loading) {
     return <div className="animate-pulse bg-muted h-32 rounded-lg" />;
   }
 
-  const hasAccess = checkFeatureAccess(requiredTier);
-
   if (!hasAccess) {
     return (
-      <div className="space-y-4">
+      <div ref={promptRef} className="space-y-4">
         <UpgradePrompt feature={feature} requiredTier={requiredTier} description={description} />
         {blur && (
           <div className="blur-sm pointer-events-none select-none opacity-50">
