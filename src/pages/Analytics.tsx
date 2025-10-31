@@ -12,6 +12,11 @@ import { RewardsOptimizationDashboard } from "@/components/analytics/RewardsOpti
 import { YearOverYearComparison } from "@/components/analytics/YearOverYearComparison";
 import { PaymentStrategyTimeline } from "@/components/analytics/PaymentStrategyTimeline";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
+import { AnalyticsEmptyState } from "@/components/analytics/AnalyticsEmptyState";
+import { AnalyticsSettings, AnalyticsAssumptions } from "@/components/analytics/AnalyticsSettings";
+import { TimeRangeFilter, TimeRange } from "@/components/analytics/TimeRangeFilter";
+import { DateRange } from "react-day-picker";
+import { startOfYear, subMonths } from "date-fns";
 
 const Analytics = () => {
   const navigate = useNavigate();
@@ -28,25 +33,74 @@ const Analytics = () => {
   });
   const [paymentMethodsRewards, setPaymentMethodsRewards] = useState<any[]>([]);
   const [yearlyData, setYearlyData] = useState<any[]>([]);
+  const [hasData, setHasData] = useState(false);
+  
+  // Time range filtering
+  const [timeRange, setTimeRange] = useState<TimeRange>("all");
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
+  
+  // Customizable assumptions
+  const [assumptions, setAssumptions] = useState<AnalyticsAssumptions>(() => {
+    const saved = localStorage.getItem("analyticsAssumptions");
+    return saved ? JSON.parse(saved) : {
+      investmentReturnRate: 7,
+      currentTaxBracket: 22,
+      projectedTaxBracket: 24,
+      defaultRewardsRate: 2,
+    };
+  });
+
+  const handleAssumptionsUpdate = (newAssumptions: AnalyticsAssumptions) => {
+    setAssumptions(newAssumptions);
+    localStorage.setItem("analyticsAssumptions", JSON.stringify(newAssumptions));
+  };
 
   const COLORS = ['hsl(186 100% 40%)', 'hsl(27 96% 61%)', 'hsl(214 95% 50%)', 'hsl(120 60% 50%)', 'hsl(0 84% 60%)'];
 
   useEffect(() => {
     fetchAnalytics();
-  }, []);
+  }, [timeRange, customDateRange]);
+
+  const getDateRangeFilter = () => {
+    const now = new Date();
+    switch (timeRange) {
+      case "ytd":
+        return startOfYear(now);
+      case "last12":
+        return subMonths(now, 12);
+      case "custom":
+        return customDateRange?.from || null;
+      default:
+        return null;
+    }
+  };
 
   const fetchAnalytics = async () => {
     try {
-      const { data: invoices, error } = await supabase
+      let query = supabase
         .from("invoices")
         .select("*")
         .order("date", { ascending: true });
+
+      const startDate = getDateRangeFilter();
+      if (startDate) {
+        query = query.gte("date", startDate.toISOString().split('T')[0]);
+      }
+      
+      if (timeRange === "custom" && customDateRange?.to) {
+        query = query.lte("date", customDateRange.to.toISOString().split('T')[0]);
+      }
+
+      const { data: invoices, error } = await query;
 
       const { data: paymentMethods } = await supabase
         .from("payment_methods")
         .select("*");
 
       if (error) throw error;
+
+      // Check if we have any data
+      setHasData((invoices?.length || 0) > 0);
 
       // Calculate monthly trends
       const monthlyTotals: Record<string, number> = {};
@@ -100,12 +154,13 @@ const Analytics = () => {
         const rewardsByMethod = paymentMethods.map(pm => {
           const pmInvoices = invoices.filter(inv => inv.payment_method_id === pm.id);
           const totalSpent = pmInvoices.reduce((sum, inv) => sum + Number(inv.amount), 0);
-          const rewardsEarned = totalSpent * (Number(pm.rewards_rate) / 100);
+          const rewardsRate = Number(pm.rewards_rate) || assumptions.defaultRewardsRate;
+          const rewardsEarned = totalSpent * (rewardsRate / 100);
           
           return {
             name: pm.name,
             rewardsEarned,
-            rewardsRate: Number(pm.rewards_rate),
+            rewardsRate,
             totalSpent,
           };
         });
@@ -128,11 +183,11 @@ const Analytics = () => {
           
           const amount = Number(inv.amount);
           acc[year].totalExpenses += amount;
-          acc[year].rewardsEarned += amount * 0.02;
+          acc[year].rewardsEarned += amount * (assumptions.defaultRewardsRate / 100);
           
           if (inv.is_hsa_eligible) {
             acc[year].hsaEligible += amount;
-            acc[year].taxSavings += amount * 0.22;
+            acc[year].taxSavings += amount * (assumptions.currentTaxBracket / 100);
           }
           
           return acc;
@@ -160,8 +215,8 @@ const Analytics = () => {
     <div className="min-h-screen bg-background">
       <AuthenticatedNav />
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-6">
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
@@ -169,14 +224,40 @@ const Analytics = () => {
         </div>
         
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Analytics</h1>
-          <p className="text-muted-foreground">
-            Insights into your invoices, payments, and HSA savings
-          </p>
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Analytics</h1>
+              <p className="text-muted-foreground">
+                Insights into your invoices, payments, and HSA savings
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <AnalyticsSettings 
+                assumptions={assumptions} 
+                onUpdate={handleAssumptionsUpdate}
+              />
+            </div>
+          </div>
+          
+          {hasData && (
+            <div className="mt-4">
+              <TimeRangeFilter
+                selectedRange={timeRange}
+                customDateRange={customDateRange}
+                onRangeChange={setTimeRange}
+                onCustomDateChange={setCustomDateRange}
+              />
+            </div>
+          )}
         </div>
 
-        <div className="grid gap-6 md:grid-cols-5 mb-8">
-          <Card>
+        {!hasData ? (
+          <AnalyticsEmptyState />
+        ) : (
+          <>
+            <div className="grid gap-4 md:gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-8">
+
+            <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Invoiced</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -227,9 +308,9 @@ const Analytics = () => {
               <div className="text-2xl font-bold">${stats.avgMonthly.toFixed(2)}</div>
             </CardContent>
           </Card>
-        </div>
+            </div>
 
-        <div className="grid gap-6 md:grid-cols-2 mb-8">
+        <div className="grid gap-6 lg:grid-cols-2 mb-8">
           <Card>
             <CardHeader>
               <CardTitle>Monthly Invoice Trend</CardTitle>
@@ -289,9 +370,9 @@ const Analytics = () => {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-        </div>
+            </div>
 
-        <Card>
+            <Card>
           <CardHeader>
             <CardTitle>Category Distribution</CardTitle>
             <CardDescription>Where your money goes</CardDescription>
@@ -325,16 +406,25 @@ const Analytics = () => {
           </CardContent>
         </Card>
 
-        <div className="space-y-6">
+            <div className="space-y-6 mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <HSAInvestmentTracker unreimbursedTotal={stats.unreimbursedHsaTotal} />
-            <ReimbursementTimingOptimizer unreimbursedTotal={stats.unreimbursedHsaTotal} />
+            <HSAInvestmentTracker 
+              unreimbursedTotal={stats.unreimbursedHsaTotal}
+              investmentReturnRate={assumptions.investmentReturnRate}
+            />
+            <ReimbursementTimingOptimizer 
+              unreimbursedTotal={stats.unreimbursedHsaTotal}
+              currentTaxBracket={assumptions.currentTaxBracket}
+              projectedTaxBracket={assumptions.projectedTaxBracket}
+            />
           </div>
           
           <RewardsOptimizationDashboard paymentMethods={paymentMethodsRewards} />
           
           <YearOverYearComparison yearlyData={yearlyData} />
         </div>
+          </>
+        )}
       </main>
     </div>
   );

@@ -7,12 +7,17 @@ interface HSAInvestmentTrackerProps {
   yearlyContributions?: number;
 }
 
+interface ExtendedHSAInvestmentTrackerProps extends HSAInvestmentTrackerProps {
+  investmentReturnRate?: number;
+}
+
 export const HSAInvestmentTracker = ({ 
   unreimbursedTotal,
-  yearlyContributions = 0 
-}: HSAInvestmentTrackerProps) => {
+  yearlyContributions = 0,
+  investmentReturnRate = 7
+}: ExtendedHSAInvestmentTrackerProps) => {
   // Calculate investment growth projections
-  const calculateGrowth = (principal: number, years: number, rate: number = 0.07) => {
+  const calculateGrowth = (principal: number, years: number, rate: number = investmentReturnRate / 100) => {
     return principal * Math.pow(1 + rate, years);
   };
 
@@ -76,7 +81,7 @@ export const HSAInvestmentTracker = ({
                 ${tenYearGrowth.toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground">
-                At 7% annual growth
+                At {investmentReturnRate}% annual growth
               </p>
             </div>
 

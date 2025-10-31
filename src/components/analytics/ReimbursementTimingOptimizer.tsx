@@ -10,8 +10,8 @@ interface ReimbursementTimingOptimizerProps {
 
 export const ReimbursementTimingOptimizer = ({
   unreimbursedTotal,
-  currentTaxBracket = 22,
-  projectedTaxBracket = 24,
+  currentTaxBracket,
+  projectedTaxBracket,
 }: ReimbursementTimingOptimizerProps) => {
   const currentSavings = unreimbursedTotal * (currentTaxBracket / 100);
   const futureSavings = unreimbursedTotal * (projectedTaxBracket / 100);
