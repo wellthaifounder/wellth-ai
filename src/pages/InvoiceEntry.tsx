@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Upload, Paperclip } from "lucide-react";
 import { z } from "zod";
 import { getPaymentRecommendation } from "@/lib/paymentRecommendation";
 import { PaymentRecommendation } from "@/components/expense/PaymentRecommendation";
@@ -19,7 +19,7 @@ import { MultiFileUpload } from "@/components/expense/MultiFileUpload";
 import { PaymentPlanFields } from "@/components/expense/PaymentPlanFields";
 import { AttachDocumentDialog } from "@/components/documents/AttachDocumentDialog";
 import { LabelSelector } from "@/components/labels/LabelSelector";
-import { Paperclip } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const invoiceSchema = z.object({
   date: z.string().min(1, "Date is required"),
@@ -317,23 +317,64 @@ const InvoiceEntry = () => {
               )}
 
               {isEditMode && (
-                <div className="space-y-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowAttachDialog(true)}
-                    className="w-full"
-                  >
-                    <Paperclip className="h-4 w-4 mr-2" />
-                    Attach Existing Documents
-                  </Button>
+                <div className="space-y-4">
+                  <Label>Documents</Label>
+                  <div className="flex gap-2">
+                    <div className="flex items-center gap-2 flex-1">
+                      <Input
+                        id="file-upload"
+                        type="file"
+                        accept="image/*,.pdf"
+                        multiple
+                        onChange={(e) => {
+                          if (!e.target.files) return;
+                          const newFilesArray = Array.from(e.target.files).map((file) => ({
+                            file,
+                            documentType: "receipt" as const,
+                            description: "",
+                            id: Math.random().toString(36).substring(7),
+                          }));
+                          setNewFiles(prev => [...prev, ...newFilesArray]);
+                          e.target.value = "";
+                        }}
+                        disabled={loading}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById("file-upload")?.click()}
+                        disabled={loading}
+                        className="flex-1"
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload Documents
+                      </Button>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowAttachDialog(true)}
+                      className="flex-1"
+                    >
+                      <Paperclip className="h-4 w-4 mr-2" />
+                      Attach Existing Documents
+                    </Button>
+                  </div>
+                  {newFiles.length > 0 && (
+                    <div className="mt-2">
+                      <Badge variant="secondary">{newFiles.length} file{newFiles.length !== 1 ? 's' : ''} selected</Badge>
+                    </div>
+                  )}
                 </div>
               )}
 
-              <MultiFileUpload
-                onFilesChange={setNewFiles}
-                disabled={loading}
-              />
+              {!isEditMode && (
+                <MultiFileUpload
+                  onFilesChange={setNewFiles}
+                  disabled={loading}
+                />
+              )}
 
               <PaymentPlanFields
                 hasPaymentPlan={hasPaymentPlan}
