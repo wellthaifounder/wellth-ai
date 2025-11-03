@@ -25,6 +25,7 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
   const navigate = useNavigate();
   const [displayedSavings, setDisplayedSavings] = useState(0);
   const [email, setEmail] = useState("");
+  const [offerDismissed, setOfferDismissed] = useState(false);
   const savings = calculateSavings(data);
 
   useEffect(() => {
@@ -75,14 +76,8 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
 
   return (
     <div className="space-y-8">
-      {/* Tripwire Offer - Primary CTA */}
-      <div className="animate-scale-in">
-        <TripwireOffer estimatedSavings={savings.total} calculatorData={data} />
-      </div>
-
-      {/* Original Results - Now Secondary */}
-      <div className="space-y-8 rounded-2xl bg-card p-8 shadow-lg">
-        <div className="space-y-4 text-center">
+      {/* Big Savings Number */}
+      <div className="space-y-4 rounded-2xl bg-card p-8 shadow-lg text-center">
         <h1 className="text-2xl font-bold">🎉 Your Personalized Savings</h1>
         <div className="rounded-xl bg-primary/10 p-8">
           <div className="text-5xl font-bold text-primary">
@@ -97,7 +92,8 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
         </p>
       </div>
 
-      <div className="space-y-4">
+      {/* Savings Breakdown */}
+      <div className="space-y-4 rounded-2xl bg-card p-8 shadow-lg">
         <h2 className="text-lg font-semibold">Here's how we calculated it:</h2>
         <div className="space-y-3">
           <div className="flex items-center justify-between rounded-lg bg-background p-4">
@@ -124,49 +120,66 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
         </div>
       </div>
 
-      <div className="space-y-3">
-        <Button
-          onClick={() => navigate("/auth")}
-          size="lg"
-          className="w-full"
-        >
-          Claim My Savings – Sign Up Free
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
+      {/* Tripwire Offer - Collapsible */}
+      {!offerDismissed && (
+        <div className="space-y-4 animate-scale-in">
+          <TripwireOffer estimatedSavings={savings.total} calculatorData={data} />
+          <div className="text-center">
+            <button
+              onClick={() => setOfferDismissed(true)}
+              className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
+            >
+              No thanks, I'll skip this offer
+            </button>
+          </div>
+        </div>
+      )}
 
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="lg" className="w-full">
-              <Mail className="mr-2 h-4 w-4" />
-              Email Me These Results
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Get Your Results via Email</DialogTitle>
-              <DialogDescription>
-                We'll send you a detailed breakdown of your potential savings
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <Input
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <Button onClick={handleEmailCapture} className="w-full">
-                Send Results
+      {/* Free Signup/Email Options - Show when offer dismissed */}
+      {offerDismissed && (
+        <div className="space-y-3 rounded-2xl bg-card p-8 shadow-lg animate-scale-in">
+          <Button
+            onClick={() => navigate("/auth")}
+            size="lg"
+            className="w-full"
+          >
+            Claim My Savings – Sign Up Free
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="lg" className="w-full">
+                <Mail className="mr-2 h-4 w-4" />
+                Email Me These Results
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Get Your Results via Email</DialogTitle>
+                <DialogDescription>
+                  We'll send you a detailed breakdown of your potential savings
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <Input
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <Button onClick={handleEmailCapture} className="w-full">
+                  Send Results
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
 
-        <p className="text-center text-xs text-muted-foreground">
-          You can always update these answers later
-        </p>
-      </div>
+          <p className="text-center text-xs text-muted-foreground">
+            You can always update these answers later
+          </p>
+        </div>
+      )}
     </div>
   );
 };
