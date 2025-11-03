@@ -53,11 +53,8 @@ export function LinkTransactionDialog({
   onSuccess,
 }: LinkTransactionDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [linkedTransactions, setLinkedTransactions] = useState<LinkedTransaction[]>([]);
-  const [selectedTransactionIds, setSelectedTransactionIds] = useState<string[]>([]);
-  const [selectedLinkedIds, setSelectedLinkedIds] = useState<string[]>([]);
-  const [linking, setLinking] = useState(false);
+  const [allTransactions, setAllTransactions] = useState<(Transaction | LinkedTransaction)[]>([]);
+  const [toggling, setToggling] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [advancedFilters, setAdvancedFilters] = useState<FilterCriteria>({});
 
@@ -65,10 +62,7 @@ export function LinkTransactionDialog({
     if (open && invoice) {
       fetchTransactions();
     } else {
-      setTransactions([]);
-      setLinkedTransactions([]);
-      setSelectedTransactionIds([]);
-      setSelectedLinkedIds([]);
+      setAllTransactions([]);
       setSearchQuery("");
       setAdvancedFilters({});
     }
@@ -100,14 +94,12 @@ export function LinkTransactionDialog({
 
       if (linkedError) throw linkedError;
 
-      const linked = (linkedPayments || [])
+      const linked: LinkedTransaction[] = (linkedPayments || [])
         .filter(pt => pt.transactions)
         .map(pt => ({
           ...(pt.transactions as any),
           payment_transaction_id: pt.id,
         }));
-
-      setLinkedTransactions(linked);
 
       // Fetch all linked transaction IDs to exclude from unlinked list
       const { data: allLinkedTransactions } = await supabase
@@ -123,8 +115,7 @@ export function LinkTransactionDialog({
         .select("*")
         .eq("user_id", user.id)
         .is("invoice_id", null)
-        .order("transaction_date", { ascending: false })
-        .limit(50);
+        .order("transaction_date", { ascending: false });
 
       if (linkedIds.length > 0) {
         query.not("id", "in", `(${linkedIds.join(",")})`);
@@ -133,7 +124,14 @@ export function LinkTransactionDialog({
       const { data, error } = await query;
 
       if (error) throw error;
-      setTransactions(data || []);
+      
+      // Combine both lists, marking which are linked
+      const combined = [
+        ...linked.map(t => ({ ...t, isLinked: true })),
+        ...(data || []).map(t => ({ ...t, isLinked: false }))
+      ];
+
+      setAllTransactions(combined);
     } catch (error) {
       console.error("Error fetching transactions:", error);
       toast.error("Failed to load transactions");
@@ -142,123 +140,70 @@ export function LinkTransactionDialog({
     }
   };
 
-  const toggleTransaction = (transactionId: string) => {
-    setSelectedTransactionIds(prev =>
-      prev.includes(transactionId)
-        ? prev.filter(id => id !== transactionId)
-        : [...prev, transactionId]
-    );
-  };
-
-  const toggleLinkedTransaction = (transactionId: string) => {
-    setSelectedLinkedIds(prev =>
-      prev.includes(transactionId)
-        ? prev.filter(id => id !== transactionId)
-        : [...prev, transactionId]
-    );
-  };
-
-  const handleUnlinkTransactions = async () => {
-    if (selectedLinkedIds.length === 0) return;
-
-    setLinking(true);
-    try {
-      // Find the payment transaction IDs for the selected linked transactions
-      const paymentTransactionIds = linkedTransactions
-        .filter(lt => selectedLinkedIds.includes(lt.id))
-        .map(lt => lt.payment_transaction_id);
-
-      // Delete the payment_transaction records
-      const { error: deleteError } = await supabase
-        .from("payment_transactions")
-        .delete()
-        .in("id", paymentTransactionIds);
-
-      if (deleteError) throw deleteError;
-
-      // Update the transactions to mark them as unlinked
-      const { error: updateError } = await supabase
-        .from("transactions")
-        .update({
-          invoice_id: null,
-          reconciliation_status: "unlinked",
-        })
-        .in("id", selectedLinkedIds);
-
-      if (updateError) throw updateError;
-
-      toast.success(
-        `Unlinked ${selectedLinkedIds.length} transaction${
-          selectedLinkedIds.length > 1 ? "s" : ""
-        } from bill`
-      );
-      
-      fetchTransactions();
-      setSelectedLinkedIds([]);
-      onSuccess();
-    } catch (error) {
-      console.error("Error unlinking transactions:", error);
-      toast.error("Failed to unlink transactions");
-    } finally {
-      setLinking(false);
-    }
-  };
-
-  const handleLinkTransactions = async () => {
-    if (!invoice || selectedTransactionIds.length === 0) return;
-
-    setLinking(true);
+  const handleToggleTransaction = async (transaction: any) => {
+    if (!invoice) return;
+    
+    setToggling(transaction.id);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Get the selected transactions to calculate total amount
-      const selectedTransactions = transactions.filter(t =>
-        selectedTransactionIds.includes(t.id)
-      );
+      if (transaction.isLinked) {
+        // Unlink the transaction
+        const { error: deleteError } = await supabase
+          .from("payment_transactions")
+          .delete()
+          .eq("id", transaction.payment_transaction_id);
 
-      // Create payment_transaction records for each selected transaction
-      const paymentTransactions = selectedTransactions.map(transaction => ({
-        invoice_id: invoice.id,
-        transaction_id: transaction.id,
-        user_id: user.id,
-        payment_date: transaction.transaction_date,
-        amount: transaction.amount,
-        payment_source: "out_of_pocket" as const,
-        notes: `Linked from transaction: ${transaction.description}`,
-      }));
+        if (deleteError) throw deleteError;
 
-      const { error: paymentError } = await supabase
-        .from("payment_transactions")
-        .insert(paymentTransactions);
+        const { error: updateError } = await supabase
+          .from("transactions")
+          .update({
+            invoice_id: null,
+            reconciliation_status: "unlinked",
+          })
+          .eq("id", transaction.id);
 
-      if (paymentError) throw paymentError;
+        if (updateError) throw updateError;
 
-      // Update the transactions to mark them as linked
-      const { error: transactionError } = await supabase
-        .from("transactions")
-        .update({
-          invoice_id: invoice.id,
-          reconciliation_status: "linked_to_invoice",
-        })
-        .in("id", selectedTransactionIds);
+        toast.success("Transaction unlinked from bill");
+      } else {
+        // Link the transaction
+        const { error: paymentError } = await supabase
+          .from("payment_transactions")
+          .insert({
+            invoice_id: invoice.id,
+            transaction_id: transaction.id,
+            user_id: user.id,
+            payment_date: transaction.transaction_date,
+            amount: transaction.amount,
+            payment_source: "out_of_pocket" as const,
+            notes: `Linked from transaction: ${transaction.description}`,
+          });
 
-      if (transactionError) throw transactionError;
+        if (paymentError) throw paymentError;
 
-      toast.success(
-        `Linked ${selectedTransactionIds.length} transaction${
-          selectedTransactionIds.length > 1 ? "s" : ""
-        } to bill`
-      );
+        const { error: transactionError } = await supabase
+          .from("transactions")
+          .update({
+            invoice_id: invoice.id,
+            reconciliation_status: "linked_to_invoice",
+          })
+          .eq("id", transaction.id);
+
+        if (transactionError) throw transactionError;
+
+        toast.success("Transaction linked to bill");
+      }
       
       fetchTransactions();
-      setSelectedTransactionIds([]);
       onSuccess();
     } catch (error) {
-      console.error("Error linking transactions:", error);
-      toast.error("Failed to link transactions");
+      console.error("Error toggling transaction:", error);
+      toast.error("Failed to update transaction");
     } finally {
-      setLinking(false);
+      setToggling(null);
     }
   };
 
@@ -288,8 +233,8 @@ export function LinkTransactionDialog({
     return score;
   };
 
-  const applyFilters = (allTransactions: Transaction[]): Transaction[] => {
-    let filtered = [...allTransactions];
+  const applyFilters = (transactions: any[]): any[] => {
+    let filtered = [...transactions];
 
     // Filter by search query
     if (searchQuery) {
@@ -349,9 +294,14 @@ export function LinkTransactionDialog({
     return filtered;
   };
 
-  const filteredTransactions = applyFilters(transactions);
-  const filteredLinkedTransactions = applyFilters(linkedTransactions);
+  const filteredTransactions = applyFilters(allTransactions);
+  
+  // Sort by linked status first (linked at top), then by similarity score
   const sortedTransactions = [...filteredTransactions].sort((a, b) => {
+    // First sort by linked status
+    if (a.isLinked && !b.isLinked) return -1;
+    if (!a.isLinked && b.isLinked) return 1;
+    // Then by similarity score
     return getSimilarityScore(b) - getSimilarityScore(a);
   });
 
@@ -387,125 +337,70 @@ export function LinkTransactionDialog({
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin" />
           </div>
+        ) : sortedTransactions.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            {searchQuery || Object.keys(advancedFilters).length > 0
+              ? "No transactions match your filters"
+              : "No transactions available"}
+          </div>
         ) : (
           <ScrollArea className="max-h-[50vh] pr-4">
-            <div className="space-y-4">
-              {/* Linked Transactions Section */}
-              {filteredLinkedTransactions.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-semibold mb-2 text-muted-foreground">
-                    Already Linked ({filteredLinkedTransactions.length})
-                  </h3>
-                  <div className="space-y-2">
-                    {filteredLinkedTransactions.map((transaction) => {
-                      const isSelected = selectedLinkedIds.includes(transaction.id);
-                      
-                      return (
-                        <div
-                          key={transaction.id}
-                          className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-                            isSelected ? "bg-accent border-primary" : "bg-muted/30"
-                          }`}
-                        >
-                          <Checkbox
-                            checked={isSelected}
-                            onCheckedChange={() => toggleLinkedTransaction(transaction.id)}
-                            id={`linked-${transaction.id}`}
-                          />
-                          <label
-                            htmlFor={`linked-${transaction.id}`}
-                            className="flex-1 cursor-pointer"
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <p className="font-medium">
-                                    {transaction.vendor || transaction.description}
-                                  </p>
-                                  <Badge variant="outline" className="text-xs">
-                                    Linked
-                                  </Badge>
-                                </div>
-                                <p className="text-sm text-muted-foreground">
-                                  {new Date(transaction.transaction_date).toLocaleDateString()} •{" "}
-                                  {transaction.category || "Uncategorized"}
-                                </p>
-                              </div>
-                              <p className="font-semibold">${transaction.amount.toFixed(2)}</p>
-                            </div>
-                          </label>
+            <div className="space-y-2">
+              {sortedTransactions.map((transaction) => {
+                const isLinked = transaction.isLinked;
+                const similarityScore = getSimilarityScore(transaction);
+                const isHighMatch = similarityScore >= 60;
+
+                return (
+                  <div
+                    key={transaction.id}
+                    className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
+                      isLinked ? "bg-accent/50 border-primary/50" : "hover:bg-accent/30"
+                    }`}
+                  >
+                    <Checkbox
+                      checked={isLinked}
+                      onCheckedChange={() => handleToggleTransaction(transaction)}
+                      disabled={toggling === transaction.id}
+                      id={`transaction-${transaction.id}`}
+                    />
+                    <label
+                      htmlFor={`transaction-${transaction.id}`}
+                      className="flex-1 cursor-pointer"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-medium">
+                              {transaction.vendor || transaction.description}
+                            </p>
+                            {isLinked && (
+                              <Badge variant="outline" className="text-xs">
+                                Linked
+                              </Badge>
+                            )}
+                            {!isLinked && isHighMatch && (
+                              <Badge variant="secondary" className="text-xs">
+                                Likely Match
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(transaction.transaction_date).toLocaleDateString()} •{" "}
+                            {transaction.category || "Uncategorized"}
+                          </p>
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Separator if both sections exist */}
-              {filteredLinkedTransactions.length > 0 && filteredTransactions.length > 0 && (
-                <Separator className="my-4" />
-              )}
-
-              {/* Unlinked Transactions Section */}
-              {filteredTransactions.length === 0 && filteredLinkedTransactions.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  {searchQuery || Object.keys(advancedFilters).length > 0
-                    ? "No transactions match your filters"
-                    : "No transactions available"}
-                </div>
-              ) : filteredTransactions.length > 0 ? (
-                <div>
-                  <h3 className="text-sm font-semibold mb-2 text-muted-foreground">
-                    Available to Link ({filteredTransactions.length})
-                  </h3>
-                  <div className="space-y-2">
-                    {sortedTransactions.map((transaction) => {
-                      const isSelected = selectedTransactionIds.includes(transaction.id);
-                      const similarityScore = getSimilarityScore(transaction);
-                      const isHighMatch = similarityScore >= 60;
-
-                      return (
-                        <div
-                          key={transaction.id}
-                          className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-                            isSelected ? "bg-accent border-primary" : "hover:bg-accent/50"
-                          }`}
-                        >
-                          <Checkbox
-                            checked={isSelected}
-                            onCheckedChange={() => toggleTransaction(transaction.id)}
-                            id={`transaction-${transaction.id}`}
-                          />
-                          <label
-                            htmlFor={`transaction-${transaction.id}`}
-                            className="flex-1 cursor-pointer"
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <p className="font-medium">
-                                    {transaction.vendor || transaction.description}
-                                  </p>
-                                  {isHighMatch && (
-                                    <Badge variant="secondary" className="text-xs">
-                                      Likely Match
-                                    </Badge>
-                                  )}
-                                </div>
-                                <p className="text-sm text-muted-foreground">
-                                  {new Date(transaction.transaction_date).toLocaleDateString()} •{" "}
-                                  {transaction.category || "Uncategorized"}
-                                </p>
-                              </div>
-                              <p className="font-semibold">${transaction.amount.toFixed(2)}</p>
-                            </div>
-                          </label>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold">${transaction.amount.toFixed(2)}</p>
+                          {toggling === transaction.id && (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          )}
                         </div>
-                      );
-                    })}
+                      </div>
+                    </label>
                   </div>
-                </div>
-              ) : null}
+                );
+              })}
             </div>
           </ScrollArea>
         )}
@@ -514,41 +409,6 @@ export function LinkTransactionDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close
           </Button>
-          {selectedLinkedIds.length > 0 && (
-            <Button
-              onClick={handleUnlinkTransactions}
-              disabled={linking}
-              variant="destructive"
-            >
-              {linking ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Unlinking...
-                </>
-              ) : (
-                `Unlink ${selectedLinkedIds.length} Transaction${
-                  selectedLinkedIds.length !== 1 ? "s" : ""
-                }`
-              )}
-            </Button>
-          )}
-          {selectedTransactionIds.length > 0 && (
-            <Button
-              onClick={handleLinkTransactions}
-              disabled={linking}
-            >
-              {linking ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Linking...
-                </>
-              ) : (
-                `Link ${selectedTransactionIds.length} Transaction${
-                  selectedTransactionIds.length !== 1 ? "s" : ""
-                }`
-              )}
-            </Button>
-          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
