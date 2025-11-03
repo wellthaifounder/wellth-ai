@@ -77,7 +77,7 @@ export function BillsHeroMetrics({
           {/* Stacked Bar Chart */}
           <div className="flex-1 w-full">
             <ResponsiveContainer width="100%" height={80}>
-              <BarChart data={chartData} layout="vertical" barSize={40}>
+              <BarChart data={chartData} layout="vertical" barSize={24}>
                 <Tooltip content={<CustomTooltip />} />
                 <XAxis type="number" hide domain={[0, 'dataMax']} />
                 <YAxis type="category" dataKey="name" hide />
@@ -95,7 +95,7 @@ export function BillsHeroMetrics({
                 <Bar 
                   dataKey="unpaid" 
                   stackId="a" 
-                  fill="hsl(var(--chart-5))" 
+                  fill="hsl(var(--muted))" 
                   radius={[0, 4, 4, 0]}
                 />
               </BarChart>
@@ -112,7 +112,7 @@ export function BillsHeroMetrics({
                 <span className="text-muted-foreground">Paid Other (${paidOther.toFixed(2)}) · {paidOtherPercent.toFixed(0)}% · Ready to reimburse</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded" style={{ backgroundColor: "hsl(var(--chart-5))" }} />
+                <div className="w-3 h-3 rounded bg-muted" />
                 <span className="text-muted-foreground">Unpaid (${unpaidCalc.toFixed(2)}) · {unpaidPercent.toFixed(0)}% · Opportunity for rewards</span>
               </div>
             </div>
