@@ -14,7 +14,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { TripwireOffer } from "./TripwireOffer";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ResultsScreenProps {
@@ -25,7 +24,6 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
   const navigate = useNavigate();
   const [displayedSavings, setDisplayedSavings] = useState(0);
   const [email, setEmail] = useState("");
-  const [offerDismissed, setOfferDismissed] = useState(false);
   const savings = calculateSavings(data);
 
   useEffect(() => {
@@ -67,7 +65,14 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
       if (error) throw error;
 
       sessionStorage.setItem("leadEmail", email);
-      toast.success("Results sent! Check your inbox.");
+      sessionStorage.setItem('calculatorData', JSON.stringify(data));
+      sessionStorage.setItem('estimatedSavings', savings.total.toString());
+      toast.success("Results sent! Redirecting to special offer...");
+      
+      // Navigate to tripwire offer page after email capture
+      setTimeout(() => {
+        navigate("/tripwire-offer");
+      }, 1500);
     } catch (error) {
       console.error('Error sending email:', error);
       toast.error("Something went wrong. Please try again.");
@@ -94,92 +99,72 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
 
       {/* Savings Breakdown */}
       <div className="space-y-4 rounded-2xl bg-card p-8 shadow-lg">
-        <h2 className="text-lg font-semibold">Here's how we calculated it:</h2>
         <div className="space-y-3">
-          <div className="flex items-center justify-between rounded-lg bg-background p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-2 w-2 rounded-full bg-primary" />
-              <span>Tax savings (HSA usage)</span>
+          <p className="text-xs text-muted-foreground">Breakdown</p>
+          <div className="text-sm space-y-2">
+            <div className="flex justify-between items-center py-2 border-b border-border">
+              <span className="text-muted-foreground">Rewards:</span>
+              <span className="font-medium">${savings.rewardsSavings.toLocaleString()}</span>
             </div>
-            <span className="font-semibold">${savings.taxSavings.toLocaleString()}</span>
-          </div>
-          <div className="flex items-center justify-between rounded-lg bg-background p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-2 w-2 rounded-full bg-accent" />
-              <span>Rewards optimization</span>
+            <div className="flex justify-between items-center py-2 border-b border-border">
+              <span className="text-muted-foreground">Tax Savings:</span>
+              <span className="font-medium text-green-600">${savings.taxSavings.toLocaleString()}</span>
             </div>
-            <span className="font-semibold">${savings.rewardsSavings.toLocaleString()}</span>
-          </div>
-          <div className="flex items-center justify-between rounded-lg bg-background p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-2 w-2 rounded-full bg-secondary" />
-              <span>Timing strategy</span>
+            <div className="flex justify-between items-center py-2 border-b border-border">
+              <span className="text-muted-foreground">Timing Growth:</span>
+              <span className="font-medium">${savings.timingSavings.toLocaleString()}</span>
             </div>
-            <span className="font-semibold">${savings.timingSavings.toLocaleString()}</span>
           </div>
         </div>
       </div>
 
-      {/* Tripwire Offer - Collapsible */}
-      {!offerDismissed && (
-        <div className="space-y-4 animate-scale-in">
-          <TripwireOffer estimatedSavings={savings.total} calculatorData={data} />
-          <div className="text-center">
-            <button
-              onClick={() => setOfferDismissed(true)}
-              className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
-            >
-              No thanks, I'll skip this offer
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Free Signup/Email Options */}
+      <div className="space-y-3 rounded-2xl bg-card p-8 shadow-lg">
+        <Button
+          onClick={() => {
+            sessionStorage.setItem('calculatorData', JSON.stringify(data));
+            sessionStorage.setItem('estimatedSavings', savings.total.toString());
+            navigate("/auth");
+          }}
+          size="lg"
+          className="w-full"
+        >
+          Claim My Savings – Sign Up Free
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
 
-      {/* Free Signup/Email Options - Show when offer dismissed */}
-      {offerDismissed && (
-        <div className="space-y-3 rounded-2xl bg-card p-8 shadow-lg animate-scale-in">
-          <Button
-            onClick={() => navigate("/auth")}
-            size="lg"
-            className="w-full"
-          >
-            Claim My Savings – Sign Up Free
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="lg" className="w-full">
-                <Mail className="mr-2 h-4 w-4" />
-                Email Me These Results
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="lg" className="w-full">
+              <Mail className="mr-2 h-4 w-4" />
+              Email Me These Results
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Get Your Results via Email</DialogTitle>
+              <DialogDescription>
+                We'll send you a detailed breakdown of your potential savings
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Input
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <Button onClick={handleEmailCapture} className="w-full">
+                Send Results
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Get Your Results via Email</DialogTitle>
-                <DialogDescription>
-                  We'll send you a detailed breakdown of your potential savings
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <Input
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <Button onClick={handleEmailCapture} className="w-full">
-                  Send Results
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+            </div>
+          </DialogContent>
+        </Dialog>
 
-          <p className="text-center text-xs text-muted-foreground">
-            You can always update these answers later
-          </p>
-        </div>
-      )}
+        <p className="text-center text-xs text-muted-foreground">
+          You can always update these answers later
+        </p>
+      </div>
     </div>
   );
 };

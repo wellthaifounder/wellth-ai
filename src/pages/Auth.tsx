@@ -52,7 +52,13 @@ const Auth = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/dashboard");
+        // Check if they came from calculator with tripwire offer
+        const hasTripwireData = sessionStorage.getItem('estimatedSavings') && sessionStorage.getItem('calculatorData');
+        if (hasTripwireData) {
+          navigate("/tripwire-offer");
+        } else {
+          navigate("/dashboard");
+        }
       }
     };
     checkUser();
@@ -60,7 +66,13 @@ const Auth = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && event === "SIGNED_IN") {
-        navigate("/dashboard");
+        // Check if they came from calculator with tripwire offer
+        const hasTripwireData = sessionStorage.getItem('estimatedSavings') && sessionStorage.getItem('calculatorData');
+        if (hasTripwireData) {
+          navigate("/tripwire-offer");
+        } else {
+          navigate("/dashboard");
+        }
       }
     });
 

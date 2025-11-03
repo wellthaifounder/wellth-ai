@@ -23,6 +23,7 @@ import ReimbursementRequests from "./pages/ReimbursementRequests";
 import PaymentMethods from "./pages/PaymentMethods";
 import Analytics from "./pages/Analytics";
 import TripwireSuccess from "./pages/TripwireSuccess";
+import TripwireOffer from "./pages/TripwireOffer";
 import Checkout from "./pages/Checkout";
 import Documents from "./pages/Documents";
 import Transactions from "./pages/Transactions";
@@ -47,6 +48,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/calculator" element={<Calculator />} />
+          <Route path="/tripwire-offer" element={<TripwireOffer />} />
           <Route path="/dashboard" element={<Dashboard />} />
           
           {/* New Expense Management Routes */}
