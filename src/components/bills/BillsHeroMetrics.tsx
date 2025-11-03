@@ -16,13 +16,23 @@ export function BillsHeroMetrics({
 }: BillsHeroMetricsProps) {
   const hsaEligible = paidOther + unpaidBalance;
   
+  console.log("BillsHeroMetrics values:", { totalBilled, paidViaHSA, paidOther, unpaidBalance });
+  
   // Calculate percentages
   const paidViaHSAPercent = totalBilled > 0 ? (paidViaHSA / totalBilled) * 100 : 0;
   const paidOtherPercent = totalBilled > 0 ? (paidOther / totalBilled) * 100 : 0;
   const unpaidPercent = totalBilled > 0 ? (unpaidBalance / totalBilled) * 100 : 0;
 
   // Data for the stacked bar chart
-  const chartData = [
+  // If all values are 0, show a placeholder bar
+  const chartData = totalBilled === 0 ? [
+    {
+      name: "Total",
+      paidViaHSA: 0,
+      paidOther: 0,
+      unpaid: 100, // Show as a placeholder
+    },
+  ] : [
     {
       name: "Total",
       paidViaHSA,
@@ -69,20 +79,17 @@ export function BillsHeroMetrics({
                   stackId="a" 
                   fill="hsl(142 76% 36%)" 
                   radius={[4, 0, 0, 4]}
-                  minPointSize={totalBilled === 0 ? 0 : 1}
                 />
                 <Bar 
                   dataKey="paidOther" 
                   stackId="a" 
                   fill="hsl(38 92% 50%)"
-                  minPointSize={totalBilled === 0 ? 0 : 1}
                 />
                 <Bar 
                   dataKey="unpaid" 
                   stackId="a" 
                   fill="hsl(25 95% 53%)" 
                   radius={[0, 4, 4, 0]}
-                  minPointSize={totalBilled === 0 ? 40 : 1}
                 />
               </BarChart>
             </ResponsiveContainer>
