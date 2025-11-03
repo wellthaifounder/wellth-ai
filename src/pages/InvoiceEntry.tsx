@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
@@ -65,13 +66,14 @@ const InvoiceEntry = () => {
     paymentPlanTotalAmount: "",
     paymentPlanInstallments: "",
     paymentPlanNotes: "",
+    isHsaEligible: false,
   });
 
   const recommendation = formData.totalAmount && formData.category && parseFloat(formData.totalAmount) > 0
     ? getPaymentRecommendation({
         amount: parseFloat(formData.totalAmount),
         category: formData.category,
-        isHsaEligible: HSA_ELIGIBLE_CATEGORIES.includes(formData.category),
+        isHsaEligible: formData.isHsaEligible,
       })
     : null;
 
@@ -80,6 +82,14 @@ const InvoiceEntry = () => {
       loadInvoice(id);
     }
   }, [id, isEditMode]);
+
+  // Auto-set HSA eligibility based on category selection (for new invoices)
+  useEffect(() => {
+    if (!isEditMode && formData.category) {
+      const isEligible = HSA_ELIGIBLE_CATEGORIES.includes(formData.category);
+      setFormData(prev => ({ ...prev, isHsaEligible: isEligible }));
+    }
+  }, [formData.category, isEditMode]);
 
   const loadInvoice = async (invoiceId: string) => {
     try {
@@ -104,6 +114,7 @@ const InvoiceEntry = () => {
           paymentPlanTotalAmount: data.payment_plan_total_amount?.toString() || "",
           paymentPlanInstallments: data.payment_plan_installments?.toString() || "",
           paymentPlanNotes: data.payment_plan_notes || "",
+          isHsaEligible: data.is_hsa_eligible || false,
         });
         setHasPaymentPlan(!!data.payment_plan_total_amount);
         
@@ -139,8 +150,6 @@ const InvoiceEntry = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const isHsaEligible = HSA_ELIGIBLE_CATEGORIES.includes(validatedData.category);
-
       const dateObj = new Date(validatedData.date + 'T00:00:00');
       const formattedDate = dateObj.toISOString().split('T')[0];
       
@@ -161,7 +170,7 @@ const InvoiceEntry = () => {
             notes: validatedData.notes || null,
             invoice_number: formData.invoiceNumber || null,
             invoice_date: formattedInvoiceDate,
-            is_hsa_eligible: isHsaEligible,
+            is_hsa_eligible: formData.isHsaEligible,
             payment_plan_total_amount: hasPaymentPlan && formData.paymentPlanTotalAmount 
               ? parseFloat(formData.paymentPlanTotalAmount) 
               : null,
@@ -189,7 +198,7 @@ const InvoiceEntry = () => {
             notes: validatedData.notes || null,
             invoice_number: formData.invoiceNumber || null,
             invoice_date: formattedInvoiceDate,
-            is_hsa_eligible: isHsaEligible,
+            is_hsa_eligible: formData.isHsaEligible,
             is_reimbursed: false,
             payment_plan_total_amount: hasPaymentPlan && formData.paymentPlanTotalAmount 
               ? parseFloat(formData.paymentPlanTotalAmount) 
@@ -406,6 +415,22 @@ const InvoiceEntry = () => {
                     required
                   />
                 </div>
+              </div>
+
+              <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <Label htmlFor="hsaEligible" className="text-base">
+                    HSA Eligible
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Mark this bill as eligible for HSA reimbursement
+                  </p>
+                </div>
+                <Switch
+                  id="hsaEligible"
+                  checked={formData.isHsaEligible}
+                  onCheckedChange={(checked) => setFormData({ ...formData, isHsaEligible: checked })}
+                />
               </div>
 
               <div className="space-y-2">
