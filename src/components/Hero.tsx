@@ -47,7 +47,7 @@ export const Hero = () => {
           <div className="mt-12 grid gap-6 sm:grid-cols-3">
             <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
               <DollarSign className="mb-3 h-8 w-8 text-accent" />
-              <h3 className="mb-2 text-2xl font-bold text-white">$243</h3>
+              <h3 className="mb-2 text-2xl font-bold text-white">$487</h3>
               <p className="text-sm text-white/80">Average quarterly savings</p>
             </div>
             <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
@@ -57,8 +57,8 @@ export const Hero = () => {
             </div>
             <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
               <TrendingUp className="mb-3 h-8 w-8 text-accent" />
-              <h3 className="mb-2 text-2xl font-bold text-white">40%</h3>
-              <p className="text-sm text-white/80">Tax + rewards optimization</p>
+              <h3 className="mb-2 text-2xl font-bold text-white">47%</h3>
+              <p className="text-sm text-white/80">Total optimization potential</p>
             </div>
           </div>
         </div>
