@@ -1,7 +1,21 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, DollarSign, Receipt, TrendingUp } from "lucide-react";
+import { ArrowRight, DollarSign, TrendingUp, Sparkles } from "lucide-react";
+import { calculateSavings } from "@/lib/savingsCalculator";
 
 export const Hero = () => {
+  // Calculate dynamic savings rate based on representative user profile
+  const representativeProfile = {
+    monthlySpending: 400,
+    householdSize: 2,
+    hasHSA: "no" as const,
+    paymentMethod: "debit" as const,
+    hasRewards: "no" as const,
+    upcomingExpenses: "ongoing" as const,
+  };
+  
+  const annualSpending = representativeProfile.monthlySpending * 12;
+  const savings = calculateSavings(representativeProfile);
+  const savingsRate = Math.round((savings.total / annualSpending) * 100);
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-primary/80 py-20 lg:py-32">
       <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" />
@@ -47,18 +61,18 @@ export const Hero = () => {
           <div className="mt-12 grid gap-6 sm:grid-cols-3">
             <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
               <DollarSign className="mb-3 h-8 w-8 text-accent" />
-              <h3 className="mb-2 text-2xl font-bold text-white">$487</h3>
-              <p className="text-sm text-white/80">Average quarterly savings</p>
-            </div>
-            <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
-              <Receipt className="mb-3 h-8 w-8 text-accent" />
-              <h3 className="mb-2 text-2xl font-bold text-white">100%</h3>
-              <p className="text-sm text-white/80">HSA-eligible tracking</p>
+              <h3 className="mb-2 text-2xl font-bold text-white">$1,948</h3>
+              <p className="text-sm text-white/80">Average annual savings</p>
             </div>
             <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
               <TrendingUp className="mb-3 h-8 w-8 text-accent" />
-              <h3 className="mb-2 text-2xl font-bold text-white">47%</h3>
-              <p className="text-sm text-white/80">Total optimization potential</p>
+              <h3 className="mb-2 text-2xl font-bold text-white">{savingsRate}%</h3>
+              <p className="text-sm text-white/80">Potential savings rate</p>
+            </div>
+            <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
+              <Sparkles className="mb-3 h-8 w-8 text-accent" />
+              <h3 className="mb-2 text-2xl font-bold text-white">$800+</h3>
+              <p className="text-sm text-white/80">Average annual HSA investment growth</p>
             </div>
           </div>
         </div>
