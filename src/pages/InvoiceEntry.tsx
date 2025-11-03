@@ -276,7 +276,7 @@ const InvoiceEntry = () => {
             Dashboard
           </button>
           <span>/</span>
-          <button onClick={() => navigate("/invoice-payment-list")} className="hover:text-foreground">
+          <button onClick={() => navigate("/invoices")} className="hover:text-foreground">
             Bills
           </button>
           <span>/</span>

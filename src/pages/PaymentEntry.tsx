@@ -214,6 +214,10 @@ const PaymentEntry = () => {
             Dashboard
           </button>
           <span>/</span>
+          <button onClick={() => navigate("/invoices")} className="hover:text-foreground">
+            Bills
+          </button>
+          <span>/</span>
           <span className="text-foreground">Record Payment</span>
         </div>
 
