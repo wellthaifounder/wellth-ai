@@ -86,7 +86,8 @@ export function LinkTransactionDialog({
             vendor,
             amount,
             description,
-            category
+            category,
+            is_hsa_eligible
           )
         `)
         .eq("invoice_id", invoice?.id)
@@ -286,6 +287,19 @@ export function LinkTransactionDialog({
         if (dateOperator === "between" && dateEnd) {
           const endDate = new Date(dateEnd);
           return transactionDate >= startDate && transactionDate <= endDate;
+        }
+        return true;
+      });
+    }
+
+    // Apply HSA eligibility filter
+    if (advancedFilters.isHsaEligible && advancedFilters.isHsaEligible !== "all") {
+      filtered = filtered.filter((t) => {
+        if (advancedFilters.isHsaEligible === "yes") {
+          return t.is_hsa_eligible === true;
+        }
+        if (advancedFilters.isHsaEligible === "no") {
+          return t.is_hsa_eligible === false;
         }
         return true;
       });

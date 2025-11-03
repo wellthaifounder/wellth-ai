@@ -16,6 +16,7 @@ export type FilterCriteria = {
   dateOperator?: "after" | "before" | "between" | "on";
   dateStart?: Date;
   dateEnd?: Date;
+  isHsaEligible?: "all" | "yes" | "no";
 };
 
 type AdvancedFiltersProps = {
@@ -178,6 +179,24 @@ export function AdvancedFilters({ onFilterChange, activeFilters }: AdvancedFilte
                 )}
               </div>
             )}
+          </div>
+
+          {/* HSA Eligible Filter */}
+          <div className="space-y-2">
+            <Label>HSA Eligible</Label>
+            <Select
+              value={filters.isHsaEligible || "all"}
+              onValueChange={(value: any) => updateFilter("isHsaEligible", value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="All transactions" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All transactions</SelectItem>
+                <SelectItem value="yes">HSA eligible only</SelectItem>
+                <SelectItem value="no">Not HSA eligible</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex gap-2 pt-2">
