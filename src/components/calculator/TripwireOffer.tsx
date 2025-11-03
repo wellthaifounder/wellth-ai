@@ -43,6 +43,11 @@ export const TripwireOffer = ({ estimatedSavings, calculatorData, onPurchaseComp
       if (data?.clientSecret) {
         console.log('Embedded checkout session created');
         sessionStorage.setItem('stripe_tripwire_client_secret', data.clientSecret);
+        
+        // Clear calculator data since they're purchasing (won't need to see tripwire again)
+        sessionStorage.removeItem('estimatedSavings');
+        sessionStorage.removeItem('calculatorData');
+        
         navigate('/checkout');
         return;
       }

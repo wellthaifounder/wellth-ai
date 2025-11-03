@@ -34,6 +34,9 @@ const TripwireOfferPage = () => {
   }, [navigate]);
 
   const handleSkip = () => {
+    // Clear calculator data from sessionStorage after viewing tripwire
+    sessionStorage.removeItem('estimatedSavings');
+    sessionStorage.removeItem('calculatorData');
     navigate('/dashboard');
   };
 

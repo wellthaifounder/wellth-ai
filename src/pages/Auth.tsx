@@ -52,11 +52,17 @@ const Auth = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // Check if they came from calculator with tripwire offer
+        // Only show tripwire to NEW sign-ups who came from calculator
+        const isNewSignup = sessionStorage.getItem('isNewSignup') === 'true';
         const hasTripwireData = sessionStorage.getItem('estimatedSavings') && sessionStorage.getItem('calculatorData');
-        if (hasTripwireData) {
+        
+        if (isNewSignup && hasTripwireData) {
+          // Clear the new signup flag
+          sessionStorage.removeItem('isNewSignup');
           navigate("/tripwire-offer");
         } else {
+          // Clear any stale flags
+          sessionStorage.removeItem('isNewSignup');
           navigate("/dashboard");
         }
       }
@@ -66,11 +72,17 @@ const Auth = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && event === "SIGNED_IN") {
-        // Check if they came from calculator with tripwire offer
+        // Only show tripwire to NEW sign-ups who came from calculator
+        const isNewSignup = sessionStorage.getItem('isNewSignup') === 'true';
         const hasTripwireData = sessionStorage.getItem('estimatedSavings') && sessionStorage.getItem('calculatorData');
-        if (hasTripwireData) {
+        
+        if (isNewSignup && hasTripwireData) {
+          // Clear the new signup flag
+          sessionStorage.removeItem('isNewSignup');
           navigate("/tripwire-offer");
         } else {
+          // Clear any stale flags
+          sessionStorage.removeItem('isNewSignup');
           navigate("/dashboard");
         }
       }
@@ -85,6 +97,9 @@ const Auth = () => {
     try {
       const validated = signUpSchema.parse(signUpData);
       setLoading(true);
+
+      // Mark this as a new sign-up (not an existing user signing in)
+      sessionStorage.setItem('isNewSignup', 'true');
 
       const { error } = await supabase.auth.signUp({
         email: validated.email,
