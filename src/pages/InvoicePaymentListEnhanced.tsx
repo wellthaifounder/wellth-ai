@@ -20,7 +20,7 @@ const InvoicePaymentListEnhanced = () => {
   // Filter states
   const [hideFullyReimbursed, setHideFullyReimbursed] = useState(true);
   const [hideFullyPaid, setHideFullyPaid] = useState(true);
-  const [showOnlyHSAEligible, setShowOnlyHSAEligible] = useState(false);
+  const [showOnlyHSAEligible, setShowOnlyHSAEligible] = useState(true);
   const [minUnpaidBalance, setMinUnpaidBalance] = useState(0);
 
   useEffect(() => {
@@ -116,7 +116,7 @@ const InvoicePaymentListEnhanced = () => {
     let totalUnpaid = 0;
     let totalHSAEligible = 0;
 
-    expenses.forEach(expense => {
+    filteredExpenses.forEach(expense => {
       const breakdown = calculateHSAEligibility(expense, expense.payment_transactions || []);
       totalInvoiced += breakdown.totalInvoiced;
       totalPaidHSA += breakdown.paidViaHSA;
@@ -126,7 +126,7 @@ const InvoicePaymentListEnhanced = () => {
     });
 
     return { totalInvoiced, totalPaidHSA, totalPaidOther, totalUnpaid, totalHSAEligible };
-  }, [expenses]);
+  }, [filteredExpenses]);
 
   if (loading) {
     return (
