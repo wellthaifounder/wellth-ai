@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Plus, DollarSign, AlertCircle, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -50,6 +51,29 @@ const InvoicePaymentListEnhanced = () => {
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleHSAEligibility = async (invoiceId: string, currentStatus: boolean, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent navigation to detail page
+    
+    try {
+      const { error } = await supabase
+        .from("invoices")
+        .update({ is_hsa_eligible: !currentStatus })
+        .eq("id", invoiceId);
+
+      if (error) throw error;
+
+      // Update local state
+      setExpenses(prev => prev.map(exp => 
+        exp.id === invoiceId ? { ...exp, is_hsa_eligible: !currentStatus } : exp
+      ));
+
+      toast.success(`HSA eligibility ${!currentStatus ? 'enabled' : 'disabled'}`);
+    } catch (error) {
+      console.error("Error toggling HSA eligibility:", error);
+      toast.error("Failed to update HSA eligibility");
     }
   };
 
@@ -255,18 +279,37 @@ const InvoicePaymentListEnhanced = () => {
                             {expense.category} • {new Date(expense.date).toLocaleDateString()}
                           </p>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold">${breakdown.totalInvoiced.toFixed(2)}</p>
-                          {breakdown.unpaidBalance > 0 && (
-                            <p className="text-sm text-red-600">
-                              ${breakdown.unpaidBalance.toFixed(2)} unpaid
-                            </p>
-                          )}
-                          {breakdown.hsaReimbursementEligible > 0 && (
-                            <p className="text-sm text-amber-600">
-                              ${breakdown.hsaReimbursementEligible.toFixed(2)} eligible
-                            </p>
-                          )}
+                        <div className="flex items-center gap-4">
+                          <div 
+                            className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent/50 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Label 
+                              htmlFor={`hsa-toggle-${expense.id}`} 
+                              className="text-xs cursor-pointer whitespace-nowrap"
+                            >
+                              HSA Eligible
+                            </Label>
+                            <Switch
+                              id={`hsa-toggle-${expense.id}`}
+                              checked={expense.is_hsa_eligible}
+                              onCheckedChange={(checked) => toggleHSAEligibility(expense.id, expense.is_hsa_eligible, {} as any)}
+                              onClick={(e) => toggleHSAEligibility(expense.id, expense.is_hsa_eligible, e)}
+                            />
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold">${breakdown.totalInvoiced.toFixed(2)}</p>
+                            {breakdown.unpaidBalance > 0 && (
+                              <p className="text-sm text-red-600">
+                                ${breakdown.unpaidBalance.toFixed(2)} unpaid
+                              </p>
+                            )}
+                            {breakdown.hsaReimbursementEligible > 0 && (
+                              <p className="text-sm text-amber-600">
+                                ${breakdown.hsaReimbursementEligible.toFixed(2)} eligible
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
