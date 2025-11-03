@@ -26,6 +26,10 @@ interface Transaction {
   description: string;
   category: string | null;
   payment_method_id: string | null;
+  is_hsa_eligible: boolean;
+  payment_methods?: {
+    is_hsa_account: boolean;
+  } | null;
 }
 
 interface LinkedTransaction extends Transaction {
@@ -91,7 +95,10 @@ export function LinkTransactionDialog({
             description,
             category,
             is_hsa_eligible,
-            payment_method_id
+            payment_method_id,
+            payment_methods (
+              is_hsa_account
+            )
           )
         `)
         .eq("invoice_id", invoice?.id)
@@ -118,10 +125,15 @@ export function LinkTransactionDialog({
       // Fetch unlinked transactions
       const query = supabase
         .from("transactions")
-        .select("*")
+        .select(`
+          *,
+          payment_methods (
+            is_hsa_account
+          )
+        `)
         .eq("user_id", user.id)
         .is("invoice_id", null)
-        .order("transaction_date", { ascending: false });
+        .order("transaction_date", { ascending: false});
 
       if (linkedIds.length > 0) {
         query.not("id", "in", `(${linkedIds.join(",")})`);
@@ -398,20 +410,26 @@ export function LinkTransactionDialog({
                                 <Badge variant="outline" className="text-xs">
                                   Linked
                                 </Badge>
-                                {transaction.payment_source === "hsa" ? (
-                                  <Badge variant="default" className="text-xs bg-success text-success-foreground">
+                                {transaction.payment_source === "hsa" && (
+                                  <Badge variant="success" className="text-xs">
                                     Paid via HSA
-                                  </Badge>
-                                ) : (
-                                  <Badge variant="default" className="text-xs">
-                                    Paid Other
                                   </Badge>
                                 )}
                               </>
                             )}
+                            {!isLinked && transaction.payment_methods?.is_hsa_account && (
+                              <Badge variant="success" className="text-xs">
+                                Paid via HSA
+                              </Badge>
+                            )}
                             {!isLinked && isHighMatch && (
                               <Badge variant="secondary" className="text-xs">
                                 Likely Match
+                              </Badge>
+                            )}
+                            {!isLinked && transaction.is_hsa_eligible && !transaction.payment_methods?.is_hsa_account && (
+                              <Badge className="bg-primary/10 text-primary text-xs">
+                                HSA Eligible
                               </Badge>
                             )}
                           </div>

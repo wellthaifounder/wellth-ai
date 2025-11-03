@@ -20,6 +20,7 @@ interface TransactionCardProps {
   isMedical: boolean;
   reconciliationStatus: "unlinked" | "linked_to_invoice" | "ignored";
   isHsaEligible: boolean;
+  isFromHsaAccount?: boolean;
   onViewDetails: () => void;
   onMarkMedical?: () => void;
   onLinkToInvoice?: () => void;
@@ -37,6 +38,7 @@ export function TransactionCard({
   isMedical,
   reconciliationStatus,
   isHsaEligible,
+  isFromHsaAccount = false,
   onViewDetails,
   onMarkMedical,
   onLinkToInvoice,
@@ -109,7 +111,10 @@ export function TransactionCard({
                 Mark Medical
               </Badge>
             )}
-            {isHsaEligible && (
+            {isFromHsaAccount && (
+              <Badge variant="success">Paid via HSA</Badge>
+            )}
+            {isHsaEligible && !isFromHsaAccount && (
               <Badge className="bg-primary/10 text-primary">HSA Eligible</Badge>
             )}
           </div>

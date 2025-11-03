@@ -25,6 +25,9 @@ interface TransactionDetailDialogProps {
     notes: string | null;
     payment_method_id: string | null;
     invoice_id: string | null;
+    payment_methods?: {
+      is_hsa_account: boolean;
+    } | null;
   } | null;
   onUpdate: () => void;
   onLinkToInvoice: () => void;
@@ -135,7 +138,10 @@ export function TransactionDetailDialog({
             <Badge variant={transaction.is_medical ? "default" : "outline"}>
               {transaction.is_medical ? "Medical" : "Non-Medical"}
             </Badge>
-            {transaction.is_hsa_eligible && (
+            {transaction.payment_methods?.is_hsa_account && (
+              <Badge variant="success">Paid via HSA</Badge>
+            )}
+            {transaction.is_hsa_eligible && !transaction.payment_methods?.is_hsa_account && (
               <Badge className="bg-primary/10 text-primary">HSA Eligible</Badge>
             )}
             <Badge variant="secondary">{transaction.category}</Badge>

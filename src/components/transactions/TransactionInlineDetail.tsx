@@ -22,6 +22,9 @@ interface TransactionInlineDetailProps {
     reconciliation_status: string;
     payment_method_id: string | null;
     invoice_id: string | null;
+    payment_methods?: {
+      is_hsa_account: boolean;
+    } | null;
   };
   onClose: () => void;
   onUpdate: () => void;
@@ -153,13 +156,21 @@ export function TransactionInlineDetail({
               <FileText className="h-4 w-4" />
               <span>Status</span>
             </div>
-            <Badge variant={
-              transaction.reconciliation_status === "linked" ? "default" :
-              transaction.reconciliation_status === "ignored" ? "secondary" :
-              "outline"
-            }>
-              {transaction.reconciliation_status}
-            </Badge>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant={
+                transaction.reconciliation_status === "linked" ? "default" :
+                transaction.reconciliation_status === "ignored" ? "secondary" :
+                "outline"
+              }>
+                {transaction.reconciliation_status}
+              </Badge>
+              {transaction.payment_methods?.is_hsa_account && (
+                <Badge variant="success">Paid via HSA</Badge>
+              )}
+              {transaction.is_hsa_eligible && !transaction.payment_methods?.is_hsa_account && (
+                <Badge className="bg-primary/10 text-primary">HSA Eligible</Badge>
+              )}
+            </div>
           </div>
         </div>
 

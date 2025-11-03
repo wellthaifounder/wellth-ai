@@ -29,6 +29,9 @@ type Transaction = {
   notes: string | null;
   payment_method_id: string | null;
   invoice_id: string | null;
+  payment_methods?: {
+    is_hsa_account: boolean;
+  } | null;
 };
 
 export default function Transactions() {
@@ -96,7 +99,12 @@ export default function Transactions() {
     try {
       const { data, error } = await supabase
         .from("transactions")
-        .select("*")
+        .select(`
+          *,
+          payment_methods (
+            is_hsa_account
+          )
+        `)
         .order("transaction_date", { ascending: false });
 
       if (error) throw error;
@@ -423,6 +431,7 @@ export default function Transactions() {
                       isMedical={transaction.is_medical}
                       reconciliationStatus={transaction.reconciliation_status as any}
                       isHsaEligible={transaction.is_hsa_eligible}
+                      isFromHsaAccount={transaction.payment_methods?.is_hsa_account || false}
                       onViewDetails={() => handleViewDetails(transaction)}
                       onMarkMedical={() => handleMarkMedical(transaction)}
                       onLinkToInvoice={() => handleLinkToInvoice(transaction)}
