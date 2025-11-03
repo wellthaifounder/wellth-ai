@@ -20,6 +20,8 @@ import { PaymentPlanFields } from "@/components/expense/PaymentPlanFields";
 import { AttachDocumentDialog } from "@/components/documents/AttachDocumentDialog";
 import { LabelSelector } from "@/components/labels/LabelSelector";
 import { Badge } from "@/components/ui/badge";
+import { LinkTransactionDialog } from "@/components/bills/LinkTransactionDialog";
+import { Link2 } from "lucide-react";
 
 const invoiceSchema = z.object({
   date: z.string().min(1, "Date is required"),
@@ -54,6 +56,7 @@ const InvoiceEntry = () => {
   const [success, setSuccess] = useState(false);
   const [hasPaymentPlan, setHasPaymentPlan] = useState(false);
   const [showAttachDialog, setShowAttachDialog] = useState(false);
+  const [showLinkTransactionDialog, setShowLinkTransactionDialog] = useState(false);
   const [selectedLabels, setSelectedLabels] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -369,6 +372,21 @@ const InvoiceEntry = () => {
                 </div>
               )}
 
+              {isEditMode && (
+                <div className="space-y-2">
+                  <Label>Transaction Linking</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowLinkTransactionDialog(true)}
+                    className="w-full"
+                  >
+                    <Link2 className="h-4 w-4 mr-2" />
+                    Link to Transactions
+                  </Button>
+                </div>
+              )}
+
               {!isEditMode && (
                 <MultiFileUpload
                   onFilesChange={setNewFiles}
@@ -514,6 +532,24 @@ const InvoiceEntry = () => {
             open={showAttachDialog}
             onOpenChange={setShowAttachDialog}
             onAttached={() => loadInvoice(id!)}
+          />
+        )}
+
+        {isEditMode && formData.vendor && (
+          <LinkTransactionDialog
+            open={showLinkTransactionDialog}
+            onOpenChange={setShowLinkTransactionDialog}
+            invoice={{
+              id: id!,
+              vendor: formData.vendor,
+              amount: parseFloat(formData.totalAmount) || 0,
+              total_amount: parseFloat(formData.totalAmount) || 0,
+              date: formData.date,
+            }}
+            onSuccess={() => {
+              toast.success("Transactions updated");
+              loadInvoice(id!);
+            }}
           />
         )}
       </div>

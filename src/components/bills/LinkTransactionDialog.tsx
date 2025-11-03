@@ -25,10 +25,12 @@ interface Transaction {
   amount: number;
   description: string;
   category: string | null;
+  payment_method_id: string | null;
 }
 
 interface LinkedTransaction extends Transaction {
   payment_transaction_id: string;
+  payment_source: string;
 }
 
 interface Invoice {
@@ -80,6 +82,7 @@ export function LinkTransactionDialog({
         .select(`
           id,
           transaction_id,
+          payment_source,
           transactions (
             id,
             transaction_date,
@@ -87,7 +90,8 @@ export function LinkTransactionDialog({
             amount,
             description,
             category,
-            is_hsa_eligible
+            is_hsa_eligible,
+            payment_method_id
           )
         `)
         .eq("invoice_id", invoice?.id)
@@ -100,6 +104,7 @@ export function LinkTransactionDialog({
         .map(pt => ({
           ...(pt.transactions as any),
           payment_transaction_id: pt.id,
+          payment_source: pt.payment_source,
         }));
 
       // Fetch all linked transaction IDs to exclude from unlinked list
@@ -389,9 +394,20 @@ export function LinkTransactionDialog({
                               {transaction.vendor || transaction.description}
                             </p>
                             {isLinked && (
-                              <Badge variant="outline" className="text-xs">
-                                Linked
-                              </Badge>
+                              <>
+                                <Badge variant="outline" className="text-xs">
+                                  Linked
+                                </Badge>
+                                {transaction.payment_source === "hsa" ? (
+                                  <Badge variant="default" className="text-xs bg-success text-success-foreground">
+                                    Paid via HSA
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="default" className="text-xs">
+                                    Paid Other
+                                  </Badge>
+                                )}
+                              </>
                             )}
                             {!isLinked && isHighMatch && (
                               <Badge variant="secondary" className="text-xs">
