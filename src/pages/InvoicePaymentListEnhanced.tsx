@@ -7,10 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Plus, DollarSign, AlertCircle, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import { calculateHSAEligibility } from "@/lib/hsaCalculations";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
+import { BillsHeroMetrics } from "@/components/bills/BillsHeroMetrics";
+import { LinkTransactionDialog } from "@/components/bills/LinkTransactionDialog";
 
 const InvoicePaymentListEnhanced = () => {
   const navigate = useNavigate();
@@ -22,6 +24,10 @@ const InvoicePaymentListEnhanced = () => {
   const [hideFullyPaid, setHideFullyPaid] = useState(true);
   const [showOnlyHSAEligible, setShowOnlyHSAEligible] = useState(true);
   const [minUnpaidBalance, setMinUnpaidBalance] = useState(0);
+
+  // Link transaction dialog state
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [selectedInvoiceForLinking, setSelectedInvoiceForLinking] = useState<any | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -75,6 +81,16 @@ const InvoicePaymentListEnhanced = () => {
       console.error("Error toggling HSA eligibility:", error);
       toast.error("Failed to update HSA eligibility");
     }
+  };
+
+  const handleOpenLinkDialog = (invoice: any, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent navigation to detail page
+    setSelectedInvoiceForLinking(invoice);
+    setLinkDialogOpen(true);
+  };
+
+  const handleLinkSuccess = () => {
+    fetchData(); // Refresh the data
   };
 
   const getStatusEmoji = (paidHSA: number, paidOther: number, unpaid: number, total: number) => {
@@ -148,41 +164,13 @@ const InvoicePaymentListEnhanced = () => {
           </Button>
         </div>
 
-        {/* Summary Stats */}
-        <div className="grid gap-4 md:grid-cols-4 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Invoiced</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${aggregateStats.totalInvoiced.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Paid via HSA</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">${aggregateStats.totalPaidHSA.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Paid Other</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-amber-600">${aggregateStats.totalPaidOther.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Unpaid Balance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">${aggregateStats.totalUnpaid.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Hero Metrics with Stacked Bar Chart */}
+        <BillsHeroMetrics
+          totalBilled={aggregateStats.totalInvoiced}
+          paidViaHSA={aggregateStats.totalPaidHSA}
+          paidOther={aggregateStats.totalPaidOther}
+          unpaidBalance={aggregateStats.totalUnpaid}
+        />
 
         {/* Filters */}
         <Card className="mb-8">
@@ -280,6 +268,15 @@ const InvoicePaymentListEnhanced = () => {
                           </p>
                         </div>
                         <div className="flex items-center gap-4">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={(e) => handleOpenLinkDialog(expense, e)}
+                            title="Link Transaction"
+                          >
+                            <Link2 className="h-4 w-4" />
+                          </Button>
                           <div 
                             className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent/50 transition-colors"
                             onClick={(e) => e.stopPropagation()}
@@ -319,6 +316,14 @@ const InvoicePaymentListEnhanced = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Link Transaction Dialog */}
+        <LinkTransactionDialog
+          open={linkDialogOpen}
+          onOpenChange={setLinkDialogOpen}
+          invoice={selectedInvoiceForLinking}
+          onSuccess={handleLinkSuccess}
+        />
       </div>
     </div>
   );
