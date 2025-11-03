@@ -62,27 +62,44 @@ export function BillsHeroMetrics({
           {/* Stacked Bar Chart */}
           <div className="flex-1 w-full">
             <ResponsiveContainer width="100%" height={80}>
-              <BarChart data={chartData} layout="vertical">
+              <BarChart data={chartData} layout="vertical" barSize={40}>
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="paidViaHSA" stackId="a" fill="hsl(var(--muted))" radius={[4, 0, 0, 4]} />
-                <Bar dataKey="paidOther" stackId="a" fill="hsl(var(--primary))" />
-                <Bar dataKey="unpaid" stackId="a" fill="hsl(var(--chart-5))" radius={[0, 4, 4, 0]} />
+                <Bar 
+                  dataKey="paidViaHSA" 
+                  stackId="a" 
+                  fill="hsl(142 76% 36%)" 
+                  radius={[4, 0, 0, 4]}
+                  minPointSize={totalBilled === 0 ? 0 : 1}
+                />
+                <Bar 
+                  dataKey="paidOther" 
+                  stackId="a" 
+                  fill="hsl(38 92% 50%)"
+                  minPointSize={totalBilled === 0 ? 0 : 1}
+                />
+                <Bar 
+                  dataKey="unpaid" 
+                  stackId="a" 
+                  fill="hsl(25 95% 53%)" 
+                  radius={[0, 4, 4, 0]}
+                  minPointSize={totalBilled === 0 ? 40 : 1}
+                />
               </BarChart>
             </ResponsiveContainer>
             
             {/* Legend */}
             <div className="flex flex-wrap gap-4 mt-4 text-sm">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded bg-muted" />
-                <span className="text-muted-foreground">Paid via HSA ({paidViaHSAPercent.toFixed(0)}%)</span>
+                <div className="w-3 h-3 rounded" style={{ backgroundColor: "hsl(142 76% 36%)" }} />
+                <span className="text-muted-foreground">Paid via HSA ({paidViaHSAPercent.toFixed(0)}%) - Tax savings maximized ✓</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded bg-primary" />
-                <span className="text-muted-foreground">Paid Other ({paidOtherPercent.toFixed(0)}%)</span>
+                <div className="w-3 h-3 rounded" style={{ backgroundColor: "hsl(38 92% 50%)" }} />
+                <span className="text-muted-foreground">Paid Other ({paidOtherPercent.toFixed(0)}%) - Ready to reimburse</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded" style={{ backgroundColor: "hsl(var(--chart-5))" }} />
-                <span className="text-muted-foreground">Unpaid ({unpaidPercent.toFixed(0)}%)</span>
+                <div className="w-3 h-3 rounded" style={{ backgroundColor: "hsl(25 95% 53%)" }} />
+                <span className="text-muted-foreground">Unpaid ({unpaidPercent.toFixed(0)}%) - Opportunity for rewards</span>
               </div>
             </div>
           </div>
@@ -95,7 +112,7 @@ export function BillsHeroMetrics({
             </div>
             <div className="text-right border-t pt-3">
               <p className="text-sm text-muted-foreground mb-1">Eligible for HSA Reimbursement</p>
-              <p className="text-3xl font-bold text-primary">${hsaEligible.toFixed(2)}</p>
+              <p className="text-3xl font-bold" style={{ color: "hsl(38 92% 50%)" }}>${hsaEligible.toFixed(2)}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 {totalBilled > 0 ? ((hsaEligible / totalBilled) * 100).toFixed(0) : 0}% of total
               </p>
