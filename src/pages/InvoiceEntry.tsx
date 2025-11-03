@@ -276,6 +276,10 @@ const InvoiceEntry = () => {
             Dashboard
           </button>
           <span>/</span>
+          <button onClick={() => navigate("/invoice-payment-list")} className="hover:text-foreground">
+            Bills
+          </button>
+          <span>/</span>
           <span className="text-foreground">{isEditMode ? "Edit Bill" : "Add Bill"}</span>
         </div>
 
