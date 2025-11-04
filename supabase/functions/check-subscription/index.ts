@@ -73,15 +73,32 @@ serve(async (req) => {
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      
+      // Safely handle subscription end date
+      if (subscription.current_period_end) {
+        try {
+          subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+        } catch (dateError) {
+          logStep("Error parsing subscription end date", { error: dateError, raw: subscription.current_period_end });
+          subscriptionEnd = null;
+        }
+      }
+      
       logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
       productId = subscription.items.data[0].price.product as string;
       
       // Determine tier based on product ID
-      const product = await stripe.products.retrieve(productId);
-      if (product.name.toLowerCase().includes('premium')) {
-        tier = 'premium';
-      } else if (product.name.toLowerCase().includes('plus')) {
+      try {
+        const product = await stripe.products.retrieve(productId);
+        logStep("Retrieved product", { productName: product.name });
+        
+        if (product.name.toLowerCase().includes('premium')) {
+          tier = 'premium';
+        } else if (product.name.toLowerCase().includes('plus')) {
+          tier = 'plus';
+        }
+      } catch (productError) {
+        logStep("Error retrieving product, defaulting to plus", { error: productError });
         tier = 'plus';
       }
       
