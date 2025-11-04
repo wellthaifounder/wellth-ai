@@ -19,6 +19,7 @@ import { AnalyticsSettings, AnalyticsAssumptions } from "@/components/analytics/
 import { TimeRangeFilter, TimeRange } from "@/components/analytics/TimeRangeFilter";
 import { GoalSetting } from "@/components/analytics/GoalSetting";
 import { ExportAnalytics } from "@/components/analytics/ExportAnalytics";
+import { TaxPackageExport } from "@/components/analytics/TaxPackageExport";
 import { Benchmarking } from "@/components/analytics/Benchmarking";
 import { AIInsights } from "@/components/analytics/AIInsights";
 import { DateRange } from "react-day-picker";
@@ -265,6 +266,7 @@ const Analytics = () => {
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="insights">Insights</TabsTrigger>
               <TabsTrigger value="goals">Goals</TabsTrigger>
+              <TabsTrigger value="tax">Tax Tools</TabsTrigger>
               <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>
               <TabsTrigger value="ai">AI Analysis</TabsTrigger>
             </TabsList>
@@ -507,6 +509,107 @@ const Analytics = () => {
                     avgMonthlyExpenses: stats.avgMonthly,
                   }}
                 />
+              </FeatureGate>
+            </TabsContent>
+
+            <TabsContent value="tax" className="space-y-6 scroll-mt-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold mb-2">Tax Season Tools</h2>
+                <p className="text-muted-foreground">
+                  Generate IRS-ready documentation for your HSA expenses and tax filing
+                </p>
+              </div>
+
+              <FeatureGate
+                requiredTier="plus"
+                feature="Tax Package Export"
+                description="Get comprehensive IRS-ready documentation including Form 8889 helper worksheet, itemized expenses, and compliance information"
+              >
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <TaxPackageExport />
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Tax Filing Checklist</CardTitle>
+                      <CardDescription>
+                        Everything you need for HSA tax compliance
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-3">
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <span className="text-primary text-xs">1</span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">Download your Tax Package</p>
+                            <p className="text-sm text-muted-foreground">
+                              Use the tool on the left to generate your IRS-ready documentation
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <span className="text-primary text-xs">2</span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">Get Form 1099-SA from your HSA provider</p>
+                            <p className="text-sm text-muted-foreground">
+                              This shows total distributions from your HSA account
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <span className="text-primary text-xs">3</span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">Complete IRS Form 8889</p>
+                            <p className="text-sm text-muted-foreground">
+                              Use the helper worksheet in your tax package to fill in the correct amounts
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <span className="text-primary text-xs">4</span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">Keep documentation for 6 years</p>
+                            <p className="text-sm text-muted-foreground">
+                              IRS requires you to maintain records in case of audit
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-4 border-t">
+                        <p className="text-sm font-medium mb-2">Helpful Resources:</p>
+                        <div className="space-y-2">
+                          <a 
+                            href="https://www.irs.gov/forms-pubs/about-form-8889" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:underline flex items-center gap-1"
+                          >
+                            IRS Form 8889 Instructions →
+                          </a>
+                          <a 
+                            href="https://www.irs.gov/publications/p502" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:underline flex items-center gap-1"
+                          >
+                            IRS Publication 502: Medical Expenses →
+                          </a>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </FeatureGate>
             </TabsContent>
 
