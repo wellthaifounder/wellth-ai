@@ -5,13 +5,16 @@
 ### Starter (Free)
 - **Price:** Free forever
 - **Features:**
-  - Up to 50 expenses/month
+  - Up to 50 bills/month
   - Manual expense entry
   - Basic receipt storage
-  - HSA eligibility checker
+  - Smart HSA categorization
   - Simple reimbursement PDFs
   - Single payment method tracking
   - Basic expense categorization
+  - Basic Wellbie AI assistant (10 messages/month)
+  - Document storage (50 MB)
+  - Single bank account connection
 
 ### Plus ($19/month)
 - **Price:** $19/month ($15/month annual)
@@ -19,13 +22,19 @@
 - **Stripe Product ID:** `prod_TKpNCQqHfKXoYn`
 - **Features:**
   - All Starter features
-  - Unlimited expenses
+  - Unlimited bills/month
   - Receipt OCR automation
-  - Smart categorization
+  - Smart HSA categorization with AI
+  - Wellbie AI assistant (unlimited)
+  - Pre-Purchase Decision Tool
+  - Link transactions to bills
+  - Bank/card integration via Plaid
   - Multiple payment method tracking
   - Rewards optimization alerts
   - **Advanced analytics & reports** (LOCKED)
   - **Benchmarking** (LOCKED)
+  - Goal setting & tracking
+  - Document storage (500 MB)
   - Email support (24hr response)
   - Custom reimbursement templates
   - Bulk actions
@@ -37,15 +46,15 @@
 - **Features:**
   - All Plus features
   - **AI-Powered Insights** (LOCKED)
-  - Auto-submit reimbursements
-  - Bank/card integration (coming soon)
+  - Investment Vault Tracker
+  - Bank/card integration via Plaid
   - Tax optimization reports
   - Multi-year expense tracking
-  - Export to tax software
+  - Export analytics to PDF/CSV
   - Priority support (1hr response)
-  - Custom HSA provider integrations
   - Expense forecasting & planning
-  - API access
+  - Advanced payment strategy modeling
+  - Unlimited document storage
 
 ## Feature Gates Implementation
 
