@@ -311,7 +311,7 @@ const Dashboard = () => {
                 {stats.unreviewedTransactions > 0 && (
                   <ActionCard
                     icon="📋"
-                    title="Things to Review"
+                    title="Transactions to Review"
                     count={stats.unreviewedTransactions}
                     defaultOpen={true}
                   >
