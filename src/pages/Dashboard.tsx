@@ -227,21 +227,83 @@ const Dashboard = () => {
                   <ActionCard
                     icon="💵"
                     title="Money You Can Claim from HSA"
+                    buttonText="Show all reimbursement requests"
                     actions={
                       <Button onClick={() => navigate("/hsa-reimbursement")}>
                         Create Request
                       </Button>
                     }
-                  >
-                    <div className="space-y-4">
-                      <div className="text-center py-6 bg-primary/5 rounded-lg">
-                        <p className="text-lg font-semibold mb-2">
-                          You have ${stats.hsaClaimableAmount.toFixed(2)} ready to reimburse!
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          This gets you your money back 💰
-                        </p>
+                    headerContent={
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-primary/5 rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground mb-1">Available to Claim</p>
+                          <p className="text-2xl font-bold text-primary">
+                            ${stats.hsaClaimableAmount.toFixed(2)}
+                          </p>
+                        </div>
+                        <div className="bg-amber-500/5 rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground mb-1">Pending Requests</p>
+                          <p className="text-2xl font-bold text-amber-600">
+                            ${reimbursementRequests
+                              .filter(r => r.status === 'pending' || r.status === 'submitted')
+                              .reduce((sum, r) => sum + Number(r.total_amount), 0)
+                              .toFixed(2)}
+                          </p>
+                        </div>
                       </div>
+                    }
+                  >
+                    <div className="space-y-3">
+                      {reimbursementRequests.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          No reimbursement requests yet. Create your first one!
+                        </p>
+                      ) : (
+                        <>
+                          {reimbursementRequests.map((request) => (
+                            <div
+                              key={request.id}
+                              className="flex items-center justify-between p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <p className="font-semibold">${Number(request.total_amount).toFixed(2)}</p>
+                                  <span className={`text-xs px-2 py-1 rounded-full ${
+                                    request.status === 'completed' 
+                                      ? 'bg-green-500/10 text-green-600' 
+                                      : request.status === 'submitted'
+                                      ? 'bg-blue-500/10 text-blue-600'
+                                      : 'bg-amber-500/10 text-amber-600'
+                                  }`}>
+                                    {request.status}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {new Date(request.created_at).toLocaleDateString('en-US', { 
+                                    month: 'short', 
+                                    day: 'numeric', 
+                                    year: 'numeric' 
+                                  })}
+                                </p>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => navigate(`/reimbursement-details/${request.id}`)}
+                              >
+                                View
+                              </Button>
+                            </div>
+                          ))}
+                          <Button
+                            variant="outline"
+                            className="w-full mt-2"
+                            onClick={() => navigate("/reimbursement-requests")}
+                          >
+                            View All Requests
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </ActionCard>
                 )}

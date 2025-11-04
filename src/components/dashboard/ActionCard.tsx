@@ -11,9 +11,11 @@ interface ActionCardProps {
   children: React.ReactNode;
   actions?: React.ReactNode;
   defaultOpen?: boolean;
+  headerContent?: React.ReactNode;
+  buttonText?: string;
 }
 
-export function ActionCard({ icon, title, count, children, actions, defaultOpen = false }: ActionCardProps) {
+export function ActionCard({ icon, title, count, children, actions, defaultOpen = false, headerContent, buttonText = 'Show all' }: ActionCardProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
@@ -28,12 +30,17 @@ export function ActionCard({ icon, title, count, children, actions, defaultOpen 
           </div>
           {actions}
         </div>
+        {headerContent && (
+          <div className="mt-4">
+            {headerContent}
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <CollapsibleTrigger asChild>
             <Button variant="ghost" className="w-full justify-between mb-4">
-              <span>{isOpen ? 'Hide details' : 'Show all'}</span>
+              <span>{isOpen ? 'Hide details' : buttonText}</span>
               <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </Button>
           </CollapsibleTrigger>
