@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   Search, 
@@ -120,7 +120,7 @@ export default function HSAEligibility() {
                 />
               </div>
 
-              {/* Filters */}
+              {/* Status Filters */}
               <div className="flex flex-wrap gap-2">
                 <Button
                   variant={selectedStatus === null ? "default" : "outline"}
@@ -175,99 +175,138 @@ export default function HSAEligibility() {
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="browse" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="browse">Browse by Category</TabsTrigger>
-            <TabsTrigger value="results">
-              Search Results ({filteredItems.length})
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Category Browser */}
-          <TabsContent value="browse" className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* Category Filter */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Filter by Category</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={selectedCategory === null ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory(null)}
+              >
+                All Categories
+              </Button>
               {Object.values(CATEGORIES).map((category) => (
-                <Card
+                <Button
                   key={category}
+                  variant={selectedCategory === category ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  {category} ({categoryCounts[category] || 0})
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Active Filters */}
+        {(selectedCategory || selectedStatus) && (
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-sm text-muted-foreground">Active filters:</span>
+            {selectedCategory && (
+              <Badge variant="outline" className="gap-1">
+                {selectedCategory}
+                <button
+                  onClick={() => setSelectedCategory(null)}
+                  className="ml-1 hover:text-destructive"
+                >
+                  ×
+                </button>
+              </Badge>
+            )}
+            {selectedStatus && (
+              <Badge variant="outline" className="gap-1">
+                {getStatusLabel(selectedStatus)}
+                <button
+                  onClick={() => setSelectedStatus(null)}
+                  className="ml-1 hover:text-destructive"
+                >
+                  ×
+                </button>
+              </Badge>
+            )}
+          </div>
+        )}
+
+        {/* Results */}
+        {filteredItems.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6 text-center text-muted-foreground">
+              No items found matching your search criteria.
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="mb-6">
+            <p className="text-sm text-muted-foreground mb-4">
+              Showing {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'}
+            </p>
+            <div className={viewMode === 'grid' ? 'grid gap-4 md:grid-cols-2 lg:grid-cols-3' : 'space-y-3'}>
+              {filteredItems.map((item) => (
+                <Card
+                  key={item.id}
                   className="cursor-pointer hover:border-primary transition-colors"
-                  onClick={() => {
-                    setSelectedCategory(category);
-                    // Switch to results tab to show filtered items
-                    document.querySelector('[value="results"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-                  }}
+                  onClick={() => setSelectedItem(item)}
                 >
                   <CardHeader>
-                    <CardTitle className="text-lg">{category}</CardTitle>
-                    <CardDescription>
-                      {categoryCounts[category] || 0} items
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-lg">{item.name}</CardTitle>
+                      <Badge className={getStatusColor(item.status)}>
+                        {getStatusIcon(item.status)}
+                      </Badge>
+                    </div>
+                    <CardDescription className="line-clamp-2">
+                      {item.description}
                     </CardDescription>
                   </CardHeader>
+                  {viewMode === 'list' && (
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                        <Badge variant="outline">{item.category}</Badge>
+                        {item.requiresLMN && (
+                          <Badge variant="outline" className="gap-1">
+                            <FileText className="h-3 w-3" />
+                            LMN Required
+                          </Badge>
+                        )}
+                      </div>
+                    </CardContent>
+                  )}
                 </Card>
               ))}
             </div>
-          </TabsContent>
+          </div>
+        )}
 
-          {/* Search Results */}
-          <TabsContent value="results" className="space-y-6">
-            {selectedCategory && (
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-sm text-muted-foreground">Category:</span>
-                <Badge variant="outline" className="gap-1">
-                  {selectedCategory}
-                  <button
-                    onClick={() => setSelectedCategory(null)}
-                    className="ml-1 hover:text-destructive"
+        {/* Footer */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <BookOpen className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <div className="space-y-2">
+                <h3 className="font-semibold">Need More Information?</h3>
+                <p className="text-sm text-muted-foreground">
+                  This reference tool covers the most common medical expenses. For complete details and edge cases, 
+                  refer to the full IRS Publication 502 or consult with a tax professional.
+                </p>
+                <div className="flex gap-3">
+                  <a
+                    href="https://www.irs.gov/pub/irs-pdf/p502.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline inline-flex items-center gap-1"
                   >
-                    ×
-                  </button>
-                </Badge>
+                    IRS Publication 502 (PDF)
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
               </div>
-            )}
-
-            {filteredItems.length === 0 ? (
-              <Card>
-                <CardContent className="pt-6 text-center text-muted-foreground">
-                  No items found matching your search criteria.
-                </CardContent>
-              </Card>
-            ) : (
-              <div className={viewMode === 'grid' ? 'grid gap-4 md:grid-cols-2 lg:grid-cols-3' : 'space-y-3'}>
-                {filteredItems.map((item) => (
-                  <Card
-                    key={item.id}
-                    className="cursor-pointer hover:border-primary transition-colors"
-                    onClick={() => setSelectedItem(item)}
-                  >
-                    <CardHeader>
-                      <div className="flex items-start justify-between gap-2">
-                        <CardTitle className="text-lg">{item.name}</CardTitle>
-                        <Badge className={getStatusColor(item.status)}>
-                          {getStatusIcon(item.status)}
-                        </Badge>
-                      </div>
-                      <CardDescription className="line-clamp-2">
-                        {item.description}
-                      </CardDescription>
-                    </CardHeader>
-                    {viewMode === 'list' && (
-                      <CardContent>
-                        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                          <Badge variant="outline">{item.category}</Badge>
-                          {item.requiresLMN && (
-                            <Badge variant="outline" className="gap-1">
-                              <FileText className="h-3 w-3" />
-                              LMN Required
-                            </Badge>
-                          )}
-                        </div>
-                      </CardContent>
-                    )}
-                  </Card>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Item Detail Dialog */}
         {selectedItem && (
@@ -366,32 +405,6 @@ export default function HSAEligibility() {
           </div>
         )}
 
-        {/* Footer */}
-        <Card className="mt-8">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-3">
-              <BookOpen className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-              <div className="space-y-2">
-                <h3 className="font-semibold">Need More Information?</h3>
-                <p className="text-sm text-muted-foreground">
-                  This reference tool covers the most common medical expenses. For complete details and edge cases, 
-                  refer to the full IRS Publication 502 or consult with a tax professional.
-                </p>
-                <div className="flex gap-3">
-                  <a
-                    href="https://www.irs.gov/pub/irs-pdf/p502.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary hover:underline inline-flex items-center gap-1"
-                  >
-                    IRS Publication 502 (PDF)
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
