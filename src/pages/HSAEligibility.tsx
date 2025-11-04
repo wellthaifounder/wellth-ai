@@ -30,7 +30,7 @@ import {
 
 export default function HSAEligibility() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<EligibilityStatus | null>(null);
   const [selectedItem, setSelectedItem] = useState<HSAEligibilityItem | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -42,13 +42,21 @@ export default function HSAEligibility() {
     ? searchEligibilityItems(searchQuery)
     : hsaEligibilityItems;
 
-  if (selectedCategory) {
-    filteredItems = filteredItems.filter(item => item.category === selectedCategory);
+  if (selectedCategories.length > 0) {
+    filteredItems = filteredItems.filter(item => selectedCategories.includes(item.category));
   }
 
   if (selectedStatus) {
     filteredItems = filteredItems.filter(item => item.status === selectedStatus);
   }
+
+  const toggleCategory = (category: string) => {
+    setSelectedCategories(prev => 
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  };
 
   const getStatusColor = (status: EligibilityStatus) => {
     switch (status) {
@@ -179,22 +187,23 @@ export default function HSAEligibility() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-lg">Filter by Category</CardTitle>
+            <CardDescription>Select multiple categories to filter results</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
               <Button
-                variant={selectedCategory === null ? "default" : "outline"}
+                variant={selectedCategories.length === 0 ? "default" : "outline"}
                 size="sm"
-                onClick={() => setSelectedCategory(null)}
+                onClick={() => setSelectedCategories([])}
               >
                 All Categories
               </Button>
               {Object.values(CATEGORIES).map((category) => (
                 <Button
                   key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
+                  variant={selectedCategories.includes(category) ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => toggleCategory(category)}
                 >
                   {category} ({categoryCounts[category] || 0})
                 </Button>
@@ -204,20 +213,20 @@ export default function HSAEligibility() {
         </Card>
 
         {/* Active Filters */}
-        {(selectedCategory || selectedStatus) && (
-          <div className="flex items-center gap-2 mb-4">
+        {(selectedCategories.length > 0 || selectedStatus) && (
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
             <span className="text-sm text-muted-foreground">Active filters:</span>
-            {selectedCategory && (
-              <Badge variant="outline" className="gap-1">
-                {selectedCategory}
+            {selectedCategories.map((category) => (
+              <Badge key={category} variant="outline" className="gap-1">
+                {category}
                 <button
-                  onClick={() => setSelectedCategory(null)}
+                  onClick={() => toggleCategory(category)}
                   className="ml-1 hover:text-destructive"
                 >
                   ×
                 </button>
               </Badge>
-            )}
+            ))}
             {selectedStatus && (
               <Badge variant="outline" className="gap-1">
                 {getStatusLabel(selectedStatus)}
