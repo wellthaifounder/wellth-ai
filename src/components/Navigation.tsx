@@ -23,6 +23,9 @@ export const Navigation = () => {
           <a href="/#how-it-works" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
             How It Works
           </a>
+          <a href="/hsa-eligibility" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+            HSA Guide
+          </a>
           <a href="/#pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
             Pricing
           </a>

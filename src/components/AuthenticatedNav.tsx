@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { WellthLogo } from "@/components/WellthLogo";
-import { LogOut, Calculator, Receipt, FileText, BarChart3, Wallet, Plus, Menu, Settings, X, Home, Building2 } from "lucide-react";
+import { LogOut, Calculator, Receipt, FileText, BarChart3, Wallet, Plus, Menu, Settings, X, Home, Building2, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
@@ -36,6 +36,7 @@ export const AuthenticatedNav = ({ unreviewedTransactions = 0 }: AuthenticatedNa
     { icon: FileText, label: "Bills", path: "/invoices" },
     { icon: FileText, label: "Documents", path: "/documents" },
     { icon: BarChart3, label: "Analytics", path: "/analytics" },
+    { icon: BookOpen, label: "HSA Eligibility", path: "/hsa-eligibility" },
     { icon: Wallet, label: "Payment Methods", path: "/payment-methods" },
     { icon: Building2, label: "Bank Accounts", path: "/bank-accounts" },
     { icon: FileText, label: "HSA Requests", path: "/reimbursement-requests" },
