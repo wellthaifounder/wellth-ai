@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { WellbieAvatar } from "./WellbieAvatar";
 import { WellbieChatPanel } from "./WellbieChatPanel";
 import { useWellbieChat } from "@/hooks/useWellbieChat";
@@ -33,6 +33,16 @@ export const WellbieChat = () => {
     setIsOpen(true);
     setIsMinimized(false);
   };
+
+  // Listen for custom event to open Wellbie chat
+  useEffect(() => {
+    const handleOpenWellbie = () => {
+      handleOpen();
+    };
+
+    window.addEventListener('openWellbieChat', handleOpenWellbie);
+    return () => window.removeEventListener('openWellbieChat', handleOpenWellbie);
+  }, []);
 
   return (
     <>

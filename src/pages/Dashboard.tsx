@@ -248,11 +248,7 @@ const Dashboard = () => {
                       <Button 
                         variant="outline"
                         onClick={() => {
-                          // Scroll to Wellbie chat if it exists on the page
-                          const wellbieChat = document.querySelector('[data-wellbie-chat]');
-                          if (wellbieChat) {
-                            wellbieChat.scrollIntoView({ behavior: 'smooth' });
-                          }
+                          window.dispatchEvent(new CustomEvent('openWellbieChat'));
                         }}
                         className="flex-1"
                       >
