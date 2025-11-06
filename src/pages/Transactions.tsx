@@ -15,6 +15,7 @@ import { ReviewQueue } from "@/components/transactions/ReviewQueue";
 import { AdvancedFilters, type FilterCriteria } from "@/components/transactions/AdvancedFilters";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 import { MissingHSADateBanner } from "@/components/dashboard/MissingHSADateBanner";
+import { TransactionsSkeleton } from "@/components/skeletons/TransactionsSkeleton";
 
 type Transaction = {
   id: string;
@@ -325,9 +326,9 @@ export default function Transactions() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-3">
-        <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-muted-foreground">Loading transactions...</p>
+      <div className="min-h-screen bg-background">
+        <AuthenticatedNav unreviewedTransactions={0} />
+        <TransactionsSkeleton />
       </div>
     );
   }

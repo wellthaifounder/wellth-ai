@@ -13,6 +13,7 @@ import { ActionCard } from "@/components/dashboard/ActionCard";
 import { WellbieTip } from "@/components/dashboard/WellbieTip";
 import { EmptyStateOnboarding } from "@/components/dashboard/EmptyStateOnboarding";
 import { MissingHSADateBanner } from "@/components/dashboard/MissingHSADateBanner";
+import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { getNextAction } from "@/lib/dashboardActions";
 import { calculateProgress, getProgressSteps } from "@/lib/userProgress";
 import { calculateVaultSummary } from "@/lib/vaultCalculations";
@@ -175,8 +176,9 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-background">
+        <AuthenticatedNav unreviewedTransactions={0} />
+        <DashboardSkeleton />
       </div>
     );
   }

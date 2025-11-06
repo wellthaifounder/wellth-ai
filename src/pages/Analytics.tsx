@@ -22,6 +22,7 @@ import { ExportAnalytics } from "@/components/analytics/ExportAnalytics";
 import { TaxPackageExport } from "@/components/analytics/TaxPackageExport";
 import { Benchmarking } from "@/components/analytics/Benchmarking";
 import { AIInsights } from "@/components/analytics/AIInsights";
+import { AnalyticsSkeleton } from "@/components/skeletons/AnalyticsSkeleton";
 import { DateRange } from "react-day-picker";
 import { startOfYear, subMonths } from "date-fns";
 
@@ -212,9 +213,9 @@ const Analytics = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-3">
-        <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-muted-foreground">Loading analytics...</p>
+      <div className="min-h-screen bg-background">
+        <AuthenticatedNav />
+        <AnalyticsSkeleton />
       </div>
     );
   }
