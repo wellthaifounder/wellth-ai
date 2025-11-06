@@ -56,6 +56,9 @@ export const Navigation = () => {
           <a href="/#pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
             Pricing
           </a>
+          <a href="/install" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+            Install App
+          </a>
         </nav>
         
         {/* Desktop Auth Buttons */}
@@ -142,6 +145,19 @@ export const Navigation = () => {
                     className="text-lg font-medium text-foreground transition-colors hover:text-primary py-2 px-4 rounded-md hover:bg-accent"
                   >
                     Pricing
+                  </a>
+                </SheetClose>
+                
+                <SheetClose asChild>
+                  <a
+                    href="/install"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavClick('/install');
+                    }}
+                    className="text-lg font-medium text-foreground transition-colors hover:text-primary py-2 px-4 rounded-md hover:bg-accent"
+                  >
+                    Install App
                   </a>
                 </SheetClose>
               </div>

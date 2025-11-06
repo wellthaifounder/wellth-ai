@@ -13,6 +13,7 @@ import Calculator from "./pages/Calculator";
 import Dashboard from "./pages/Dashboard";
 import ExpenseEntry from "./pages/ExpenseEntry";
 import ExpenseList from "./pages/ExpenseList";
+import Install from "./pages/Install";
 import ExpenseDecision from "./pages/ExpenseDecision";
 import SimpleExpenseEntry from "./pages/SimpleExpenseEntry";
 import InvoiceEntry from "./pages/InvoiceEntry";
@@ -78,6 +79,7 @@ const App = () => (
           <Route path="/documents" element={<Documents />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/install" element={<Install />} />
           <Route path="/bank-accounts" element={<BankAccounts />} />
           <Route path="/vault-tracker" element={<VaultTracker />} />
           <Route path="/hsa-eligibility" element={<HSAEligibility />} />

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, User, Mail, Shield, Heart } from "lucide-react";
+import { ArrowLeft, User, Mail, Shield, Heart, Download } from "lucide-react";
 import { toast } from "sonner";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 import { SubscriptionManagement } from "@/components/settings/SubscriptionManagement";
@@ -133,6 +133,26 @@ const Settings = () => {
 
         <div className="space-y-6">
           <SubscriptionManagement />
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Download className="h-5 w-5" />
+                Progressive Web App
+              </CardTitle>
+              <CardDescription>
+                Install Wellth.ai for a native app experience
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Get instant access, offline support, and push notifications by installing Wellth.ai as an app on your device.
+              </p>
+              <Button onClick={() => navigate('/install')} variant="outline">
+                View Installation Guide
+              </Button>
+            </CardContent>
+          </Card>
           
           <Card>
             <CardHeader>
