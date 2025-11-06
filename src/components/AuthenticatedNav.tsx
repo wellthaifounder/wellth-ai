@@ -44,7 +44,7 @@ export const AuthenticatedNav = ({ unreviewedTransactions = 0 }: AuthenticatedNa
   ];
 
   return (
-    <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-50 shadow-sm">
+    <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-[60] shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between gap-2">
           <button 
@@ -102,7 +102,7 @@ export const AuthenticatedNav = ({ unreviewedTransactions = 0 }: AuthenticatedNa
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-background z-[100]">
+              <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-background z-[70]">
                 <SheetHeader className="border-b pb-4 mb-4">
                   <SheetTitle>Menu</SheetTitle>
                 </SheetHeader>

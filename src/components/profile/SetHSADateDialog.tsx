@@ -25,6 +25,12 @@ export function SetHSADateDialog({ open, onOpenChange, onSuccess }: SetHSADateDi
       return;
     }
 
+    // Validate that date is not in the future
+    if (date > new Date()) {
+      toast.error("HSA opened date cannot be in the future");
+      return;
+    }
+
     try {
       setSaving(true);
       const { data: { user } } = await supabase.auth.getUser();

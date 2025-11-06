@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { WellthLogo } from "./WellthLogo";
 
 export const Navigation = () => {
+  const navigate = useNavigate();
   return (
     <nav className="sticky top-0 z-50 border-b border-border/40 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -32,10 +33,10 @@ export const Navigation = () => {
         </div>
         
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => window.location.href = '/auth'}>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/auth')}>
             Sign In
           </Button>
-          <Button size="sm" onClick={() => window.location.href = '/auth'}>
+          <Button size="sm" onClick={() => navigate('/auth')}>
             Get Started
           </Button>
         </div>

@@ -50,7 +50,7 @@ export const WellbieChat = () => {
       <button
         onClick={handleOpen}
         className={cn(
-          "fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 rounded-full bg-primary shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+          "fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[55] rounded-full bg-primary shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
           isOpen && "hidden"
         )}
         aria-label="Open Wellbie chat"
@@ -65,13 +65,13 @@ export const WellbieChat = () => {
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 animate-fade-in"
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[50] animate-fade-in"
             onClick={handleClose}
             aria-hidden="true"
           />
           
           {/* Chat Panel - Fully responsive */}
-          <div className="fixed inset-4 sm:bottom-6 sm:right-6 sm:top-auto sm:left-auto sm:w-[90vw] sm:max-w-[400px] sm:h-[85vh] sm:max-h-[600px] z-50 animate-slide-in-right">
+          <div className="fixed inset-4 sm:bottom-6 sm:right-6 sm:top-auto sm:left-auto sm:w-[90vw] sm:max-w-[400px] sm:h-[85vh] sm:max-h-[600px] z-[55] animate-slide-in-right">
             <WellbieChatPanel
               conversations={conversations}
               currentConversationId={currentConversationId}
@@ -93,7 +93,7 @@ export const WellbieChat = () => {
       {isMinimized && (
         <button
           onClick={handleOpen}
-          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 bg-card border border-border rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 p-2 sm:p-3 flex items-center gap-2 hover:bg-accent"
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[55] bg-card border border-border rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 p-2 sm:p-3 flex items-center gap-2 hover:bg-accent"
         >
           <WellbieAvatar size="sm" />
           <span className="text-xs sm:text-sm font-medium">Wellbie</span>

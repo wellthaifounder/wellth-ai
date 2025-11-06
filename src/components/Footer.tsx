@@ -20,18 +20,18 @@ export const Footer = () => {
           <div>
             <h3 className="mb-4 text-sm font-semibold">Product</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground">Features</a></li>
-              <li><a href="#" className="hover:text-foreground">Pricing</a></li>
-              <li><a href="#" className="hover:text-foreground">FAQ</a></li>
+              <li><a href="/#features" className="hover:text-foreground">Features</a></li>
+              <li><a href="/#pricing" className="hover:text-foreground">Pricing</a></li>
+              <li><a href="/#how-it-works" className="hover:text-foreground">How It Works</a></li>
             </ul>
           </div>
           
           <div>
-            <h3 className="mb-4 text-sm font-semibold">Company</h3>
+            <h3 className="mb-4 text-sm font-semibold">Resources</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground">About</a></li>
-              <li><a href="#" className="hover:text-foreground">Privacy</a></li>
-              <li><a href="#" className="hover:text-foreground">Terms</a></li>
+              <li><a href="/hsa-eligibility" className="hover:text-foreground">HSA Guide</a></li>
+              <li><a href="/calculator" className="hover:text-foreground">Savings Calculator</a></li>
+              <li><a href="/auth" className="hover:text-foreground">Sign In</a></li>
             </ul>
           </div>
         </div>
