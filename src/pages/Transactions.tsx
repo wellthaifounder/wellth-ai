@@ -16,6 +16,7 @@ import { AdvancedFilters, type FilterCriteria } from "@/components/transactions/
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 import { MissingHSADateBanner } from "@/components/dashboard/MissingHSADateBanner";
 import { TransactionsSkeleton } from "@/components/skeletons/TransactionsSkeleton";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 type Transaction = {
   id: string;
@@ -334,135 +335,144 @@ export default function Transactions() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <AuthenticatedNav unreviewedTransactions={stats.unlinked} />
-      
-      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-6xl">
-        {!hsaOpenedDate && <MissingHSADateBanner onDateSet={fetchHSADate} />}
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Transactions</h1>
-              <p className="text-muted-foreground mt-1">
-                Track and categorize all your financial transactions
-              </p>
+    <ErrorBoundary
+      fallbackTitle="Transactions Error"
+      fallbackDescription="We encountered an error loading your transactions. Your data is safe. Please try again."
+      onReset={() => {
+        setLoading(true);
+        fetchTransactions();
+      }}
+    >
+      <div className="min-h-screen bg-background">
+        <AuthenticatedNav unreviewedTransactions={stats.unlinked} />
+        
+        <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-6xl">
+          {!hsaOpenedDate && <MissingHSADateBanner onDateSet={fetchHSADate} />}
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-foreground">Transactions</h1>
+                <p className="text-muted-foreground mt-1">
+                  Track and categorize all your financial transactions
+                </p>
+              </div>
+              <Button onClick={() => setAddDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Transaction
+              </Button>
             </div>
-            <Button onClick={() => setAddDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Transaction
-            </Button>
           </div>
-        </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card className="p-4">
-            <p className="text-sm text-muted-foreground">Total Transactions</p>
-            <p className="text-2xl font-bold text-foreground">{stats.total}</p>
-          </Card>
-          <Card className="p-4">
-            <p className="text-sm text-muted-foreground">Medical</p>
-            <p className="text-2xl font-bold text-primary">{stats.medical}</p>
-          </Card>
-          <Card className="p-4">
-            <p className="text-sm text-muted-foreground">Needs Review</p>
-            <p className="text-2xl font-bold text-yellow-600">{stats.unlinked}</p>
-          </Card>
-          <Card className="p-4">
-            <p className="text-sm text-muted-foreground">Medical Total</p>
-            <p className="text-2xl font-bold text-foreground">
-              ${stats.medicalAmount.toFixed(2)}
-            </p>
-          </Card>
-        </div>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <Card className="p-4">
+              <p className="text-sm text-muted-foreground">Total Transactions</p>
+              <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+            </Card>
+            <Card className="p-4">
+              <p className="text-sm text-muted-foreground">Medical</p>
+              <p className="text-2xl font-bold text-primary">{stats.medical}</p>
+            </Card>
+            <Card className="p-4">
+              <p className="text-sm text-muted-foreground">Needs Review</p>
+              <p className="text-2xl font-bold text-yellow-600">{stats.unlinked}</p>
+            </Card>
+            <Card className="p-4">
+              <p className="text-sm text-muted-foreground">Medical Total</p>
+              <p className="text-2xl font-bold text-foreground">
+                ${stats.medicalAmount.toFixed(2)}
+              </p>
+            </Card>
+          </div>
 
-        {/* Search and Filters */}
-        <div className="flex gap-3 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Search by vendor, description, or amount..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+          {/* Search and Filters */}
+          <div className="flex gap-3 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Search by vendor, description, or amount..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <AdvancedFilters 
+              onFilterChange={setAdvancedFilters}
+              activeFilters={advancedFilters}
             />
           </div>
-          <AdvancedFilters 
-            onFilterChange={setAdvancedFilters}
-            activeFilters={advancedFilters}
-          />
+
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-6">
+              <TabsTrigger value="review">
+                Review Queue {stats.unlinked > 0 && `(${stats.unlinked})`}
+              </TabsTrigger>
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="medical">Medical</TabsTrigger>
+              <TabsTrigger value="non-medical">Non-Medical</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="review" className="space-y-4">
+              <ReviewQueue />
+            </TabsContent>
+
+            <TabsContent value={activeTab} className="space-y-4">
+              {filteredTransactions.length === 0 ? (
+                <Card className="p-12 text-center">
+                  <p className="text-muted-foreground">No transactions found</p>
+                  <Button
+                    onClick={() => setAddDialogOpen(true)}
+                    variant="outline"
+                    className="mt-4"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Your First Transaction
+                  </Button>
+                </Card>
+              ) : (
+                <div className="space-y-3">
+                  {filteredTransactions.map((transaction) => (
+                    <div key={transaction.id}>
+                      <TransactionCard
+                        id={transaction.id}
+                        date={transaction.transaction_date}
+                        vendor={transaction.vendor || "Unknown"}
+                        amount={transaction.amount}
+                        description={transaction.description}
+                        isMedical={transaction.is_medical}
+                        reconciliationStatus={transaction.reconciliation_status as any}
+                        isHsaEligible={transaction.is_hsa_eligible}
+                        isFromHsaAccount={transaction.payment_methods?.is_hsa_account || false}
+                        onViewDetails={() => handleViewDetails(transaction)}
+                        onMarkMedical={() => handleMarkMedical(transaction)}
+                        onLinkToInvoice={() => handleLinkToInvoice(transaction)}
+                        onToggleMedical={() => handleToggleMedical(transaction)}
+                        onIgnore={() => handleIgnore(transaction)}
+                        onUnignore={() => handleUnignore(transaction)}
+                        onAddToReviewQueue={() => handleAddToReviewQueue(transaction)}
+                      />
+                      {expandedTransactionId === transaction.id && (
+                        <TransactionInlineDetail
+                          transaction={transaction}
+                          onClose={() => setExpandedTransactionId(null)}
+                          onUpdate={fetchTransactions}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
-            <TabsTrigger value="review">
-              Review Queue {stats.unlinked > 0 && `(${stats.unlinked})`}
-            </TabsTrigger>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="medical">Medical</TabsTrigger>
-            <TabsTrigger value="non-medical">Non-Medical</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="review" className="space-y-4">
-            <ReviewQueue />
-          </TabsContent>
-
-          <TabsContent value={activeTab} className="space-y-4">
-            {filteredTransactions.length === 0 ? (
-              <Card className="p-12 text-center">
-                <p className="text-muted-foreground">No transactions found</p>
-                <Button
-                  onClick={() => setAddDialogOpen(true)}
-                  variant="outline"
-                  className="mt-4"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Your First Transaction
-                </Button>
-              </Card>
-            ) : (
-              <div className="space-y-3">
-                {filteredTransactions.map((transaction) => (
-                  <div key={transaction.id}>
-                    <TransactionCard
-                      id={transaction.id}
-                      date={transaction.transaction_date}
-                      vendor={transaction.vendor || "Unknown"}
-                      amount={transaction.amount}
-                      description={transaction.description}
-                      isMedical={transaction.is_medical}
-                      reconciliationStatus={transaction.reconciliation_status as any}
-                      isHsaEligible={transaction.is_hsa_eligible}
-                      isFromHsaAccount={transaction.payment_methods?.is_hsa_account || false}
-                      onViewDetails={() => handleViewDetails(transaction)}
-                      onMarkMedical={() => handleMarkMedical(transaction)}
-                      onLinkToInvoice={() => handleLinkToInvoice(transaction)}
-                      onToggleMedical={() => handleToggleMedical(transaction)}
-                      onIgnore={() => handleIgnore(transaction)}
-                      onUnignore={() => handleUnignore(transaction)}
-                      onAddToReviewQueue={() => handleAddToReviewQueue(transaction)}
-                    />
-                    {expandedTransactionId === transaction.id && (
-                      <TransactionInlineDetail
-                        transaction={transaction}
-                        onClose={() => setExpandedTransactionId(null)}
-                        onUpdate={fetchTransactions}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+        <QuickAddTransactionDialog
+          open={addDialogOpen}
+          onOpenChange={setAddDialogOpen}
+          onSuccess={fetchTransactions}
+        />
       </div>
-
-      <QuickAddTransactionDialog
-        open={addDialogOpen}
-        onOpenChange={setAddDialogOpen}
-        onSuccess={fetchTransactions}
-      />
-    </div>
+    </ErrorBoundary>
   );
 }

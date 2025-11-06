@@ -23,6 +23,7 @@ import { TaxPackageExport } from "@/components/analytics/TaxPackageExport";
 import { Benchmarking } from "@/components/analytics/Benchmarking";
 import { AIInsights } from "@/components/analytics/AIInsights";
 import { AnalyticsSkeleton } from "@/components/skeletons/AnalyticsSkeleton";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DateRange } from "react-day-picker";
 import { startOfYear, subMonths } from "date-fns";
 
@@ -221,421 +222,297 @@ const Analytics = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <AuthenticatedNav />
+    <ErrorBoundary
+      fallbackTitle="Analytics Error"
+      fallbackDescription="We encountered an error loading your analytics. Your data is safe. Please try again."
+      onReset={() => {
+        setLoading(true);
+        fetchAnalytics();
+      }}
+    >
+      <div className="min-h-screen bg-background">
+        <AuthenticatedNav />
 
-      <main className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-7xl">
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <Button variant="ghost" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
-        </div>
-        
-        <div className="mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Analytics</h1>
-              <p className="text-muted-foreground">
-                Insights into your bills, payments, and HSA savings
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <AnalyticsSettings 
-                assumptions={assumptions} 
-                onUpdate={handleAssumptionsUpdate}
-              />
-            </div>
+        <main className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-7xl">
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <Button variant="ghost" onClick={() => navigate("/dashboard")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
           </div>
           
-          {hasData && (
-            <div className="mt-4">
-              <TimeRangeFilter
-                selectedRange={timeRange}
-                customDateRange={customDateRange}
-                onRangeChange={setTimeRange}
-                onCustomDateChange={setCustomDateRange}
-              />
-            </div>
-          )}
-        </div>
-
-        {!hasData ? (
-          <AnalyticsEmptyState />
-        ) : (
-          <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="inline-flex w-full justify-start overflow-x-auto">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="insights">Insights</TabsTrigger>
-              <TabsTrigger value="goals">Goals</TabsTrigger>
-              <TabsTrigger value="tax">Tax Tools</TabsTrigger>
-              <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>
-              <TabsTrigger value="ai">AI Analysis</TabsTrigger>
-            </TabsList>
-
-            <div className="flex justify-end">
-              <ExportAnalytics
-                data={{
-                  stats,
-                  monthlyData,
-                  categoryData,
-                  paymentMethodsRewards,
-                  yearlyData,
-                }}
-                dateRange={
-                  timeRange === "ytd" ? "Year to Date" :
-                  timeRange === "last12" ? "Last 12 Months" :
-                  timeRange === "custom" && customDateRange?.from ? 
-                    `${customDateRange.from.toLocaleDateString()} - ${customDateRange.to?.toLocaleDateString() || ""}` :
-                  "All Time"
-                }
-              />
-            </div>
-
-            <TabsContent value="overview" className="space-y-6">
-            <div className="grid gap-4 md:gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-
-            <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Invoiced</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${stats.totalExpenses.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">HSA Eligible</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${stats.hsaEligible.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Projected Savings</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${stats.projectedSavings.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">Not yet reimbursed</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Actual Savings</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${stats.actualSavings.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">From reimbursements</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg Monthly</CardTitle>
-              <PieChart className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${stats.avgMonthly.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-            </div>
-
-        <div className="grid gap-6 lg:grid-cols-2 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Monthly Bill Trend</CardTitle>
-              <CardDescription>Your bills over time</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
-                  <YAxis stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: 'var(--radius)'
-                    }} 
-                  />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="total" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={2}
-                    name="Total Invoiced"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Invoices by Category</CardTitle>
-              <CardDescription>Breakdown of your invoices</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={categoryData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="category" stroke="hsl(var(--muted-foreground))" />
-                  <YAxis stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: 'var(--radius)'
-                    }} 
-                  />
-                  <Legend />
-                  <Bar dataKey="total" name="Amount">
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-            </div>
-
-            <Card>
-          <CardHeader>
-            <CardTitle>Category Distribution</CardTitle>
-            <CardDescription>Where your money goes</CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center">
-            <ResponsiveContainer width="100%" height={400}>
-              <RechartsPie>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ category, percent }) => `${category}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={120}
-                  fill="hsl(var(--primary))"
-                  dataKey="total"
-                >
-                  {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))', 
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: 'var(--radius)'
-                  }} 
-                />
-              </RechartsPie>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-            </TabsContent>
-
-            <TabsContent value="insights" className="space-y-6 scroll-mt-6">
-              <ExportAnalytics data={{
-                stats,
-                monthlyData,
-                categoryData,
-                paymentMethodsRewards,
-                yearlyData
-              }} />
-              
-              <FeatureGate
-                requiredTier="plus"
-                feature="Advanced Analytics"
-                description="Unlock detailed insights including HSA investment tracking, payment strategy timelines, and year-over-year comparisons"
-              >
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <HSAInvestmentTracker 
-                      unreimbursedTotal={stats.unreimbursedHsaTotal}
-                      investmentReturnRate={assumptions.investmentReturnRate}
-                    />
-                    <ReimbursementTimingOptimizer 
-                      unreimbursedTotal={stats.unreimbursedHsaTotal}
-                      currentTaxBracket={assumptions.currentTaxBracket}
-                      projectedTaxBracket={assumptions.projectedTaxBracket}
-                    />
-                  </div>
-                  
-                  <RewardsOptimizationDashboard paymentMethods={paymentMethodsRewards} />
-                  
-                  <YearOverYearComparison yearlyData={yearlyData} />
-                </div>
-              </FeatureGate>
-            </TabsContent>
-
-            <TabsContent value="goals" className="space-y-6">
-              <GoalSetting 
-                currentStats={{
-                  totalExpenses: stats.totalExpenses,
-                  hsaEligible: stats.hsaEligible,
-                  unreimbursedHsaTotal: stats.unreimbursedHsaTotal,
-                  actualSavings: stats.actualSavings,
-                }}
-              />
-            </TabsContent>
-
-            <TabsContent value="benchmarks" className="space-y-6 scroll-mt-6">
-              <FeatureGate
-                requiredTier="plus"
-                feature="Benchmarking"
-                description="Compare your performance against industry averages and top performers"
-              >
-                <Benchmarking
-                  userStats={{
-                    savingsRate: stats.totalExpenses > 0 
-                      ? ((stats.actualSavings + stats.projectedSavings) / stats.totalExpenses) * 100 
-                      : 0,
-                    rewardsRate: paymentMethodsRewards.length > 0
-                      ? paymentMethodsRewards.reduce((sum, pm) => sum + pm.rewardsRate, 0) / paymentMethodsRewards.length
-                      : assumptions.defaultRewardsRate,
-                    hsaUtilization: stats.totalExpenses > 0
-                      ? (stats.hsaEligible / stats.totalExpenses) * 100
-                      : 0,
-                    avgMonthlyExpenses: stats.avgMonthly,
-                  }}
-                />
-              </FeatureGate>
-            </TabsContent>
-
-            <TabsContent value="tax" className="space-y-6 scroll-mt-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold mb-2">Tax Season Tools</h2>
+          <div className="mb-8">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
+              <div>
+                <h1 className="text-3xl font-bold mb-2">Analytics</h1>
                 <p className="text-muted-foreground">
-                  Generate IRS-ready documentation for your HSA expenses and tax filing
+                  Insights into your bills, payments, and HSA savings
                 </p>
               </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <AnalyticsSettings 
+                  assumptions={assumptions} 
+                  onUpdate={handleAssumptionsUpdate}
+                />
+              </div>
+            </div>
+            
+            {hasData && (
+              <div className="mt-4">
+                <TimeRangeFilter
+                  selectedRange={timeRange}
+                  customDateRange={customDateRange}
+                  onRangeChange={setTimeRange}
+                  onCustomDateChange={setCustomDateRange}
+                />
+              </div>
+            )}
+          </div>
 
-              <FeatureGate
-                requiredTier="plus"
-                feature="Tax Package Export"
-                description="Get comprehensive IRS-ready documentation including Form 8889 helper worksheet, itemized expenses, and compliance information"
-              >
-                <div className="grid gap-6 lg:grid-cols-2">
-                  <TaxPackageExport />
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Tax Filing Checklist</CardTitle>
-                      <CardDescription>
-                        Everything you need for HSA tax compliance
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-3">
-                        <div className="flex items-start gap-3">
-                          <div className="mt-0.5 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <span className="text-primary text-xs">1</span>
-                          </div>
-                          <div>
-                            <p className="font-medium text-sm">Download your Tax Package</p>
-                            <p className="text-sm text-muted-foreground">
-                              Use the tool on the left to generate your IRS-ready documentation
-                            </p>
-                          </div>
-                        </div>
+          {!hasData ? (
+            <AnalyticsEmptyState />
+          ) : (
+            <Tabs defaultValue="overview" className="space-y-6">
+              <TabsList className="inline-flex w-full justify-start overflow-x-auto">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="insights">Insights</TabsTrigger>
+                <TabsTrigger value="goals">Goals</TabsTrigger>
+                <TabsTrigger value="tax">Tax Tools</TabsTrigger>
+                <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>
+                <TabsTrigger value="ai">AI Analysis</TabsTrigger>
+              </TabsList>
 
-                        <div className="flex items-start gap-3">
-                          <div className="mt-0.5 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <span className="text-primary text-xs">2</span>
-                          </div>
-                          <div>
-                            <p className="font-medium text-sm">Get Form 1099-SA from your HSA provider</p>
-                            <p className="text-sm text-muted-foreground">
-                              This shows total distributions from your HSA account
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-start gap-3">
-                          <div className="mt-0.5 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <span className="text-primary text-xs">3</span>
-                          </div>
-                          <div>
-                            <p className="font-medium text-sm">Complete IRS Form 8889</p>
-                            <p className="text-sm text-muted-foreground">
-                              Use the helper worksheet in your tax package to fill in the correct amounts
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-start gap-3">
-                          <div className="mt-0.5 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <span className="text-primary text-xs">4</span>
-                          </div>
-                          <div>
-                            <p className="font-medium text-sm">Keep documentation for 6 years</p>
-                            <p className="text-sm text-muted-foreground">
-                              IRS requires you to maintain records in case of audit
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="pt-4 border-t">
-                        <p className="text-sm font-medium mb-2">Helpful Resources:</p>
-                        <div className="space-y-2">
-                          <a 
-                            href="https://www.irs.gov/forms-pubs/about-form-8889" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-sm text-primary hover:underline flex items-center gap-1"
-                          >
-                            IRS Form 8889 Instructions →
-                          </a>
-                          <a 
-                            href="https://www.irs.gov/publications/p502" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-sm text-primary hover:underline flex items-center gap-1"
-                          >
-                            IRS Publication 502: Medical Expenses →
-                          </a>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </FeatureGate>
-            </TabsContent>
-
-            <TabsContent value="ai" className="space-y-6 scroll-mt-6">
-              <FeatureGate
-                requiredTier="premium"
-                feature="AI-Powered Insights"
-                description="Get personalized recommendations and actionable insights powered by advanced AI analysis"
-              >
-                <AIInsights 
-                  analyticsData={{
+              <div className="flex justify-end">
+                <ExportAnalytics
+                  data={{
                     stats,
                     monthlyData,
                     categoryData,
                     paymentMethodsRewards,
                     yearlyData,
                   }}
+                  dateRange={
+                    timeRange === "ytd" ? "Year to Date" :
+                    timeRange === "last12" ? "Last 12 Months" :
+                    timeRange === "custom" && customDateRange?.from ? 
+                      `${customDateRange.from.toLocaleDateString()} - ${customDateRange.to?.toLocaleDateString() || ""}` :
+                    "All Time"
+                  }
                 />
-              </FeatureGate>
-            </TabsContent>
-          </Tabs>
-        )}
-      </main>
-    </div>
+              </div>
+
+              <TabsContent value="overview" className="space-y-6">
+              <div className="grid gap-4 md:gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+
+              <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Invoiced</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${stats.totalExpenses.toFixed(2)}</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">HSA Eligible</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${stats.hsaEligible.toFixed(2)}</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Projected Savings</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${stats.projectedSavings.toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground">Not yet reimbursed</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Actual Savings</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${stats.actualSavings.toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground">From reimbursements</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Avg Monthly</CardTitle>
+                <PieChart className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${stats.avgMonthly.toFixed(2)}</div>
+              </CardContent>
+            </Card>
+              </div>
+
+          <div className="grid gap-6 lg:grid-cols-2 mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Monthly Bill Trend</CardTitle>
+                <CardDescription>Your bills over time</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={monthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                    <YAxis stroke="hsl(var(--muted-foreground))" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: 'var(--radius)'
+                      }} 
+                    />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="total" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2}
+                      name="Total Invoiced"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Invoices by Category</CardTitle>
+                <CardDescription>Breakdown of your invoices</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={categoryData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="category" stroke="hsl(var(--muted-foreground))" />
+                    <YAxis stroke="hsl(var(--muted-foreground))" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: 'var(--radius)'
+                      }} 
+                    />
+                    <Legend />
+                    <Bar dataKey="total" name="Amount">
+                      {categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+              </div>
+
+              <Card>
+            <CardHeader>
+              <CardTitle>Category Distribution</CardTitle>
+              <CardDescription>Where your money goes</CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-center">
+              <ResponsiveContainer width="100%" height={400}>
+                <RechartsPie>
+                  <Pie
+                    data={categoryData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ category, percent }) => `${category}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={120}
+                    fill="hsl(var(--primary))"
+                    dataKey="total"
+                  >
+                    {categoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: 'var(--radius)'
+                    }} 
+                  />
+                </RechartsPie>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+              </TabsContent>
+
+              <TabsContent value="insights" className="space-y-6 scroll-mt-6">
+                <HSAInvestmentTracker
+                  unreimbursedTotal={stats.unreimbursedHsaTotal}
+                  investmentReturnRate={assumptions.investmentReturnRate}
+                />
+
+                <ReimbursementTimingOptimizer
+                  unreimbursedTotal={stats.unreimbursedHsaTotal}
+                  currentTaxBracket={assumptions.currentTaxBracket}
+                  projectedTaxBracket={assumptions.projectedTaxBracket}
+                />
+
+                <RewardsOptimizationDashboard paymentMethods={paymentMethodsRewards} />
+
+                <PaymentStrategyTimeline expenses={[]} />
+              </TabsContent>
+
+              <TabsContent value="goals" className="space-y-6">
+                <GoalSetting currentStats={{
+                  totalExpenses: stats.totalExpenses,
+                  hsaEligible: stats.hsaEligible,
+                  unreimbursedHsaTotal: stats.unreimbursedHsaTotal,
+                  actualSavings: stats.actualSavings
+                }} />
+                <YearOverYearComparison yearlyData={yearlyData} />
+              </TabsContent>
+
+              <TabsContent value="tax" className="space-y-6">
+                <TaxPackageExport />
+              </TabsContent>
+
+              <TabsContent value="benchmarks" className="space-y-6">
+                <Benchmarking
+                  userStats={{
+                    savingsRate: stats.hsaEligible / stats.totalExpenses * 100,
+                    rewardsRate: assumptions.defaultRewardsRate,
+                    hsaUtilization: (stats.hsaEligible / stats.totalExpenses) * 100,
+                    avgMonthlyExpenses: stats.avgMonthly,
+                  }}
+                />
+              </TabsContent>
+
+              <TabsContent value="ai" className="space-y-6">
+                <FeatureGate feature="ai_insights" requiredTier="premium">
+                  <AIInsights analyticsData={{
+                    stats,
+                    monthlyData,
+                    categoryData,
+                    paymentMethodsRewards,
+                    yearlyData
+                  }} />
+                </FeatureGate>
+              </TabsContent>
+            </Tabs>
+          )}
+        </main>
+      </div>
+    </ErrorBoundary>
   );
 };
 
