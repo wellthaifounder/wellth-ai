@@ -44,20 +44,21 @@ export const AuthenticatedNav = ({ unreviewedTransactions = 0 }: AuthenticatedNa
   ];
 
   return (
-    <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-[60] shadow-sm">
+    <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-[60] shadow-sm" aria-label="Main navigation">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between gap-2">
           <button 
             onClick={() => navigate("/dashboard")}
             className="flex-shrink-0 hover:opacity-80 transition-opacity"
+            aria-label="Go to dashboard"
           >
             <WellthLogo size="sm" showTagline className="hidden sm:block" />
             <WellthLogo variant="icon" size="sm" className="sm:hidden" />
           </button>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" role="group">
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-1">
+            <nav className="hidden md:flex items-center gap-1" aria-label="Primary navigation">
               {menuItems.slice(0, -1).map((item) => (
                 <Button
                   key={item.path}
@@ -75,46 +76,47 @@ export const AuthenticatedNav = ({ unreviewedTransactions = 0 }: AuthenticatedNa
                   )}
                 </Button>
               ))}
-            </div>
+            </nav>
 
             {/* Quick Add Button */}
-            <Button className="hidden sm:flex" variant="default" size="sm" onClick={() => navigate("/expenses/new")}>
-              <Plus className="h-4 w-4 mr-2" />
+            <Button className="hidden sm:flex" variant="default" size="sm" onClick={() => navigate("/expenses/new")} aria-label="Add new expense entry">
+              <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
               New Entry
             </Button>
-            <Button className="sm:hidden" variant="default" size="icon" onClick={() => navigate("/expenses/new")}>
-              <Plus className="h-4 w-4" />
+            <Button className="sm:hidden" variant="default" size="icon" onClick={() => navigate("/expenses/new")} aria-label="Add new expense entry">
+              <Plus className="h-4 w-4" aria-hidden="true" />
             </Button>
 
             {/* Desktop Settings & Sign Out */}
-            <Button variant="ghost" size="sm" onClick={() => navigate("/settings")} className="hidden md:flex">
-              <Settings className="h-4 w-4" />
+            <Button variant="ghost" size="sm" onClick={() => navigate("/settings")} className="hidden md:flex" aria-label="Account settings">
+              <Settings className="h-4 w-4" aria-hidden="true" />
             </Button>
-            <Button variant="outline" size="sm" onClick={handleSignOut} className="hidden sm:flex">
-              <LogOut className="h-4 w-4 md:mr-2" />
+            <Button variant="outline" size="sm" onClick={handleSignOut} className="hidden sm:flex" aria-label="Sign out of your account">
+              <LogOut className="h-4 w-4 md:mr-2" aria-hidden="true" />
               <span className="hidden md:inline">Sign Out</span>
             </Button>
 
             {/* Mobile Menu */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                  <Menu className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open navigation menu" aria-expanded={mobileMenuOpen}>
+                  <Menu className="h-5 w-5" aria-hidden="true" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-background z-[70]">
                 <SheetHeader className="border-b pb-4 mb-4">
                   <SheetTitle>Menu</SheetTitle>
                 </SheetHeader>
-                <div className="flex flex-col gap-2">
+                <nav className="flex flex-col gap-2" aria-label="Mobile navigation menu">
                   {menuItems.map((item) => (
                     <Button
                       key={item.path}
                       variant="ghost"
                       className="justify-start w-full"
                       onClick={() => handleNavigation(item.path)}
+                      aria-label={item.label}
                     >
-                      <item.icon className="h-5 w-5 mr-3" />
+                      <item.icon className="h-5 w-5 mr-3" aria-hidden="true" />
                       <span className="flex-1 text-left">{item.label}</span>
                       {item.badge && item.badge > 0 && (
                         <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">
@@ -131,12 +133,13 @@ export const AuthenticatedNav = ({ unreviewedTransactions = 0 }: AuthenticatedNa
                         handleSignOut();
                         setMobileMenuOpen(false);
                       }}
+                      aria-label="Sign out of your account"
                     >
-                      <LogOut className="h-5 w-5 mr-3" />
+                      <LogOut className="h-5 w-5 mr-3" aria-hidden="true" />
                       Sign Out
                     </Button>
                   </div>
-                </div>
+                </nav>
               </SheetContent>
             </Sheet>
           </div>

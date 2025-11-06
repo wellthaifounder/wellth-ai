@@ -25,10 +25,10 @@ const steps = [
 
 export const HowItWorks = () => {
   return (
-    <section className="bg-secondary/30 py-20 lg:py-32">
+    <section id="how-it-works" className="bg-secondary/30 py-20 lg:py-32" aria-labelledby="how-it-works-heading">
       <div className="container mx-auto px-4">
         <div className="mx-auto mb-16 max-w-2xl text-center">
-          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 id="how-it-works-heading" className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
             How Wellth.ai Works
           </h2>
           <p className="text-lg text-muted-foreground">
@@ -37,12 +37,12 @@ export const HowItWorks = () => {
         </div>
         
         <div className="mx-auto max-w-5xl">
-          <div className="grid gap-8 md:grid-cols-2 lg:gap-12">
+          <ol className="grid gap-8 md:grid-cols-2 lg:gap-12" aria-label="How Wellth.ai works in 4 steps">
             {steps.map((step, index) => {
               const Icon = step.icon;
               return (
-                <div key={index} className="relative flex gap-6">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg">
+                <li key={index} className="relative flex gap-6">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg" aria-hidden="true">
                     <Icon className="h-6 w-6" />
                   </div>
                   <div>
@@ -52,10 +52,10 @@ export const HowItWorks = () => {
                     <h3 className="mb-2 text-xl font-bold">{step.title}</h3>
                     <p className="text-muted-foreground">{step.description}</p>
                   </div>
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ol>
         </div>
       </div>
     </section>

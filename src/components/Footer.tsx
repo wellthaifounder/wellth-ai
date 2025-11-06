@@ -2,7 +2,7 @@ import { WellthLogo } from "./WellthLogo";
 
 export const Footer = () => {
   return (
-    <footer className="border-t border-border bg-background">
+    <footer className="border-t border-border bg-background" role="contentinfo">
       <div className="container mx-auto px-4 py-12">
         <div className="grid gap-8 md:grid-cols-4">
           <div className="md:col-span-2">
@@ -18,21 +18,25 @@ export const Footer = () => {
           </div>
           
           <div>
-            <h3 className="mb-4 text-sm font-semibold">Product</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="/#features" className="hover:text-foreground">Features</a></li>
-              <li><a href="/#pricing" className="hover:text-foreground">Pricing</a></li>
-              <li><a href="/#how-it-works" className="hover:text-foreground">How It Works</a></li>
-            </ul>
+            <h3 className="mb-4 text-sm font-semibold" id="footer-product">Product</h3>
+            <nav aria-labelledby="footer-product">
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="/#features" className="hover:text-foreground">Features</a></li>
+                <li><a href="/#pricing" className="hover:text-foreground">Pricing</a></li>
+                <li><a href="/#how-it-works" className="hover:text-foreground">How It Works</a></li>
+              </ul>
+            </nav>
           </div>
           
           <div>
-            <h3 className="mb-4 text-sm font-semibold">Resources</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="/hsa-eligibility" className="hover:text-foreground">HSA Guide</a></li>
-              <li><a href="/calculator" className="hover:text-foreground">Savings Calculator</a></li>
-              <li><a href="/auth" className="hover:text-foreground">Sign In</a></li>
-            </ul>
+            <h3 className="mb-4 text-sm font-semibold" id="footer-resources">Resources</h3>
+            <nav aria-labelledby="footer-resources">
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="/hsa-eligibility" className="hover:text-foreground">HSA Guide</a></li>
+                <li><a href="/calculator" className="hover:text-foreground">Savings Calculator</a></li>
+                <li><a href="/auth" className="hover:text-foreground">Sign In</a></li>
+              </ul>
+            </nav>
           </div>
         </div>
       </div>

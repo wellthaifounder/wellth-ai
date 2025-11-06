@@ -36,10 +36,10 @@ const features = [
 
 export const Features = () => {
   return (
-    <section className="py-20 lg:py-32">
+    <section id="features" className="py-20 lg:py-32" aria-labelledby="features-heading">
       <div className="container mx-auto px-4">
         <div className="mx-auto mb-16 max-w-2xl text-center">
-          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 id="features-heading" className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
             Everything You Need to Optimize Healthcare Spending
           </h2>
           <p className="text-lg text-muted-foreground">
@@ -47,13 +47,13 @@ export const Features = () => {
           </p>
         </div>
         
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list" aria-label="Product features">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
-              <Card key={index} className="border-border/50 transition-all hover:shadow-lg">
+              <Card key={index} className="border-border/50 transition-all hover:shadow-lg" role="listitem">
                 <CardHeader>
-                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10" aria-hidden="true">
                     <Icon className="h-6 w-6 text-primary" />
                   </div>
                   <CardTitle>{feature.title}</CardTitle>

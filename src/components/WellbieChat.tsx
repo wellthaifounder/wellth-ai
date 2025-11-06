@@ -53,7 +53,7 @@ export const WellbieChat = () => {
           "fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[55] rounded-full bg-primary shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
           isOpen && "hidden"
         )}
-        aria-label="Open Wellbie chat"
+        aria-label="Open Wellbie AI assistant chat"
       >
         <div className="p-2 sm:p-3">
           <WellbieAvatar size="md" animate={false} />
@@ -94,6 +94,7 @@ export const WellbieChat = () => {
         <button
           onClick={handleOpen}
           className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[55] bg-card border border-border rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 p-2 sm:p-3 flex items-center gap-2 hover:bg-accent"
+          aria-label="Reopen Wellbie AI assistant chat"
         >
           <WellbieAvatar size="sm" />
           <span className="text-xs sm:text-sm font-medium">Wellbie</span>

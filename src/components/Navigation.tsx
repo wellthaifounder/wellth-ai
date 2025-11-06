@@ -5,9 +5,9 @@ import { WellthLogo } from "./WellthLogo";
 export const Navigation = () => {
   const navigate = useNavigate();
   return (
-    <nav className="sticky top-0 z-50 border-b border-border/40 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 shadow-sm">
+    <nav className="sticky top-0 z-50 border-b border-border/40 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 shadow-sm" aria-label="Main navigation">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="cursor-pointer group">
+        <Link to="/" className="cursor-pointer group" aria-label="Wellth home">
           {/* Show full logo on desktop, icon only on mobile */}
           <div className="hidden md:block">
             <WellthLogo size="sm" showTagline className="transition-transform group-hover:scale-105" />
@@ -17,7 +17,7 @@ export const Navigation = () => {
           </div>
         </Link>
         
-        <div className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-8 md:flex" aria-label="Primary navigation">
           <a href="/#features" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
             Features
           </a>
@@ -30,9 +30,9 @@ export const Navigation = () => {
           <a href="/#pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
             Pricing
           </a>
-        </div>
+        </nav>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3" role="group" aria-label="Authentication">
           <Button variant="ghost" size="sm" onClick={() => navigate('/auth')}>
             Sign In
           </Button>

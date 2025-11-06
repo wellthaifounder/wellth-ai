@@ -19,7 +19,7 @@ export const Hero = () => {
   const savings = calculateSavings(representativeProfile);
   const savingsRate = Math.round((savings.total / annualSpending) * 100);
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-primary/80 py-20 lg:py-32">
+    <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-primary/80 py-20 lg:py-32" aria-labelledby="hero-heading">
       <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" />
       
       <div className="container relative mx-auto px-4">
@@ -29,7 +29,7 @@ export const Hero = () => {
             <span className="text-sm font-medium text-white">Smart HSA Management</span>
           </div>
           
-          <h1 className="mb-6 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+          <h1 id="hero-heading" className="mb-6 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
             Stop Overpaying on Healthcare.
             <span className="block bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">
               Start Earning Rewards.
@@ -41,39 +41,47 @@ export const Hero = () => {
             and recommends the smartest payment strategy—saving you 20-40% instantly.
           </p>
           
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row" role="group" aria-label="Call to action">
             <Button
               size="lg"
               className="group bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg shadow-accent/25"
               onClick={() => navigate('/calculator')}
+              aria-label="Calculate your potential healthcare savings"
             >
               See Your Savings Potential
-              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Button>
             <Button
               size="lg"
               variant="outline"
               className="border-white/20 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20"
               onClick={() => navigate('/auth')}
+              aria-label="Sign up for Wellth - I already know my savings potential"
             >
               I Already Know My Savings - Sign Up
             </Button>
           </div>
           
-          <div className="mt-12 grid gap-6 sm:grid-cols-3">
-            <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
-              <DollarSign className="mb-3 h-8 w-8 text-accent" />
-              <h3 className="mb-2 text-2xl font-bold text-white">$1,948</h3>
+          <div className="mt-12 grid gap-6 sm:grid-cols-3" role="list" aria-label="Key savings statistics">
+            <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm" role="listitem">
+              <DollarSign className="mb-3 h-8 w-8 text-accent" aria-hidden="true" />
+              <h3 className="mb-2 text-2xl font-bold text-white">
+                <span className="sr-only">Average annual savings: </span>$1,948
+              </h3>
               <p className="text-sm text-white/80">Average annual savings</p>
             </div>
-            <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
-              <TrendingUp className="mb-3 h-8 w-8 text-accent" />
-              <h3 className="mb-2 text-2xl font-bold text-white">{savingsRate}%</h3>
+            <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm" role="listitem">
+              <TrendingUp className="mb-3 h-8 w-8 text-accent" aria-hidden="true" />
+              <h3 className="mb-2 text-2xl font-bold text-white">
+                <span className="sr-only">Potential savings rate: </span>{savingsRate}%
+              </h3>
               <p className="text-sm text-white/80">Potential savings rate</p>
             </div>
-            <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
-              <Sparkles className="mb-3 h-8 w-8 text-accent" />
-              <h3 className="mb-2 text-2xl font-bold text-white">$800+</h3>
+            <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm" role="listitem">
+              <Sparkles className="mb-3 h-8 w-8 text-accent" aria-hidden="true" />
+              <h3 className="mb-2 text-2xl font-bold text-white">
+                <span className="sr-only">Average annual HSA investment growth: </span>$800+
+              </h3>
               <p className="text-sm text-white/80">Average annual HSA investment growth</p>
             </div>
           </div>
