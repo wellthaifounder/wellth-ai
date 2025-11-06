@@ -96,6 +96,7 @@ export default function Transactions() {
   };
 
   const fetchTransactions = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from("transactions")
@@ -324,8 +325,9 @@ export default function Transactions() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3">
+        <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-muted-foreground">Loading transactions...</p>
       </div>
     );
   }
@@ -334,7 +336,7 @@ export default function Transactions() {
     <div className="min-h-screen bg-background">
       <AuthenticatedNav unreviewedTransactions={stats.unlinked} />
       
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-6xl">
         {!hsaOpenedDate && <MissingHSADateBanner onDateSet={fetchHSADate} />}
         <div className="mb-6">
           <div className="flex items-center justify-between">

@@ -208,7 +208,7 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       <AuthenticatedNav unreviewedTransactions={stats.unreviewedTransactions} />
 
-      <main className="container mx-auto px-4 py-8 space-y-6">
+      <main className="container mx-auto px-4 py-8 pb-24 md:pb-8 space-y-6">
         {!hsaOpenedDate && stats.expenseCount > 0 && <MissingHSADateBanner onDateSet={fetchStats} />}
         
         {isNewUser ? (

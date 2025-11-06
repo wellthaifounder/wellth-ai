@@ -57,7 +57,7 @@ export const AuthenticatedNav = ({ unreviewedTransactions = 0 }: AuthenticatedNa
           
           <div className="flex items-center gap-2">
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-1">
+            <div className="hidden md:flex items-center gap-1">
               {menuItems.slice(0, -1).map((item) => (
                 <Button
                   key={item.path}
@@ -87,7 +87,7 @@ export const AuthenticatedNav = ({ unreviewedTransactions = 0 }: AuthenticatedNa
             </Button>
 
             {/* Desktop Settings & Sign Out */}
-            <Button variant="ghost" size="sm" onClick={() => navigate("/settings")} className="hidden lg:flex">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/settings")} className="hidden md:flex">
               <Settings className="h-4 w-4" />
             </Button>
             <Button variant="outline" size="sm" onClick={handleSignOut} className="hidden sm:flex">
@@ -98,7 +98,7 @@ export const AuthenticatedNav = ({ unreviewedTransactions = 0 }: AuthenticatedNa
             {/* Mobile Menu */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="lg:hidden">
+                <Button variant="ghost" size="icon" className="md:hidden">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>

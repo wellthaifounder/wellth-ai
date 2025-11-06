@@ -39,6 +39,7 @@ const ExpenseList = () => {
   }, []);
 
   const fetchExpenses = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from("invoices")
@@ -247,8 +248,9 @@ const ExpenseList = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3">
+        <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-muted-foreground">Loading expenses...</p>
       </div>
     );
   }
@@ -267,7 +269,7 @@ const ExpenseList = () => {
           </div>
         </div>
       </nav>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
         <div className="flex items-center justify-between mb-6">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
             <ArrowLeft className="h-4 w-4 mr-2" />

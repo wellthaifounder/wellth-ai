@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const CTA = () => {
+  const navigate = useNavigate();
   return (
     <section className="py-20 lg:py-32">
       <div className="container mx-auto px-4">
@@ -17,6 +19,7 @@ export const CTA = () => {
             <Button
               size="lg"
               className="group bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg"
+              onClick={() => navigate('/auth')}
             >
               Start Saving Today - It's Free
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />

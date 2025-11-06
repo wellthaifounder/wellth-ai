@@ -103,8 +103,9 @@ export const AttachDocumentDialog = ({ invoiceId, open, onOpenChange, onAttached
 
         <div className="space-y-3">
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Loading documents...
+            <div className="flex flex-col items-center justify-center py-8 gap-2">
+              <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-sm text-muted-foreground">Loading documents...</p>
             </div>
           ) : receipts.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
