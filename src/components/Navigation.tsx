@@ -50,9 +50,6 @@ export const Navigation = () => {
           <a href="/#how-it-works" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
             How It Works
           </a>
-          <a href="/hsa-eligibility" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-            HSA Guide
-          </a>
           <a href="/#pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
             Pricing
           </a>
@@ -119,19 +116,6 @@ export const Navigation = () => {
                     className="text-lg font-medium text-foreground transition-colors hover:text-primary py-2 px-4 rounded-md hover:bg-accent"
                   >
                     How It Works
-                  </a>
-                </SheetClose>
-                
-                <SheetClose asChild>
-                  <a
-                    href="/hsa-eligibility"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleNavClick('/hsa-eligibility');
-                    }}
-                    className="text-lg font-medium text-foreground transition-colors hover:text-primary py-2 px-4 rounded-md hover:bg-accent"
-                  >
-                    HSA Guide
                   </a>
                 </SheetClose>
                 
