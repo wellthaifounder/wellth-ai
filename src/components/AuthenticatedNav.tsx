@@ -66,10 +66,10 @@ export const AuthenticatedNav = ({ unreviewedTransactions = 0 }: AuthenticatedNa
               <Plus className="h-4 w-4" aria-hidden="true" />
             </Button>
 
-            {/* Menu */}
+            {/* Mobile Menu - only visible on mobile/tablet */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Open navigation menu" aria-expanded={mobileMenuOpen}>
+                <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation menu" aria-expanded={mobileMenuOpen}>
                   <Menu className="h-5 w-5" aria-hidden="true" />
                 </Button>
               </SheetTrigger>

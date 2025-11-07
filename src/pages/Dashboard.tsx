@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, MessageCircle } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
-import { AuthenticatedNav } from "@/components/AuthenticatedNav";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { ProgressTracker } from "@/components/dashboard/ProgressTracker";
 import { FriendlyStatsCards } from "@/components/dashboard/FriendlyStatsCards";
@@ -177,10 +177,9 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <AuthenticatedNav unreviewedTransactions={0} />
+      <AuthenticatedLayout unreviewedTransactions={0}>
         <DashboardSkeleton />
-      </div>
+      </AuthenticatedLayout>
     );
   }
 
@@ -213,10 +212,8 @@ const Dashboard = () => {
       fallbackDescription="We encountered an error loading your dashboard. Your data is safe. Please try again."
       onReset={() => window.location.reload()}
     >
-      <div className="min-h-screen bg-background">
-        <AuthenticatedNav unreviewedTransactions={stats.unreviewedTransactions} />
-
-        <main id="main-content" className="container mx-auto px-4 py-8 pb-24 md:pb-8 space-y-6">
+      <AuthenticatedLayout unreviewedTransactions={stats.unreviewedTransactions}>
+        <div id="main-content" className="container mx-auto px-4 py-8 pb-24 md:pb-8 space-y-6">
           {!hsaOpenedDate && stats.expenseCount > 0 && <MissingHSADateBanner onDateSet={fetchStats} />}
           
           {isNewUser ? (
@@ -451,8 +448,8 @@ const Dashboard = () => {
               </div>
             </>
           )}
-        </main>
-      </div>
+        </div>
+      </AuthenticatedLayout>
     </ErrorBoundary>
   );
 };
