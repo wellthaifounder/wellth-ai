@@ -57,27 +57,6 @@ export const AuthenticatedNav = ({ unreviewedTransactions = 0 }: AuthenticatedNa
           </button>
           
           <div className="flex items-center gap-2" role="group">
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-1" aria-label="Primary navigation">
-              {menuItems.slice(0, -1).map((item) => (
-                <Button
-                  key={item.path}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate(item.path)}
-                  className="relative"
-                >
-                  <item.icon className="h-4 w-4 mr-2" />
-                  {item.label}
-                  {item.badge && item.badge > 0 && (
-                    <span className="ml-1 bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                      {item.badge}
-                    </span>
-                  )}
-                </Button>
-              ))}
-            </nav>
-
             {/* Quick Add Button */}
             <Button className="hidden sm:flex" variant="default" size="sm" onClick={() => navigate("/expenses/new")} aria-label="Add new expense entry">
               <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
@@ -87,19 +66,10 @@ export const AuthenticatedNav = ({ unreviewedTransactions = 0 }: AuthenticatedNa
               <Plus className="h-4 w-4" aria-hidden="true" />
             </Button>
 
-            {/* Desktop Settings & Sign Out */}
-            <Button variant="ghost" size="sm" onClick={() => navigate("/settings")} className="hidden md:flex" aria-label="Account settings">
-              <Settings className="h-4 w-4" aria-hidden="true" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleSignOut} className="hidden sm:flex" aria-label="Sign out of your account">
-              <LogOut className="h-4 w-4 md:mr-2" aria-hidden="true" />
-              <span className="hidden md:inline">Sign Out</span>
-            </Button>
-
-            {/* Mobile Menu */}
+            {/* Menu */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open navigation menu" aria-expanded={mobileMenuOpen}>
+                <Button variant="ghost" size="icon" aria-label="Open navigation menu" aria-expanded={mobileMenuOpen}>
                   <Menu className="h-5 w-5" aria-hidden="true" />
                 </Button>
               </SheetTrigger>
