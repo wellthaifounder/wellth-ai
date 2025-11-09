@@ -25,6 +25,7 @@ const menuItems = [
   { icon: FileText, label: "Bills", path: "/invoices", badgeKey: null },
   { icon: AlertCircle, label: "Bill Reviews", path: "/bill-reviews", badgeKey: "pendingReviews" },
   { icon: Scale, label: "Disputes", path: "/disputes", badgeKey: "activeDisputes" },
+  { icon: Building2, label: "Providers", path: "/providers", badgeKey: null },
   { icon: FileText, label: "Documents", path: "/documents", badgeKey: null },
   { icon: BarChart3, label: "Analytics", path: "/analytics", badgeKey: null },
   { icon: BookOpen, label: "HSA Eligibility", path: "/hsa-eligibility", badgeKey: null },

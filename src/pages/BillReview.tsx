@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowLeft, AlertTriangle, CheckCircle2, TrendingUp } from "lucide-react";
 import { BillErrorCard } from "@/components/bills/BillErrorCard";
 import { PriceBenchmarking } from "@/components/bills/PriceBenchmarking";
+import { ProviderPerformanceCard } from "@/components/bills/ProviderPerformanceCard";
 import { toast } from "sonner";
 
 export default function BillReview() {
@@ -54,6 +55,21 @@ export default function BillReview() {
       return data;
     },
     enabled: !!id
+  });
+
+  // Fetch provider data
+  const { data: providerData } = useQuery({
+    queryKey: ['provider-for-bill', billReview?.invoices?.vendor],
+    queryFn: async () => {
+      if (!billReview?.invoices?.vendor) return null;
+      const { data } = await supabase
+        .from('providers')
+        .select('*')
+        .ilike('name', billReview.invoices.vendor)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!billReview?.invoices?.vendor
   });
 
   const handleStartDispute = () => {
@@ -201,6 +217,9 @@ export default function BillReview() {
             )}
           </div>
         </Card>
+
+        {/* Provider Performance */}
+        {providerData && <ProviderPerformanceCard provider={providerData} />}
 
         {/* Price Benchmarking */}
         <PriceBenchmarking 

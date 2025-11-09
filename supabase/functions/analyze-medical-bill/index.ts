@@ -272,6 +272,20 @@ IMPORTANT:
       console.log(`Inserted ${errorInserts.length} error findings`);
     }
 
+    // Sync provider data in the background
+    try {
+      await supabase.functions.invoke('sync-provider-data', {
+        body: { 
+          invoiceId,
+          billReviewId: billReview.id
+        }
+      });
+      console.log('Provider data sync initiated');
+    } catch (syncError) {
+      // Don't fail the whole request if provider sync fails
+      console.error('Failed to sync provider data (non-fatal):', syncError);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -288,10 +302,11 @@ IMPORTANT:
 
   } catch (error) {
     console.error('Error in analyze-medical-bill:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: errorMessage
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

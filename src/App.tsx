@@ -40,6 +40,8 @@ import BillDispute from "./pages/BillDispute";
 import BillReviews from "./pages/BillReviews";
 import DisputeManagement from "./pages/DisputeManagement";
 import DisputeDetail from "./pages/DisputeDetail";
+import ProviderDirectory from "./pages/ProviderDirectory";
+import ProviderDetail from "./pages/ProviderDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -97,6 +99,10 @@ const App = () => (
           <Route path="/bills/:id/dispute" element={<BillDispute />} />
           <Route path="/disputes" element={<DisputeManagement />} />
           <Route path="/disputes/:id" element={<DisputeDetail />} />
+          
+          {/* Provider Directory Routes */}
+          <Route path="/providers" element={<ProviderDirectory />} />
+          <Route path="/providers/:id" element={<ProviderDetail />} />
           
            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
