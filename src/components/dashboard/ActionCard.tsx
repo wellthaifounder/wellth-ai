@@ -39,12 +39,12 @@ export function ActionCard({ icon, title, count, children, actions, defaultOpen 
       <CardContent>
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <CollapsibleTrigger asChild>
-            <Button variant="ghost" className="w-full justify-between mb-4">
+            <Button variant="ghost" className="w-full justify-between">
               <span>{isOpen ? 'Hide details' : buttonText}</span>
               <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </Button>
           </CollapsibleTrigger>
-          <CollapsibleContent>
+          <CollapsibleContent className="pt-4">
             {children}
           </CollapsibleContent>
         </Collapsible>

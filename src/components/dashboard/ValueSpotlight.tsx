@@ -23,12 +23,12 @@ function SpotlightCard({ icon, title, description, cta, onClick, variant = "defa
       <CardContent className="pt-6">
         <div className="flex items-start gap-4">
           <div className="text-4xl flex-shrink-0">{icon}</div>
-          <div className="flex-1 space-y-3">
+          <div className="flex-1 min-w-0 space-y-3">
             <div>
               <h3 className="font-semibold text-lg mb-1">{title}</h3>
-              <p className="text-sm text-muted-foreground">{description}</p>
+              <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
             </div>
-            <Button onClick={onClick} size="sm" className="w-full sm:w-auto">
+            <Button onClick={onClick} size="sm" className="w-full sm:w-auto min-h-[44px]">
               {cta}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
@@ -85,7 +85,7 @@ export function ValueSpotlight({
         <span className="text-2xl">✨</span>
         Opportunities for You
       </h2>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
         {pendingReviews > 0 && (
           <SpotlightCard
             icon="🔍"

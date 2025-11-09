@@ -66,6 +66,14 @@
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Z-Index Hierarchy */
+    --z-base: 0;
+    --z-sidebar: 40;
+    --z-drag: 45;
+    --z-modal: 50;
+    --z-tooltip: 60;
+    --z-toast: 70;
   }
 
   .dark {
@@ -117,6 +125,14 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Z-Index Hierarchy (same in dark mode) */
+    --z-base: 0;
+    --z-sidebar: 40;
+    --z-drag: 45;
+    --z-modal: 50;
+    --z-tooltip: 60;
+    --z-toast: 70;
   }
 }
 

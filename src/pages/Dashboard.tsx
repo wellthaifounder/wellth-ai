@@ -26,6 +26,7 @@ import { FeatureTooltip } from "@/components/onboarding/FeatureTooltip";
 import { WelcomeDialog } from "@/components/onboarding/WelcomeDialog";
 import { DashboardCustomization } from "@/components/dashboard/DashboardCustomization";
 import { SortableCard } from "@/components/dashboard/SortableCard";
+import { TabHeader } from "@/components/dashboard/TabHeader";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { DashboardCompactHeader } from "@/components/dashboard/DashboardCompactHeader";
@@ -323,7 +324,7 @@ const Dashboard = () => {
       onReset={() => window.location.reload()}
     >
       <AuthenticatedLayout unreviewedTransactions={stats.unreviewedTransactions}>
-        <div id="main-content" className="container mx-auto px-4 py-4 pb-24 md:pb-8 space-y-4">
+        <div id="main-content" className="container mx-auto max-w-7xl px-4 py-4 md:py-6 pb-8 md:pb-12 space-y-6">
           {!hsaOpenedDate && stats.expenseCount > 0 && <MissingHSADateBanner onDateSet={fetchStats} />}
           
           {isNewUser ? (
@@ -409,24 +410,15 @@ const Dashboard = () => {
               </div>
 
                 {/* Overview Tab */}
-                <TabsContent value="overview" className="space-y-4">
-                  <div className="mb-4">
-                    <h2 className="text-2xl font-bold mb-1">Welcome back, {firstName}! 👋</h2>
-                    <div className="flex flex-wrap gap-2">
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted">
-                        <span className="text-lg">📊</span>
-                        <span className="text-sm font-medium">${stats.totalExpenses.toFixed(0)} Tracked</span>
-                      </div>
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10">
-                        <span className="text-lg">🎉</span>
-                        <span className="text-sm font-medium text-success">${stats.disputeSavings.toFixed(0)} Saved</span>
-                      </div>
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10">
-                        <span className="text-lg">🏆</span>
-                        <span className="text-sm font-medium text-accent">${stats.rewardsEarned.toFixed(0)} Rewards</span>
-                      </div>
-                    </div>
-                  </div>
+                <TabsContent value="overview" className="space-y-6 mt-6">
+                  <TabHeader
+                    title={`Welcome back, ${firstName}! 👋`}
+                    badges={[
+                      { label: `$${stats.totalExpenses.toFixed(0)} Tracked`, variant: "outline" },
+                      { label: `$${stats.disputeSavings.toFixed(0)} Saved`, variant: "outline" },
+                      { label: `$${stats.rewardsEarned.toFixed(0)} Rewards`, variant: "outline" }
+                    ]}
+                  />
 
                   <DndContext
                     sensors={sensors}
@@ -540,26 +532,16 @@ const Dashboard = () => {
                 </TabsContent>
 
                 {/* Bill Intelligence Tab */}
-                <TabsContent value="bills" className="space-y-4">
-                  <div className="mb-4">
-                    <h2 className="text-2xl font-bold mb-1">Bill Intelligence</h2>
-                    <div className="flex flex-wrap gap-2">
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted">
-                        <span className="text-lg">📊</span>
-                        <span className="text-sm font-medium">${stats.totalExpenses.toFixed(0)} Tracked</span>
-                      </div>
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10">
-                        <span className="text-lg">🎉</span>
-                        <span className="text-sm font-medium text-success">${stats.disputeSavings.toFixed(0)} Saved</span>
-                      </div>
-                      {pendingReviews.length > 0 && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-destructive/10">
-                          <span className="text-lg">🔍</span>
-                          <span className="text-sm font-medium text-destructive">{pendingReviews.length} Need Review</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                <TabsContent value="bills" className="space-y-6 mt-6">
+                  <TabHeader
+                    title="Bill Intelligence"
+                    icon="🔍"
+                    badges={[
+                      { label: `Pending Reviews: ${pendingReviews.length}`, variant: pendingReviews.length > 0 ? "destructive" : "outline" },
+                      { label: `$${stats.totalExpenses.toFixed(0)} Tracked`, variant: "outline" },
+                      { label: `$${stats.disputeSavings.toFixed(0)} Saved`, variant: "outline" }
+                    ]}
+                  />
 
                   <DndContext
                     sensors={sensors}
@@ -570,9 +552,10 @@ const Dashboard = () => {
                       items={layout.getVisibleCardsForCategory("bills")}
                       strategy={verticalListSortingStrategy}
                     >
-                      {layout.isCardVisible("pending-reviews") && pendingReviews.length > 0 && (
-                        <SortableCard id="pending-reviews">
-                          <ActionCard
+                      <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2">
+                        {layout.isCardVisible("pending-reviews") && pendingReviews.length > 0 && (
+                          <SortableCard id="pending-reviews">
+                            <ActionCard
                       icon="🔍"
                       title="Bills Requiring Review"
                       count={pendingReviews.length}
@@ -612,6 +595,7 @@ const Dashboard = () => {
                           </Card>
                         </SortableCard>
                       )}
+                    </div>
                     </SortableContext>
                   </DndContext>
 
@@ -658,24 +642,16 @@ const Dashboard = () => {
 
                 {/* HSA & Money Tab */}
                 {hasHSA && (
-                  <TabsContent value="hsa" className="space-y-4">
-                    <div className="mb-4">
-                      <h2 className="text-2xl font-bold mb-1">HSA & Money</h2>
-                      <div className="flex flex-wrap gap-2">
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10">
-                          <span className="text-lg">💰</span>
-                          <span className="text-sm font-medium text-success">${stats.hsaClaimableAmount.toFixed(0)} Claimable</span>
-                        </div>
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10">
-                          <span className="text-lg">💸</span>
-                          <span className="text-sm font-medium text-accent">${stats.taxSavings.toFixed(0)} Tax Savings</span>
-                        </div>
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10">
-                          <span className="text-lg">🏆</span>
-                          <span className="text-sm font-medium text-primary">${stats.rewardsEarned.toFixed(0)} Rewards</span>
-                        </div>
-                      </div>
-                    </div>
+                  <TabsContent value="hsa" className="space-y-6 mt-6">
+                    <TabHeader
+                      title="HSA & Money Management"
+                      icon="💰"
+                      badges={[
+                        { label: `$${stats.hsaClaimableAmount.toFixed(0)} Claimable`, variant: "outline" },
+                        { label: `$${stats.taxSavings.toFixed(0)} Tax Savings`, variant: "outline" },
+                        { label: `$${stats.rewardsEarned.toFixed(0)} Rewards`, variant: "outline" }
+                      ]}
+                    />
 
                     <DndContext
                       sensors={sensors}
@@ -686,7 +662,7 @@ const Dashboard = () => {
                         items={layout.getVisibleCardsForCategory("hsa")}
                         strategy={verticalListSortingStrategy}
                       >
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2">
                           {layout.isCardVisible("hsa-claimable") && (
                             <SortableCard id="hsa-claimable">
                               <Card className="bg-success/5 border-success/20">
@@ -880,26 +856,18 @@ const Dashboard = () => {
                 )}
 
                 {/* Transactions Tab */}
-                <TabsContent value="transactions" className="space-y-4">
-                  <div className="mb-4">
-                    <h2 className="text-2xl font-bold mb-1">Transactions</h2>
-                    <div className="flex flex-wrap gap-2">
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted">
-                        <span className="text-lg">🏦</span>
-                        <span className="text-sm font-medium">{hasConnectedBank ? "Connected" : "Not Connected"}</span>
-                      </div>
-                      {stats.unreviewedTransactions > 0 && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10">
-                          <span className="text-lg">📋</span>
-                          <span className="text-sm font-medium text-secondary">{stats.unreviewedTransactions} to Review</span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted">
-                        <span className="text-lg">📊</span>
-                        <span className="text-sm font-medium">{recentExpenses.length} Recent</span>
-                      </div>
-                    </div>
-                  </div>
+                <TabsContent value="transactions" className="space-y-6 mt-6">
+                  <TabHeader
+                    title="Transaction Monitoring"
+                    icon="💳"
+                    badges={[
+                      { label: hasConnectedBank ? "Bank Connected ✓" : "Connect Bank", variant: hasConnectedBank ? "outline" : "secondary" },
+                      ...(stats.unreviewedTransactions > 0 ? [
+                        { label: `${stats.unreviewedTransactions} to Review`, variant: "destructive" as const }
+                      ] : []),
+                      { label: `${recentExpenses.length} Recent`, variant: "outline" }
+                    ]}
+                  />
 
                   <DndContext
                     sensors={sensors}
@@ -910,7 +878,8 @@ const Dashboard = () => {
                       items={layout.getVisibleCardsForCategory("transactions")}
                       strategy={verticalListSortingStrategy}
                     >
-                      {layout.isCardVisible("transactions-review") && stats.unreviewedTransactions > 0 && (
+                      <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                        {layout.isCardVisible("transactions-review") && stats.unreviewedTransactions > 0 && (
                         <SortableCard id="transactions-review">
                           <ActionCard
                             icon="📋"
@@ -954,6 +923,7 @@ const Dashboard = () => {
                           </Card>
                         </SortableCard>
                       )}
+                    </div>
                     </SortableContext>
                   </DndContext>
 

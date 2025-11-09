@@ -32,7 +32,8 @@ export function SortableCard({ id, children, isDragging }: SortableCardProps) {
       style={style}
       className={cn(
         "relative group",
-        isBeingDragged && "opacity-50 z-50"
+        isBeingDragged && "opacity-50",
+        isBeingDragged && "z-[var(--z-drag)]"
       )}
     >
       <div
@@ -40,7 +41,8 @@ export function SortableCard({ id, children, isDragging }: SortableCardProps) {
         {...listeners}
         className={cn(
           "absolute -left-8 top-4 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity",
-          "touch-none"
+          "hidden lg:block touch-none",
+          "z-10"
         )}
       >
         <GripVertical className="h-5 w-5 text-muted-foreground hover:text-foreground" />

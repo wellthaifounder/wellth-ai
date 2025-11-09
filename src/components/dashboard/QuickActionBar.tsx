@@ -15,10 +15,10 @@ export function QuickActionBar({ hasHSA, hsaClaimable, unreviewedTransactions }:
   return (
     <Card className="p-4">
       <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Quick Actions</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-2">
         <Button 
           variant="outline" 
-          className="h-auto py-3 flex-col gap-1"
+          className="h-auto min-h-[44px] py-3 flex-col gap-1"
           onClick={() => navigate("/bill-review")}
         >
           <Upload className="h-5 w-5" />
@@ -27,7 +27,7 @@ export function QuickActionBar({ hasHSA, hsaClaimable, unreviewedTransactions }:
         
         <Button 
           variant="outline" 
-          className="h-auto py-3 flex-col gap-1"
+          className="h-auto min-h-[44px] py-3 flex-col gap-1"
           onClick={() => navigate("/transactions")}
         >
           <CreditCard className="h-5 w-5" />
@@ -42,7 +42,7 @@ export function QuickActionBar({ hasHSA, hsaClaimable, unreviewedTransactions }:
         {hasHSA && (
           <Button 
             variant="outline" 
-            className="h-auto py-3 flex-col gap-1"
+            className="h-auto min-h-[44px] py-3 flex-col gap-1"
             onClick={() => navigate("/hsa-reimbursement")}
           >
             <DollarSign className="h-5 w-5" />
@@ -57,7 +57,7 @@ export function QuickActionBar({ hasHSA, hsaClaimable, unreviewedTransactions }:
 
         <Button 
           variant="outline" 
-          className="h-auto py-3 flex-col gap-1"
+          className="h-auto min-h-[44px] py-3 flex-col gap-1"
           onClick={() => navigate("/expenses/new")}
         >
           <FileText className="h-5 w-5" />
