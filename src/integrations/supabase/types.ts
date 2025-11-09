@@ -14,6 +14,309 @@ export type Database = {
   }
   public: {
     Tables: {
+      bill_disputes: {
+        Row: {
+          bill_review_id: string | null
+          claim_number: string | null
+          created_at: string
+          dispute_reason: string | null
+          dispute_status: Database["public"]["Enums"]["dispute_status"]
+          disputed_amount: number
+          id: string
+          insurance_company: string | null
+          insurance_contact_info: Json | null
+          invoice_id: string | null
+          original_amount: number
+          provider_contact_info: Json | null
+          provider_name: string
+          resolution_date: string | null
+          resolved_amount: number | null
+          response_deadline: string | null
+          savings_achieved: number | null
+          submitted_date: string | null
+          timeline: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bill_review_id?: string | null
+          claim_number?: string | null
+          created_at?: string
+          dispute_reason?: string | null
+          dispute_status?: Database["public"]["Enums"]["dispute_status"]
+          disputed_amount: number
+          id?: string
+          insurance_company?: string | null
+          insurance_contact_info?: Json | null
+          invoice_id?: string | null
+          original_amount: number
+          provider_contact_info?: Json | null
+          provider_name: string
+          resolution_date?: string | null
+          resolved_amount?: number | null
+          response_deadline?: string | null
+          savings_achieved?: number | null
+          submitted_date?: string | null
+          timeline?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bill_review_id?: string | null
+          claim_number?: string | null
+          created_at?: string
+          dispute_reason?: string | null
+          dispute_status?: Database["public"]["Enums"]["dispute_status"]
+          disputed_amount?: number
+          id?: string
+          insurance_company?: string | null
+          insurance_contact_info?: Json | null
+          invoice_id?: string | null
+          original_amount?: number
+          provider_contact_info?: Json | null
+          provider_name?: string
+          resolution_date?: string | null
+          resolved_amount?: number | null
+          response_deadline?: string | null
+          savings_achieved?: number | null
+          submitted_date?: string | null
+          timeline?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bill_disputes_bill_review_id_fkey"
+            columns: ["bill_review_id"]
+            isOneToOne: false
+            referencedRelation: "bill_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bill_disputes_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bill_errors: {
+        Row: {
+          bill_review_id: string
+          created_at: string
+          description: string
+          error_category: Database["public"]["Enums"]["bill_error_category"]
+          error_type: Database["public"]["Enums"]["bill_error_type"]
+          evidence: Json | null
+          id: string
+          line_item_reference: string | null
+          potential_savings: number | null
+          status: Database["public"]["Enums"]["bill_error_status"]
+        }
+        Insert: {
+          bill_review_id: string
+          created_at?: string
+          description: string
+          error_category?: Database["public"]["Enums"]["bill_error_category"]
+          error_type: Database["public"]["Enums"]["bill_error_type"]
+          evidence?: Json | null
+          id?: string
+          line_item_reference?: string | null
+          potential_savings?: number | null
+          status?: Database["public"]["Enums"]["bill_error_status"]
+        }
+        Update: {
+          bill_review_id?: string
+          created_at?: string
+          description?: string
+          error_category?: Database["public"]["Enums"]["bill_error_category"]
+          error_type?: Database["public"]["Enums"]["bill_error_type"]
+          evidence?: Json | null
+          id?: string
+          line_item_reference?: string | null
+          potential_savings?: number | null
+          status?: Database["public"]["Enums"]["bill_error_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bill_errors_bill_review_id_fkey"
+            columns: ["bill_review_id"]
+            isOneToOne: false
+            referencedRelation: "bill_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bill_reviews: {
+        Row: {
+          analyzed_at: string | null
+          confidence_score: number | null
+          created_at: string
+          id: string
+          invoice_id: string | null
+          review_status: Database["public"]["Enums"]["bill_review_status"]
+          total_potential_savings: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analyzed_at?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          review_status?: Database["public"]["Enums"]["bill_review_status"]
+          total_potential_savings?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analyzed_at?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          review_status?: Database["public"]["Enums"]["bill_review_status"]
+          total_potential_savings?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bill_reviews_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cpt_code_reference: {
+        Row: {
+          bundling_rules: Json | null
+          category: string | null
+          common_modifiers: string[] | null
+          cpt_code: string
+          created_at: string
+          description: string
+          id: string
+          medicare_rate: number | null
+          updated_at: string
+        }
+        Insert: {
+          bundling_rules?: Json | null
+          category?: string | null
+          common_modifiers?: string[] | null
+          cpt_code: string
+          created_at?: string
+          description: string
+          id?: string
+          medicare_rate?: number | null
+          updated_at?: string
+        }
+        Update: {
+          bundling_rules?: Json | null
+          category?: string | null
+          common_modifiers?: string[] | null
+          cpt_code?: string
+          created_at?: string
+          description?: string
+          id?: string
+          medicare_rate?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dispute_communications: {
+        Row: {
+          communication_type: Database["public"]["Enums"]["communication_type"]
+          contact_person: string | null
+          created_at: string
+          direction: Database["public"]["Enums"]["communication_direction"]
+          dispute_id: string
+          follow_up_date: string | null
+          follow_up_required: boolean | null
+          id: string
+          outcome: string | null
+          summary: string
+        }
+        Insert: {
+          communication_type: Database["public"]["Enums"]["communication_type"]
+          contact_person?: string | null
+          created_at?: string
+          direction: Database["public"]["Enums"]["communication_direction"]
+          dispute_id: string
+          follow_up_date?: string | null
+          follow_up_required?: boolean | null
+          id?: string
+          outcome?: string | null
+          summary: string
+        }
+        Update: {
+          communication_type?: Database["public"]["Enums"]["communication_type"]
+          contact_person?: string | null
+          created_at?: string
+          direction?: Database["public"]["Enums"]["communication_direction"]
+          dispute_id?: string
+          follow_up_date?: string | null
+          follow_up_required?: boolean | null
+          id?: string
+          outcome?: string | null
+          summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispute_communications_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "bill_disputes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dispute_documents: {
+        Row: {
+          created_at: string
+          description: string | null
+          dispute_id: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          id: string
+          receipt_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          dispute_id: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          id?: string
+          receipt_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          dispute_id?: string
+          document_type?: Database["public"]["Enums"]["document_type"]
+          id?: string
+          receipt_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispute_documents_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "bill_disputes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispute_documents_receipt_id_fkey"
+            columns: ["receipt_id"]
+            isOneToOne: false
+            referencedRelation: "receipts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_sequence_sends: {
         Row: {
           clicked_at: string | null
@@ -464,6 +767,7 @@ export type Database = {
         Row: {
           created_at: string
           full_name: string | null
+          has_hsa: boolean | null
           hsa_opened_date: string | null
           id: string
           updated_at: string
@@ -471,6 +775,7 @@ export type Database = {
         Insert: {
           created_at?: string
           full_name?: string | null
+          has_hsa?: boolean | null
           hsa_opened_date?: string | null
           id: string
           updated_at?: string
@@ -478,6 +783,7 @@ export type Database = {
         Update: {
           created_at?: string
           full_name?: string | null
+          has_hsa?: boolean | null
           hsa_opened_date?: string | null
           id?: string
           updated_at?: string
@@ -907,7 +1213,58 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      bill_error_category:
+        | "high_priority"
+        | "medium_priority"
+        | "low_priority"
+        | "informational"
+      bill_error_status:
+        | "identified"
+        | "user_confirmed"
+        | "user_dismissed"
+        | "disputed"
+        | "resolved"
+      bill_error_type:
+        | "duplicate_charge"
+        | "upcoding"
+        | "unbundling"
+        | "incorrect_quantity"
+        | "balance_billing"
+        | "out_of_network_surprise"
+        | "wrong_insurance_info"
+        | "coding_error"
+        | "uncovered_service"
+        | "other"
+      bill_review_status:
+        | "pending"
+        | "analyzing"
+        | "reviewed"
+        | "disputed"
+        | "resolved"
+      communication_direction: "outbound" | "inbound"
+      communication_type:
+        | "phone_call"
+        | "email"
+        | "letter"
+        | "portal_message"
+        | "in_person"
+      dispute_status:
+        | "draft"
+        | "submitted"
+        | "in_review"
+        | "appealed"
+        | "resolved_favorable"
+        | "resolved_unfavorable"
+        | "withdrawn"
+      document_type:
+        | "original_bill"
+        | "insurance_eob"
+        | "price_comparison"
+        | "medical_records"
+        | "correspondence"
+        | "appeal_letter"
+        | "resolution_letter"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1034,6 +1391,66 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      bill_error_category: [
+        "high_priority",
+        "medium_priority",
+        "low_priority",
+        "informational",
+      ],
+      bill_error_status: [
+        "identified",
+        "user_confirmed",
+        "user_dismissed",
+        "disputed",
+        "resolved",
+      ],
+      bill_error_type: [
+        "duplicate_charge",
+        "upcoding",
+        "unbundling",
+        "incorrect_quantity",
+        "balance_billing",
+        "out_of_network_surprise",
+        "wrong_insurance_info",
+        "coding_error",
+        "uncovered_service",
+        "other",
+      ],
+      bill_review_status: [
+        "pending",
+        "analyzing",
+        "reviewed",
+        "disputed",
+        "resolved",
+      ],
+      communication_direction: ["outbound", "inbound"],
+      communication_type: [
+        "phone_call",
+        "email",
+        "letter",
+        "portal_message",
+        "in_person",
+      ],
+      dispute_status: [
+        "draft",
+        "submitted",
+        "in_review",
+        "appealed",
+        "resolved_favorable",
+        "resolved_unfavorable",
+        "withdrawn",
+      ],
+      document_type: [
+        "original_bill",
+        "insurance_eob",
+        "price_comparison",
+        "medical_records",
+        "correspondence",
+        "appeal_letter",
+        "resolution_letter",
+        "other",
+      ],
+    },
   },
 } as const

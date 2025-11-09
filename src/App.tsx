@@ -35,6 +35,8 @@ import Settings from "./pages/Settings";
 import BankAccounts from "./pages/BankAccounts";
 import VaultTracker from "./pages/VaultTracker";
 import HSAEligibility from "./pages/HSAEligibility";
+import BillReview from "./pages/BillReview";
+import BillDispute from "./pages/BillDispute";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -85,6 +87,10 @@ const App = () => (
           <Route path="/hsa-eligibility" element={<HSAEligibility />} />
           <Route path="/tripwire-success" element={<TripwireSuccess />} />
           <Route path="/checkout" element={<Checkout />} />
+          
+          {/* Bill Review & Dispute Routes */}
+          <Route path="/bills/:id/review" element={<BillReview />} />
+          <Route path="/bills/:id/dispute" element={<BillDispute />} />
           
            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
