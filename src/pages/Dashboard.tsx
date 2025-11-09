@@ -19,9 +19,12 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { getNextAction } from "@/lib/dashboardActions";
 import { calculateProgress, getProgressSteps } from "@/lib/userProgress";
 import { calculateVaultSummary } from "@/lib/vaultCalculations";
+import { ValueSpotlight } from "@/components/dashboard/ValueSpotlight";
+import { useHSA } from "@/contexts/HSAContext";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { hasHSA, hsaOpenedDate, refreshHSAStatus } = useHSA();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -31,12 +34,16 @@ const Dashboard = () => {
     expenseCount: 0,
     unreviewedTransactions: 0,
     hsaClaimableAmount: 0,
+    disputeSavings: 0,
   });
   const [recentExpenses, setRecentExpenses] = useState<any[]>([]);
   const [reimbursementRequests, setReimbursementRequests] = useState<any[]>([]);
   const [pendingReviews, setPendingReviews] = useState<any[]>([]);
   const [hasConnectedBank, setHasConnectedBank] = useState(false);
-  const [hsaOpenedDate, setHsaOpenedDate] = useState<string | null>(null);
+  const [disputeStats, setDisputeStats] = useState({
+    recentWins: 0,
+    totalSavings: 0,
+  });
 
   useEffect(() => {
     const checkUser = async () => {
@@ -57,6 +64,7 @@ const Dashboard = () => {
     fetchTransactionStats();
     fetchBillReviews();
     checkBankConnection();
+    fetchDisputeStats();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
@@ -73,15 +81,6 @@ const Dashboard = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("hsa_opened_date")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (profileError) console.warn("No profile row or error fetching profile", profileError);
-      setHsaOpenedDate(profile?.hsa_opened_date || null);
 
       const { data: invoices, error } = await supabase
         .from("invoices")
@@ -124,6 +123,7 @@ const Dashboard = () => {
         rewardsEarned,
         expenseCount: invoices?.length || 0,
         hsaClaimableAmount: hsaClaimable,
+        disputeSavings: 0, // Will be fetched separately
       }));
 
       setRecentExpenses(invoices?.slice(0, 5) || []);
@@ -221,6 +221,14 @@ const Dashboard = () => {
     }
   };
 
+  const fetchDisputeStats = async () => {
+    // Simplified for now - will be enhanced later
+    setDisputeStats({
+      recentWins: 0,
+      totalSavings: 0,
+    });
+  };
+
   if (loading) {
     return (
       <AuthenticatedLayout unreviewedTransactions={0}>
@@ -268,16 +276,31 @@ const Dashboard = () => {
             <>
               <DashboardHeader firstName={firstName} primaryAction={nextAction} />
 
+              {/* Value Spotlight Section */}
+              <ValueSpotlight
+                pendingReviews={pendingReviews.length}
+                totalPotentialSavings={0} // TODO: Calculate from bill errors
+                recentDisputeWins={disputeStats.recentWins}
+                disputeSavings={disputeStats.totalSavings}
+                onReviewClick={() => navigate("/bill-reviews")}
+                onDisputeClick={() => navigate("/disputes")}
+                onProviderClick={() => navigate("/providers")}
+              />
+
               <div className="grid gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-2 space-y-6">
                   <FriendlyStatsCards 
                     taxSavings={stats.taxSavings}
                     hsaClaimable={stats.hsaClaimableAmount}
                     rewardsEarned={stats.rewardsEarned}
+                    totalExpenses={stats.totalExpenses}
+                    disputeSavings={stats.disputeSavings}
+                    hasHSA={hasHSA}
                   />
 
-                  {/* HSA Eligibility Reference Card */}
-                  <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-background">
+                  {/* HSA Eligibility Reference Card - Only show for HSA users */}
+                  {hasHSA && (
+                    <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-background">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-xl">
                         <BookOpen className="h-6 w-6 text-primary" />
@@ -309,6 +332,7 @@ const Dashboard = () => {
                       </div>
                     </CardContent>
                   </Card>
+                  )}
 
                   {/* Pending Bill Reviews Section */}
                   {pendingReviews.length > 0 && (
@@ -335,7 +359,7 @@ const Dashboard = () => {
                   )}
 
 
-                  {stats.hsaClaimableAmount > 0 && (
+                  {hasHSA && stats.hsaClaimableAmount > 0 && (
                     <ActionCard
                       icon="💵"
                       title="Money You Can Claim from HSA"

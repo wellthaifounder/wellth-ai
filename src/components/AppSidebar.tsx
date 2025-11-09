@@ -1,5 +1,6 @@
 import { Calculator, Receipt, FileText, BarChart3, Wallet, Home, Building2, BookOpen, Settings, AlertCircle, Scale } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
+import { useHSA } from "@/contexts/HSAContext";
 import {
   Sidebar,
   SidebarContent,
@@ -18,7 +19,15 @@ interface AppSidebarProps {
   activeDisputes?: number;
 }
 
-const menuItems = [
+interface MenuItem {
+  icon: any;
+  label: string;
+  path: string;
+  badgeKey: string | null;
+  hsaOnly?: boolean;
+}
+
+const menuItems: MenuItem[] = [
   { icon: Home, label: "Dashboard", path: "/dashboard", badgeKey: null },
   { icon: Calculator, label: "Decision Tool", path: "/decision-tool", badgeKey: null },
   { icon: Receipt, label: "Transactions", path: "/transactions", badgeKey: "unreviewedTransactions" },
@@ -28,14 +37,15 @@ const menuItems = [
   { icon: Building2, label: "Providers", path: "/providers", badgeKey: null },
   { icon: FileText, label: "Documents", path: "/documents", badgeKey: null },
   { icon: BarChart3, label: "Analytics", path: "/analytics", badgeKey: null },
-  { icon: BookOpen, label: "HSA Eligibility", path: "/hsa-eligibility", badgeKey: null },
+  { icon: BookOpen, label: "HSA Eligibility", path: "/hsa-eligibility", badgeKey: null, hsaOnly: true },
   { icon: Wallet, label: "Payment Methods", path: "/payment-methods", badgeKey: null },
   { icon: Building2, label: "Bank Accounts", path: "/bank-accounts", badgeKey: null },
-  { icon: FileText, label: "HSA Requests", path: "/reimbursement-requests", badgeKey: null },
+  { icon: FileText, label: "HSA Requests", path: "/reimbursement-requests", badgeKey: null, hsaOnly: true },
 ];
 
 export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, activeDisputes = 0 }: AppSidebarProps) {
   const { open } = useSidebar();
+  const { hasHSA } = useHSA();
 
   const getBadgeCount = (badgeKey: string | null) => {
     if (!badgeKey) return 0;
@@ -45,6 +55,14 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
     return 0;
   };
 
+  // Filter menu items based on HSA status
+  const visibleMenuItems = menuItems.filter(item => {
+    if (item.hsaOnly) {
+      return hasHSA;
+    }
+    return true;
+  });
+
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarContent>
@@ -52,7 +70,7 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => {
+              {visibleMenuItems.map((item) => {
                 const badgeCount = getBadgeCount(item.badgeKey);
                 return (
                   <SidebarMenuItem key={item.path}>
