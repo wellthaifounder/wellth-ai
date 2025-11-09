@@ -7,9 +7,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BillReviewCard } from "@/components/bills/BillReviewCard";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { AdvancedFilters, FilterState } from "@/components/bills/AdvancedFilters";
+import { useState, useMemo } from "react";
 
 export default function BillReviews() {
   const navigate = useNavigate();
+  const [filters, setFilters] = useState<FilterState>({
+    searchQuery: '',
+    status: 'all',
+    dateRange: { from: undefined, to: undefined },
+    amountRange: [0, 10000],
+    provider: '',
+    savingsMin: 0
+  });
 
   const { data: reviewsData, isLoading } = useQuery({
     queryKey: ['bill-reviews-list'],
@@ -54,9 +64,53 @@ export default function BillReviews() {
     }
   });
 
-  const pendingReviews = reviewsData?.filter(r => r.review_status === 'pending') || [];
-  const resolvedReviews = reviewsData?.filter(r => r.review_status === 'resolved') || [];
-  const totalSavings = reviewsData?.reduce((sum, r) => sum + Number(r.total_potential_savings), 0) || 0;
+  // Apply filters
+  const filteredReviews = useMemo(() => {
+    if (!reviewsData) return [];
+
+    return reviewsData.filter(review => {
+      // Search query
+      if (filters.searchQuery) {
+        const query = filters.searchQuery.toLowerCase();
+        const matchesVendor = review.invoices?.vendor?.toLowerCase().includes(query);
+        if (!matchesVendor) return false;
+      }
+
+      // Status filter
+      if (filters.status !== 'all' && review.review_status !== filters.status) {
+        return false;
+      }
+
+      // Provider filter
+      if (filters.provider && !review.invoices?.vendor?.toLowerCase().includes(filters.provider.toLowerCase())) {
+        return false;
+      }
+
+      // Amount range
+      const amount = Number(review.invoices?.amount || 0);
+      if (amount < filters.amountRange[0] || amount > filters.amountRange[1]) {
+        return false;
+      }
+
+      // Savings filter
+      if (filters.savingsMin > 0 && Number(review.total_potential_savings) < filters.savingsMin) {
+        return false;
+      }
+
+      // Date range
+      if (filters.dateRange.from && review.analyzed_at) {
+        const reviewDate = new Date(review.analyzed_at);
+        if (reviewDate < filters.dateRange.from) return false;
+        if (filters.dateRange.to && reviewDate > filters.dateRange.to) return false;
+      }
+
+      return true;
+    });
+  }, [reviewsData, filters]);
+
+  const pendingReviews = filteredReviews?.filter(r => r.review_status === 'pending') || [];
+  const resolvedReviews = filteredReviews?.filter(r => r.review_status === 'resolved') || [];
+  const totalSavings = filteredReviews?.reduce((sum, r) => sum + Number(r.total_potential_savings), 0) || 0;
 
   if (isLoading) {
     return (
@@ -97,6 +151,19 @@ export default function BillReviews() {
           </Card>
         </div>
 
+        {/* Filters */}
+        <AdvancedFilters 
+          onFiltersChange={setFilters}
+          showAmountFilter={true}
+          showProviderFilter={true}
+          showSavingsFilter={true}
+          statusOptions={[
+            { value: 'all', label: 'All Statuses' },
+            { value: 'pending', label: 'Pending' },
+            { value: 'resolved', label: 'Resolved' }
+          ]}
+        />
+
         {/* Reviews List */}
         <Tabs defaultValue="pending" className="w-full">
           <TabsList>
@@ -107,7 +174,7 @@ export default function BillReviews() {
               Resolved ({resolvedReviews.length})
             </TabsTrigger>
             <TabsTrigger value="all">
-              All ({reviewsData?.length || 0})
+              All ({filteredReviews?.length || 0})
             </TabsTrigger>
           </TabsList>
 
@@ -159,7 +226,7 @@ export default function BillReviews() {
           </TabsContent>
 
           <TabsContent value="all" className="space-y-4 mt-6">
-            {!reviewsData || reviewsData.length === 0 ? (
+            {!filteredReviews || filteredReviews.length === 0 ? (
               <Card className="p-8 text-center">
                 <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No Bill Reviews</h3>
@@ -172,7 +239,7 @@ export default function BillReviews() {
               </Card>
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
-                {reviewsData.map(review => (
+                {filteredReviews.map(review => (
                   <BillReviewCard 
                     key={review.id} 
                     review={review as any} 

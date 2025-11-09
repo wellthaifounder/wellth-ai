@@ -10,6 +10,8 @@ import { format } from "date-fns";
 import { DisputeTimeline } from "@/components/bills/DisputeTimeline";
 import { DisputeCommunicationLog } from "@/components/bills/DisputeCommunicationLog";
 import { DisputeLetterGenerator } from "@/components/bills/DisputeLetterGenerator";
+import { InsuranceVerification } from "@/components/bills/InsuranceVerification";
+import { PriceBenchmarking } from "@/components/bills/PriceBenchmarking";
 
 export default function DisputeDetail() {
   const { id } = useParams<{ id: string }>();
@@ -184,6 +186,20 @@ export default function DisputeDetail() {
         <DisputeTimeline 
           timeline={dispute.timeline as any[]} 
           currentStatus={dispute.dispute_status}
+        />
+
+        {/* Price Benchmarking */}
+        {dispute.invoices && (
+          <PriceBenchmarking 
+            invoiceAmount={Number(dispute.original_amount)}
+            category={(dispute.invoices as any).category}
+          />
+        )}
+
+        {/* Insurance Verification */}
+        <InsuranceVerification 
+          insuranceCompany={dispute.insurance_company || undefined}
+          claimNumber={dispute.claim_number || undefined}
         />
 
         {/* Letter Generator */}

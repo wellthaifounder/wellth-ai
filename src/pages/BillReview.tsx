@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowLeft, AlertTriangle, CheckCircle2, TrendingUp } from "lucide-react";
 import { BillErrorCard } from "@/components/bills/BillErrorCard";
+import { PriceBenchmarking } from "@/components/bills/PriceBenchmarking";
 import { toast } from "sonner";
 
 export default function BillReview() {
@@ -200,6 +201,12 @@ export default function BillReview() {
             )}
           </div>
         </Card>
+
+        {/* Price Benchmarking */}
+        <PriceBenchmarking 
+          invoiceAmount={invoice?.amount || 0}
+          category={invoice?.category}
+        />
 
         {/* Error Cards */}
         {errors && errors.length > 0 && (

@@ -8,9 +8,19 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, FileText, TrendingUp, Clock, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
+import { AdvancedFilters, FilterState } from "@/components/bills/AdvancedFilters";
+import { useState, useMemo } from "react";
 
 export default function DisputeManagement() {
   const navigate = useNavigate();
+  const [filters, setFilters] = useState<FilterState>({
+    searchQuery: '',
+    status: 'all',
+    dateRange: { from: undefined, to: undefined },
+    amountRange: [0, 10000],
+    provider: '',
+    savingsMin: 0
+  });
 
   const { data: disputes, isLoading } = useQuery({
     queryKey: ['disputes'],
@@ -35,6 +45,46 @@ export default function DisputeManagement() {
     }
   });
 
+  // Apply filters to disputes
+  const filteredDisputes = useMemo(() => {
+    if (!disputes) return [];
+
+    return disputes.filter(dispute => {
+      // Search query
+      if (filters.searchQuery) {
+        const query = filters.searchQuery.toLowerCase();
+        const matchesProvider = dispute.provider_name.toLowerCase().includes(query);
+        const matchesClaim = dispute.claim_number?.toLowerCase().includes(query);
+        if (!matchesProvider && !matchesClaim) return false;
+      }
+
+      // Status filter
+      if (filters.status !== 'all' && dispute.dispute_status !== filters.status) {
+        return false;
+      }
+
+      // Provider filter
+      if (filters.provider && !dispute.provider_name.toLowerCase().includes(filters.provider.toLowerCase())) {
+        return false;
+      }
+
+      // Amount range
+      const amount = Number(dispute.original_amount);
+      if (amount < filters.amountRange[0] || amount > filters.amountRange[1]) {
+        return false;
+      }
+
+      // Date range
+      if (filters.dateRange.from) {
+        const disputeDate = new Date(dispute.created_at);
+        if (disputeDate < filters.dateRange.from) return false;
+        if (filters.dateRange.to && disputeDate > filters.dateRange.to) return false;
+      }
+
+      return true;
+    });
+  }, [disputes, filters]);
+
   const statusConfig = {
     draft: { label: "Draft", variant: "secondary" as const, icon: FileText },
     submitted: { label: "Submitted", variant: "default" as const, icon: Clock },
@@ -45,15 +95,15 @@ export default function DisputeManagement() {
     withdrawn: { label: "Withdrawn", variant: "secondary" as const, icon: FileText }
   };
 
-  const activeDisputes = disputes?.filter(d => 
+  const activeDisputes = filteredDisputes?.filter(d => 
     !['resolved_favorable', 'resolved_unfavorable', 'withdrawn'].includes(d.dispute_status)
   ) || [];
 
-  const resolvedDisputes = disputes?.filter(d => 
+  const resolvedDisputes = filteredDisputes?.filter(d => 
     ['resolved_favorable', 'resolved_unfavorable', 'withdrawn'].includes(d.dispute_status)
   ) || [];
 
-  const totalSavings = disputes?.reduce((sum, d) => 
+  const totalSavings = filteredDisputes?.reduce((sum, d) => 
     d.savings_achieved ? sum + Number(d.savings_achieved) : sum, 0
   ) || 0;
 
@@ -175,6 +225,24 @@ export default function DisputeManagement() {
           </Card>
         </div>
 
+        {/* Filters */}
+        <AdvancedFilters 
+          onFiltersChange={setFilters}
+          showAmountFilter={true}
+          showProviderFilter={true}
+          showSavingsFilter={false}
+          statusOptions={[
+            { value: 'all', label: 'All Statuses' },
+            { value: 'draft', label: 'Draft' },
+            { value: 'submitted', label: 'Submitted' },
+            { value: 'provider_reviewing', label: 'Under Review' },
+            { value: 'awaiting_response', label: 'Awaiting Response' },
+            { value: 'resolved_favorable', label: 'Resolved - Favorable' },
+            { value: 'resolved_unfavorable', label: 'Resolved - Unfavorable' },
+            { value: 'withdrawn', label: 'Withdrawn' }
+          ]}
+        />
+
         {/* Disputes List */}
         <Tabs defaultValue="active" className="w-full">
           <TabsList>
@@ -185,7 +253,7 @@ export default function DisputeManagement() {
               Resolved ({resolvedDisputes.length})
             </TabsTrigger>
             <TabsTrigger value="all">
-              All ({disputes?.length || 0})
+              All ({filteredDisputes?.length || 0})
             </TabsTrigger>
           </TabsList>
 
@@ -229,7 +297,7 @@ export default function DisputeManagement() {
           </TabsContent>
 
           <TabsContent value="all" className="space-y-4 mt-6">
-            {!disputes || disputes.length === 0 ? (
+            {!filteredDisputes || filteredDisputes.length === 0 ? (
               <Card className="p-8 text-center">
                 <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No Disputes</h3>
@@ -242,7 +310,7 @@ export default function DisputeManagement() {
               </Card>
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
-                {disputes.map(dispute => (
+                {filteredDisputes.map(dispute => (
                   <DisputeCard key={dispute.id} dispute={dispute} />
                 ))}
               </div>
