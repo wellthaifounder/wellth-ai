@@ -790,6 +790,260 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_bills: {
+        Row: {
+          bill_amount: number
+          bill_review_id: string | null
+          created_at: string
+          dispute_outcome: string | null
+          errors_found: number | null
+          id: string
+          invoice_id: string
+          overcharge_amount: number | null
+          provider_id: string
+          was_disputed: boolean | null
+        }
+        Insert: {
+          bill_amount: number
+          bill_review_id?: string | null
+          created_at?: string
+          dispute_outcome?: string | null
+          errors_found?: number | null
+          id?: string
+          invoice_id: string
+          overcharge_amount?: number | null
+          provider_id: string
+          was_disputed?: boolean | null
+        }
+        Update: {
+          bill_amount?: number
+          bill_review_id?: string | null
+          created_at?: string
+          dispute_outcome?: string | null
+          errors_found?: number | null
+          id?: string
+          invoice_id?: string
+          overcharge_amount?: number | null
+          provider_id?: string
+          was_disputed?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_bills_bill_review_id_fkey"
+            columns: ["bill_review_id"]
+            isOneToOne: false
+            referencedRelation: "bill_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_bills_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_bills_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_charge_benchmarks: {
+        Row: {
+          average_charge: number
+          cpt_code: string
+          id: string
+          last_updated: string
+          max_charge: number | null
+          median_charge: number | null
+          medicare_rate: number | null
+          min_charge: number | null
+          procedure_name: string | null
+          provider_id: string
+          sample_size: number | null
+          variance_from_medicare: number | null
+          variance_from_national: number | null
+        }
+        Insert: {
+          average_charge: number
+          cpt_code: string
+          id?: string
+          last_updated?: string
+          max_charge?: number | null
+          median_charge?: number | null
+          medicare_rate?: number | null
+          min_charge?: number | null
+          procedure_name?: string | null
+          provider_id: string
+          sample_size?: number | null
+          variance_from_medicare?: number | null
+          variance_from_national?: number | null
+        }
+        Update: {
+          average_charge?: number
+          cpt_code?: string
+          id?: string
+          last_updated?: string
+          max_charge?: number | null
+          median_charge?: number | null
+          medicare_rate?: number | null
+          min_charge?: number | null
+          procedure_name?: string | null
+          provider_id?: string
+          sample_size?: number | null
+          variance_from_medicare?: number | null
+          variance_from_national?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_charge_benchmarks_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_reviews: {
+        Row: {
+          accuracy_rating: number | null
+          cost_rating: number | null
+          created_at: string
+          id: string
+          overall_rating: number
+          provider_id: string
+          response_rating: number | null
+          review_text: string | null
+          updated_at: string
+          user_id: string
+          would_recommend: boolean | null
+        }
+        Insert: {
+          accuracy_rating?: number | null
+          cost_rating?: number | null
+          created_at?: string
+          id?: string
+          overall_rating: number
+          provider_id: string
+          response_rating?: number | null
+          review_text?: string | null
+          updated_at?: string
+          user_id: string
+          would_recommend?: boolean | null
+        }
+        Update: {
+          accuracy_rating?: number | null
+          cost_rating?: number | null
+          created_at?: string
+          id?: string
+          overall_rating?: number
+          provider_id?: string
+          response_rating?: number | null
+          review_text?: string | null
+          updated_at?: string
+          user_id?: string
+          would_recommend?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_reviews_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      providers: {
+        Row: {
+          accuracy_rating: number | null
+          address: string | null
+          average_bill_amount: number | null
+          billing_accuracy_score: number | null
+          city: string | null
+          cost_rating: number | null
+          created_at: string
+          disputes_lost: number | null
+          disputes_won: number | null
+          id: string
+          name: string
+          network_status: string | null
+          npi_number: string | null
+          overall_rating: number | null
+          phone: string | null
+          provider_type: string | null
+          response_rating: number | null
+          specialties: string[] | null
+          state: string | null
+          tax_id: string | null
+          total_bills_analyzed: number | null
+          total_disputes_filed: number | null
+          total_overcharges_found: number | null
+          updated_at: string
+          website: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          accuracy_rating?: number | null
+          address?: string | null
+          average_bill_amount?: number | null
+          billing_accuracy_score?: number | null
+          city?: string | null
+          cost_rating?: number | null
+          created_at?: string
+          disputes_lost?: number | null
+          disputes_won?: number | null
+          id?: string
+          name: string
+          network_status?: string | null
+          npi_number?: string | null
+          overall_rating?: number | null
+          phone?: string | null
+          provider_type?: string | null
+          response_rating?: number | null
+          specialties?: string[] | null
+          state?: string | null
+          tax_id?: string | null
+          total_bills_analyzed?: number | null
+          total_disputes_filed?: number | null
+          total_overcharges_found?: number | null
+          updated_at?: string
+          website?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          accuracy_rating?: number | null
+          address?: string | null
+          average_bill_amount?: number | null
+          billing_accuracy_score?: number | null
+          city?: string | null
+          cost_rating?: number | null
+          created_at?: string
+          disputes_lost?: number | null
+          disputes_won?: number | null
+          id?: string
+          name?: string
+          network_status?: string | null
+          npi_number?: string | null
+          overall_rating?: number | null
+          phone?: string | null
+          provider_type?: string | null
+          response_rating?: number | null
+          specialties?: string[] | null
+          state?: string | null
+          tax_id?: string | null
+          total_bills_analyzed?: number | null
+          total_disputes_filed?: number | null
+          total_overcharges_found?: number | null
+          updated_at?: string
+          website?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       receipt_ocr_data: {
         Row: {
           confidence_score: number | null
@@ -1210,7 +1464,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_provider_statistics: {
+        Args: { p_provider_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       bill_error_category:
