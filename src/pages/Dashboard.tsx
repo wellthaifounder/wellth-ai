@@ -3,11 +3,10 @@ import { BillReviewCard } from "@/components/bills/BillReviewCard";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, MessageCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { BookOpen, MessageCircle, DollarSign, FileText, TrendingUp, Wallet, LayoutDashboard, CreditCard } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
-import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { ProgressTracker } from "@/components/dashboard/ProgressTracker";
 import { FriendlyStatsCards } from "@/components/dashboard/FriendlyStatsCards";
 import { ActionCard } from "@/components/dashboard/ActionCard";
@@ -18,9 +17,14 @@ import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { getNextAction } from "@/lib/dashboardActions";
 import { calculateProgress, getProgressSteps } from "@/lib/userProgress";
-import { calculateVaultSummary } from "@/lib/vaultCalculations";
 import { ValueSpotlight } from "@/components/dashboard/ValueSpotlight";
 import { useHSA } from "@/contexts/HSAContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DashboardCompactHeader } from "@/components/dashboard/DashboardCompactHeader";
+import { QuickActionBar } from "@/components/dashboard/QuickActionBar";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -123,7 +127,7 @@ const Dashboard = () => {
         rewardsEarned,
         expenseCount: invoices?.length || 0,
         hsaClaimableAmount: hsaClaimable,
-        disputeSavings: 0, // Will be fetched separately
+        disputeSavings: 0,
       }));
 
       setRecentExpenses(invoices?.slice(0, 5) || []);
@@ -222,7 +226,6 @@ const Dashboard = () => {
   };
 
   const fetchDisputeStats = async () => {
-    // Simplified for now - will be enhanced later
     setDisputeStats({
       recentWins: 0,
       totalSavings: 0,
@@ -237,7 +240,6 @@ const Dashboard = () => {
     );
   }
 
-  // Calculate user progress
   const userProgress = calculateProgress(
     hasConnectedBank,
     stats.expenseCount,
@@ -246,7 +248,6 @@ const Dashboard = () => {
   );
   const progressSteps = getProgressSteps(userProgress);
 
-  // Get next action
   const nextAction = getNextAction({
     unreviewedTransactions: stats.unreviewedTransactions,
     expenseCount: stats.expenseCount,
@@ -254,11 +255,23 @@ const Dashboard = () => {
     hasConnectedBank
   });
 
-  // Check if this is a new user with no data
   const isNewUser = stats.expenseCount === 0 && recentExpenses.length === 0 && !hasConnectedBank;
-
-  // Get user's first name
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
+
+  // Prepare compact header stats
+  const headerStats = hasHSA 
+    ? [
+        { icon: "💰", value: `$${stats.hsaClaimableAmount.toFixed(0)}`, label: "Claimable", variant: "success" as const },
+        { icon: "💸", value: `$${stats.taxSavings.toFixed(0)}`, label: "Tax Savings", variant: "accent" as const },
+        { icon: "🏆", value: `$${stats.rewardsEarned.toFixed(0)}`, label: "Rewards", variant: "info" as const },
+      ]
+    : [
+        { icon: "📊", value: `$${stats.totalExpenses.toFixed(0)}`, label: "Tracked", variant: "default" as const },
+        { icon: "🎉", value: `$${stats.disputeSavings.toFixed(0)}`, label: "Saved", variant: "success" as const },
+        { icon: "🏆", value: `$${stats.rewardsEarned.toFixed(0)}`, label: "Rewards", variant: "info" as const },
+      ];
+
+  const vaultedExpenses = recentExpenses.filter(e => e.reimbursement_strategy === 'vault' || e.reimbursement_strategy === 'medium').length;
 
   return (
     <ErrorBoundary
@@ -267,84 +280,151 @@ const Dashboard = () => {
       onReset={() => window.location.reload()}
     >
       <AuthenticatedLayout unreviewedTransactions={stats.unreviewedTransactions}>
-        <div id="main-content" className="container mx-auto px-4 py-8 pb-24 md:pb-8 space-y-6">
+        <div id="main-content" className="container mx-auto px-4 py-4 pb-24 md:pb-8 space-y-4">
           {!hsaOpenedDate && stats.expenseCount > 0 && <MissingHSADateBanner onDateSet={fetchStats} />}
           
           {isNewUser ? (
             <EmptyStateOnboarding />
           ) : (
             <>
-              <DashboardHeader firstName={firstName} primaryAction={nextAction} />
+              <DashboardCompactHeader firstName={firstName} stats={headerStats} />
 
-              {/* Value Spotlight Section */}
-              <ValueSpotlight
-                pendingReviews={pendingReviews.length}
-                totalPotentialSavings={0} // TODO: Calculate from bill errors
-                recentDisputeWins={disputeStats.recentWins}
-                disputeSavings={disputeStats.totalSavings}
-                onReviewClick={() => navigate("/bill-reviews")}
-                onDisputeClick={() => navigate("/disputes")}
-                onProviderClick={() => navigate("/providers")}
-              />
+              <Tabs defaultValue="overview" className="space-y-4">
+                <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
+                  <TabsTrigger value="overview" className="gap-2">
+                    <LayoutDashboard className="h-4 w-4" />
+                    <span className="hidden sm:inline">Overview</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="bills" className="gap-2">
+                    <FileText className="h-4 w-4" />
+                    <span className="hidden sm:inline">Bill Intelligence</span>
+                    {pendingReviews.length > 0 && (
+                      <Badge variant="destructive" className="ml-1 h-5 px-1 text-xs">
+                        {pendingReviews.length}
+                      </Badge>
+                    )}
+                  </TabsTrigger>
+                  {hasHSA && (
+                    <TabsTrigger value="hsa" className="gap-2">
+                      <DollarSign className="h-4 w-4" />
+                      <span className="hidden sm:inline">HSA & Money</span>
+                    </TabsTrigger>
+                  )}
+                  <TabsTrigger value="transactions" className="gap-2">
+                    <CreditCard className="h-4 w-4" />
+                    <span className="hidden sm:inline">Transactions</span>
+                    {stats.unreviewedTransactions > 0 && (
+                      <Badge variant="secondary" className="ml-1 h-5 px-1 text-xs">
+                        {stats.unreviewedTransactions}
+                      </Badge>
+                    )}
+                  </TabsTrigger>
+                </TabsList>
 
-              <div className="grid gap-6 lg:grid-cols-3">
-                <div className="lg:col-span-2 space-y-6">
-                  <FriendlyStatsCards 
-                    taxSavings={stats.taxSavings}
+                {/* Overview Tab */}
+                <TabsContent value="overview" className="space-y-4">
+                  <QuickActionBar 
+                    hasHSA={hasHSA} 
                     hsaClaimable={stats.hsaClaimableAmount}
-                    rewardsEarned={stats.rewardsEarned}
-                    totalExpenses={stats.totalExpenses}
-                    disputeSavings={stats.disputeSavings}
-                    hasHSA={hasHSA}
+                    unreviewedTransactions={stats.unreviewedTransactions}
                   />
 
-                  {/* HSA Eligibility Reference Card - Only show for HSA users */}
-                  {hasHSA && (
-                    <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-background">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-xl">
-                        <BookOpen className="h-6 w-6 text-primary" />
-                        What types of purchases can I use my HSA for?
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-muted-foreground">
-                        Not sure if an expense qualifies for HSA reimbursement? Browse our comprehensive reference guide or ask Wellbie for personalized help.
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <Button 
-                          onClick={() => navigate("/hsa-eligibility")}
-                          className="flex-1"
-                        >
-                          <BookOpen className="h-4 w-4 mr-2" />
-                          Browse HSA Eligibility Guide
-                        </Button>
-                        <Button 
-                          variant="outline"
-                          onClick={() => {
-                            window.dispatchEvent(new CustomEvent('openWellbieChat'));
-                          }}
-                          className="flex-1"
-                        >
-                          <MessageCircle className="h-4 w-4 mr-2" />
-                          Ask Wellbie
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  )}
+                  <ValueSpotlight
+                    pendingReviews={pendingReviews.length}
+                    totalPotentialSavings={0}
+                    recentDisputeWins={disputeStats.recentWins}
+                    disputeSavings={disputeStats.totalSavings}
+                    onReviewClick={() => navigate("/bill-reviews")}
+                    onDisputeClick={() => navigate("/disputes")}
+                    onProviderClick={() => navigate("/providers")}
+                  />
 
-                  {/* Pending Bill Reviews Section */}
-                  {pendingReviews.length > 0 && (
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div className="lg:col-span-2 space-y-4">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Key Metrics</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <FriendlyStatsCards
+                            taxSavings={stats.taxSavings}
+                            hsaClaimable={stats.hsaClaimableAmount}
+                            rewardsEarned={stats.rewardsEarned}
+                            totalExpenses={stats.totalExpenses}
+                            disputeSavings={stats.disputeSavings}
+                            hasHSA={hasHSA}
+                          />
+                        </CardContent>
+                      </Card>
+
+                      {recentExpenses.length > 0 && (
+                        <ActionCard
+                          icon="🏥"
+                          title="Recent Medical Bills"
+                          count={recentExpenses.length}
+                          actions={
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => navigate("/invoices")}
+                            >
+                              View All
+                            </Button>
+                          }
+                          buttonText="Show recent bills"
+                        >
+                          <div className="space-y-3">
+                            {recentExpenses.slice(0, 3).map((expense) => (
+                              <div key={expense.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <p className="font-medium">{expense.vendor}</p>
+                                    {(() => {
+                                      const rawDate = expense.invoice_date || expense.date;
+                                      const eligibleAfter = expense.is_hsa_eligible && (!hsaOpenedDate || (rawDate && new Date(rawDate) >= new Date(hsaOpenedDate)));
+                                      return eligibleAfter ? (
+                                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                          HSA-eligible ✓
+                                        </span>
+                                      ) : null;
+                                    })()}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">
+                                    {new Date(expense.date).toLocaleDateString()}
+                                  </p>
+                                </div>
+                                <p className="font-semibold">${Number(expense.amount).toFixed(2)}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </ActionCard>
+                      )}
+                    </div>
+
+                    <div className="space-y-4">
+                      <ProgressTracker steps={progressSteps} />
+                      <WellbieTip 
+                        unreviewedCount={stats.unreviewedTransactions}
+                        hasExpenses={stats.expenseCount > 0}
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                {/* Bill Intelligence Tab */}
+                <TabsContent value="bills" className="space-y-4">
+                  {pendingReviews.length > 0 ? (
                     <ActionCard
                       icon="🔍"
-                      title="Bill Reviews Requiring Attention"
+                      title="Bills Requiring Review"
+                      count={pendingReviews.length}
                       buttonText="View All Reviews"
                       actions={
                         <Button onClick={() => navigate("/bill-reviews")}>
                           View All
                         </Button>
                       }
+                      defaultOpen={true}
                     >
                       <div className="space-y-3">
                         {pendingReviews.map((review) => (
@@ -356,190 +436,324 @@ const Dashboard = () => {
                         ))}
                       </div>
                     </ActionCard>
+                  ) : (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>No Bills to Review</CardTitle>
+                        <CardDescription>Upload a medical bill to get started with error detection</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Button onClick={() => navigate("/bill-review")}>
+                          Upload First Bill
+                        </Button>
+                      </CardContent>
+                    </Card>
                   )}
 
-
-                  {hasHSA && stats.hsaClaimableAmount > 0 && (
-                    <ActionCard
-                      icon="💵"
-                      title="Money You Can Claim from HSA"
-                      buttonText="Show all reimbursement requests"
-                      actions={
-                        <Button onClick={() => navigate("/hsa-reimbursement")}>
-                          Create Request
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <span>⚖️</span>
+                          Active Disputes
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Track your dispute progress and potential savings
+                        </p>
+                        <Button variant="outline" onClick={() => navigate("/disputes")} className="w-full">
+                          View Disputes
                         </Button>
-                      }
-                      headerContent={
-                        <div className="grid grid-cols-2 gap-4">
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <span>🏥</span>
+                          Provider Insights
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Check billing accuracy before your next visit
+                        </p>
+                        <Button variant="outline" onClick={() => navigate("/providers")} className="w-full">
+                          View Providers
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+
+                {/* HSA & Money Tab */}
+                {hasHSA && (
+                  <TabsContent value="hsa" className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Card className="bg-success/5 border-success/20">
+                        <CardHeader>
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            <DollarSign className="h-5 w-5" />
+                            Available to Claim
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-3xl font-bold text-success">${stats.hsaClaimableAmount.toFixed(2)}</p>
+                          <p className="text-sm text-muted-foreground mt-1">From eligible expenses</p>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-accent/5 border-accent/20">
+                        <CardHeader>
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            <TrendingUp className="h-5 w-5" />
+                            Tax Savings
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-3xl font-bold text-accent">${stats.taxSavings.toFixed(2)}</p>
+                          <p className="text-sm text-muted-foreground mt-1">This quarter</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {stats.hsaClaimableAmount > 0 && (
+                      <ActionCard
+                        icon="💰"
+                        title="Money You Can Claim from HSA"
+                        buttonText="Show all reimbursement requests"
+                        actions={
+                          <Button onClick={() => navigate("/hsa-reimbursement")}>
+                            Create Request
+                          </Button>
+                        }
+                        defaultOpen={true}
+                      >
+                        <div className="space-y-3">
                           <div className="bg-primary/5 rounded-lg p-4">
                             <p className="text-sm text-muted-foreground mb-1">Available to Claim</p>
                             <p className="text-2xl font-bold text-primary">
                               ${stats.hsaClaimableAmount.toFixed(2)}
                             </p>
                           </div>
-                          <div className="bg-amber-500/5 rounded-lg p-4">
-                            <p className="text-sm text-muted-foreground mb-1">Pending Requests</p>
-                            <p className="text-2xl font-bold text-amber-600">
-                              ${reimbursementRequests
-                                .filter(r => r.status === 'pending' || r.status === 'submitted')
-                                .reduce((sum, r) => sum + Number(r.total_amount), 0)
-                                .toFixed(2)}
-                            </p>
-                          </div>
-                        </div>
-                      }
-                    >
-                      <div className="space-y-3">
-                        {reimbursementRequests.length === 0 ? (
-                          <p className="text-sm text-muted-foreground text-center py-4">
-                            No reimbursement requests yet. Create your first one!
+                          <p className="text-sm text-muted-foreground">
+                            💡 These are expenses you paid out-of-pocket that you can now reimburse from your HSA
                           </p>
-                        ) : (
-                          <>
-                            {reimbursementRequests.map((request) => (
-                              <div
-                                key={request.id}
-                                className="flex items-center justify-between p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
-                              >
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <p className="font-semibold">${Number(request.total_amount).toFixed(2)}</p>
-                                    <span className={`text-xs px-2 py-1 rounded-full ${
-                                      request.status === 'completed' 
-                                        ? 'bg-green-500/10 text-green-600' 
-                                        : request.status === 'submitted'
-                                        ? 'bg-blue-500/10 text-blue-600'
-                                        : 'bg-amber-500/10 text-amber-600'
-                                    }`}>
-                                      {request.status}
-                                    </span>
-                                  </div>
-                                  <p className="text-sm text-muted-foreground">
-                                    {new Date(request.created_at).toLocaleDateString('en-US', { 
-                                      month: 'short', 
-                                      day: 'numeric', 
-                                      year: 'numeric' 
-                                    })}
-                                  </p>
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => navigate(`/reimbursement-details/${request.id}`)}
-                                >
-                                  View
-                                </Button>
-                              </div>
-                            ))}
-                            <Button
-                              variant="outline"
-                              className="w-full mt-2"
-                              onClick={() => navigate("/reimbursement-requests")}
-                            >
-                              View All Requests
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </ActionCard>
-                  )}
+                        </div>
+                      </ActionCard>
+                    )}
 
-                  {stats.unreviewedTransactions > 0 && (
                     <ActionCard
                       icon="📋"
-                      title="Transactions to Review"
+                      title="Reimbursement Requests"
+                      count={reimbursementRequests.length}
+                      actions={
+                        <Button onClick={() => navigate("/reimbursement-requests")}>
+                          View All
+                        </Button>
+                      }
+                      buttonText="Show requests"
+                    >
+                      {reimbursementRequests.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          No reimbursement requests yet. Create your first one!
+                        </p>
+                      ) : (
+                        <div className="space-y-3">
+                          {reimbursementRequests.map((request) => (
+                            <div
+                              key={request.id}
+                              className="flex items-center justify-between p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <p className="font-semibold">${Number(request.total_amount).toFixed(2)}</p>
+                                  <span className={`text-xs px-2 py-1 rounded-full ${
+                                    request.status === 'completed' 
+                                      ? 'bg-green-500/10 text-green-600' 
+                                      : request.status === 'submitted'
+                                      ? 'bg-blue-500/10 text-blue-600'
+                                      : 'bg-amber-500/10 text-amber-600'
+                                  }`}>
+                                    {request.status}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {new Date(request.created_at).toLocaleDateString('en-US', { 
+                                    month: 'short', 
+                                    day: 'numeric', 
+                                    year: 'numeric' 
+                                  })}
+                                </p>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => navigate(`/reimbursement-details/${request.id}`)}
+                              >
+                                View
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </ActionCard>
+
+                    {vaultedExpenses > 0 && (
+                      <ActionCard
+                        icon="💎"
+                        title="Investment Vault"
+                        count={vaultedExpenses}
+                        actions={
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => navigate("/vault-tracker")}
+                          >
+                            View Vault
+                          </Button>
+                        }
+                      >
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">
+                            Track expenses held for long-term HSA investment growth
+                          </p>
+                        </div>
+                      </ActionCard>
+                    )}
+
+                    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <BookOpen className="h-5 w-5" />
+                          HSA Eligibility Reference
+                        </CardTitle>
+                        <CardDescription>
+                          Common HSA-eligible expenses at a glance
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                          Not sure if an expense qualifies for HSA reimbursement? Browse our comprehensive reference guide or ask Wellbie for personalized help.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <Button 
+                            onClick={() => navigate("/hsa-eligibility")}
+                            className="flex-1"
+                          >
+                            <BookOpen className="h-4 w-4 mr-2" />
+                            Browse Guide
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            onClick={() => {
+                              window.dispatchEvent(new CustomEvent('openWellbieChat'));
+                            }}
+                            className="flex-1"
+                          >
+                            <MessageCircle className="h-4 w-4 mr-2" />
+                            Ask Wellbie
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                )}
+
+                {/* Transactions Tab */}
+                <TabsContent value="transactions" className="space-y-4">
+                  {stats.unreviewedTransactions > 0 ? (
+                    <ActionCard
+                      icon="📋"
+                      title="Transactions Need Review"
                       count={stats.unreviewedTransactions}
                       defaultOpen={true}
+                      actions={
+                        <Button onClick={() => navigate("/transactions")}>
+                          Review All
+                        </Button>
+                      }
                     >
-                      <div className="space-y-3">
+                      <div className="space-y-2">
+                        <Alert>
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertDescription>
+                            {stats.unreviewedTransactions} transaction{stats.unreviewedTransactions !== 1 ? 's' : ''} waiting for your review
+                          </AlertDescription>
+                        </Alert>
                         <p className="text-sm text-muted-foreground">
-                          Review your recent transactions to categorize medical expenses
+                          Review and categorize your transactions to track healthcare expenses accurately
                         </p>
                         <Button 
-                          className="w-full"
+                          className="w-full mt-2"
                           onClick={() => navigate("/transactions?tab=review")}
                         >
                           Review {stats.unreviewedTransactions} Transaction{stats.unreviewedTransactions === 1 ? '' : 's'}
                         </Button>
                       </div>
                     </ActionCard>
+                  ) : (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>All Caught Up! 🎉</CardTitle>
+                        <CardDescription>No transactions need review at the moment</CardDescription>
+                      </CardHeader>
+                    </Card>
                   )}
 
-                  {recentExpenses.filter(e => e.reimbursement_strategy === 'vault' || e.reimbursement_strategy === 'medium').length > 0 && (
-                    <ActionCard
-                      icon="💎"
-                      title="Investment Vault"
-                      count={recentExpenses.filter(e => e.reimbursement_strategy === 'vault' || e.reimbursement_strategy === 'medium').length}
-                      actions={
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => navigate("/vault-tracker")}
-                        >
-                          View Vault
-                        </Button>
-                      }
-                    >
-                      <div className="space-y-2">
-                        <p className="text-sm text-muted-foreground">
-                          Track expenses held for long-term HSA investment growth
-                        </p>
-                      </div>
-                    </ActionCard>
-                  )}
-
-                  {recentExpenses.length > 0 && (
-                    <ActionCard
-                      icon="🏥"
-                      title="Recent Medical Bills"
-                      count={recentExpenses.length}
-                      actions={
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => navigate("/invoices")}
-                        >
-                          View All
-                        </Button>
-                      }
-                    >
-                      <div className="space-y-3">
-                        {recentExpenses.slice(0, 3).map((expense) => (
-                          <div key={expense.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <p className="font-medium">{expense.vendor}</p>
-                                {(() => {
-                                  const rawDate = expense.invoice_date || expense.date;
-                                  const eligibleAfter = expense.is_hsa_eligible && (!hsaOpenedDate || (rawDate && new Date(rawDate) >= new Date(hsaOpenedDate)));
-                                  return eligibleAfter ? (
-                                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                                      HSA-eligible ✓
-                                    </span>
-                                  ) : null;
-                                })()}
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                {new Date(expense.date).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <p className="font-semibold">${Number(expense.amount).toFixed(2)}</p>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <Wallet className="h-5 w-5" />
+                          Bank Connections
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm">Status:</span>
+                            <Badge variant={hasConnectedBank ? "success" : "secondary"}>
+                              {hasConnectedBank ? "Connected" : "Not Connected"}
+                            </Badge>
                           </div>
-                        ))}
-                      </div>
-                    </ActionCard>
-                  )}
-                </div>
+                          <Button 
+                            variant="outline" 
+                            className="w-full"
+                            onClick={() => navigate("/bank-accounts")}
+                          >
+                            Manage Connections
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-                <div className="space-y-6">
-                  <ProgressTracker steps={progressSteps} />
-                  
-                  <WellbieTip 
-                    unreviewedCount={stats.unreviewedTransactions}
-                    hasExpenses={stats.expenseCount > 0}
-                  />
-                </div>
-              </div>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <FileText className="h-5 w-5" />
+                          Recent Expenses
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {recentExpenses.length > 0 
+                            ? `${recentExpenses.length} recent expenses tracked`
+                            : "No expenses tracked yet"}
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => navigate("/expenses")}
+                        >
+                          View All Expenses
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+              </Tabs>
             </>
           )}
         </div>
