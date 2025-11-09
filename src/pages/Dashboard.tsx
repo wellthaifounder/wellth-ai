@@ -356,7 +356,7 @@ const Dashboard = () => {
                     onDismiss={() => onboarding.markAsSeen("hasSeenBillIntelligence")}
                     position="bottom"
                     ctaText="Upload First Bill"
-                    onCtaClick={() => navigate("/bill-review")}
+                    onCtaClick={() => navigate("/bill-reviews")}
                   >
                     <TabsTrigger value="bills" className="gap-2">
                       <FileText className="h-4 w-4" />
@@ -588,7 +588,7 @@ const Dashboard = () => {
                               <CardDescription>Upload a medical bill to get started with error detection</CardDescription>
                             </CardHeader>
                             <CardContent>
-                              <Button onClick={() => navigate("/bill-review")}>
+                              <Button onClick={() => navigate("/bill-reviews")}>
                                 Upload First Bill
                               </Button>
                             </CardContent>
