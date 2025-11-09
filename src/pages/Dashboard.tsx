@@ -772,28 +772,31 @@ const Dashboard = () => {
                         </div>
                       )}
                     </ActionCard>
+                          </SortableCard>
+                        )}
 
-                    {vaultedExpenses > 0 && (
-                      <ActionCard
-                        icon="💎"
-                        title="Investment Vault"
-                        count={vaultedExpenses}
-                        actions={
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => navigate("/vault-tracker")}
-                          >
-                            View Vault
-                          </Button>
-                        }
-                      >
-                        <div className="space-y-2">
-                          <p className="text-sm text-muted-foreground">
-                            Track expenses held for long-term HSA investment growth
-                              </p>
-                            </div>
-                          </ActionCard>
+                        {layout.isCardVisible("investment-vault") && vaultedExpenses > 0 && (
+                          <SortableCard id="investment-vault">
+                            <ActionCard
+                              icon="💎"
+                              title="Investment Vault"
+                              count={vaultedExpenses}
+                              actions={
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  onClick={() => navigate("/vault-tracker")}
+                                >
+                                  View Vault
+                                </Button>
+                              }
+                            >
+                              <div className="space-y-2">
+                                <p className="text-sm text-muted-foreground">
+                                  Track expenses held for long-term HSA investment growth
+                                </p>
+                              </div>
+                            </ActionCard>
                           </SortableCard>
                         )}
 
@@ -843,36 +846,46 @@ const Dashboard = () => {
 
                 {/* Transactions Tab */}
                 <TabsContent value="transactions" className="space-y-4">
-                  {stats.unreviewedTransactions > 0 ? (
-                    <ActionCard
-                      icon="📋"
-                      title="Transactions Need Review"
-                      count={stats.unreviewedTransactions}
-                      defaultOpen={true}
-                      actions={
-                        <Button onClick={() => navigate("/transactions")}>
-                          Review All
-                        </Button>
-                      }
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={layout.getVisibleCardsForCategory("transactions")}
+                      strategy={verticalListSortingStrategy}
                     >
-                      <div className="space-y-2">
-                        <Alert>
-                          <AlertCircle className="h-4 w-4" />
-                          <AlertDescription>
-                            {stats.unreviewedTransactions} transaction{stats.unreviewedTransactions !== 1 ? 's' : ''} waiting for your review
-                          </AlertDescription>
-                        </Alert>
-                        <p className="text-sm text-muted-foreground">
-                          Review and categorize your transactions to track healthcare expenses accurately
-                        </p>
-                        <Button 
-                          className="w-full mt-2"
-                          onClick={() => navigate("/transactions?tab=review")}
-                        >
-                          Review {stats.unreviewedTransactions} Transaction{stats.unreviewedTransactions === 1 ? '' : 's'}
-                            </Button>
-                          </div>
-                        </ActionCard>
+                      {layout.isCardVisible("transactions-review") && stats.unreviewedTransactions > 0 && (
+                        <SortableCard id="transactions-review">
+                          <ActionCard
+                            icon="📋"
+                            title="Transactions Need Review"
+                            count={stats.unreviewedTransactions}
+                            defaultOpen={true}
+                            actions={
+                              <Button onClick={() => navigate("/transactions")}>
+                                Review All
+                              </Button>
+                            }
+                          >
+                            <div className="space-y-2">
+                              <Alert>
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertDescription>
+                                  {stats.unreviewedTransactions} transaction{stats.unreviewedTransactions !== 1 ? 's' : ''} waiting for your review
+                                </AlertDescription>
+                              </Alert>
+                              <p className="text-sm text-muted-foreground">
+                                Review and categorize your transactions to track healthcare expenses accurately
+                              </p>
+                              <Button 
+                                className="w-full mt-2"
+                                onClick={() => navigate("/transactions?tab=review")}
+                              >
+                                Review {stats.unreviewedTransactions} Transaction{stats.unreviewedTransactions === 1 ? '' : 's'}
+                              </Button>
+                            </div>
+                          </ActionCard>
                         </SortableCard>
                       )}
 
