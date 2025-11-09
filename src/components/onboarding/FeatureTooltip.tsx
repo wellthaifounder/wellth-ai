@@ -39,12 +39,11 @@ export function FeatureTooltip({
     }
   }, [show]);
 
-  if (!show) return null;
-
   return (
     <div className="relative">
       {children}
-      <Card
+      {show && (
+        <Card
         className={cn(
           "absolute z-50 w-80 p-4 shadow-lg border-2 border-primary/50 bg-background transition-all duration-300",
           isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95",
@@ -108,6 +107,7 @@ export function FeatureTooltip({
           )}
         />
       </Card>
+      )}
     </div>
   );
 }

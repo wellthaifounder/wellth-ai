@@ -330,8 +330,6 @@ const Dashboard = () => {
             <EmptyStateOnboarding />
           ) : (
             <>
-              <DashboardCompactHeader firstName={firstName} stats={headerStats} />
-
               <WelcomeDialog
                 open={showWelcome}
                 onClose={() => {
@@ -412,6 +410,24 @@ const Dashboard = () => {
 
                 {/* Overview Tab */}
                 <TabsContent value="overview" className="space-y-4">
+                  <div className="mb-4">
+                    <h2 className="text-2xl font-bold mb-1">Welcome back, {firstName}! 👋</h2>
+                    <div className="flex flex-wrap gap-2">
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted">
+                        <span className="text-lg">📊</span>
+                        <span className="text-sm font-medium">${stats.totalExpenses.toFixed(0)} Tracked</span>
+                      </div>
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10">
+                        <span className="text-lg">🎉</span>
+                        <span className="text-sm font-medium text-success">${stats.disputeSavings.toFixed(0)} Saved</span>
+                      </div>
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10">
+                        <span className="text-lg">🏆</span>
+                        <span className="text-sm font-medium text-accent">${stats.rewardsEarned.toFixed(0)} Rewards</span>
+                      </div>
+                    </div>
+                  </div>
+
                   <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
@@ -459,26 +475,6 @@ const Dashboard = () => {
 
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <div className="lg:col-span-2 space-y-4">
-                      {layout.isCardVisible("key-metrics") && (
-                        <SortableCard id="key-metrics">
-                          <Card>
-                            <CardHeader>
-                              <CardTitle className="text-lg">Key Metrics</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <FriendlyStatsCards
-                                taxSavings={stats.taxSavings}
-                                hsaClaimable={stats.hsaClaimableAmount}
-                                rewardsEarned={stats.rewardsEarned}
-                                totalExpenses={stats.totalExpenses}
-                                disputeSavings={stats.disputeSavings}
-                                hasHSA={hasHSA}
-                              />
-                            </CardContent>
-                          </Card>
-                        </SortableCard>
-                      )}
-
                       {layout.isCardVisible("recent-bills") && recentExpenses.length > 0 && (
                         <SortableCard id="recent-bills">
                           <ActionCard
@@ -545,6 +541,26 @@ const Dashboard = () => {
 
                 {/* Bill Intelligence Tab */}
                 <TabsContent value="bills" className="space-y-4">
+                  <div className="mb-4">
+                    <h2 className="text-2xl font-bold mb-1">Bill Intelligence</h2>
+                    <div className="flex flex-wrap gap-2">
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted">
+                        <span className="text-lg">📊</span>
+                        <span className="text-sm font-medium">${stats.totalExpenses.toFixed(0)} Tracked</span>
+                      </div>
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10">
+                        <span className="text-lg">🎉</span>
+                        <span className="text-sm font-medium text-success">${stats.disputeSavings.toFixed(0)} Saved</span>
+                      </div>
+                      {pendingReviews.length > 0 && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-destructive/10">
+                          <span className="text-lg">🔍</span>
+                          <span className="text-sm font-medium text-destructive">{pendingReviews.length} Need Review</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
@@ -643,6 +659,24 @@ const Dashboard = () => {
                 {/* HSA & Money Tab */}
                 {hasHSA && (
                   <TabsContent value="hsa" className="space-y-4">
+                    <div className="mb-4">
+                      <h2 className="text-2xl font-bold mb-1">HSA & Money</h2>
+                      <div className="flex flex-wrap gap-2">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10">
+                          <span className="text-lg">💰</span>
+                          <span className="text-sm font-medium text-success">${stats.hsaClaimableAmount.toFixed(0)} Claimable</span>
+                        </div>
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10">
+                          <span className="text-lg">💸</span>
+                          <span className="text-sm font-medium text-accent">${stats.taxSavings.toFixed(0)} Tax Savings</span>
+                        </div>
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10">
+                          <span className="text-lg">🏆</span>
+                          <span className="text-sm font-medium text-primary">${stats.rewardsEarned.toFixed(0)} Rewards</span>
+                        </div>
+                      </div>
+                    </div>
+
                     <DndContext
                       sensors={sensors}
                       collisionDetection={closestCenter}
@@ -847,6 +881,26 @@ const Dashboard = () => {
 
                 {/* Transactions Tab */}
                 <TabsContent value="transactions" className="space-y-4">
+                  <div className="mb-4">
+                    <h2 className="text-2xl font-bold mb-1">Transactions</h2>
+                    <div className="flex flex-wrap gap-2">
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted">
+                        <span className="text-lg">🏦</span>
+                        <span className="text-sm font-medium">{hasConnectedBank ? "Connected" : "Not Connected"}</span>
+                      </div>
+                      {stats.unreviewedTransactions > 0 && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10">
+                          <span className="text-lg">📋</span>
+                          <span className="text-sm font-medium text-secondary">{stats.unreviewedTransactions} to Review</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted">
+                        <span className="text-lg">📊</span>
+                        <span className="text-sm font-medium">{recentExpenses.length} Recent</span>
+                      </div>
+                    </div>
+                  </div>
+
                   <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
