@@ -41,7 +41,7 @@ export const PWAUpdatePrompt = () => {
   }
 
   return (
-    <div className="fixed top-20 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm z-50 animate-slide-in-right">
+    <div className="fixed top-20 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm z-[var(--z-toast)] animate-slide-in-right">
       <Card className="border-amber-500/50 shadow-2xl bg-card">
         <CardHeader className="relative pb-3">
           <Button

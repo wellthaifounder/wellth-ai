@@ -45,7 +45,7 @@ export function FeatureTooltip({
       {show && (
         <Card
         className={cn(
-          "absolute z-[var(--z-tooltip)] w-80 p-4 shadow-lg border-2 border-primary/50 bg-background transition-all duration-300",
+          "absolute z-[var(--z-toast)] w-80 p-4 shadow-lg border-2 border-primary/50 bg-background transition-all duration-300",
           isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95",
           position === "bottom" && "top-full mt-2 left-1/2 -translate-x-1/2",
           position === "top" && "bottom-full mb-2 left-1/2 -translate-x-1/2",

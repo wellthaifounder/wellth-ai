@@ -100,7 +100,7 @@ export const PWAInstallPrompt = () => {
   }
 
   return (
-    <div className="fixed bottom-20 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm z-40 animate-slide-in-right">
+    <div className="fixed bottom-20 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm z-[var(--z-toast)] animate-slide-in-right">
       <Card className="border-primary/50 shadow-2xl">
         <CardHeader className="relative pb-3">
           <Button
