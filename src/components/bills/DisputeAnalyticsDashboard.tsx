@@ -1,12 +1,38 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, DollarSign, Clock, Target, AlertCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface DisputeAnalyticsDashboardProps {
   disputes: any[];
+  isLoading?: boolean;
 }
 
-export const DisputeAnalyticsDashboard = ({ disputes }: DisputeAnalyticsDashboardProps) => {
+export const DisputeAnalyticsDashboard = ({ disputes, isLoading = false }: DisputeAnalyticsDashboardProps) => {
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <Skeleton className="h-20 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-32 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const totalDisputes = disputes.length;
   const resolvedDisputes = disputes.filter(d => 
     ['resolved', 'settled', 'withdrawn'].includes(d.dispute_status)

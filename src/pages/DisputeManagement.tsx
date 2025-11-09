@@ -26,7 +26,7 @@ export default function DisputeManagement() {
   });
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const { data: disputes, isLoading } = useQuery({
+  const { data: disputes, isLoading, refetch } = useQuery({
     queryKey: ['disputes'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -192,7 +192,7 @@ export default function DisputeManagement() {
         </div>
 
         {/* Analytics Dashboard */}
-        <DisputeAnalyticsDashboard disputes={filteredDisputes} />
+        <DisputeAnalyticsDashboard disputes={filteredDisputes} isLoading={isLoading} />
 
         {/* Filters */}
         <AdvancedFilters 
@@ -217,7 +217,9 @@ export default function DisputeManagement() {
           disputes={filteredDisputes}
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
-          onActionComplete={() => queryClient.invalidateQueries({ queryKey: ["disputes"] })}
+          onActionComplete={() => {
+            refetch();
+          }}
         />
 
         {/* Disputes List */}

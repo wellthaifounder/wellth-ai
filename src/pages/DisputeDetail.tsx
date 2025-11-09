@@ -5,7 +5,7 @@ import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowLeft, Building2, DollarSign, Calendar } from "lucide-react";
+import { ArrowLeft, Building2, DollarSign, Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { DisputeTimeline } from "@/components/bills/DisputeTimeline";
 import { DisputeCommunicationLog } from "@/components/bills/DisputeCommunicationLog";
@@ -14,12 +14,14 @@ import { InsuranceVerification } from "@/components/bills/InsuranceVerification"
 import { PriceBenchmarking } from "@/components/bills/PriceBenchmarking";
 import { SettlementNegotiationTracker } from "@/components/bills/SettlementNegotiationTracker";
 import { DisputeSuccessPredictor } from "@/components/bills/DisputeSuccessPredictor";
+import { DisputeLoadingState } from "@/components/bills/DisputeLoadingState";
+import { DisputeErrorState } from "@/components/bills/DisputeErrorState";
 
 export default function DisputeDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const { data: dispute, isLoading, refetch } = useQuery({
+  const { data: dispute, isLoading, error, refetch } = useQuery({
     queryKey: ['dispute', id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -71,34 +73,21 @@ export default function DisputeDetail() {
     enabled: !!dispute?.bill_review_id
   });
 
-  if (isLoading) {
-    return (
-      <AuthenticatedLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </AuthenticatedLayout>
-    );
-  }
-
-  if (!dispute) {
-    return (
-      <AuthenticatedLayout>
-        <div className="container mx-auto px-4 py-8">
-          <Card className="p-8 text-center">
-            <h2 className="text-2xl font-bold mb-2">Dispute Not Found</h2>
-            <Button onClick={() => navigate('/disputes')}>
-              Back to Disputes
-            </Button>
-          </Card>
-        </div>
-      </AuthenticatedLayout>
-    );
-  }
-
   return (
     <AuthenticatedLayout>
-      <div className="container mx-auto px-4 py-8 space-y-6">
+      <div className="container mx-auto py-6 px-4 max-w-7xl">
+        {isLoading ? (
+          <DisputeLoadingState message="Loading dispute details..." />
+        ) : error || !dispute ? (
+          <DisputeErrorState
+            title="Dispute Not Found"
+            message="We couldn't find the dispute you're looking for. It may have been deleted or you may not have permission to view it."
+            onRetry={() => refetch()}
+            showHomeButton={true}
+          />
+        ) : (
+          <div className="space-y-6">
+
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button
@@ -245,6 +234,8 @@ export default function DisputeDetail() {
               <p className="text-sm whitespace-pre-wrap">{dispute.dispute_reason}</p>
             </CardContent>
           </Card>
+        )}
+        </div>
         )}
       </div>
     </AuthenticatedLayout>

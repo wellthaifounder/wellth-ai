@@ -53,44 +53,63 @@ export const BulkDisputeActions = ({
 
     setIsLoading(true);
     try {
-      const updates: any = {};
+      let updateData: any = {};
+      let notificationType: string | null = null;
       
       switch (bulkAction) {
-        case "submit":
-          updates.dispute_status = "submitted";
-          updates.submitted_date = new Date().toISOString().split('T')[0];
+        case 'submit':
+          updateData = { 
+            dispute_status: 'submitted', 
+            submitted_date: new Date().toISOString().split('T')[0]
+          };
+          notificationType = 'submitted';
           break;
-        case "withdraw":
-          updates.dispute_status = "withdrawn";
+        case 'withdraw':
+          updateData = { 
+            dispute_status: 'withdrawn',
+            resolution_date: new Date().toISOString().split('T')[0]
+          };
           break;
-        case "archive":
-          updates.dispute_status = "resolved";
-          updates.resolution_date = new Date().toISOString().split('T')[0];
-          break;
-        default:
+        case 'archive':
+          updateData = { dispute_status: 'withdrawn' };
           break;
       }
 
+      // Update all selected disputes
       const { error } = await supabase
-        .from("bill_disputes")
-        .update(updates)
-        .in("id", selectedIds);
+        .from('bill_disputes')
+        .update(updateData)
+        .in('id', selectedIds);
 
       if (error) throw error;
 
+      // Send notifications for submitted disputes
+      if (notificationType === 'submitted') {
+        for (const disputeId of selectedIds) {
+          try {
+            await supabase.functions.invoke('send-dispute-notification', {
+              body: { disputeId, notificationType }
+            });
+          } catch (notifError) {
+            console.error('Notification error for dispute:', disputeId, notifError);
+          }
+        }
+      }
+
       toast({
         title: "Success",
-        description: `${selectedIds.length} dispute(s) updated successfully.`,
+        description: `${selectedIds.length} dispute(s) ${bulkAction === 'submit' ? 'submitted' : bulkAction === 'withdraw' ? 'withdrawn' : 'archived'} successfully.`,
       });
 
-      onSelectionChange([]);
-      setBulkAction("");
-      setShowConfirmDialog(false);
       onActionComplete();
-    } catch (error: any) {
+      onSelectionChange([]);
+      setBulkAction('');
+      setShowConfirmDialog(false);
+    } catch (error) {
+      console.error('Bulk action error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Failed to complete bulk action. Please try again.",
         variant: "destructive",
       });
     } finally {

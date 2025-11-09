@@ -75,7 +75,7 @@ export const SettlementNegotiationTracker = ({
     if (!newAmount || parseFloat(newAmount) <= 0) {
       toast({
         title: "Invalid Amount",
-        description: "Please enter a valid settlement amount",
+        description: "Please enter a valid settlement amount.",
         variant: "destructive",
       });
       return;
@@ -84,29 +84,44 @@ export const SettlementNegotiationTracker = ({
     setIsAdding(true);
     try {
       const { error } = await supabase
-        .from("dispute_communications")
-        .insert({
+        .from('dispute_communications')
+        .insert([{
           dispute_id: disputeId,
-          communication_type: "phone_call",
-          direction: offerType === 'offer' ? 'outbound' : 'inbound',
-          summary: newNotes || `Settlement ${offerType === 'offer' ? 'offer' : 'counter-offer'} of $${parseFloat(newAmount).toLocaleString()}`,
-          outcome: newAmount,
-        });
+          communication_type: (offerType === 'offer' ? 'phone_call' : 'email') as any,
+          direction: (offerType === 'offer' ? 'inbound' : 'outbound') as any,
+          summary: `${offerType === 'offer' ? 'Settlement Offer' : 'Counter Offer'}: $${newAmount}`,
+          outcome: newNotes || null,
+        }]);
 
       if (error) throw error;
 
+      // Send notification for settlement offers
+      if (offerType === 'offer') {
+        try {
+          await supabase.functions.invoke('send-dispute-notification', {
+            body: { 
+              disputeId,
+              notificationType: 'settlement_offer'
+            }
+          });
+        } catch (notifError) {
+          console.error('Notification error:', notifError);
+        }
+      }
+
       toast({
         title: "Success",
-        description: "Settlement offer recorded",
+        description: `${offerType === 'offer' ? 'Offer' : 'Counter offer'} recorded successfully.`,
       });
 
       setNewAmount("");
       setNewNotes("");
       loadSettlements();
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Error adding settlement:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Failed to record settlement. Please try again.",
         variant: "destructive",
       });
     } finally {
