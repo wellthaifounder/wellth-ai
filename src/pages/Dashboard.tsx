@@ -266,14 +266,7 @@ const Dashboard = () => {
     });
   };
 
-  if (loading) {
-    return (
-      <AuthenticatedLayout unreviewedTransactions={0}>
-        <DashboardSkeleton />
-      </AuthenticatedLayout>
-    );
-  }
-
+  // Calculate derived values before early returns
   const userProgress = calculateProgress(
     hasConnectedBank,
     stats.expenseCount,
@@ -292,13 +285,21 @@ const Dashboard = () => {
   const isNewUser = stats.expenseCount === 0 && recentExpenses.length === 0 && !hasConnectedBank;
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
 
-  // Show welcome dialog for first-time users
+  // Show welcome dialog for first-time users - MUST be before early returns
   useEffect(() => {
     if (!loading && !isNewUser && stats.expenseCount <= 3 && !onboarding.hasCompletedOnboarding) {
       const timer = setTimeout(() => setShowWelcome(true), 1000);
       return () => clearTimeout(timer);
     }
   }, [loading, isNewUser, stats.expenseCount, onboarding.hasCompletedOnboarding]);
+
+  if (loading) {
+    return (
+      <AuthenticatedLayout unreviewedTransactions={0}>
+        <DashboardSkeleton />
+      </AuthenticatedLayout>
+    );
+  }
 
   // Prepare compact header stats
   const headerStats = hasHSA 
