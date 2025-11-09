@@ -65,6 +65,8 @@ const ExpenseEntry = () => {
   const [hsaDateDialogOpen, setHsaDateDialogOpen] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [expense, setExpense] = useState<any>(null);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [showAnalysisPrompt, setShowAnalysisPrompt] = useState(false);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     vendor: "",
@@ -267,6 +269,7 @@ const ExpenseEntry = () => {
       }
 
       // Upload new files
+      let uploadedReceiptId = null;
       if (newFiles.length > 0 && expense) {
         for (let i = 0; i < newFiles.length; i++) {
           const fileData = newFiles[i];
@@ -280,7 +283,7 @@ const ExpenseEntry = () => {
 
           if (uploadError) throw uploadError;
 
-          const { error: receiptError } = await supabase
+          const { data: receiptData, error: receiptError } = await supabase
             .from("receipts")
             .insert({
               user_id: user.id,
@@ -290,20 +293,64 @@ const ExpenseEntry = () => {
               document_type: fileData.documentType,
               description: fileData.description || null,
               display_order: i,
-            });
+            })
+            .select()
+            .single();
 
           if (receiptError) throw receiptError;
+          
+          // Store first receipt/bill for analysis
+          if (!uploadedReceiptId && ['receipt', 'bill'].includes(fileData.documentType)) {
+            uploadedReceiptId = receiptData.id;
+          }
         }
       }
 
-      setSuccess(true);
-      toast.success(isEditMode ? "Expense updated successfully!" : "Expense added successfully!");
-      
-      // Reset form after 2 seconds or navigate
-      setTimeout(() => {
-        setSuccess(false);
-        navigate("/expenses");
-      }, 2000);
+      // Auto-trigger bill analysis for bills over $500
+      const shouldAutoAnalyze = 
+        uploadedReceiptId && 
+        parseFloat(formData.amount) >= 500 &&
+        !isEditMode; // Only for new expenses
+
+      if (shouldAutoAnalyze) {
+        setSuccess(true);
+        toast.success("Expense added! Analyzing bill for errors...");
+        setIsAnalyzing(true);
+        
+        try {
+          const { data, error } = await supabase.functions.invoke('analyze-medical-bill', {
+            body: {
+              invoiceId: expense.id,
+              receiptId: uploadedReceiptId
+            }
+          });
+
+          if (error) throw error;
+
+          setAnalysisResult(data);
+          setShowAnalysisPrompt(true);
+          toast.success(`Found ${data.errorsFound} potential issues with $${data.totalPotentialSavings.toFixed(2)} in savings!`);
+        } catch (error) {
+          console.error('Error analyzing bill:', error);
+          toast.error('Bill saved, but analysis failed. You can analyze it later from the expense page.');
+          // Still navigate away after error
+          setTimeout(() => {
+            setSuccess(false);
+            navigate("/expenses");
+          }, 2000);
+        } finally {
+          setIsAnalyzing(false);
+        }
+      } else {
+        setSuccess(true);
+        toast.success(isEditMode ? "Expense updated successfully!" : "Expense added successfully!");
+        
+        // Reset form after 2 seconds or navigate
+        setTimeout(() => {
+          setSuccess(false);
+          navigate("/expenses");
+        }, 2000);
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
@@ -348,15 +395,47 @@ const ExpenseEntry = () => {
     }
   };
 
-  if (success) {
+  if (success && !showAnalysisPrompt) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="max-w-md mx-auto text-center p-8">
           <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-4" />
           <CardTitle className="mb-2">{isEditMode ? "Expense Updated!" : "Expense Added!"}</CardTitle>
           <CardDescription>
-            Redirecting to expenses...
+            {isAnalyzing ? "Analyzing bill for errors..." : "Redirecting to expenses..."}
           </CardDescription>
+        </Card>
+      </div>
+    );
+  }
+
+  if (success && showAnalysisPrompt && analysisResult) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-lg mx-auto text-center p-8">
+          <Sparkles className="h-16 w-16 text-primary mx-auto mb-4" />
+          <CardTitle className="mb-2">Bill Analysis Complete!</CardTitle>
+          <CardDescription className="mb-6">
+            We found {analysisResult.errorsFound} potential {analysisResult.errorsFound === 1 ? 'issue' : 'issues'} that could save you up to{' '}
+            <span className="font-bold text-primary">${analysisResult.totalPotentialSavings.toFixed(2)}</span>
+          </CardDescription>
+          
+          <div className="flex flex-col gap-3">
+            <Button 
+              onClick={() => navigate(`/bills/${expense.id}/review`)}
+              size="lg"
+              className="w-full"
+            >
+              Review Bill Errors
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => navigate("/expenses")}
+              className="w-full"
+            >
+              Skip for Now
+            </Button>
+          </div>
         </Card>
       </div>
     );
