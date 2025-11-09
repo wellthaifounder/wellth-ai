@@ -5,14 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, User, Mail, Shield, Heart, Download } from "lucide-react";
+import { ArrowLeft, User, Mail, Shield, Heart, Download, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 import { SubscriptionManagement } from "@/components/settings/SubscriptionManagement";
+import { useOnboarding } from "@/contexts/OnboardingContext";
 
 
 const Settings = () => {
   const navigate = useNavigate();
+  const onboarding = useOnboarding();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [email, setEmail] = useState("");
@@ -133,6 +135,37 @@ const Settings = () => {
 
         <div className="space-y-6">
           <SubscriptionManagement />
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <RotateCcw className="h-5 w-5" />
+                App Preferences
+              </CardTitle>
+              <CardDescription>
+                Manage your app experience and feature tours
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <h4 className="font-medium">Feature Discovery</h4>
+                <p className="text-sm text-muted-foreground">
+                  Reset the onboarding tooltips to see feature introductions again
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    onboarding.resetOnboarding();
+                    toast.success("Onboarding reset! Visit the dashboard to see tooltips again.");
+                  }}
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Reset Feature Tours
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
           
           <Card>
             <CardHeader>

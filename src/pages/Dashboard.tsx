@@ -19,7 +19,10 @@ import { getNextAction } from "@/lib/dashboardActions";
 import { calculateProgress, getProgressSteps } from "@/lib/userProgress";
 import { ValueSpotlight } from "@/components/dashboard/ValueSpotlight";
 import { useHSA } from "@/contexts/HSAContext";
+import { useOnboarding } from "@/contexts/OnboardingContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FeatureTooltip } from "@/components/onboarding/FeatureTooltip";
+import { WelcomeDialog } from "@/components/onboarding/WelcomeDialog";
 import { DashboardCompactHeader } from "@/components/dashboard/DashboardCompactHeader";
 import { QuickActionBar } from "@/components/dashboard/QuickActionBar";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +32,10 @@ import { AlertCircle } from "lucide-react";
 const Dashboard = () => {
   const navigate = useNavigate();
   const { hasHSA, hsaOpenedDate, refreshHSAStatus } = useHSA();
+  const onboarding = useOnboarding();
   const [user, setUser] = useState<User | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [showWelcome, setShowWelcome] = useState(false);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalExpenses: 0,
@@ -258,6 +264,14 @@ const Dashboard = () => {
   const isNewUser = stats.expenseCount === 0 && recentExpenses.length === 0 && !hasConnectedBank;
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
 
+  // Show welcome dialog for first-time users
+  useEffect(() => {
+    if (!loading && !isNewUser && stats.expenseCount <= 3 && !onboarding.hasCompletedOnboarding) {
+      const timer = setTimeout(() => setShowWelcome(true), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, isNewUser, stats.expenseCount, onboarding.hasCompletedOnboarding]);
+
   // Prepare compact header stats
   const headerStats = hasHSA 
     ? [
@@ -289,36 +303,79 @@ const Dashboard = () => {
             <>
               <DashboardCompactHeader firstName={firstName} stats={headerStats} />
 
-              <Tabs defaultValue="overview" className="space-y-4">
+              <WelcomeDialog
+                open={showWelcome}
+                onClose={() => {
+                  setShowWelcome(false);
+                  onboarding.completeOnboarding();
+                }}
+                firstName={firstName}
+                hasHSA={hasHSA}
+              />
+
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                 <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
                   <TabsTrigger value="overview" className="gap-2">
                     <LayoutDashboard className="h-4 w-4" />
                     <span className="hidden sm:inline">Overview</span>
                   </TabsTrigger>
-                  <TabsTrigger value="bills" className="gap-2">
-                    <FileText className="h-4 w-4" />
-                    <span className="hidden sm:inline">Bill Intelligence</span>
-                    {pendingReviews.length > 0 && (
-                      <Badge variant="destructive" className="ml-1 h-5 px-1 text-xs">
-                        {pendingReviews.length}
-                      </Badge>
-                    )}
-                  </TabsTrigger>
-                  {hasHSA && (
-                    <TabsTrigger value="hsa" className="gap-2">
-                      <DollarSign className="h-4 w-4" />
-                      <span className="hidden sm:inline">HSA & Money</span>
+                  
+                  <FeatureTooltip
+                    title="Bill Intelligence"
+                    description="Upload medical bills to automatically detect errors, overcharges, and billing mistakes. We'll help you dispute incorrect charges."
+                    show={activeTab === "bills" && !onboarding.hasSeenBillIntelligence}
+                    onDismiss={() => onboarding.markAsSeen("hasSeenBillIntelligence")}
+                    position="bottom"
+                    ctaText="Upload First Bill"
+                    onCtaClick={() => navigate("/bill-review")}
+                  >
+                    <TabsTrigger value="bills" className="gap-2">
+                      <FileText className="h-4 w-4" />
+                      <span className="hidden sm:inline">Bill Intelligence</span>
+                      {pendingReviews.length > 0 && (
+                        <Badge variant="destructive" className="ml-1 h-5 px-1 text-xs">
+                          {pendingReviews.length}
+                        </Badge>
+                      )}
                     </TabsTrigger>
+                  </FeatureTooltip>
+                  
+                  {hasHSA && (
+                    <FeatureTooltip
+                      title="HSA Optimization"
+                      description="Track HSA-eligible expenses, calculate tax savings, and optimize when to claim reimbursements for maximum investment growth."
+                      show={activeTab === "hsa" && !onboarding.hasSeenHSAFeatures}
+                      onDismiss={() => onboarding.markAsSeen("hasSeenHSAFeatures")}
+                      position="bottom"
+                      ctaText="Learn More"
+                      onCtaClick={() => navigate("/hsa-eligibility")}
+                    >
+                      <TabsTrigger value="hsa" className="gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        <span className="hidden sm:inline">HSA & Money</span>
+                      </TabsTrigger>
+                    </FeatureTooltip>
                   )}
-                  <TabsTrigger value="transactions" className="gap-2">
-                    <CreditCard className="h-4 w-4" />
-                    <span className="hidden sm:inline">Transactions</span>
-                    {stats.unreviewedTransactions > 0 && (
-                      <Badge variant="secondary" className="ml-1 h-5 px-1 text-xs">
-                        {stats.unreviewedTransactions}
-                      </Badge>
-                    )}
-                  </TabsTrigger>
+                  
+                  <FeatureTooltip
+                    title="Smart Transaction Review"
+                    description="Connect your bank to automatically import transactions, then categorize medical expenses with AI-powered suggestions."
+                    show={activeTab === "transactions" && !onboarding.hasSeenTransactions}
+                    onDismiss={() => onboarding.markAsSeen("hasSeenTransactions")}
+                    position="bottom"
+                    ctaText="Connect Bank"
+                    onCtaClick={() => navigate("/bank-accounts")}
+                  >
+                    <TabsTrigger value="transactions" className="gap-2">
+                      <CreditCard className="h-4 w-4" />
+                      <span className="hidden sm:inline">Transactions</span>
+                      {stats.unreviewedTransactions > 0 && (
+                        <Badge variant="secondary" className="ml-1 h-5 px-1 text-xs">
+                          {stats.unreviewedTransactions}
+                        </Badge>
+                      )}
+                    </TabsTrigger>
+                  </FeatureTooltip>
                 </TabsList>
 
                 {/* Overview Tab */}
@@ -329,15 +386,25 @@ const Dashboard = () => {
                     unreviewedTransactions={stats.unreviewedTransactions}
                   />
 
-                  <ValueSpotlight
-                    pendingReviews={pendingReviews.length}
-                    totalPotentialSavings={0}
-                    recentDisputeWins={disputeStats.recentWins}
-                    disputeSavings={disputeStats.totalSavings}
-                    onReviewClick={() => navigate("/bill-reviews")}
-                    onDisputeClick={() => navigate("/disputes")}
-                    onProviderClick={() => navigate("/providers")}
-                  />
+                  <FeatureTooltip
+                    title="Provider Directory"
+                    description="Check billing accuracy scores and dispute success rates for healthcare providers before scheduling your next appointment."
+                    show={!onboarding.hasSeenProviderDirectory && stats.expenseCount >= 2}
+                    onDismiss={() => onboarding.markAsSeen("hasSeenProviderDirectory")}
+                    position="top"
+                    ctaText="Browse Providers"
+                    onCtaClick={() => navigate("/providers")}
+                  >
+                    <ValueSpotlight
+                      pendingReviews={pendingReviews.length}
+                      totalPotentialSavings={0}
+                      recentDisputeWins={disputeStats.recentWins}
+                      disputeSavings={disputeStats.totalSavings}
+                      onReviewClick={() => navigate("/bill-reviews")}
+                      onDisputeClick={() => navigate("/disputes")}
+                      onProviderClick={() => navigate("/providers")}
+                    />
+                  </FeatureTooltip>
 
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <div className="lg:col-span-2 space-y-4">
