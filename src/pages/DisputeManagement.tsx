@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,10 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, FileText, TrendingUp, Clock, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 import { AdvancedFilters, FilterState } from "@/components/bills/AdvancedFilters";
+import { DisputeAnalyticsDashboard } from "@/components/bills/DisputeAnalyticsDashboard";
+import { BulkDisputeActions } from "@/components/bills/BulkDisputeActions";
 import { useState, useMemo } from "react";
 
 export default function DisputeManagement() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [filters, setFilters] = useState<FilterState>({
     searchQuery: '',
     status: 'all',
@@ -21,6 +24,7 @@ export default function DisputeManagement() {
     provider: '',
     savingsMin: 0
   });
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const { data: disputes, isLoading } = useQuery({
     queryKey: ['disputes'],
@@ -187,43 +191,8 @@ export default function DisputeManagement() {
           </p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Active Disputes
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{activeDisputes.length}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Savings
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                ${totalSavings.toFixed(2)}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Resolved Disputes
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{resolvedDisputes.length}</div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Analytics Dashboard */}
+        <DisputeAnalyticsDashboard disputes={filteredDisputes} />
 
         {/* Filters */}
         <AdvancedFilters 
@@ -241,6 +210,14 @@ export default function DisputeManagement() {
             { value: 'resolved_unfavorable', label: 'Resolved - Unfavorable' },
             { value: 'withdrawn', label: 'Withdrawn' }
           ]}
+        />
+
+        {/* Bulk Actions */}
+        <BulkDisputeActions
+          disputes={filteredDisputes}
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
+          onActionComplete={() => queryClient.invalidateQueries({ queryKey: ["disputes"] })}
         />
 
         {/* Disputes List */}

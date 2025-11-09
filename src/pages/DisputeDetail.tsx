@@ -12,6 +12,8 @@ import { DisputeCommunicationLog } from "@/components/bills/DisputeCommunication
 import { DisputeLetterGenerator } from "@/components/bills/DisputeLetterGenerator";
 import { InsuranceVerification } from "@/components/bills/InsuranceVerification";
 import { PriceBenchmarking } from "@/components/bills/PriceBenchmarking";
+import { SettlementNegotiationTracker } from "@/components/bills/SettlementNegotiationTracker";
+import { DisputeSuccessPredictor } from "@/components/bills/DisputeSuccessPredictor";
 
 export default function DisputeDetail() {
   const { id } = useParams<{ id: string }>();
@@ -216,6 +218,22 @@ export default function DisputeDetail() {
           communications={communications || []}
           onRefresh={refetch}
         />
+
+        {/* Settlement Tracker and Success Predictor */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <SettlementNegotiationTracker
+            disputeId={dispute.id}
+            originalAmount={Number(dispute.original_amount)}
+            disputedAmount={Number(dispute.disputed_amount)}
+          />
+          
+          <DisputeSuccessPredictor
+            errorTypes={errors?.map(e => e.error_type) || []}
+            potentialSavings={Number(dispute.disputed_amount)}
+            hasDocumentation={errors ? errors.length > 0 : false}
+            hasInsuranceVerification={!!dispute.insurance_company}
+          />
+        </div>
 
         {/* Dispute Reason */}
         {dispute.dispute_reason && (
