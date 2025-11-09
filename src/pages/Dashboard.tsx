@@ -341,8 +341,8 @@ const Dashboard = () => {
               />
 
               <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-                <div className="flex items-center justify-between gap-4">
-                  <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:flex sm:flex-wrap gap-1">
                   <TabsTrigger value="overview" className="gap-2">
                     <LayoutDashboard className="h-4 w-4" />
                     <span className="hidden sm:inline">Overview</span>
