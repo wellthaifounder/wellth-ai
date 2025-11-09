@@ -63,6 +63,8 @@ const ExpenseEntry = () => {
   const [investmentNotes, setInvestmentNotes] = useState("");
   const [hsaOpenedDate, setHsaOpenedDate] = useState<string | null>(null);
   const [hsaDateDialogOpen, setHsaDateDialogOpen] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [expense, setExpense] = useState<any>(null);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     vendor: "",
@@ -128,6 +130,7 @@ const ExpenseEntry = () => {
       if (error) throw error;
       
       if (data) {
+        setExpense(data);
         setFormData({
           date: data.date,
           vendor: data.vendor,
@@ -228,6 +231,7 @@ const ExpenseEntry = () => {
 
         if (expenseError) throw expenseError;
         expense = data;
+        setExpense(data);
       } else {
         // Create new expense
         const { data, error: expenseError } = await supabase
@@ -259,6 +263,7 @@ const ExpenseEntry = () => {
 
         if (expenseError) throw expenseError;
         expense = data;
+        setExpense(data);
       }
 
       // Upload new files
@@ -308,6 +313,38 @@ const ExpenseEntry = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAnalyzeBill = async () => {
+    if (receipts.length === 0) {
+      toast.error("Please upload a bill first");
+      return;
+    }
+
+    if (!expense?.id) {
+      toast.error("Please save the expense first");
+      return;
+    }
+
+    setIsAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-medical-bill', {
+        body: {
+          invoiceId: expense.id,
+          receiptId: receipts[0].id
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success(`Analysis complete! Found ${data.errorsFound} potential issues with $${data.totalPotentialSavings} in savings.`);
+      navigate(`/bills/${expense.id}/review`);
+    } catch (error) {
+      console.error('Error analyzing bill:', error);
+      toast.error('Failed to analyze bill. Please try again.');
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -535,9 +572,22 @@ const ExpenseEntry = () => {
                 </>
               )}
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? (isEditMode ? "Updating..." : "Adding...") : (isEditMode ? "Update Expense" : "Add Expense")}
-              </Button>
+              <div className="flex gap-2">
+                {expense?.id && receipts.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAnalyzeBill}
+                    disabled={isAnalyzing || loading}
+                    className="flex-1"
+                  >
+                    {isAnalyzing ? 'Analyzing...' : 'Analyze Bill for Errors'}
+                  </Button>
+                )}
+                <Button type="submit" className="flex-1" disabled={loading}>
+                  {loading ? (isEditMode ? "Updating..." : "Adding...") : (isEditMode ? "Update Expense" : "Add Expense")}
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
