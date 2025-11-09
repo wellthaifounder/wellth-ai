@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { BillReviewCard } from "@/components/bills/BillReviewCard";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ const Dashboard = () => {
   });
   const [recentExpenses, setRecentExpenses] = useState<any[]>([]);
   const [reimbursementRequests, setReimbursementRequests] = useState<any[]>([]);
+  const [pendingReviews, setPendingReviews] = useState<any[]>([]);
   const [hasConnectedBank, setHasConnectedBank] = useState(false);
   const [hsaOpenedDate, setHsaOpenedDate] = useState<string | null>(null);
 
@@ -53,6 +55,7 @@ const Dashboard = () => {
     fetchStats();
     fetchReimbursementRequests();
     fetchTransactionStats();
+    fetchBillReviews();
     checkBankConnection();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -175,6 +178,49 @@ const Dashboard = () => {
     }
   };
 
+  const fetchBillReviews = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: reviews, error } = await supabase
+        .from('bill_reviews')
+        .select(`
+          *,
+          invoices (
+            vendor,
+            amount
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('review_status', 'pending')
+        .order('analyzed_at', { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+
+      // Fetch error counts for each review
+      const reviewsWithCounts = await Promise.all(
+        (reviews || []).map(async (review) => {
+          const { data: errors } = await supabase
+            .from('bill_errors')
+            .select('id')
+            .eq('bill_review_id', review.id)
+            .eq('status', 'identified');
+
+          return {
+            ...review,
+            errorCount: errors?.length || 0
+          };
+        })
+      );
+
+      setPendingReviews(reviewsWithCounts);
+    } catch (error) {
+      console.error("Failed to fetch bill reviews:", error);
+    }
+  };
+
   if (loading) {
     return (
       <AuthenticatedLayout unreviewedTransactions={0}>
@@ -263,6 +309,30 @@ const Dashboard = () => {
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* Pending Bill Reviews Section */}
+                  {pendingReviews.length > 0 && (
+                    <ActionCard
+                      icon="🔍"
+                      title="Bill Reviews Requiring Attention"
+                      buttonText="View All Reviews"
+                      actions={
+                        <Button onClick={() => navigate("/bill-reviews")}>
+                          View All
+                        </Button>
+                      }
+                    >
+                      <div className="space-y-3">
+                        {pendingReviews.map((review) => (
+                          <BillReviewCard 
+                            key={review.id}
+                            review={review}
+                            errorCount={review.errorCount}
+                          />
+                        ))}
+                      </div>
+                    </ActionCard>
+                  )}
 
 
                   {stats.hsaClaimableAmount > 0 && (

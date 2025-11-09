@@ -37,6 +37,9 @@ import VaultTracker from "./pages/VaultTracker";
 import HSAEligibility from "./pages/HSAEligibility";
 import BillReview from "./pages/BillReview";
 import BillDispute from "./pages/BillDispute";
+import BillReviews from "./pages/BillReviews";
+import DisputeManagement from "./pages/DisputeManagement";
+import DisputeDetail from "./pages/DisputeDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -89,8 +92,11 @@ const App = () => (
           <Route path="/checkout" element={<Checkout />} />
           
           {/* Bill Review & Dispute Routes */}
+          <Route path="/bill-reviews" element={<BillReviews />} />
           <Route path="/bills/:id/review" element={<BillReview />} />
           <Route path="/bills/:id/dispute" element={<BillDispute />} />
+          <Route path="/disputes" element={<DisputeManagement />} />
+          <Route path="/disputes/:id" element={<DisputeDetail />} />
           
            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
