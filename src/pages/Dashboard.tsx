@@ -20,9 +20,14 @@ import { calculateProgress, getProgressSteps } from "@/lib/userProgress";
 import { ValueSpotlight } from "@/components/dashboard/ValueSpotlight";
 import { useHSA } from "@/contexts/HSAContext";
 import { useOnboarding } from "@/contexts/OnboardingContext";
+import { useDashboardLayout } from "@/contexts/DashboardLayoutContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FeatureTooltip } from "@/components/onboarding/FeatureTooltip";
 import { WelcomeDialog } from "@/components/onboarding/WelcomeDialog";
+import { DashboardCustomization } from "@/components/dashboard/DashboardCustomization";
+import { SortableCard } from "@/components/dashboard/SortableCard";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { DashboardCompactHeader } from "@/components/dashboard/DashboardCompactHeader";
 import { QuickActionBar } from "@/components/dashboard/QuickActionBar";
 import { Badge } from "@/components/ui/badge";
@@ -33,9 +38,32 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { hasHSA, hsaOpenedDate, refreshHSAStatus } = useHSA();
   const onboarding = useOnboarding();
+  const layout = useDashboardLayout();
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [showWelcome, setShowWelcome] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = layout.cardOrder.indexOf(active.id as string);
+      const newIndex = layout.cardOrder.indexOf(over.id as string);
+      
+      const newOrder = [...layout.cardOrder];
+      newOrder.splice(oldIndex, 1);
+      newOrder.splice(newIndex, 0, active.id as string);
+      
+      layout.setCardOrder(newOrder);
+    }
+  };
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalExpenses: 0,
@@ -314,7 +342,8 @@ const Dashboard = () => {
               />
 
               <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-                <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
+                <div className="flex items-center justify-between gap-4">
+                  <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
                   <TabsTrigger value="overview" className="gap-2">
                     <LayoutDashboard className="h-4 w-4" />
                     <span className="hidden sm:inline">Overview</span>
@@ -377,55 +406,81 @@ const Dashboard = () => {
                     </TabsTrigger>
                   </FeatureTooltip>
                 </TabsList>
+                <DashboardCustomization currentTab={activeTab} hasHSA={hasHSA} />
+              </div>
 
                 {/* Overview Tab */}
                 <TabsContent value="overview" className="space-y-4">
-                  <QuickActionBar 
-                    hasHSA={hasHSA} 
-                    hsaClaimable={stats.hsaClaimableAmount}
-                    unreviewedTransactions={stats.unreviewedTransactions}
-                  />
-
-                  <FeatureTooltip
-                    title="Provider Directory"
-                    description="Check billing accuracy scores and dispute success rates for healthcare providers before scheduling your next appointment."
-                    show={!onboarding.hasSeenProviderDirectory && stats.expenseCount >= 2}
-                    onDismiss={() => onboarding.markAsSeen("hasSeenProviderDirectory")}
-                    position="top"
-                    ctaText="Browse Providers"
-                    onCtaClick={() => navigate("/providers")}
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
                   >
-                    <ValueSpotlight
-                      pendingReviews={pendingReviews.length}
-                      totalPotentialSavings={0}
-                      recentDisputeWins={disputeStats.recentWins}
-                      disputeSavings={disputeStats.totalSavings}
-                      onReviewClick={() => navigate("/bill-reviews")}
-                      onDisputeClick={() => navigate("/disputes")}
-                      onProviderClick={() => navigate("/providers")}
-                    />
-                  </FeatureTooltip>
+                    <SortableContext
+                      items={layout.getVisibleCardsForCategory("overview")}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {layout.isCardVisible("quick-actions") && (
+                        <SortableCard id="quick-actions">
+                          <QuickActionBar 
+                            hasHSA={hasHSA} 
+                            hsaClaimable={stats.hsaClaimableAmount}
+                            unreviewedTransactions={stats.unreviewedTransactions}
+                          />
+                        </SortableCard>
+                      )}
+
+                      {layout.isCardVisible("value-spotlight") && (
+                        <SortableCard id="value-spotlight">
+                          <FeatureTooltip
+                            title="Provider Directory"
+                            description="Check billing accuracy scores and dispute success rates for healthcare providers before scheduling your next appointment."
+                            show={!onboarding.hasSeenProviderDirectory && stats.expenseCount >= 2}
+                            onDismiss={() => onboarding.markAsSeen("hasSeenProviderDirectory")}
+                            position="top"
+                            ctaText="Browse Providers"
+                            onCtaClick={() => navigate("/providers")}
+                          >
+                            <ValueSpotlight
+                              pendingReviews={pendingReviews.length}
+                              totalPotentialSavings={0}
+                              recentDisputeWins={disputeStats.recentWins}
+                              disputeSavings={disputeStats.totalSavings}
+                              onReviewClick={() => navigate("/bill-reviews")}
+                              onDisputeClick={() => navigate("/disputes")}
+                              onProviderClick={() => navigate("/providers")}
+                            />
+                          </FeatureTooltip>
+                        </SortableCard>
+                      )}
+                    </SortableContext>
+                  </DndContext>
 
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <div className="lg:col-span-2 space-y-4">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="text-lg">Key Metrics</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <FriendlyStatsCards
-                            taxSavings={stats.taxSavings}
-                            hsaClaimable={stats.hsaClaimableAmount}
-                            rewardsEarned={stats.rewardsEarned}
-                            totalExpenses={stats.totalExpenses}
-                            disputeSavings={stats.disputeSavings}
-                            hasHSA={hasHSA}
-                          />
-                        </CardContent>
-                      </Card>
+                      {layout.isCardVisible("key-metrics") && (
+                        <SortableCard id="key-metrics">
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg">Key Metrics</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <FriendlyStatsCards
+                                taxSavings={stats.taxSavings}
+                                hsaClaimable={stats.hsaClaimableAmount}
+                                rewardsEarned={stats.rewardsEarned}
+                                totalExpenses={stats.totalExpenses}
+                                disputeSavings={stats.disputeSavings}
+                                hasHSA={hasHSA}
+                              />
+                            </CardContent>
+                          </Card>
+                        </SortableCard>
+                      )}
 
-                      {recentExpenses.length > 0 && (
-                        <ActionCard
+                      {layout.isCardVisible("recent-bills") && recentExpenses.length > 0 && (
+                        <SortableCard id="recent-bills">
+                          <ActionCard
                           icon="🏥"
                           title="Recent Medical Bills"
                           count={recentExpenses.length}
@@ -465,23 +520,42 @@ const Dashboard = () => {
                             ))}
                           </div>
                         </ActionCard>
+                        </SortableCard>
                       )}
                     </div>
 
                     <div className="space-y-4">
-                      <ProgressTracker steps={progressSteps} />
-                      <WellbieTip 
-                        unreviewedCount={stats.unreviewedTransactions}
-                        hasExpenses={stats.expenseCount > 0}
-                      />
+                      {layout.isCardVisible("progress-tracker") && (
+                        <SortableCard id="progress-tracker">
+                          <ProgressTracker steps={progressSteps} />
+                        </SortableCard>
+                      )}
+                      {layout.isCardVisible("wellbie-tip") && (
+                        <SortableCard id="wellbie-tip">
+                          <WellbieTip 
+                            unreviewedCount={stats.unreviewedTransactions}
+                            hasExpenses={stats.expenseCount > 0}
+                          />
+                        </SortableCard>
+                      )}
                     </div>
                   </div>
                 </TabsContent>
 
                 {/* Bill Intelligence Tab */}
                 <TabsContent value="bills" className="space-y-4">
-                  {pendingReviews.length > 0 ? (
-                    <ActionCard
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={layout.getVisibleCardsForCategory("bills")}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {layout.isCardVisible("pending-reviews") && pendingReviews.length > 0 && (
+                        <SortableCard id="pending-reviews">
+                          <ActionCard
                       icon="🔍"
                       title="Bills Requiring Review"
                       count={pendingReviews.length}
@@ -494,31 +568,39 @@ const Dashboard = () => {
                       defaultOpen={true}
                     >
                       <div className="space-y-3">
-                        {pendingReviews.map((review) => (
-                          <BillReviewCard 
-                            key={review.id}
-                            review={review}
-                            errorCount={review.errorCount}
-                          />
-                        ))}
-                      </div>
-                    </ActionCard>
-                  ) : (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>No Bills to Review</CardTitle>
-                        <CardDescription>Upload a medical bill to get started with error detection</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <Button onClick={() => navigate("/bill-review")}>
-                          Upload First Bill
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  )}
+                            {pendingReviews.map((review) => (
+                              <BillReviewCard 
+                                key={review.id}
+                                review={review}
+                                errorCount={review.errorCount}
+                              />
+                            ))}
+                          </div>
+                        </ActionCard>
+                        </SortableCard>
+                      )}
+
+                      {layout.isCardVisible("pending-reviews") && pendingReviews.length === 0 && (
+                        <SortableCard id="pending-reviews">
+                          <Card>
+                            <CardHeader>
+                              <CardTitle>No Bills to Review</CardTitle>
+                              <CardDescription>Upload a medical bill to get started with error detection</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <Button onClick={() => navigate("/bill-review")}>
+                                Upload First Bill
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        </SortableCard>
+                      )}
+                    </SortableContext>
+                  </DndContext>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <Card>
+                    {layout.isCardVisible("active-disputes") && (
+                      <Card>
                       <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2">
                           <span>⚖️</span>
@@ -533,9 +615,11 @@ const Dashboard = () => {
                           View Disputes
                         </Button>
                       </CardContent>
-                    </Card>
+                      </Card>
+                    )}
 
-                    <Card>
+                    {layout.isCardVisible("provider-insights") && (
+                      <Card>
                       <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2">
                           <span>🏥</span>
@@ -550,43 +634,62 @@ const Dashboard = () => {
                           View Providers
                         </Button>
                       </CardContent>
-                    </Card>
+                      </Card>
+                    )}
                   </div>
                 </TabsContent>
 
                 {/* HSA & Money Tab */}
                 {hasHSA && (
                   <TabsContent value="hsa" className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Card className="bg-success/5 border-success/20">
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <SortableContext
+                        items={layout.getVisibleCardsForCategory("hsa")}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {layout.isCardVisible("hsa-claimable") && (
+                            <SortableCard id="hsa-claimable">
+                              <Card className="bg-success/5 border-success/20">
                         <CardHeader>
                           <CardTitle className="text-lg flex items-center gap-2">
                             <DollarSign className="h-5 w-5" />
                             Available to Claim
                           </CardTitle>
                         </CardHeader>
-                        <CardContent>
-                          <p className="text-3xl font-bold text-success">${stats.hsaClaimableAmount.toFixed(2)}</p>
-                          <p className="text-sm text-muted-foreground mt-1">From eligible expenses</p>
-                        </CardContent>
-                      </Card>
+                                <CardContent>
+                                  <p className="text-3xl font-bold text-success">${stats.hsaClaimableAmount.toFixed(2)}</p>
+                                  <p className="text-sm text-muted-foreground mt-1">From eligible expenses</p>
+                                </CardContent>
+                              </Card>
+                            </SortableCard>
+                          )}
 
-                      <Card className="bg-accent/5 border-accent/20">
+                          {layout.isCardVisible("hsa-tax-savings") && (
+                            <SortableCard id="hsa-tax-savings">
+                              <Card className="bg-accent/5 border-accent/20">
                         <CardHeader>
                           <CardTitle className="text-lg flex items-center gap-2">
                             <TrendingUp className="h-5 w-5" />
                             Tax Savings
                           </CardTitle>
                         </CardHeader>
-                        <CardContent>
-                          <p className="text-3xl font-bold text-accent">${stats.taxSavings.toFixed(2)}</p>
-                          <p className="text-sm text-muted-foreground mt-1">This quarter</p>
-                        </CardContent>
-                      </Card>
-                    </div>
+                                <CardContent>
+                                  <p className="text-3xl font-bold text-accent">${stats.taxSavings.toFixed(2)}</p>
+                                  <p className="text-sm text-muted-foreground mt-1">This quarter</p>
+                                </CardContent>
+                              </Card>
+                            </SortableCard>
+                          )}
+                        </div>
 
-                    {stats.hsaClaimableAmount > 0 && (
-                      <ActionCard
+                        {layout.isCardVisible("reimbursement-requests") && stats.hsaClaimableAmount > 0 && (
+                          <SortableCard id="reimbursement-requests">
+                            <ActionCard
                         icon="💰"
                         title="Money You Can Claim from HSA"
                         buttonText="Show all reimbursement requests"
@@ -606,12 +709,15 @@ const Dashboard = () => {
                           </div>
                           <p className="text-sm text-muted-foreground">
                             💡 These are expenses you paid out-of-pocket that you can now reimburse from your HSA
-                          </p>
-                        </div>
-                      </ActionCard>
-                    )}
+                              </p>
+                            </div>
+                          </ActionCard>
+                          </SortableCard>
+                        )}
 
-                    <ActionCard
+                        {layout.isCardVisible("reimbursement-requests") && (
+                          <SortableCard id="reimbursement-requests">
+                            <ActionCard
                       icon="📋"
                       title="Reimbursement Requests"
                       count={reimbursementRequests.length}
@@ -685,12 +791,15 @@ const Dashboard = () => {
                         <div className="space-y-2">
                           <p className="text-sm text-muted-foreground">
                             Track expenses held for long-term HSA investment growth
-                          </p>
-                        </div>
-                      </ActionCard>
-                    )}
+                              </p>
+                            </div>
+                          </ActionCard>
+                          </SortableCard>
+                        )}
 
-                    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+                        {layout.isCardVisible("hsa-eligibility") && (
+                          <SortableCard id="hsa-eligibility">
+                            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
                       <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2">
                           <BookOpen className="h-5 w-5" />
@@ -725,6 +834,10 @@ const Dashboard = () => {
                         </div>
                       </CardContent>
                     </Card>
+                          </SortableCard>
+                        )}
+                      </SortableContext>
+                    </DndContext>
                   </TabsContent>
                 )}
 
@@ -757,67 +870,78 @@ const Dashboard = () => {
                           onClick={() => navigate("/transactions?tab=review")}
                         >
                           Review {stats.unreviewedTransactions} Transaction{stats.unreviewedTransactions === 1 ? '' : 's'}
-                        </Button>
-                      </div>
-                    </ActionCard>
-                  ) : (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>All Caught Up! 🎉</CardTitle>
-                        <CardDescription>No transactions need review at the moment</CardDescription>
-                      </CardHeader>
-                    </Card>
-                  )}
+                            </Button>
+                          </div>
+                        </ActionCard>
+                        </SortableCard>
+                      )}
+
+                      {layout.isCardVisible("transactions-review") && stats.unreviewedTransactions === 0 && (
+                        <SortableCard id="transactions-review">
+                          <Card>
+                            <CardHeader>
+                              <CardTitle>All Caught Up! 🎉</CardTitle>
+                              <CardDescription>No transactions need review at the moment</CardDescription>
+                            </CardHeader>
+                          </Card>
+                        </SortableCard>
+                      )}
+                    </SortableContext>
+                  </DndContext>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Wallet className="h-5 w-5" />
-                          Bank Connections
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm">Status:</span>
-                            <Badge variant={hasConnectedBank ? "success" : "secondary"}>
-                              {hasConnectedBank ? "Connected" : "Not Connected"}
-                            </Badge>
+                    {layout.isCardVisible("bank-connections") && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            <Wallet className="h-5 w-5" />
+                            Bank Connections
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm">Status:</span>
+                              <Badge variant={hasConnectedBank ? "success" : "secondary"}>
+                                {hasConnectedBank ? "Connected" : "Not Connected"}
+                              </Badge>
+                            </div>
+                            <Button 
+                              variant="outline" 
+                              className="w-full"
+                              onClick={() => navigate("/bank-accounts")}
+                            >
+                              Manage Connections
+                            </Button>
                           </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {layout.isCardVisible("recent-expenses") && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            <FileText className="h-5 w-5" />
+                            Recent Expenses
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {recentExpenses.length > 0 
+                              ? `${recentExpenses.length} recent expenses tracked`
+                              : "No expenses tracked yet"}
+                          </p>
                           <Button 
                             variant="outline" 
                             className="w-full"
-                            onClick={() => navigate("/bank-accounts")}
+                            onClick={() => navigate("/expenses")}
                           >
-                            Manage Connections
+                            View All Expenses
                           </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <FileText className="h-5 w-5" />
-                          Recent Expenses
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          {recentExpenses.length > 0 
-                            ? `${recentExpenses.length} recent expenses tracked`
-                            : "No expenses tracked yet"}
-                        </p>
-                        <Button 
-                          variant="outline" 
-                          className="w-full"
-                          onClick={() => navigate("/expenses")}
-                        >
-                          View All Expenses
-                        </Button>
-                      </CardContent>
-                    </Card>
+                        </CardContent>
+                      </Card>
+                    )}
                   </div>
                 </TabsContent>
               </Tabs>

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { HSAProvider } from "@/contexts/HSAContext";
 import { OnboardingProvider } from "@/contexts/OnboardingContext";
+import { DashboardLayoutProvider } from "@/contexts/DashboardLayoutContext";
 import { WellbieChat } from "@/components/WellbieChat";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
@@ -54,12 +55,13 @@ const App = () => (
       <SubscriptionProvider>
         <HSAProvider>
           <OnboardingProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-            <WellbieChat />
-            <PWAInstallPrompt />
-            <PWAUpdatePrompt />
+            <DashboardLayoutProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+              <WellbieChat />
+              <PWAInstallPrompt />
+              <PWAUpdatePrompt />
           <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
@@ -110,8 +112,9 @@ const App = () => (
           
            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
-         </Routes>
+        </Routes>
         </BrowserRouter>
+            </DashboardLayoutProvider>
           </OnboardingProvider>
         </HSAProvider>
       </SubscriptionProvider>
