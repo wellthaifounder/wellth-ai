@@ -342,8 +342,8 @@ const Dashboard = () => {
               />
 
               <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-2 border-b">
-                  <TabsList className="w-full lg:w-auto overflow-x-auto flex gap-1 shrink-0">
+                <div className="flex flex-col gap-4">
+                  <TabsList className="w-full flex flex-wrap gap-2 h-auto p-2">
                   <TabsTrigger value="overview" className="gap-2">
                     <LayoutDashboard className="h-4 w-4" />
                     <span className="hidden sm:inline">Overview</span>
@@ -405,9 +405,9 @@ const Dashboard = () => {
                       )}
                     </TabsTrigger>
                   </FeatureTooltip>
-                </TabsList>
-                <DashboardCustomization currentTab={activeTab} hasHSA={hasHSA} />
-              </div>
+                  </TabsList>
+                  <DashboardCustomization currentTab={activeTab} hasHSA={hasHSA} />
+                </div>
 
                 {/* Overview Tab */}
                 <TabsContent value="overview" className="space-y-6 mt-6">
