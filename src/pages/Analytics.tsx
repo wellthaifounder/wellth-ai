@@ -13,7 +13,7 @@ import { ReimbursementTimingOptimizer } from "@/components/analytics/Reimburseme
 import { RewardsOptimizationDashboard } from "@/components/analytics/RewardsOptimizationDashboard";
 import { YearOverYearComparison } from "@/components/analytics/YearOverYearComparison";
 import { PaymentStrategyTimeline } from "@/components/analytics/PaymentStrategyTimeline";
-import { AuthenticatedNav } from "@/components/AuthenticatedNav";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { AnalyticsEmptyState } from "@/components/analytics/AnalyticsEmptyState";
 import { AnalyticsSettings, AnalyticsAssumptions } from "@/components/analytics/AnalyticsSettings";
 import { TimeRangeFilter, TimeRange } from "@/components/analytics/TimeRangeFilter";
@@ -214,10 +214,9 @@ const Analytics = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <AuthenticatedNav />
+      <AuthenticatedLayout>
         <AnalyticsSkeleton />
-      </div>
+      </AuthenticatedLayout>
     );
   }
 
@@ -230,10 +229,8 @@ const Analytics = () => {
         fetchAnalytics();
       }}
     >
-      <div className="min-h-screen bg-background">
-        <AuthenticatedNav />
-
-        <main className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-7xl">
+      <AuthenticatedLayout>
+        <main className="container mx-auto px-4 py-8 max-w-7xl">
           <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <Button variant="ghost" onClick={() => navigate("/dashboard")}>
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -511,7 +508,7 @@ const Analytics = () => {
             </Tabs>
           )}
         </main>
-      </div>
+      </AuthenticatedLayout>
     </ErrorBoundary>
   );
 };

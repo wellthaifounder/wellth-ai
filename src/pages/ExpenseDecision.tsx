@@ -2,15 +2,13 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Zap } from "lucide-react";
-import { AuthenticatedNav } from "@/components/AuthenticatedNav";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 
 const ExpenseDecision = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background">
-      <AuthenticatedNav />
-
+    <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <Button variant="ghost" onClick={() => navigate("/dashboard")} className="mb-6">
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -72,7 +70,7 @@ const ExpenseDecision = () => {
           </p>
         </div>
       </div>
-    </div>
+    </AuthenticatedLayout>
   );
 };
 

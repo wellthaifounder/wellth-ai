@@ -10,7 +10,7 @@ import { DocumentCard } from "@/components/documents/DocumentCard";
 import { EditDocumentDialog } from "@/components/documents/EditDocumentDialog";
 import { MultiFileUpload } from "@/components/expense/MultiFileUpload";
 import { Badge } from "@/components/ui/badge";
-import { AuthenticatedNav } from "@/components/AuthenticatedNav";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 
 interface Receipt {
   id: string;
@@ -163,10 +163,8 @@ const Documents = () => {
   const attachmentStatus = ["all", "attached", "unattached"];
 
   return (
-    <div className="min-h-screen bg-background">
-      <AuthenticatedNav />
-      
-      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
+    <AuthenticatedLayout>
+      <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -292,7 +290,7 @@ const Documents = () => {
           }}
         />
       )}
-    </div>
+    </AuthenticatedLayout>
   );
 };
 
