@@ -297,9 +297,16 @@ const ExpenseList = () => {
           </div>
         </div>
 
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2">Your Expenses</h1>
+          <p className="text-muted-foreground">
+            Track and manage all your medical and healthcare expenses in one place
+          </p>
+        </div>
+
         <Card>
           <CardHeader>
-            <CardTitle>Your Expenses</CardTitle>
+            <CardTitle>All Expenses</CardTitle>
             <CardDescription>
               Showing {filteredAndSortedExpenses.length} of {expenses.length} expense(s)
             </CardDescription>

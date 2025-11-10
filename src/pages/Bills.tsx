@@ -197,8 +197,15 @@ const Bills = () => {
   return (
     <div className="min-h-screen bg-background">
       <AuthenticatedNav />
+      
+      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-6xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Bills</h1>
+          <p className="text-muted-foreground">
+            Upload, track, and manage your medical bills with AI-powered error detection
+          </p>
+        </div>
 
-      <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
             <ArrowLeft className="h-4 w-4 mr-2" />

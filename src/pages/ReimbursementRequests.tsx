@@ -154,9 +154,16 @@ const ReimbursementRequests = () => {
           </Button>
         </div>
 
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2">Reimbursement Requests</h1>
+          <p className="text-muted-foreground">
+            Track and manage your HSA reimbursement submissions and their status
+          </p>
+        </div>
+
         <Card>
           <CardHeader>
-            <CardTitle>Reimbursement Requests</CardTitle>
+            <CardTitle>All Requests</CardTitle>
             <CardDescription>
               Showing {filteredAndSortedRequests.length} of {requests.length} request(s)
             </CardDescription>

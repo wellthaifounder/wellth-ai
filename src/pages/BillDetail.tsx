@@ -371,7 +371,18 @@ export default function BillDetail() {
     <div className="min-h-screen bg-background">
       <AuthenticatedNav />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-6xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">
+            {isNewBill ? 'Add New Bill' : 'Bill Details'}
+          </h1>
+          <p className="text-muted-foreground">
+            {isNewBill 
+              ? 'Upload medical bills and documentation with automatic AI error detection' 
+              : 'View bill information, AI analysis, payments, and documentation'}
+          </p>
+        </div>
+
         <div className="mb-6">
           <Button variant="ghost" onClick={() => navigate("/bills")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
