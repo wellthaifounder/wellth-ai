@@ -28,18 +28,12 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { icon: Home, label: "Dashboard", path: "/dashboard", badgeKey: null },
   { icon: Calculator, label: "Decision Tool", path: "/decision-tool", badgeKey: null },
-  { icon: Receipt, label: "Transactions", path: "/transactions", badgeKey: "unreviewedTransactions" },
-  { icon: FileText, label: "Bills", path: "/invoices", badgeKey: null },
   { icon: AlertCircle, label: "Bill Reviews", path: "/bill-reviews", badgeKey: "pendingReviews" },
   { icon: Scale, label: "Disputes", path: "/disputes", badgeKey: "activeDisputes" },
   { icon: Building2, label: "Providers", path: "/providers", badgeKey: null },
   { icon: FileText, label: "Documents", path: "/documents", badgeKey: null },
-  { icon: BarChart3, label: "Analytics", path: "/analytics", badgeKey: null },
   { icon: BookOpen, label: "HSA Eligibility", path: "/hsa-eligibility", badgeKey: null, hsaOnly: true },
-  { icon: Wallet, label: "Payment Methods", path: "/payment-methods", badgeKey: null },
-  { icon: Building2, label: "Bank Accounts", path: "/bank-accounts", badgeKey: null },
   { icon: FileText, label: "HSA Requests", path: "/reimbursement-requests", badgeKey: null, hsaOnly: true },
 ];
 
@@ -67,7 +61,7 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {visibleMenuItems.map((item) => {

@@ -5,11 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, User, Mail, Shield, Heart, Download, RotateCcw } from "lucide-react";
+import { ArrowLeft, User, Mail, Shield, Heart, Download, RotateCcw, Wallet, Building2, Plus, Trash2, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 import { SubscriptionManagement } from "@/components/settings/SubscriptionManagement";
 import { useOnboarding } from "@/contexts/OnboardingContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PlaidLink } from "@/components/PlaidLink";
 
 
 const Settings = () => {
@@ -20,9 +23,15 @@ const Settings = () => {
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [hsaOpenedDate, setHsaOpenedDate] = useState("");
+  const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
+  const [bankConnections, setBankConnections] = useState<any[]>([]);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [newPaymentMethod, setNewPaymentMethod] = useState({ name: "", type: "", rewards_rate: 0 });
 
   useEffect(() => {
     loadUserData();
+    loadPaymentMethods();
+    loadBankConnections();
   }, []);
 
   const loadUserData = async () => {
@@ -103,6 +112,102 @@ const Settings = () => {
       toast.error("Failed to update profile");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const loadPaymentMethods = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("payment_methods")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setPaymentMethods(data || []);
+    } catch (error) {
+      console.error("Error loading payment methods:", error);
+    }
+  };
+
+  const loadBankConnections = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("plaid_connections")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setBankConnections(data || []);
+    } catch (error) {
+      console.error("Error loading bank connections:", error);
+    }
+  };
+
+  const handleAddPaymentMethod = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase.from("payment_methods").insert({
+        user_id: user.id,
+        ...newPaymentMethod,
+      });
+
+      if (error) throw error;
+
+      toast.success("Payment method added successfully");
+      setPaymentDialogOpen(false);
+      setNewPaymentMethod({ name: "", type: "", rewards_rate: 0 });
+      loadPaymentMethods();
+    } catch (error) {
+      console.error("Error adding payment method:", error);
+      toast.error("Failed to add payment method");
+    }
+  };
+
+  const handleDeletePaymentMethod = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this payment method?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("payment_methods")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast.success("Payment method deleted");
+      loadPaymentMethods();
+    } catch (error) {
+      console.error("Error deleting payment method:", error);
+      toast.error("Failed to delete payment method");
+    }
+  };
+
+  const handleDeleteBankConnection = async (id: string) => {
+    if (!confirm("Are you sure you want to disconnect this bank account?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("plaid_connections")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast.success("Bank account disconnected");
+      loadBankConnections();
+    } catch (error) {
+      console.error("Error disconnecting bank:", error);
+      toast.error("Failed to disconnect bank account");
     }
   };
 
@@ -269,6 +374,146 @@ const Settings = () => {
               <Button variant="outline">
                 Change Password
               </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Wallet className="h-5 w-5" />
+                  <CardTitle>Payment Methods</CardTitle>
+                </div>
+                <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Method
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Payment Method</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="method-name">Name</Label>
+                        <Input
+                          id="method-name"
+                          placeholder="Chase Sapphire Reserve"
+                          value={newPaymentMethod.name}
+                          onChange={(e) => setNewPaymentMethod({ ...newPaymentMethod, name: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="method-type">Type</Label>
+                        <Select value={newPaymentMethod.type} onValueChange={(value) => setNewPaymentMethod({ ...newPaymentMethod, type: value })}>
+                          <SelectTrigger id="method-type">
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Credit Card">Credit Card</SelectItem>
+                            <SelectItem value="Debit Card">Debit Card</SelectItem>
+                            <SelectItem value="HSA Card">HSA Card</SelectItem>
+                            <SelectItem value="FSA Card">FSA Card</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="rewards">Rewards Rate (%)</Label>
+                        <Input
+                          id="rewards"
+                          type="number"
+                          step="0.1"
+                          value={newPaymentMethod.rewards_rate}
+                          onChange={(e) => setNewPaymentMethod({ ...newPaymentMethod, rewards_rate: parseFloat(e.target.value) || 0 })}
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={handleAddPaymentMethod}>Add Payment Method</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+              <CardDescription>
+                Manage your credit cards, HSA, and FSA cards
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {paymentMethods.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No payment methods added yet</p>
+              ) : (
+                <div className="space-y-3">
+                  {paymentMethods.map((method) => (
+                    <div key={method.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <CreditCard className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">{method.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {method.type} • {method.rewards_rate}% rewards
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeletePaymentMethod(method.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  <CardTitle>Bank Accounts</CardTitle>
+                </div>
+                <PlaidLink onSuccess={loadBankConnections} />
+              </div>
+              <CardDescription>
+                Connect your bank accounts to import transactions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {bankConnections.length === 0 ? (
+                <div className="text-center py-6">
+                  <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+                  <p className="text-sm text-muted-foreground mb-4">No bank accounts connected</p>
+                  <PlaidLink onSuccess={loadBankConnections} />
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {bankConnections.map((connection) => (
+                    <div key={connection.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Building2 className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">{connection.institution_name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Connected {new Date(connection.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteBankConnection(connection.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
