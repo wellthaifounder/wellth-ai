@@ -244,7 +244,8 @@ Deno.serve(async (req) => {
         }
       } catch (error) {
         results.failed++;
-        results.errors.push(`Provider ${provider.id}: ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        results.errors.push(`Provider ${provider.id}: ${errorMessage}`);
         console.error(`Error processing provider ${provider.id}:`, error);
       }
     }
@@ -260,8 +261,9 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Error in sync-npi-data function:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
