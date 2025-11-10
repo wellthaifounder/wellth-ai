@@ -3,9 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Star, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 interface ProviderReviewFormProps {
   providerId: string;
@@ -14,12 +16,36 @@ interface ProviderReviewFormProps {
 export function ProviderReviewForm({ providerId }: ProviderReviewFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    overall_rating: 0,
-    cost_rating: 0,
-    accuracy_rating: 0,
-    response_rating: 0,
+    invoice_id: '',
+    overall_experience_rating: 0,
+    billing_clarity_rating: 0,
+    cost_transparency_rating: 0,
+    payment_flexibility_rating: 0,
+    insurance_plan_type: '',
+    network_status: 'unknown' as 'in_network' | 'out_of_network' | 'unknown',
+    deductible_met: false,
+    procedure_category: '',
     review_text: '',
     would_recommend: true
+  });
+
+  // Fetch user's invoices with this provider
+  const { data: invoices } = useQuery({
+    queryKey: ['user-invoices-for-provider', providerId],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('invoices')
+        .select('id, vendor, date, amount, npi_number')
+        .eq('user_id', user.id)
+        .eq('npi_number', providerId)
+        .order('date', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    }
   });
 
   const handleStarClick = (field: string, rating: number) => {
@@ -51,7 +77,11 @@ export function ProviderReviewForm({ providerId }: ProviderReviewFormProps) {
   );
 
   const handleSubmit = async () => {
-    if (formData.overall_rating === 0) {
+    if (!formData.invoice_id) {
+      toast.error("Please select an invoice to review");
+      return;
+    }
+    if (formData.overall_experience_rating === 0) {
       toast.error("Please provide an overall rating");
       return;
     }
@@ -67,12 +97,19 @@ export function ProviderReviewForm({ providerId }: ProviderReviewFormProps) {
         .upsert({
           provider_id: providerId,
           user_id: user.id,
-          overall_rating: formData.overall_rating,
-          cost_rating: formData.cost_rating || null,
-          accuracy_rating: formData.accuracy_rating || null,
-          response_rating: formData.response_rating || null,
+          invoice_id: formData.invoice_id,
+          overall_experience_rating: formData.overall_experience_rating,
+          billing_clarity_rating: formData.billing_clarity_rating,
+          cost_transparency_rating: formData.cost_transparency_rating,
+          payment_flexibility_rating: formData.payment_flexibility_rating,
+          insurance_plan_type: formData.insurance_plan_type || null,
+          network_status: formData.network_status,
+          deductible_met: formData.deductible_met,
+          procedure_category: formData.procedure_category || null,
           review_text: formData.review_text || null,
           would_recommend: formData.would_recommend
+        }, {
+          onConflict: 'user_id,invoice_id'
         });
 
       if (error) throw error;
@@ -81,10 +118,15 @@ export function ProviderReviewForm({ providerId }: ProviderReviewFormProps) {
       
       // Reset form
       setFormData({
-        overall_rating: 0,
-        cost_rating: 0,
-        accuracy_rating: 0,
-        response_rating: 0,
+        invoice_id: '',
+        overall_experience_rating: 0,
+        billing_clarity_rating: 0,
+        cost_transparency_rating: 0,
+        payment_flexibility_rating: 0,
+        insurance_plan_type: '',
+        network_status: 'unknown',
+        deductible_met: false,
+        procedure_category: '',
         review_text: '',
         would_recommend: true
       });
@@ -105,27 +147,46 @@ export function ProviderReviewForm({ providerId }: ProviderReviewFormProps) {
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="invoice">Select Invoice *</Label>
+          <Select 
+            value={formData.invoice_id}
+            onValueChange={(value) => setFormData({ ...formData, invoice_id: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Choose an invoice to review" />
+            </SelectTrigger>
+            <SelectContent>
+              {invoices?.map((invoice) => (
+                <SelectItem key={invoice.id} value={invoice.id}>
+                  {invoice.vendor} - {new Date(invoice.date).toLocaleDateString()} - ${Number(invoice.amount).toFixed(2)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <StarRating 
-          label="Overall Rating *" 
-          field="overall_rating" 
-          value={formData.overall_rating} 
+          label="Overall Experience *" 
+          field="overall_experience_rating" 
+          value={formData.overall_experience_rating} 
         />
 
         <div className="grid gap-6 md:grid-cols-3">
           <StarRating 
-            label="Cost Rating" 
-            field="cost_rating" 
-            value={formData.cost_rating} 
+            label="Billing Clarity" 
+            field="billing_clarity_rating" 
+            value={formData.billing_clarity_rating} 
           />
           <StarRating 
-            label="Accuracy Rating" 
-            field="accuracy_rating" 
-            value={formData.accuracy_rating} 
+            label="Cost Transparency" 
+            field="cost_transparency_rating" 
+            value={formData.cost_transparency_rating} 
           />
           <StarRating 
-            label="Response Rating" 
-            field="response_rating" 
-            value={formData.response_rating} 
+            label="Payment Flexibility" 
+            field="payment_flexibility_rating" 
+            value={formData.payment_flexibility_rating} 
           />
         </div>
 
@@ -155,7 +216,7 @@ export function ProviderReviewForm({ providerId }: ProviderReviewFormProps) {
 
         <Button 
           onClick={handleSubmit}
-          disabled={isSubmitting || formData.overall_rating === 0}
+          disabled={isSubmitting || formData.overall_experience_rating === 0 || !formData.invoice_id}
           className="w-full"
         >
           {isSubmitting ? (

@@ -998,60 +998,72 @@ export type Database = {
       }
       provider_reviews: {
         Row: {
-          accuracy_rating: number | null
-          bill_id: string | null
-          cost_rating: number | null
-          created_at: string
+          billing_clarity_rating: number
+          cost_transparency_rating: number
+          created_at: string | null
+          deductible_met: boolean | null
+          flagged_reason: string | null
           id: string
-          is_verified: boolean | null
-          overall_rating: number
-          procedure_type: string | null
+          insurance_plan_type: string | null
+          invoice_id: string
+          is_flagged: boolean | null
+          is_verified_patient: boolean | null
+          network_status: string | null
+          overall_experience_rating: number
+          payment_flexibility_rating: number
+          procedure_category: string | null
           provider_id: string
-          response_rating: number | null
           review_text: string | null
-          updated_at: string
+          updated_at: string | null
           user_id: string
-          visit_date: string | null
           would_recommend: boolean | null
         }
         Insert: {
-          accuracy_rating?: number | null
-          bill_id?: string | null
-          cost_rating?: number | null
-          created_at?: string
+          billing_clarity_rating: number
+          cost_transparency_rating: number
+          created_at?: string | null
+          deductible_met?: boolean | null
+          flagged_reason?: string | null
           id?: string
-          is_verified?: boolean | null
-          overall_rating: number
-          procedure_type?: string | null
+          insurance_plan_type?: string | null
+          invoice_id: string
+          is_flagged?: boolean | null
+          is_verified_patient?: boolean | null
+          network_status?: string | null
+          overall_experience_rating: number
+          payment_flexibility_rating: number
+          procedure_category?: string | null
           provider_id: string
-          response_rating?: number | null
           review_text?: string | null
-          updated_at?: string
+          updated_at?: string | null
           user_id: string
-          visit_date?: string | null
           would_recommend?: boolean | null
         }
         Update: {
-          accuracy_rating?: number | null
-          bill_id?: string | null
-          cost_rating?: number | null
-          created_at?: string
+          billing_clarity_rating?: number
+          cost_transparency_rating?: number
+          created_at?: string | null
+          deductible_met?: boolean | null
+          flagged_reason?: string | null
           id?: string
-          is_verified?: boolean | null
-          overall_rating?: number
-          procedure_type?: string | null
+          insurance_plan_type?: string | null
+          invoice_id?: string
+          is_flagged?: boolean | null
+          is_verified_patient?: boolean | null
+          network_status?: string | null
+          overall_experience_rating?: number
+          payment_flexibility_rating?: number
+          procedure_category?: string | null
           provider_id?: string
-          response_rating?: number | null
           review_text?: string | null
-          updated_at?: string
+          updated_at?: string | null
           user_id?: string
-          visit_date?: string | null
           would_recommend?: boolean | null
         }
         Relationships: [
           {
-            foreignKeyName: "provider_reviews_bill_id_fkey"
-            columns: ["bill_id"]
+            foreignKeyName: "provider_reviews_invoice_id_fkey"
+            columns: ["invoice_id"]
             isOneToOne: false
             referencedRelation: "invoices"
             referencedColumns: ["id"]
@@ -1677,9 +1689,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_billing_accuracy_score: {
+        Args: { p_provider_id: string }
+        Returns: number
+      }
       calculate_fair_pricing_score: {
         Args: { p_provider_id: string }
         Returns: number
+      }
+      can_view_provider_review: {
+        Args: { review_is_flagged: boolean; review_user_id: string }
+        Returns: boolean
       }
       update_provider_statistics: {
         Args: { p_provider_id: string }

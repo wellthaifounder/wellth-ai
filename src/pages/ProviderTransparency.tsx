@@ -58,7 +58,7 @@ export default function ProviderTransparency() {
       const { count: verifiedReviews } = await supabase
         .from("provider_reviews")
         .select("*", { count: "exact", head: true })
-        .eq("is_verified", true);
+        .eq("is_verified_patient", true);
 
       const { data: savingsData } = await supabase
         .from("bill_disputes")

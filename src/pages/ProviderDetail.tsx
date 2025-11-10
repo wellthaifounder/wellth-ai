@@ -368,7 +368,7 @@ export default function ProviderDetail() {
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-2">
                           <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
-                          <span className="font-semibold text-lg">{review.overall_rating}/5</span>
+                          <span className="font-semibold text-lg">{review.overall_experience_rating}/5</span>
                         </div>
                         <span className="text-sm text-muted-foreground">
                           {new Date(review.created_at).toLocaleDateString()}
@@ -377,16 +377,16 @@ export default function ProviderDetail() {
 
                       <div className="grid grid-cols-3 gap-4 mb-4">
                         <div>
-                          <p className="text-xs text-muted-foreground">Cost</p>
-                          <p className="font-semibold">{review.cost_rating}/5</p>
+                          <p className="text-xs text-muted-foreground">Billing Clarity</p>
+                          <p className="font-semibold">{review.billing_clarity_rating}/5</p>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">Accuracy</p>
-                          <p className="font-semibold">{review.accuracy_rating}/5</p>
+                          <p className="text-xs text-muted-foreground">Cost Transparency</p>
+                          <p className="font-semibold">{review.cost_transparency_rating}/5</p>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">Response</p>
-                          <p className="font-semibold">{review.response_rating}/5</p>
+                          <p className="text-xs text-muted-foreground">Payment Flexibility</p>
+                          <p className="font-semibold">{review.payment_flexibility_rating}/5</p>
                         </div>
                       </div>
 
