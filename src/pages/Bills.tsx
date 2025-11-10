@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, ArrowLeft, Link2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { calculateHSAEligibility } from "@/lib/hsaCalculations";
-import { AuthenticatedNav } from "@/components/AuthenticatedNav";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { BillsHeroMetrics } from "@/components/bills/BillsHeroMetrics";
 import { LinkTransactionDialog } from "@/components/bills/LinkTransactionDialog";
 
@@ -195,10 +195,8 @@ const Bills = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <AuthenticatedNav />
-      
-      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-6xl">
+    <AuthenticatedLayout>
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="mb-6">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -446,11 +444,10 @@ const Bills = () => {
                           </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                    );
+                  })}
+                </div>
+              )}
           </CardContent>
         </Card>
 
@@ -462,7 +459,7 @@ const Bills = () => {
           onSuccess={handleLinkSuccess}
         />
       </div>
-    </div>
+    </AuthenticatedLayout>
   );
 };
 

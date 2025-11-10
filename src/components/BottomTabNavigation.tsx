@@ -27,14 +27,7 @@ export const BottomTabNavigation = ({ unreviewedTransactions = 0 }: BottomTabNav
             className="flex flex-col items-center justify-center flex-1 h-full gap-1 rounded-lg transition-colors hover:bg-accent/50"
             activeClassName="text-primary"
           >
-            <div className="relative">
-              <tab.icon className="h-5 w-5" aria-hidden="true" />
-              {tab.badge && tab.badge > 0 && (
-                <span className="absolute -top-1 -right-1 bg-yellow-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                  {tab.badge}
-                </span>
-              )}
-            </div>
+            <tab.icon className="h-5 w-5" aria-hidden="true" />
             <span className="text-xs">{tab.label}</span>
           </NavLink>
         ))}

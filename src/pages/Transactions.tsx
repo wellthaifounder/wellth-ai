@@ -13,7 +13,7 @@ import { TransactionInlineDetail } from "@/components/transactions/TransactionIn
 import { QuickAddTransactionDialog } from "@/components/transactions/QuickAddTransactionDialog";
 import { ReviewQueue } from "@/components/transactions/ReviewQueue";
 import { AdvancedFilters, type FilterCriteria } from "@/components/transactions/AdvancedFilters";
-import { AuthenticatedNav } from "@/components/AuthenticatedNav";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { MissingHSADateBanner } from "@/components/dashboard/MissingHSADateBanner";
 import { TransactionsSkeleton } from "@/components/skeletons/TransactionsSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -327,10 +327,9 @@ export default function Transactions() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <AuthenticatedNav unreviewedTransactions={0} />
+      <AuthenticatedLayout unreviewedTransactions={0}>
         <TransactionsSkeleton />
-      </div>
+      </AuthenticatedLayout>
     );
   }
 
@@ -343,10 +342,8 @@ export default function Transactions() {
         fetchTransactions();
       }}
     >
-      <div className="min-h-screen bg-background">
-        <AuthenticatedNav unreviewedTransactions={stats.unlinked} />
-        
-        <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-6xl">
+      <AuthenticatedLayout unreviewedTransactions={stats.unlinked}>
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
           {!hsaOpenedDate && <MissingHSADateBanner onDateSet={fetchHSADate} />}
           
           <div className="mb-6">
@@ -480,7 +477,7 @@ export default function Transactions() {
           onOpenChange={setAddDialogOpen}
           onSuccess={fetchTransactions}
         />
-      </div>
+      </AuthenticatedLayout>
     </ErrorBoundary>
   );
 }
