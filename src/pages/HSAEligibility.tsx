@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,7 +18,8 @@ import {
   Grid3x3,
   List,
   MessageCircle,
-  Sparkles
+  Sparkles,
+  ArrowLeft
 } from "lucide-react";
 import {
   hsaEligibilityItems,
@@ -31,6 +33,7 @@ import {
 } from "@/lib/hsaEligibilityData";
 
 export default function HSAEligibility() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<EligibilityStatus | null>(null);
@@ -98,6 +101,13 @@ export default function HSAEligibility() {
       <AuthenticatedNav />
       
       <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-7xl">
+        <div className="mb-6">
+          <Button variant="ghost" onClick={() => navigate("/dashboard")}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Button>
+        </div>
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-3">HSA Eligibility Reference</h1>

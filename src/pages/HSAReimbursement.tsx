@@ -344,16 +344,19 @@ export default function HSAReimbursement() {
         </div>
       </nav>
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-          <span className="text-foreground">HSA Reimbursement</span>
+        <div className="mb-6">
+          <Button variant="ghost" onClick={() => navigate("/dashboard")}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Button>
         </div>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">HSA Reimbursement Request</h1>
-        <p className="text-muted-foreground">
-          Select expenses and generate a professional reimbursement package
-        </p>
-      </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">HSA Reimbursement Request</h1>
+          <p className="text-muted-foreground">
+            Select expenses and generate a professional reimbursement package
+          </p>
+        </div>
 
       {expenses.length === 0 ? (
         <Card className="p-8 text-center">

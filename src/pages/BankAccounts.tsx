@@ -5,7 +5,7 @@ import { AuthenticatedNav } from '@/components/AuthenticatedNav';
 import { PlaidLink } from '@/components/PlaidLink';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, RefreshCw, Trash2 } from 'lucide-react';
+import { Building2, RefreshCw, Trash2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Database } from '@/integrations/supabase/types';
@@ -101,6 +101,13 @@ export default function BankAccounts() {
       <AuthenticatedNav />
       
       <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-4xl">
+        <div className="mb-6">
+          <Button variant="ghost" onClick={() => navigate("/dashboard")}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Button>
+        </div>
+
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>

@@ -372,6 +372,13 @@ export default function BillDetail() {
       <AuthenticatedNav />
 
       <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-6xl">
+        <div className="mb-6">
+          <Button variant="ghost" onClick={() => navigate("/bills")}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Bills
+          </Button>
+        </div>
+
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">
             {isNewBill ? 'Add New Bill' : 'Bill Details'}
@@ -381,13 +388,6 @@ export default function BillDetail() {
               ? 'Upload medical bills and documentation with automatic AI error detection' 
               : 'View bill information, AI analysis, payments, and documentation'}
           </p>
-        </div>
-
-        <div className="mb-6">
-          <Button variant="ghost" onClick={() => navigate("/bills")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Bills
-          </Button>
         </div>
 
         <div className="max-w-5xl mx-auto">

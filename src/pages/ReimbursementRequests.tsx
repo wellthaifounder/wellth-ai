@@ -143,22 +143,24 @@ const ReimbursementRequests = () => {
         </div>
       </nav>
       <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
+        </div>
+
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Reimbursement Requests</h1>
+            <p className="text-muted-foreground">
+              Track and manage your HSA reimbursement submissions and their status
+            </p>
+          </div>
           <Button onClick={() => navigate("/hsa-reimbursement")}>
             <FileText className="h-4 w-4 mr-2" />
             New Reimbursement
           </Button>
-        </div>
-
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Reimbursement Requests</h1>
-          <p className="text-muted-foreground">
-            Track and manage your HSA reimbursement submissions and their status
-          </p>
         </div>
 
         <Card>

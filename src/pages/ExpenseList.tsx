@@ -298,6 +298,13 @@ const ExpenseList = () => {
         </div>
 
         <div className="mb-6">
+          <Button variant="ghost" onClick={() => navigate("/dashboard")}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Button>
+        </div>
+
+        <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2">Your Expenses</h1>
           <p className="text-muted-foreground">
             Track and manage all your medical and healthcare expenses in one place
