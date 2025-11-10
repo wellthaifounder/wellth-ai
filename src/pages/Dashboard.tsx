@@ -442,7 +442,7 @@ const Dashboard = () => {
                       {layout.isCardVisible("value-spotlight") && (
                         <SortableCard id="value-spotlight">
                           <FeatureTooltip
-                            title="Provider Directory"
+                            title="Provider Intel"
                             description="Check billing accuracy scores and dispute success rates for healthcare providers before scheduling your next appointment."
                             show={!onboarding.hasSeenProviderDirectory && stats.expenseCount >= 2}
                             onDismiss={() => onboarding.markAsSeen("hasSeenProviderDirectory")}

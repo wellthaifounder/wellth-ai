@@ -77,33 +77,23 @@ const App = () => (
           <Route path="/bills/new" element={<BillDetail />} />
           <Route path="/bills/:id" element={<BillDetail />} />
           
-          {/* Legacy Routes - Redirect to new structure */}
-          <Route path="/invoices" element={<Bills />} />
-          <Route path="/invoice/new" element={<BillDetail />} />
-          <Route path="/invoice/:id" element={<BillDetail />} />
-          <Route path="/payment/new" element={<PaymentEntry />} />
-          
-          {/* Dual-Path Expense Entry */}
-          <Route path="/expenses/new" element={<ExpenseDecision />} />
-          <Route path="/expense/quick" element={<SimpleExpenseEntry />} />
-          
-          {/* Legacy Expense Routes (keep for backward compatibility) */}
-          <Route path="/expenses" element={<ExpenseList />} />
-          <Route path="/expenses/edit/:id" element={<ExpenseEntry />} />
-          <Route path="/expenses/import" element={<BulkImport />} />
+          {/* Decision Tool */}
           <Route path="/decision-tool" element={<PrePurchaseDecision />} />
-          <Route path="/hsa-reimbursement" element={<HSAReimbursement />} />
-          <Route path="/reimbursement/:id" element={<ReimbursementDetails />} />
+          {/* HSA Routes */}
+          <Route path="/hsa-eligibility" element={<HSAEligibility />} />
           <Route path="/reimbursement-requests" element={<ReimbursementRequests />} />
-          <Route path="/payment-methods" element={<PaymentMethods />} />
-          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/reimbursement/:id" element={<ReimbursementDetails />} />
+          
+          {/* Supporting Routes */}
           <Route path="/documents" element={<Documents />} />
-          <Route path="/transactions" element={<Transactions />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/install" element={<Install />} />
-          <Route path="/bank-accounts" element={<BankAccounts />} />
-          <Route path="/vault-tracker" element={<VaultTracker />} />
-          <Route path="/hsa-eligibility" element={<HSAEligibility />} />
+          
+          {/* Reports (formerly Analytics) */}
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/reports" element={<Analytics />} />
+          
+          {/* Checkout & Onboarding */}
           <Route path="/tripwire-success" element={<TripwireSuccess />} />
           <Route path="/checkout" element={<Checkout />} />
           
@@ -114,7 +104,7 @@ const App = () => (
           <Route path="/disputes" element={<DisputeManagement />} />
           <Route path="/disputes/:id" element={<DisputeDetail />} />
           
-          {/* Provider Directory Routes */}
+          {/* Provider Intel Routes */}
           <Route path="/providers" element={<ProviderDirectory />} />
           <Route path="/providers/:id" element={<ProviderDetail />} />
           <Route path="/provider-transparency" element={<ProviderTransparency />} />

@@ -74,7 +74,7 @@ export default function ProviderDirectory() {
       <div className="container mx-auto px-4 py-8 space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold mb-2">Provider Directory</h1>
+          <h1 className="text-3xl font-bold mb-2">Provider Intel</h1>
           <p className="text-muted-foreground">
             Track billing accuracy, average charges, and dispute history for healthcare providers
           </p>
