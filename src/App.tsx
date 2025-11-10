@@ -21,6 +21,8 @@ import ExpenseDecision from "./pages/ExpenseDecision";
 import SimpleExpenseEntry from "./pages/SimpleExpenseEntry";
 import InvoiceEntry from "./pages/InvoiceEntry";
 import InvoicePaymentListEnhanced from "./pages/InvoicePaymentListEnhanced";
+import Bills from "./pages/Bills";
+import BillDetail from "./pages/BillDetail";
 import PaymentEntry from "./pages/PaymentEntry";
 import BulkImport from "./pages/BulkImport";
 import PrePurchaseDecision from "./pages/PrePurchaseDecision";
@@ -69,10 +71,15 @@ const App = () => (
           <Route path="/tripwire-offer" element={<TripwireOffer />} />
           <Route path="/dashboard" element={<Dashboard />} />
           
-          {/* New Expense Management Routes */}
-          <Route path="/invoices" element={<InvoicePaymentListEnhanced />} />
-          <Route path="/invoice/new" element={<InvoiceEntry />} />
-          <Route path="/invoice/:id" element={<InvoiceEntry />} />
+          {/* Unified Bills Management Routes */}
+          <Route path="/bills" element={<Bills />} />
+          <Route path="/bills/new" element={<BillDetail />} />
+          <Route path="/bills/:id" element={<BillDetail />} />
+          
+          {/* Legacy Routes - Redirect to new structure */}
+          <Route path="/invoices" element={<Bills />} />
+          <Route path="/invoice/new" element={<BillDetail />} />
+          <Route path="/invoice/:id" element={<BillDetail />} />
           <Route path="/payment/new" element={<PaymentEntry />} />
           
           {/* Dual-Path Expense Entry */}
