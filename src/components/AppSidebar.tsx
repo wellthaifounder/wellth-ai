@@ -1,6 +1,7 @@
-import { Calculator, Receipt, FileText, BarChart3, Wallet, Home, Building2, BookOpen, Settings, AlertCircle, Scale, Award } from "lucide-react";
+import { Calculator, Receipt, FileText, BarChart3, Wallet, Building2, BookOpen, Settings } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useHSA } from "@/contexts/HSAContext";
+import { Badge } from "@/components/ui/badge";
 import {
   Sidebar,
   SidebarContent,
@@ -30,24 +31,13 @@ interface MenuItem {
 // Organized menu structure with logical grouping
 const billsMenuItems: MenuItem[] = [
   { icon: Receipt, label: "Bills", path: "/bills", badgeKey: null },
-  { icon: AlertCircle, label: "Bill Reviews", path: "/bill-reviews", badgeKey: "pendingReviews" },
-  { icon: Scale, label: "Disputes", path: "/disputes", badgeKey: "activeDisputes" },
-];
-
-const providersMenuItems: MenuItem[] = [
-  { icon: Building2, label: "Provider Intel", path: "/providers", badgeKey: null },
-  { icon: Award, label: "Transparency", path: "/provider-transparency", badgeKey: null },
 ];
 
 const toolsMenuItems: MenuItem[] = [
-  { icon: Calculator, label: "Decision Tool", path: "/decision-tool", badgeKey: null },
-  { icon: BarChart3, label: "Reports", path: "/reports", badgeKey: null },
+  { icon: Calculator, label: "Savings Calculator", path: "/savings-calculator", badgeKey: null, hsaOnly: true },
   { icon: FileText, label: "Documents", path: "/documents", badgeKey: null },
-];
-
-const hsaMenuItems: MenuItem[] = [
-  { icon: BookOpen, label: "HSA Eligibility", path: "/hsa-eligibility", badgeKey: null },
-  { icon: FileText, label: "Reimbursements", path: "/reimbursement-requests", badgeKey: null },
+  { icon: BookOpen, label: "HSA Eligibility", path: "/hsa-eligibility", badgeKey: null, hsaOnly: true },
+  { icon: Wallet, label: "HSA Requests", path: "/reimbursement-requests", badgeKey: null, hsaOnly: true },
 ];
 
 export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, activeDisputes = 0 }: AppSidebarProps) {
@@ -62,45 +52,77 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
     return 0;
   };
 
-  const renderMenuSection = (items: MenuItem[], label: string) => (
-    <SidebarGroup>
-      <SidebarGroupLabel>{label}</SidebarGroupLabel>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {items.map((item) => {
-            const badgeCount = getBadgeCount(item.badgeKey);
-            return (
-              <SidebarMenuItem key={item.path}>
-                <SidebarMenuButton asChild tooltip={item.label}>
-                  <NavLink 
-                    to={item.path} 
-                    end={item.path === "/dashboard"}
-                    className="relative"
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                    {badgeCount > 0 && open && (
-                      <span className="ml-auto bg-accent text-accent-foreground text-xs px-2 py-0.5 rounded-full">
-                        {badgeCount}
-                      </span>
-                    )}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            );
-          })}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
-  );
+  const renderMenuSection = (items: MenuItem[], label: string) => {
+    // Filter HSA-only items if user doesn't have HSA
+    const filteredItems = items.filter(item => !item.hsaOnly || hasHSA);
+    
+    if (filteredItems.length === 0) return null;
+    
+    return (
+      <SidebarGroup>
+        <SidebarGroupLabel>{label}</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {filteredItems.map((item) => {
+              const badgeCount = getBadgeCount(item.badgeKey);
+              return (
+                <SidebarMenuItem key={item.path}>
+                  <SidebarMenuButton asChild tooltip={item.label}>
+                    <NavLink 
+                      to={item.path} 
+                      end={item.path === "/dashboard"}
+                      className="relative"
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.label}</span>
+                      {badgeCount > 0 && open && (
+                        <span className="ml-auto bg-accent text-accent-foreground text-xs px-2 py-0.5 rounded-full">
+                          {badgeCount}
+                        </span>
+                      )}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    );
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarContent>
-        {renderMenuSection(billsMenuItems, "Bills & Reviews")}
-        {renderMenuSection(providersMenuItems, "Provider Intel")}
+        {renderMenuSection(billsMenuItems, "Bills")}
         {renderMenuSection(toolsMenuItems, "Tools")}
-        {hasHSA && renderMenuSection(hsaMenuItems, "HSA")}
+        
+        <SidebarGroup>
+          <SidebarGroupLabel>Provider Intel</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Provider Intel">
+                  <NavLink to="/providers" className="relative">
+                    <Building2 className="h-4 w-4" />
+                    <span className="flex items-center gap-2">
+                      Provider Intel
+                      <Badge variant="secondary" className="text-[10px] px-1 py-0">Beta</Badge>
+                    </span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Reports">
+                  <NavLink to="/reports">
+                    <BarChart3 className="h-4 w-4" />
+                    <span>Reports</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
         <SidebarGroup className="mt-auto">
           <SidebarGroupLabel>Account</SidebarGroupLabel>

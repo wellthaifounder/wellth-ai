@@ -1,5 +1,5 @@
 import { NavLink } from "@/components/NavLink";
-import { Home, FileText, Receipt, BarChart3 } from "lucide-react";
+import { Home, FileText, Receipt, BarChart3, Building2 } from "lucide-react";
 
 interface BottomTabNavigationProps {
   unreviewedTransactions?: number;
@@ -11,6 +11,7 @@ export const BottomTabNavigation = ({ unreviewedTransactions = 0 }: BottomTabNav
     { icon: FileText, label: "Bills", path: "/invoices" },
     { icon: Receipt, label: "Transactions", path: "/transactions", badge: unreviewedTransactions },
     { icon: BarChart3, label: "Reports", path: "/reports" },
+    { icon: Building2, label: "Intel", path: "/providers" },
   ];
 
   return (
