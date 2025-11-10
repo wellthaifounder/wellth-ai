@@ -463,13 +463,19 @@ export type Database = {
           category: string
           created_at: string
           date: string
+          deductible_met: boolean | null
+          deductible_portion: number | null
           id: string
+          insurance_plan_name: string | null
+          insurance_plan_type: string | null
           investment_notes: string | null
           invoice_date: string | null
           invoice_number: string | null
           is_hsa_eligible: boolean | null
           is_reimbursed: boolean | null
+          network_status: string | null
           notes: string | null
+          npi_number: string | null
           payment_method_id: string | null
           payment_plan_installments: number | null
           payment_plan_notes: string | null
@@ -488,13 +494,19 @@ export type Database = {
           category: string
           created_at?: string
           date: string
+          deductible_met?: boolean | null
+          deductible_portion?: number | null
           id?: string
+          insurance_plan_name?: string | null
+          insurance_plan_type?: string | null
           investment_notes?: string | null
           invoice_date?: string | null
           invoice_number?: string | null
           is_hsa_eligible?: boolean | null
           is_reimbursed?: boolean | null
+          network_status?: string | null
           notes?: string | null
+          npi_number?: string | null
           payment_method_id?: string | null
           payment_plan_installments?: number | null
           payment_plan_notes?: string | null
@@ -513,13 +525,19 @@ export type Database = {
           category?: string
           created_at?: string
           date?: string
+          deductible_met?: boolean | null
+          deductible_portion?: number | null
           id?: string
+          insurance_plan_name?: string | null
+          insurance_plan_type?: string | null
           investment_notes?: string | null
           invoice_date?: string | null
           invoice_number?: string | null
           is_hsa_eligible?: boolean | null
           is_reimbursed?: boolean | null
+          network_status?: string | null
           notes?: string | null
+          npi_number?: string | null
           payment_method_id?: string | null
           payment_plan_installments?: number | null
           payment_plan_notes?: string | null
@@ -848,10 +866,16 @@ export type Database = {
           bill_amount: number
           bill_review_id: string | null
           created_at: string
+          deductible_met: boolean | null
           dispute_outcome: string | null
+          error_confirmed_at: string | null
+          error_confirmed_by_user: boolean | null
+          error_flagged_at: string | null
           errors_found: number | null
           id: string
+          insurance_plan_type: string | null
           invoice_id: string
+          network_status: string | null
           overcharge_amount: number | null
           provider_id: string
           was_disputed: boolean | null
@@ -860,10 +884,16 @@ export type Database = {
           bill_amount: number
           bill_review_id?: string | null
           created_at?: string
+          deductible_met?: boolean | null
           dispute_outcome?: string | null
+          error_confirmed_at?: string | null
+          error_confirmed_by_user?: boolean | null
+          error_flagged_at?: string | null
           errors_found?: number | null
           id?: string
+          insurance_plan_type?: string | null
           invoice_id: string
+          network_status?: string | null
           overcharge_amount?: number | null
           provider_id: string
           was_disputed?: boolean | null
@@ -872,10 +902,16 @@ export type Database = {
           bill_amount?: number
           bill_review_id?: string | null
           created_at?: string
+          deductible_met?: boolean | null
           dispute_outcome?: string | null
+          error_confirmed_at?: string | null
+          error_confirmed_by_user?: boolean | null
+          error_flagged_at?: string | null
           errors_found?: number | null
           id?: string
+          insurance_plan_type?: string | null
           invoice_id?: string
+          network_status?: string | null
           overcharge_amount?: number | null
           provider_id?: string
           was_disputed?: boolean | null
@@ -1035,8 +1071,10 @@ export type Database = {
           address: string | null
           average_bill_amount: number | null
           billing_accuracy_score: number | null
+          billing_clarity_score: number | null
           city: string | null
           cost_rating: number | null
+          cost_transparency_score: number | null
           created_at: string
           data_last_updated: string | null
           disputes_lost: number | null
@@ -1049,6 +1087,7 @@ export type Database = {
           network_status: string | null
           npi_number: string | null
           overall_rating: number | null
+          payment_flexibility_score: number | null
           phone: string | null
           provider_type: string | null
           regional_pricing_percentile: number | null
@@ -1060,8 +1099,10 @@ export type Database = {
           total_bills_analyzed: number | null
           total_disputes_filed: number | null
           total_overcharges_found: number | null
+          total_reviews: number | null
           transparency_score: number | null
           updated_at: string
+          verified_patient_reviews: number | null
           website: string | null
           zip_code: string | null
         }
@@ -1070,8 +1111,10 @@ export type Database = {
           address?: string | null
           average_bill_amount?: number | null
           billing_accuracy_score?: number | null
+          billing_clarity_score?: number | null
           city?: string | null
           cost_rating?: number | null
+          cost_transparency_score?: number | null
           created_at?: string
           data_last_updated?: string | null
           disputes_lost?: number | null
@@ -1084,6 +1127,7 @@ export type Database = {
           network_status?: string | null
           npi_number?: string | null
           overall_rating?: number | null
+          payment_flexibility_score?: number | null
           phone?: string | null
           provider_type?: string | null
           regional_pricing_percentile?: number | null
@@ -1095,8 +1139,10 @@ export type Database = {
           total_bills_analyzed?: number | null
           total_disputes_filed?: number | null
           total_overcharges_found?: number | null
+          total_reviews?: number | null
           transparency_score?: number | null
           updated_at?: string
+          verified_patient_reviews?: number | null
           website?: string | null
           zip_code?: string | null
         }
@@ -1105,8 +1151,10 @@ export type Database = {
           address?: string | null
           average_bill_amount?: number | null
           billing_accuracy_score?: number | null
+          billing_clarity_score?: number | null
           city?: string | null
           cost_rating?: number | null
+          cost_transparency_score?: number | null
           created_at?: string
           data_last_updated?: string | null
           disputes_lost?: number | null
@@ -1119,6 +1167,7 @@ export type Database = {
           network_status?: string | null
           npi_number?: string | null
           overall_rating?: number | null
+          payment_flexibility_score?: number | null
           phone?: string | null
           provider_type?: string | null
           regional_pricing_percentile?: number | null
@@ -1130,8 +1179,10 @@ export type Database = {
           total_bills_analyzed?: number | null
           total_disputes_filed?: number | null
           total_overcharges_found?: number | null
+          total_reviews?: number | null
           transparency_score?: number | null
           updated_at?: string
+          verified_patient_reviews?: number | null
           website?: string | null
           zip_code?: string | null
         }
