@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { BillReviewCard } from "@/components/bills/BillReviewCard";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { analytics } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { BookOpen, MessageCircle, DollarSign, FileText, TrendingUp, Wallet, LayoutDashboard, CreditCard, BarChart3 } from "lucide-react";
@@ -104,6 +105,7 @@ const Dashboard = () => {
     fetchBillReviews();
     checkBankConnection();
     fetchDisputeStats();
+    analytics.pageView('/dashboard');
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {

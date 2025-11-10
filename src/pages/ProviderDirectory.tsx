@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { analytics } from "@/lib/analytics";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,16 @@ export default function ProviderDirectory() {
   const topPerformers = filteredProviders?.slice(0, 5) || [];
   const avgAccuracy = filteredProviders?.reduce((sum, p) => sum + Number(p.billing_accuracy_score), 0) / (filteredProviders?.length || 1);
 
+  useEffect(() => {
+    analytics.pageView('/providers');
+  }, []);
+
+  useEffect(() => {
+    if (filters.searchQuery) {
+      analytics.providerSearch(filters.searchQuery);
+    }
+  }, [filters.searchQuery]);
+
   if (isLoading) {
     return (
       <AuthenticatedLayout>
@@ -83,12 +94,12 @@ export default function ProviderDirectory() {
             Track billing accuracy, average charges, and dispute history for healthcare providers
           </p>
           
-          <Alert className="mb-4">
-            <Info className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              <strong>Data Disclaimer:</strong> Provider ratings are based on user-submitted bills and reviews. 
-              Data accuracy depends on sample size and may not reflect all patient experiences. 
-              Insurance coverage and pricing can vary significantly. Always verify with your provider and insurance company.
+          <Alert className="mb-4 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+            <Info className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-sm text-foreground">
+              <strong className="text-amber-600">Important Disclaimer:</strong> Provider ratings are based on user-submitted data and limited sample sizes. 
+              Scores may not reflect all patient experiences or current practices. Insurance coverage, network status, and pricing vary significantly. 
+              This is informational only—not medical or insurance advice. <strong>Always verify billing, coverage, and quality directly with your provider and insurance company before making healthcare decisions.</strong>
             </AlertDescription>
           </Alert>
         </div>
