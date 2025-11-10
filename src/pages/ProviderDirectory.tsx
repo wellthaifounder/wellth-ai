@@ -6,9 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, Building2, TrendingUp, TrendingDown, Star, AlertTriangle } from "lucide-react";
+import { Loader2, Building2, TrendingUp, TrendingDown, Star, AlertTriangle, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AdvancedFilters, FilterState } from "@/components/bills/AdvancedFilters";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function ProviderDirectory() {
   const navigate = useNavigate();
@@ -74,10 +75,22 @@ export default function ProviderDirectory() {
       <div className="container mx-auto px-4 py-8 space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold mb-2">Provider Intel</h1>
-          <p className="text-muted-foreground">
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-bold">Provider Intel</h1>
+            <Badge variant="secondary" className="text-xs">Beta</Badge>
+          </div>
+          <p className="text-muted-foreground mb-4">
             Track billing accuracy, average charges, and dispute history for healthcare providers
           </p>
+          
+          <Alert className="mb-4">
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-sm">
+              <strong>Data Disclaimer:</strong> Provider ratings are based on user-submitted bills and reviews. 
+              Data accuracy depends on sample size and may not reflect all patient experiences. 
+              Insurance coverage and pricing can vary significantly. Always verify with your provider and insurance company.
+            </AlertDescription>
+          </Alert>
         </div>
 
         {/* Stats Cards */}

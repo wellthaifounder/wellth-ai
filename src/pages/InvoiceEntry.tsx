@@ -70,6 +70,10 @@ const InvoiceEntry = () => {
     paymentPlanInstallments: "",
     paymentPlanNotes: "",
     isHsaEligible: false,
+    npiNumber: "",
+    insurancePlanType: "",
+    insurancePlanName: "",
+    networkStatus: "",
   });
 
   const recommendation = formData.totalAmount && formData.category && parseFloat(formData.totalAmount) > 0
@@ -118,6 +122,10 @@ const InvoiceEntry = () => {
           paymentPlanInstallments: data.payment_plan_installments?.toString() || "",
           paymentPlanNotes: data.payment_plan_notes || "",
           isHsaEligible: data.is_hsa_eligible || false,
+          npiNumber: data.npi_number || "",
+          insurancePlanType: data.insurance_plan_type || "",
+          insurancePlanName: data.insurance_plan_name || "",
+          networkStatus: data.network_status || "",
         });
         setHasPaymentPlan(!!data.payment_plan_total_amount);
         
@@ -174,6 +182,10 @@ const InvoiceEntry = () => {
             invoice_number: formData.invoiceNumber || null,
             invoice_date: formattedInvoiceDate,
             is_hsa_eligible: formData.isHsaEligible,
+            npi_number: formData.npiNumber || null,
+            insurance_plan_type: formData.insurancePlanType || null,
+            insurance_plan_name: formData.insurancePlanName || null,
+            network_status: formData.networkStatus || null,
             payment_plan_total_amount: hasPaymentPlan && formData.paymentPlanTotalAmount 
               ? parseFloat(formData.paymentPlanTotalAmount) 
               : null,
@@ -203,6 +215,10 @@ const InvoiceEntry = () => {
             invoice_date: formattedInvoiceDate,
             is_hsa_eligible: formData.isHsaEligible,
             is_reimbursed: false,
+            npi_number: formData.npiNumber || null,
+            insurance_plan_type: formData.insurancePlanType || null,
+            insurance_plan_name: formData.insurancePlanName || null,
+            network_status: formData.networkStatus || null,
             payment_plan_total_amount: hasPaymentPlan && formData.paymentPlanTotalAmount 
               ? parseFloat(formData.paymentPlanTotalAmount) 
               : null,
@@ -442,6 +458,21 @@ const InvoiceEntry = () => {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="npiNumber">NPI Number (Optional)</Label>
+                <Input
+                  id="npiNumber"
+                  placeholder="e.g., 1234567890"
+                  value={formData.npiNumber}
+                  onChange={(e) => setFormData({ ...formData, npiNumber: e.target.value })}
+                  maxLength={10}
+                  pattern="[0-9]*"
+                />
+                <p className="text-xs text-muted-foreground">
+                  National Provider Identifier - helps improve provider insights
+                </p>
+              </div>
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
@@ -474,6 +505,56 @@ const InvoiceEntry = () => {
                     required
                   />
                 </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="insurancePlanType">Insurance Plan Type (Optional)</Label>
+                  <Select
+                    value={formData.insurancePlanType}
+                    onValueChange={(value) => setFormData({ ...formData, insurancePlanType: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select plan type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="HMO">HMO</SelectItem>
+                      <SelectItem value="PPO">PPO</SelectItem>
+                      <SelectItem value="EPO">EPO</SelectItem>
+                      <SelectItem value="POS">POS</SelectItem>
+                      <SelectItem value="HDHP">HDHP</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="networkStatus">Network Status (Optional)</Label>
+                  <Select
+                    value={formData.networkStatus}
+                    onValueChange={(value) => setFormData({ ...formData, networkStatus: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select network status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="In-Network">In-Network</SelectItem>
+                      <SelectItem value="Out-of-Network">Out-of-Network</SelectItem>
+                      <SelectItem value="Unknown">Unknown</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="insurancePlanName">Insurance Plan Name (Optional)</Label>
+                <Input
+                  id="insurancePlanName"
+                  placeholder="e.g., Blue Cross Blue Shield - Silver Plan"
+                  value={formData.insurancePlanName}
+                  onChange={(e) => setFormData({ ...formData, insurancePlanName: e.target.value })}
+                  maxLength={100}
+                />
               </div>
 
               <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
