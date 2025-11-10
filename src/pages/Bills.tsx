@@ -298,7 +298,7 @@ const Bills = () => {
                 <p className="text-muted-foreground">No bills match your filters</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 md:space-y-3">
                 {filteredBills.map((bill) => {
                   const breakdown = calculateHSAEligibility(bill as any, bill.payment_transactions || []);
                   const { paymentStatus, reviewStatus, review } = getStatusBadge(bill);
@@ -306,10 +306,68 @@ const Bills = () => {
                   return (
                     <div
                       key={bill.id}
-                      className="p-4 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
+                      className="p-2.5 md:p-4 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
                       onClick={() => navigate(`/bills/${bill.id}`)}
                     >
-                      <div className="flex items-center justify-between gap-4">
+                      {/* Mobile Layout */}
+                      <div className="md:hidden space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-sm truncate">{bill.vendor}</h4>
+                            <p className="text-xs text-muted-foreground">
+                              {bill.category} • {new Date(bill.date).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="font-semibold text-sm">${breakdown.totalInvoiced.toFixed(2)}</p>
+                            {breakdown.unpaidBalance > 0 && (
+                              <p className="text-xs text-red-600">
+                                ${breakdown.unpaidBalance.toFixed(2)}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <Badge 
+                            variant={paymentStatus === "Paid" ? "default" : "destructive"}
+                            className="text-[10px] px-1.5 py-0 h-5"
+                          >
+                            {paymentStatus}
+                          </Badge>
+                          <Badge 
+                            variant={
+                              reviewStatus === "Errors Found" ? "destructive" : 
+                              reviewStatus === "Verified" ? "default" : 
+                              "secondary"
+                            }
+                            className="text-[10px] px-1.5 py-0 h-5"
+                          >
+                            {reviewStatus === "Errors Found" && <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />}
+                            {reviewStatus === "Verified" && <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />}
+                            {reviewStatus}
+                          </Badge>
+                          {bill.is_hsa_eligible && (
+                            <Badge variant="secondary" className="bg-green-100 text-green-800 text-[10px] px-1.5 py-0 h-5">
+                              HSA
+                            </Badge>
+                          )}
+                          {breakdown.hsaReimbursementEligible > 0 && (
+                            <span className="text-xs text-amber-600">
+                              ${breakdown.hsaReimbursementEligible.toFixed(2)} eligible
+                            </span>
+                          )}
+                        </div>
+                        
+                        {review && review.total_potential_savings > 0 && (
+                          <p className="text-xs text-orange-600">
+                            💰 ${review.total_potential_savings.toFixed(2)} savings
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Desktop Layout */}
+                      <div className="hidden md:flex items-center justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <h4 className="font-medium">{bill.vendor}</h4>
