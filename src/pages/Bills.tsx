@@ -206,6 +206,19 @@ const Bills = () => {
           </Button>
         </div>
 
+        {/* Info Banner */}
+        <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-lg">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-primary mt-0.5" />
+            <div>
+              <p className="font-medium">AI-Powered Bill Review</p>
+              <p className="text-sm text-muted-foreground">
+                Upload medical bills or EOBs to automatically trigger AI analysis for potential errors and overcharges.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Hero Metrics */}
         <BillsHeroMetrics
           totalBilled={aggregateStats.totalInvoiced}

@@ -42,6 +42,7 @@ export default function BillDetail() {
   const [activeTab, setActiveTab] = useState("overview");
   const [newFiles, setNewFiles] = useState<any[]>([]);
   const [showLinkTransactionDialog, setShowLinkTransactionDialog] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     vendor: "",
@@ -138,6 +139,44 @@ export default function BillDetail() {
     enabled: !!bill?.vendor
   });
 
+  // Trigger AI analysis function
+  const triggerAIAnalysis = async (invoiceId: string, receiptId: string) => {
+    setIsAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-medical-bill', {
+        body: {
+          invoiceId,
+          receiptId,
+        },
+      });
+
+      if (error) {
+        console.error('Error invoking AI analysis:', error);
+        
+        // Check for specific error messages
+        const errorMessage = error.message || '';
+        if (errorMessage.includes('rate limit')) {
+          toast.error("AI rate limit exceeded. Please try again in a few minutes.");
+        } else if (errorMessage.includes('credits exhausted')) {
+          toast.error("AI credits exhausted. Please add funds to continue analysis.");
+        } else {
+          toast.error("AI analysis failed. Please try again.");
+        }
+      } else {
+        toast.success(`AI analysis complete! Found ${data.errorsFound || 0} potential issues.`);
+        // Refetch data to show updated review status
+        setTimeout(() => {
+          refetch();
+          setIsAnalyzing(false);
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error triggering AI analysis:', error);
+      toast.error("Failed to start AI analysis");
+      setIsAnalyzing(false);
+    }
+  };
+
   // Load bill data into form when editing
   useEffect(() => {
     if (bill && !isNewBill) {
@@ -211,6 +250,8 @@ export default function BillDetail() {
 
       // Upload new files if any
       if (newFiles.length > 0 && billId) {
+        const uploadedReceipts: any[] = [];
+        
         for (let i = 0; i < newFiles.length; i++) {
           const fileData = newFiles[i];
           const fileExt = fileData.file.name.split('.').pop();
@@ -223,7 +264,7 @@ export default function BillDetail() {
 
           if (uploadError) throw uploadError;
 
-          const { error: receiptError } = await supabase
+          const { data: receiptData, error: receiptError } = await supabase
             .from('receipts')
             .insert({
               user_id: user.id,
@@ -233,17 +274,55 @@ export default function BillDetail() {
               document_type: fileData.documentType,
               description: fileData.description || null,
               display_order: i,
-            });
+            })
+            .select()
+            .single();
 
           if (receiptError) throw receiptError;
+          if (receiptData) uploadedReceipts.push(receiptData);
         }
+        
         setNewFiles([]);
         refetchReceipts();
         
-        // If this is a medical bill document, trigger AI review
-        const hasMedicalBill = newFiles.some(f => f.documentType === 'bill' || f.documentType === 'eob');
-        if (hasMedicalBill) {
-          toast.info("AI review will be triggered automatically");
+        // Trigger AI review if medical bill or EOB was uploaded
+        const billOrEOBReceipt = uploadedReceipts.find(
+          r => r.document_type === 'bill' || r.document_type === 'eob'
+        );
+        
+        if (billOrEOBReceipt) {
+          toast.info("Analyzing bill for potential errors...");
+          
+          // Create bill review record
+          const { data: existingReview } = await supabase
+            .from('bill_reviews')
+            .select('id')
+            .eq('invoice_id', billId)
+            .maybeSingle();
+
+          if (!existingReview) {
+            const { data: reviewData, error: reviewError } = await supabase
+              .from('bill_reviews')
+              .insert({
+                user_id: user.id,
+                invoice_id: billId,
+                review_status: 'pending',
+                total_potential_savings: 0,
+              })
+              .select()
+              .single();
+
+            if (reviewError) {
+              console.error('Error creating bill review:', reviewError);
+              toast.error("Failed to start AI review");
+            } else if (reviewData) {
+              // Trigger AI analysis in background
+              triggerAIAnalysis(billId, billOrEOBReceipt.id);
+            }
+          } else {
+            // Review already exists, just trigger analysis
+            triggerAIAnalysis(billId, billOrEOBReceipt.id);
+          }
         }
       }
     } catch (error) {
@@ -466,6 +545,20 @@ export default function BillDetail() {
 
                 {/* Documents Tab */}
                 <TabsContent value="documents" className="space-y-6 mt-6">
+                  {isAnalyzing && (
+                    <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                        <div>
+                          <p className="font-medium">AI Analysis in Progress</p>
+                          <p className="text-sm text-muted-foreground">
+                            Analyzing your bill for potential errors and overcharges. This may take up to 30 seconds.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   {!isNewBill && receipts && receipts.length > 0 && (
                     <div className="space-y-2">
                       <Label>Existing Documents</Label>
@@ -479,12 +572,15 @@ export default function BillDetail() {
 
                   <div className="space-y-2">
                     <Label>Upload New Documents</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Upload your medical bill or EOB (Explanation of Benefits) to automatically trigger AI analysis.
+                    </p>
                     <MultiFileUpload
                       onFilesChange={setNewFiles}
-                      disabled={false}
+                      disabled={isAnalyzing}
                     />
                     {newFiles.length > 0 && (
-                      <Button onClick={handleSaveBill} className="mt-4">
+                      <Button onClick={handleSaveBill} className="mt-4" disabled={isAnalyzing}>
                         Upload {newFiles.length} Document{newFiles.length !== 1 ? 's' : ''}
                       </Button>
                     )}
@@ -494,7 +590,17 @@ export default function BillDetail() {
                 {/* AI Review Tab */}
                 {!isNewBill && review && (
                   <TabsContent value="ai-review" className="space-y-6 mt-6">
-                    {errorCount > 0 ? (
+                    {(isAnalyzing || review.review_status === 'pending') ? (
+                      <div className="p-8 text-center">
+                        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+                        <h3 className="text-2xl font-bold mb-2">Analyzing Bill...</h3>
+                        <p className="text-muted-foreground">
+                          Our AI is reviewing your bill for potential errors and overcharges.
+                          <br />
+                          This typically takes 15-30 seconds.
+                        </p>
+                      </div>
+                    ) : errorCount > 0 ? (
                       <>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <Card>

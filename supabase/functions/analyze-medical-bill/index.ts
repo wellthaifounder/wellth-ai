@@ -172,7 +172,7 @@ IMPORTANT:
 
     console.log('Calling Lovable AI for bill analysis...');
 
-    const aiResponse = await fetch('https://api.lovable.app/v1/chat/completions', {
+    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${lovableApiKey}`,
@@ -205,6 +205,15 @@ IMPORTANT:
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
       console.error('Lovable AI error:', errorText);
+      
+      if (aiResponse.status === 429) {
+        throw new Error('AI rate limit exceeded. Please try again in a few minutes.');
+      }
+      
+      if (aiResponse.status === 402) {
+        throw new Error('AI credits exhausted. Please add funds to your Lovable workspace.');
+      }
+      
       throw new Error(`AI analysis failed: ${aiResponse.statusText}`);
     }
 
@@ -226,29 +235,66 @@ IMPORTANT:
       throw new Error('Failed to parse AI analysis');
     }
 
-    // Create bill review record
-    const { data: billReview, error: reviewError } = await supabase
+    // Update or create bill review record
+    const { data: existingReview } = await supabase
       .from('bill_reviews')
-      .insert({
-        user_id: user.id,
-        invoice_id: invoiceId,
-        review_status: 'reviewed',
-        total_potential_savings: analysisResult.total_potential_savings || 0,
-        confidence_score: analysisResult.confidence_score || 0.5,
-        analyzed_at: new Date().toISOString()
-      })
-      .select()
-      .single();
+      .select('id')
+      .eq('invoice_id', invoiceId)
+      .maybeSingle();
 
-    if (reviewError) {
-      console.error('Error creating bill review:', reviewError);
-      throw reviewError;
+    let billReview;
+    
+    if (existingReview) {
+      // Update existing review
+      const { data, error: updateError } = await supabase
+        .from('bill_reviews')
+        .update({
+          review_status: 'reviewed',
+          total_potential_savings: analysisResult.total_potential_savings || 0,
+          confidence_score: analysisResult.confidence_score || 0.5,
+          analyzed_at: new Date().toISOString()
+        })
+        .eq('id', existingReview.id)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('Error updating bill review:', updateError);
+        throw updateError;
+      }
+      billReview = data;
+      console.log(`Updated bill review ${billReview.id}`);
+    } else {
+      // Create new review
+      const { data, error: reviewError } = await supabase
+        .from('bill_reviews')
+        .insert({
+          user_id: user.id,
+          invoice_id: invoiceId,
+          review_status: 'reviewed',
+          total_potential_savings: analysisResult.total_potential_savings || 0,
+          confidence_score: analysisResult.confidence_score || 0.5,
+          analyzed_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (reviewError) {
+        console.error('Error creating bill review:', reviewError);
+        throw reviewError;
+      }
+      billReview = data;
+      console.log(`Created bill review ${billReview.id}`);
     }
 
-    console.log(`Created bill review ${billReview.id}`);
-
-    // Insert error findings
+    // Insert or update error findings
     if (analysisResult.errors && analysisResult.errors.length > 0) {
+      // First, delete any existing errors for this review
+      await supabase
+        .from('bill_errors')
+        .delete()
+        .eq('bill_review_id', billReview.id);
+
       const errorInserts = analysisResult.errors.map(error => ({
         bill_review_id: billReview.id,
         error_type: error.error_type,
