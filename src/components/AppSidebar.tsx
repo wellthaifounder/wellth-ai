@@ -41,6 +41,7 @@ const providersMenuItems: MenuItem[] = [
 
 const toolsMenuItems: MenuItem[] = [
   { icon: Calculator, label: "Decision Tool", path: "/decision-tool", badgeKey: null },
+  { icon: BarChart3, label: "Reports", path: "/reports", badgeKey: null },
   { icon: FileText, label: "Documents", path: "/documents", badgeKey: null },
 ];
 

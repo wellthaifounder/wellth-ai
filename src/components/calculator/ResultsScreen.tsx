@@ -83,17 +83,21 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
     <div className="space-y-8">
       {/* Big Savings Number */}
       <div className="space-y-4 rounded-2xl bg-card p-8 shadow-lg text-center">
-        <h1 className="text-2xl font-bold">🎉 Your Personalized Savings</h1>
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-2">
+          <span className="text-xl">💰</span>
+          <span className="text-sm font-semibold text-primary">Wellth Savings Calculator</span>
+        </div>
+        <h1 className="text-2xl font-bold">Your Personalized Savings</h1>
         <div className="rounded-xl bg-primary/10 p-8">
           <div className="text-5xl font-bold text-primary">
             ${displayedSavings.toLocaleString()}
           </div>
           <div className="mt-2 text-lg text-muted-foreground">
-            Estimated annual savings
+            Estimated annual savings with Wellth
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          People like you save an average of $1,200/year
+          Join thousands saving on healthcare costs
         </p>
       </div>
 
@@ -129,7 +133,7 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
           size="lg"
           className="w-full"
         >
-          Claim My Savings – Sign Up Free
+          Get Started with Wellth – Sign Up Free
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
 

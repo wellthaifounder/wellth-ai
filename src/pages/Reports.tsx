@@ -27,7 +27,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DateRange } from "react-day-picker";
 import { startOfYear, subMonths } from "date-fns";
 
-const Analytics = () => {
+const Reports = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
@@ -231,7 +231,7 @@ const Analytics = () => {
     >
       <AuthenticatedLayout>
         <main className="container mx-auto px-4 py-8 max-w-7xl">
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="mb-6">
             <Button variant="ghost" onClick={() => navigate("/dashboard")}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
@@ -241,9 +241,9 @@ const Analytics = () => {
           <div className="mb-8">
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
               <div>
-                <h1 className="text-3xl font-bold mb-2">Analytics</h1>
+                <h1 className="text-3xl font-bold mb-2">Reports</h1>
                 <p className="text-muted-foreground">
-                  Insights into your bills, payments, and HSA savings
+                  Detailed insights, trends, and analytics for your healthcare spending
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
@@ -513,4 +513,4 @@ const Analytics = () => {
   );
 };
 
-export default Analytics;
+export default Reports;

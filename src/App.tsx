@@ -30,7 +30,7 @@ import HSAReimbursement from "./pages/HSAReimbursement";
 import ReimbursementDetails from "./pages/ReimbursementDetails";
 import ReimbursementRequests from "./pages/ReimbursementRequests";
 import PaymentMethods from "./pages/PaymentMethods";
-import Analytics from "./pages/Analytics";
+import Reports from "./pages/Reports";
 import TripwireSuccess from "./pages/TripwireSuccess";
 import TripwireOffer from "./pages/TripwireOffer";
 import Checkout from "./pages/Checkout";
@@ -90,8 +90,8 @@ const App = () => (
           <Route path="/install" element={<Install />} />
           
           {/* Reports (formerly Analytics) */}
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/reports" element={<Analytics />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/analytics" element={<Reports />} /> {/* Legacy redirect */}
           
           {/* Checkout & Onboarding */}
           <Route path="/tripwire-success" element={<TripwireSuccess />} />

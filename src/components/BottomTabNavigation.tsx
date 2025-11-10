@@ -10,7 +10,7 @@ export const BottomTabNavigation = ({ unreviewedTransactions = 0 }: BottomTabNav
     { icon: Home, label: "Dashboard", path: "/dashboard" },
     { icon: FileText, label: "Bills", path: "/invoices" },
     { icon: Receipt, label: "Transactions", path: "/transactions", badge: unreviewedTransactions },
-    { icon: BarChart3, label: "Analytics", path: "/analytics" },
+    { icon: BarChart3, label: "Reports", path: "/reports" },
   ];
 
   return (
