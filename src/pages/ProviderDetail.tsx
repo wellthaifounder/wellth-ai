@@ -21,6 +21,9 @@ import {
 } from "lucide-react";
 import { ProviderReviewForm } from "@/components/bills/ProviderReviewForm";
 import { ProviderChargeComparison } from "@/components/bills/ProviderChargeComparison";
+import { FairPricingScoreCard } from "@/components/bills/FairPricingScoreCard";
+import { TransparencyScoreCard } from "@/components/bills/TransparencyScoreCard";
+import { ProcedureCostInsights } from "@/components/bills/ProcedureCostInsights";
 
 export default function ProviderDetail() {
   const { id } = useParams<{ id: string }>();
@@ -64,6 +67,22 @@ export default function ProviderDetail() {
         .select('*')
         .eq('provider_id', id)
         .order('sample_size', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id
+  });
+
+  const { data: procedureInsights, isLoading: procedureLoading } = useQuery({
+    queryKey: ['procedure-insights', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('procedure_insights')
+        .select('*')
+        .eq('provider_id', id)
+        .order('times_performed', { ascending: false })
         .limit(10);
 
       if (error) throw error;
@@ -245,6 +264,27 @@ export default function ProviderDetail() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6 mt-6">
+            {/* Transparency Score Card */}
+            <TransparencyScoreCard
+              transparencyScore={provider.transparency_score}
+              billingAccuracyScore={provider.billing_accuracy_score}
+              fairPricingScore={provider.fair_pricing_score}
+              overallRating={provider.overall_rating}
+            />
+
+            {/* Fair Pricing Score Card */}
+            <FairPricingScoreCard
+              score={provider.fair_pricing_score}
+              regionalPercentile={provider.regional_pricing_percentile}
+              lastUpdated={provider.data_last_updated}
+            />
+
+            {/* Procedure Cost Insights */}
+            <ProcedureCostInsights 
+              insights={procedureInsights || []}
+              loading={procedureLoading}
+            />
+
             {/* Performance Stats */}
             <Card>
               <CardHeader>

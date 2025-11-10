@@ -1,4 +1,4 @@
-import { Calculator, Receipt, FileText, BarChart3, Wallet, Home, Building2, BookOpen, Settings, AlertCircle, Scale } from "lucide-react";
+import { Calculator, Receipt, FileText, BarChart3, Wallet, Home, Building2, BookOpen, Settings, AlertCircle, Scale, Award } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useHSA } from "@/contexts/HSAContext";
 import {
@@ -32,6 +32,7 @@ const menuItems: MenuItem[] = [
   { icon: AlertCircle, label: "Bill Reviews", path: "/bill-reviews", badgeKey: "pendingReviews" },
   { icon: Scale, label: "Disputes", path: "/disputes", badgeKey: "activeDisputes" },
   { icon: Building2, label: "Providers", path: "/providers", badgeKey: null },
+  { icon: Award, label: "Transparency", path: "/provider-transparency", badgeKey: null },
   { icon: FileText, label: "Documents", path: "/documents", badgeKey: null },
   { icon: BookOpen, label: "HSA Eligibility", path: "/hsa-eligibility", badgeKey: null, hsaOnly: true },
   { icon: FileText, label: "HSA Requests", path: "/reimbursement-requests", badgeKey: null, hsaOnly: true },

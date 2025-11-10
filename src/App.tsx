@@ -47,6 +47,7 @@ import DisputeManagement from "./pages/DisputeManagement";
 import DisputeDetail from "./pages/DisputeDetail";
 import ProviderDirectory from "./pages/ProviderDirectory";
 import ProviderDetail from "./pages/ProviderDetail";
+import ProviderTransparency from "./pages/ProviderTransparency";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -116,6 +117,7 @@ const App = () => (
           {/* Provider Directory Routes */}
           <Route path="/providers" element={<ProviderDirectory />} />
           <Route path="/providers/:id" element={<ProviderDetail />} />
+          <Route path="/provider-transparency" element={<ProviderTransparency />} />
           
            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

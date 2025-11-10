@@ -763,6 +763,59 @@ export type Database = {
         }
         Relationships: []
       }
+      procedure_insights: {
+        Row: {
+          average_patient_cost: number
+          cpt_code: string
+          created_at: string | null
+          fair_price_indicator: string | null
+          id: string
+          median_patient_cost: number | null
+          procedure_category: string | null
+          procedure_name: string
+          provider_id: string | null
+          times_performed: number | null
+          typical_insurance_payment: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          average_patient_cost: number
+          cpt_code: string
+          created_at?: string | null
+          fair_price_indicator?: string | null
+          id?: string
+          median_patient_cost?: number | null
+          procedure_category?: string | null
+          procedure_name: string
+          provider_id?: string | null
+          times_performed?: number | null
+          typical_insurance_payment?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          average_patient_cost?: number
+          cpt_code?: string
+          created_at?: string | null
+          fair_price_indicator?: string | null
+          id?: string
+          median_patient_cost?: number | null
+          procedure_category?: string | null
+          procedure_name?: string
+          provider_id?: string | null
+          times_performed?: number | null
+          typical_insurance_payment?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "procedure_insights_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -910,44 +963,63 @@ export type Database = {
       provider_reviews: {
         Row: {
           accuracy_rating: number | null
+          bill_id: string | null
           cost_rating: number | null
           created_at: string
           id: string
+          is_verified: boolean | null
           overall_rating: number
+          procedure_type: string | null
           provider_id: string
           response_rating: number | null
           review_text: string | null
           updated_at: string
           user_id: string
+          visit_date: string | null
           would_recommend: boolean | null
         }
         Insert: {
           accuracy_rating?: number | null
+          bill_id?: string | null
           cost_rating?: number | null
           created_at?: string
           id?: string
+          is_verified?: boolean | null
           overall_rating: number
+          procedure_type?: string | null
           provider_id: string
           response_rating?: number | null
           review_text?: string | null
           updated_at?: string
           user_id: string
+          visit_date?: string | null
           would_recommend?: boolean | null
         }
         Update: {
           accuracy_rating?: number | null
+          bill_id?: string | null
           cost_rating?: number | null
           created_at?: string
           id?: string
+          is_verified?: boolean | null
           overall_rating?: number
+          procedure_type?: string | null
           provider_id?: string
           response_rating?: number | null
           review_text?: string | null
           updated_at?: string
           user_id?: string
+          visit_date?: string | null
           would_recommend?: boolean | null
         }
         Relationships: [
+          {
+            foreignKeyName: "provider_reviews_bill_id_fkey"
+            columns: ["bill_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "provider_reviews_provider_id_fkey"
             columns: ["provider_id"]
@@ -966,22 +1038,29 @@ export type Database = {
           city: string | null
           cost_rating: number | null
           created_at: string
+          data_last_updated: string | null
           disputes_lost: number | null
           disputes_won: number | null
+          fair_pricing_score: number | null
           id: string
+          insurance_networks: string[] | null
+          most_common_procedures: Json | null
           name: string
           network_status: string | null
           npi_number: string | null
           overall_rating: number | null
           phone: string | null
           provider_type: string | null
+          regional_pricing_percentile: number | null
           response_rating: number | null
           specialties: string[] | null
+          specialties_verified: boolean | null
           state: string | null
           tax_id: string | null
           total_bills_analyzed: number | null
           total_disputes_filed: number | null
           total_overcharges_found: number | null
+          transparency_score: number | null
           updated_at: string
           website: string | null
           zip_code: string | null
@@ -994,22 +1073,29 @@ export type Database = {
           city?: string | null
           cost_rating?: number | null
           created_at?: string
+          data_last_updated?: string | null
           disputes_lost?: number | null
           disputes_won?: number | null
+          fair_pricing_score?: number | null
           id?: string
+          insurance_networks?: string[] | null
+          most_common_procedures?: Json | null
           name: string
           network_status?: string | null
           npi_number?: string | null
           overall_rating?: number | null
           phone?: string | null
           provider_type?: string | null
+          regional_pricing_percentile?: number | null
           response_rating?: number | null
           specialties?: string[] | null
+          specialties_verified?: boolean | null
           state?: string | null
           tax_id?: string | null
           total_bills_analyzed?: number | null
           total_disputes_filed?: number | null
           total_overcharges_found?: number | null
+          transparency_score?: number | null
           updated_at?: string
           website?: string | null
           zip_code?: string | null
@@ -1022,22 +1108,29 @@ export type Database = {
           city?: string | null
           cost_rating?: number | null
           created_at?: string
+          data_last_updated?: string | null
           disputes_lost?: number | null
           disputes_won?: number | null
+          fair_pricing_score?: number | null
           id?: string
+          insurance_networks?: string[] | null
+          most_common_procedures?: Json | null
           name?: string
           network_status?: string | null
           npi_number?: string | null
           overall_rating?: number | null
           phone?: string | null
           provider_type?: string | null
+          regional_pricing_percentile?: number | null
           response_rating?: number | null
           specialties?: string[] | null
+          specialties_verified?: boolean | null
           state?: string | null
           tax_id?: string | null
           total_bills_analyzed?: number | null
           total_disputes_filed?: number | null
           total_overcharges_found?: number | null
+          transparency_score?: number | null
           updated_at?: string
           website?: string | null
           zip_code?: string | null
@@ -1141,6 +1234,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      regional_benchmarks: {
+        Row: {
+          cpt_code: string
+          id: string
+          last_updated: string | null
+          median_charge: number
+          p25_charge: number | null
+          p75_charge: number | null
+          p90_charge: number | null
+          procedure_name: string | null
+          region_code: string
+          sample_size: number | null
+        }
+        Insert: {
+          cpt_code: string
+          id?: string
+          last_updated?: string | null
+          median_charge: number
+          p25_charge?: number | null
+          p75_charge?: number | null
+          p90_charge?: number | null
+          procedure_name?: string | null
+          region_code: string
+          sample_size?: number | null
+        }
+        Update: {
+          cpt_code?: string
+          id?: string
+          last_updated?: string | null
+          median_charge?: number
+          p25_charge?: number | null
+          p75_charge?: number | null
+          p90_charge?: number | null
+          procedure_name?: string | null
+          region_code?: string
+          sample_size?: number | null
+        }
+        Relationships: []
       }
       reimbursement_items: {
         Row: {
@@ -1370,6 +1502,36 @@ export type Database = {
           },
         ]
       }
+      transparency_metrics: {
+        Row: {
+          common_overcharge_trends: Json | null
+          created_at: string | null
+          id: string
+          metric_date: string
+          regional_insights: Json | null
+          top_overcharging_providers: Json | null
+          top_transparent_providers: Json | null
+        }
+        Insert: {
+          common_overcharge_trends?: Json | null
+          created_at?: string | null
+          id?: string
+          metric_date?: string
+          regional_insights?: Json | null
+          top_overcharging_providers?: Json | null
+          top_transparent_providers?: Json | null
+        }
+        Update: {
+          common_overcharge_trends?: Json | null
+          created_at?: string | null
+          id?: string
+          metric_date?: string
+          regional_insights?: Json | null
+          top_overcharging_providers?: Json | null
+          top_transparent_providers?: Json | null
+        }
+        Relationships: []
+      }
       user_vendor_preferences: {
         Row: {
           confidence_score: number | null
@@ -1464,6 +1626,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_fair_pricing_score: {
+        Args: { p_provider_id: string }
+        Returns: number
+      }
       update_provider_statistics: {
         Args: { p_provider_id: string }
         Returns: undefined
