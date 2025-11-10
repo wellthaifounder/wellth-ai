@@ -865,6 +865,7 @@ export type Database = {
         Row: {
           bill_amount: number
           bill_review_id: string | null
+          confirmed_errors: Json | null
           created_at: string
           deductible_met: boolean | null
           dispute_outcome: string | null
@@ -883,6 +884,7 @@ export type Database = {
         Insert: {
           bill_amount: number
           bill_review_id?: string | null
+          confirmed_errors?: Json | null
           created_at?: string
           deductible_met?: boolean | null
           dispute_outcome?: string | null
@@ -901,6 +903,7 @@ export type Database = {
         Update: {
           bill_amount?: number
           bill_review_id?: string | null
+          confirmed_errors?: Json | null
           created_at?: string
           deductible_met?: boolean | null
           dispute_outcome?: string | null
