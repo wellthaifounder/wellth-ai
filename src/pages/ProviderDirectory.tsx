@@ -7,10 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, Building2, TrendingUp, TrendingDown, Star, AlertTriangle, Info } from "lucide-react";
+import { Loader2, Building2, TrendingUp, TrendingDown, Star, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AdvancedFilters, FilterState } from "@/components/bills/AdvancedFilters";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ProviderIntelDisclaimer } from "@/components/provider/ProviderIntelDisclaimer";
 
 export default function ProviderDirectory() {
   const navigate = useNavigate();
@@ -94,14 +94,9 @@ export default function ProviderDirectory() {
             Track billing accuracy, average charges, and dispute history for healthcare providers
           </p>
           
-          <Alert className="mb-4 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
-            <Info className="h-4 w-4 text-amber-600" />
-            <AlertDescription className="text-sm text-foreground">
-              <strong className="text-amber-600">Important Disclaimer:</strong> Provider ratings are based on user-submitted data and limited sample sizes. 
-              Scores may not reflect all patient experiences or current practices. Insurance coverage, network status, and pricing vary significantly. 
-              This is informational only—not medical or insurance advice. <strong>Always verify billing, coverage, and quality directly with your provider and insurance company before making healthcare decisions.</strong>
-            </AlertDescription>
-          </Alert>
+          <div className="mb-4">
+            <ProviderIntelDisclaimer variant="homepage" />
+          </div>
         </div>
 
         {/* Stats Cards */}

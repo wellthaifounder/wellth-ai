@@ -78,8 +78,16 @@ const App = () => (
                     <Route path="/bills/new" element={<BillDetail />} />
                     <Route path="/bills/:id" element={<BillDetail />} />
                     
-                    {/* Decision Tool */}
-                    <Route path="/decision-tool" element={<PrePurchaseDecision />} />
+                    {/* Legacy redirects - old routes */}
+                    <Route path="/invoices" element={<Bills />} />
+                    <Route path="/bill-reviews" element={<Bills />} />
+                    <Route path="/bill-reviews/:id" element={<Bills />} />
+                    <Route path="/disputes" element={<Bills />} />
+                    <Route path="/disputes/:id" element={<Bills />} />
+                    
+                    {/* Decision Tool renamed to Savings Calculator (HSA only) */}
+                    <Route path="/savings-calculator" element={<PrePurchaseDecision />} />
+                    <Route path="/decision-tool" element={<PrePurchaseDecision />} /> {/* Legacy redirect */}
                     
                     {/* HSA Routes */}
                     <Route path="/hsa-eligibility" element={<HSAEligibility />} />
@@ -98,13 +106,6 @@ const App = () => (
                     {/* Checkout & Onboarding */}
                     <Route path="/tripwire-success" element={<TripwireSuccess />} />
                     <Route path="/checkout" element={<Checkout />} />
-                    
-                    {/* Bill Review & Dispute Routes */}
-                    <Route path="/bill-reviews" element={<BillReviews />} />
-                    <Route path="/bills/:id/review" element={<BillReview />} />
-                    <Route path="/bills/:id/dispute" element={<BillDispute />} />
-                    <Route path="/disputes" element={<DisputeManagement />} />
-                    <Route path="/disputes/:id" element={<DisputeDetail />} />
                     
                     {/* Provider Intel Routes */}
                     <Route path="/providers" element={<ProviderDirectory />} />
