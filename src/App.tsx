@@ -41,6 +41,7 @@ const DisputeDetail = lazy(() => import("./pages/DisputeDetail"));
 const ProviderDirectory = lazy(() => import("./pages/ProviderDirectory"));
 const ProviderDetail = lazy(() => import("./pages/ProviderDetail"));
 const ProviderTransparency = lazy(() => import("./pages/ProviderTransparency"));
+const UserReviews = lazy(() => import("./pages/UserReviews"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Loading fallback
@@ -114,6 +115,9 @@ const App = () => (
                     <Route path="/providers" element={<ProviderDirectory />} />
                     <Route path="/providers/:id" element={<ProviderDetail />} />
                     <Route path="/provider-transparency" element={<ProviderTransparency />} />
+                    
+                    {/* User Feedback */}
+                    <Route path="/user-reviews" element={<UserReviews />} />
                     
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />

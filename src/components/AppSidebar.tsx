@@ -1,4 +1,4 @@
-import { Calculator, Receipt, FileText, BarChart3, Wallet, Building2, BookOpen, Settings } from "lucide-react";
+import { Calculator, Receipt, FileText, BarChart3, Wallet, Building2, BookOpen, Settings, MessageSquare } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useHSA } from "@/contexts/HSAContext";
 import { Badge } from "@/components/ui/badge";
@@ -128,6 +128,14 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
           <SidebarGroupLabel>Account</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Share Your Feedback">
+                  <NavLink to="/user-reviews">
+                    <MessageSquare className="h-4 w-4" />
+                    <span>Share Feedback</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Settings">
                   <NavLink to="/settings">

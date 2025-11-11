@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Check, X } from "lucide-react";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useNavigate } from "react-router-dom";
+import { ROICalculator } from "@/components/pricing/ROICalculator";
 
 const pricingTiers = [
   {
@@ -92,7 +93,7 @@ export const Pricing = () => {
     <section id="pricing" className="py-20 lg:py-32">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="mx-auto max-w-3xl text-center">
+        <div className="mx-auto max-w-3xl text-center mb-12">
           <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
             Pricing That Pays for Itself
           </h2>
@@ -100,6 +101,9 @@ export const Pricing = () => {
             Most users save 10-20x their subscription cost. Start free, upgrade when ready.
           </p>
         </div>
+
+        {/* ROI Calculator */}
+        <ROICalculator />
 
         {/* Pricing Cards */}
         <div className="mx-auto mt-16 grid max-w-6xl gap-8 md:grid-cols-3">
