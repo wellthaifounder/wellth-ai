@@ -1,13 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 export const CTA = () => {
   const navigate = useNavigate();
+  const { ref: ctaRef, isVisible: ctaVisible } = useScrollAnimation({ threshold: 0.3 });
+
   return (
     <section className="py-20 lg:py-32">
       <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary/90 p-8 text-center shadow-2xl lg:p-16">
+        <div 
+          ref={ctaRef}
+          className={`mx-auto max-w-4xl overflow-hidden rounded-3xl bg-gradient-hero p-8 text-center shadow-2xl lg:p-16 scroll-scale-in ${ctaVisible ? 'visible' : ''}`}
+        >
           <h2 className="mb-4 text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
             Start Saving This Tax Year
           </h2>

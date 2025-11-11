@@ -2,18 +2,25 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, DollarSign, TrendingUp, Sparkles } from "lucide-react";
 import { calculateSavings } from "@/lib/savingsCalculator";
 import { useNavigate } from "react-router-dom";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 export const Hero = () => {
   const navigate = useNavigate();
+  const { ref: heroRef, isVisible: heroVisible } = useScrollAnimation({ threshold: 0.2 });
+  const { ref: painPointsRef, isVisible: painPointsVisible } = useScrollAnimation({ threshold: 0.1 });
+  const { ref: hsaBonusRef, isVisible: hsaBonusVisible } = useScrollAnimation({ threshold: 0.1 });
   
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-primary/95 via-primary/85 to-primary/75 py-20 lg:py-32" aria-labelledby="hero-heading">
+    <section className="relative overflow-hidden bg-gradient-hero py-20 lg:py-32" aria-labelledby="hero-heading">
       <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" />
       
       <div className="container relative mx-auto px-4">
         <div className="mx-auto max-w-5xl space-y-12">
           {/* Main headline */}
-          <div className="text-center space-y-6">
+          <div 
+            ref={heroRef}
+            className={`text-center space-y-6 scroll-fade-in ${heroVisible ? 'visible' : ''}`}
+          >
             <h1 id="hero-heading" className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl leading-tight">
               Turn Healthcare Complexity
               <span className="block bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent mt-2">
@@ -28,7 +35,10 @@ export const Hero = () => {
           </div>
 
           {/* Pain points we solve */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mt-12">
+          <div 
+            ref={painPointsRef}
+            className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mt-12 scroll-fade-in ${painPointsVisible ? 'visible' : ''}`}
+          >
             <div className="rounded-lg bg-white/10 p-6 backdrop-blur-sm border border-white/20">
               <h3 className="font-semibold text-white mb-2">Catch Billing Errors</h3>
               <p className="text-sm text-white/80">Spot duplicate charges and overcharges before you pay</p>
@@ -92,7 +102,10 @@ export const Hero = () => {
           </div>
 
           {/* HSA Bonus Section */}
-          <div className="rounded-2xl bg-white/5 p-8 backdrop-blur-sm border border-white/10 mt-12">
+          <div 
+            ref={hsaBonusRef}
+            className={`rounded-2xl bg-white/5 p-8 backdrop-blur-sm border border-white/10 mt-12 scroll-scale-in ${hsaBonusVisible ? 'visible' : ''}`}
+          >
             <div className="flex items-start gap-4">
               <div className="rounded-lg bg-accent/20 p-3">
                 <Sparkles className="h-6 w-6 text-accent" aria-hidden="true" />

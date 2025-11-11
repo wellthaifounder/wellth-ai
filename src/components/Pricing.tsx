@@ -4,6 +4,7 @@ import { Check, X } from "lucide-react";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useNavigate } from "react-router-dom";
 import { ROICalculator } from "@/components/pricing/ROICalculator";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const pricingTiers = [
   {
@@ -78,6 +79,9 @@ const pricingTiers = [
 export const Pricing = () => {
   const { createCheckoutSession, tier } = useSubscription();
   const navigate = useNavigate();
+  const { ref: headerRef, isVisible: headerVisible } = useScrollAnimation({ threshold: 0.3 });
+  const { ref: cardsRef, isVisible: cardsVisible } = useScrollAnimation({ threshold: 0.1 });
+  const { ref: faqRef, isVisible: faqVisible } = useScrollAnimation({ threshold: 0.1 });
 
   const handleCTA = (tierName: string) => {
     if (tierName === "Starter") {
@@ -93,7 +97,10 @@ export const Pricing = () => {
     <section id="pricing" className="py-20 lg:py-32">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="mx-auto max-w-3xl text-center mb-12">
+        <div 
+          ref={headerRef}
+          className={`mx-auto max-w-3xl text-center mb-12 scroll-fade-in ${headerVisible ? 'visible' : ''}`}
+        >
           <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
             Pricing That Pays for Itself
           </h2>
@@ -106,7 +113,10 @@ export const Pricing = () => {
         <ROICalculator />
 
         {/* Pricing Cards */}
-        <div className="mx-auto mt-16 grid max-w-6xl gap-8 md:grid-cols-3">
+        <div 
+          ref={cardsRef}
+          className={`mx-auto mt-16 grid max-w-6xl gap-8 md:grid-cols-3 scroll-fade-in ${cardsVisible ? 'visible' : ''}`}
+        >
           {pricingTiers.map((tier) => (
             <Card
               key={tier.name}
@@ -173,7 +183,10 @@ export const Pricing = () => {
         </div>
 
         {/* FAQ Section */}
-        <div className="mx-auto mt-24 max-w-3xl">
+        <div 
+          ref={faqRef}
+          className={`mx-auto mt-24 max-w-3xl scroll-fade-in delay-200 ${faqVisible ? 'visible' : ''}`}
+        >
           <h3 className="mb-8 text-center text-2xl font-bold">Frequently Asked Questions</h3>
           <div className="space-y-6">
             <div>

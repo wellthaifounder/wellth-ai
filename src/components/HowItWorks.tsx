@@ -1,10 +1,18 @@
 import { Camera, TrendingUp, AlertCircle, CreditCard, FileText, Wallet, Calculator, FileCheck, Sparkles } from "lucide-react";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 export const HowItWorks = () => {
+  const { ref: headerRef, isVisible: headerVisible } = useScrollAnimation({ threshold: 0.3 });
+  const { ref: everyoneRef, isVisible: everyoneVisible } = useScrollAnimation({ threshold: 0.1 });
+  const { ref: hsaRef, isVisible: hsaVisible } = useScrollAnimation({ threshold: 0.1 });
+
   return (
-    <section id="how-it-works" className="py-20 lg:py-32 bg-muted/30">
+    <section id="how-it-works" className="py-20 lg:py-32 bg-gradient-soft">
       <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-3xl text-center mb-16">
+        <div 
+          ref={headerRef}
+          className={`mx-auto max-w-3xl text-center mb-16 scroll-fade-in ${headerVisible ? 'visible' : ''}`}
+        >
           <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
             How Wellth Works for Everyone
           </h2>
@@ -17,7 +25,10 @@ export const HowItWorks = () => {
           {/* Dual Timeline */}
           <div className="grid gap-12 md:grid-cols-2">
             {/* Left Column: Everyone */}
-            <div className="space-y-8">
+            <div 
+              ref={everyoneRef}
+              className={`space-y-8 scroll-slide-left ${everyoneVisible ? 'visible' : ''}`}
+            >
               <div className="sticky top-24">
                 <h3 className="text-2xl font-bold mb-6 text-center md:text-left">
                   For Everyone
@@ -90,7 +101,10 @@ export const HowItWorks = () => {
             </div>
 
             {/* Right Column: HSA Bonus Features */}
-            <div className="space-y-8 md:border-l-2 md:border-dashed md:border-primary/20 md:pl-8">
+            <div 
+              ref={hsaRef}
+              className={`space-y-8 md:border-l-2 md:border-dashed md:border-primary/20 md:pl-8 scroll-slide-right ${hsaVisible ? 'visible' : ''}`}
+            >
               <div className="sticky top-24">
                 <h3 className="text-2xl font-bold mb-6 text-center md:text-left flex items-center gap-2">
                   <span>Bonus for HSA Users</span>

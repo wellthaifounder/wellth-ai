@@ -1,5 +1,6 @@
 import { CheckCircle2, CreditCard, FileText, PiggyBank, Sparkles, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const features = [
   {
@@ -35,10 +36,16 @@ const features = [
 ];
 
 export const Features = () => {
+  const { ref: headerRef, isVisible: headerVisible } = useScrollAnimation({ threshold: 0.3 });
+  const { ref: featuresRef, isVisible: featuresVisible } = useScrollAnimation({ threshold: 0.1 });
+
   return (
     <section id="features" className="py-20 lg:py-32" aria-labelledby="features-heading">
       <div className="container mx-auto px-4">
-        <div className="mx-auto mb-16 max-w-2xl text-center">
+        <div 
+          ref={headerRef}
+          className={`mx-auto mb-16 max-w-2xl text-center scroll-fade-in ${headerVisible ? 'visible' : ''}`}
+        >
           <h2 id="features-heading" className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
             Everything You Need to Take Control
           </h2>
@@ -47,7 +54,12 @@ export const Features = () => {
           </p>
         </div>
         
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list" aria-label="Product features">
+        <div 
+          ref={featuresRef}
+          className={`grid gap-6 sm:grid-cols-2 lg:grid-cols-3 scroll-fade-in ${featuresVisible ? 'visible' : ''}`} 
+          role="list" 
+          aria-label="Product features"
+        >
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
