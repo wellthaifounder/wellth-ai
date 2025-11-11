@@ -44,16 +44,28 @@ export const Navigation = () => {
         
         {/* Desktop Navigation */}
         <nav className="hidden items-center gap-8 md:flex" aria-label="Primary navigation">
-          <a href="/#features" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+          <a 
+            href="/#features" 
+            className="relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
+          >
             Features
           </a>
-          <a href="/#how-it-works" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+          <a 
+            href="/#how-it-works" 
+            className="relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
+          >
             How It Works
           </a>
-          <a href="/#pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+          <a 
+            href="/#pricing" 
+            className="relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
+          >
             Pricing
           </a>
-          <a href="/install" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+          <a 
+            href="/install" 
+            className="relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
+          >
             Install App
           </a>
         </nav>
@@ -100,7 +112,7 @@ export const Navigation = () => {
                       e.preventDefault();
                       handleNavClick('/#features');
                     }}
-                    className="text-lg font-medium text-foreground transition-colors hover:text-primary py-2 px-4 rounded-md hover:bg-accent"
+                    className="text-lg font-medium text-foreground transition-all duration-150 hover:text-primary py-2 px-4 rounded-md hover:bg-accent/5"
                   >
                     Features
                   </a>
@@ -113,7 +125,7 @@ export const Navigation = () => {
                       e.preventDefault();
                       handleNavClick('/#how-it-works');
                     }}
-                    className="text-lg font-medium text-foreground transition-colors hover:text-primary py-2 px-4 rounded-md hover:bg-accent"
+                    className="text-lg font-medium text-foreground transition-all duration-150 hover:text-primary py-2 px-4 rounded-md hover:bg-accent/5"
                   >
                     How It Works
                   </a>
@@ -126,7 +138,7 @@ export const Navigation = () => {
                       e.preventDefault();
                       handleNavClick('/#pricing');
                     }}
-                    className="text-lg font-medium text-foreground transition-colors hover:text-primary py-2 px-4 rounded-md hover:bg-accent"
+                    className="text-lg font-medium text-foreground transition-all duration-150 hover:text-primary py-2 px-4 rounded-md hover:bg-accent/5"
                   >
                     Pricing
                   </a>
@@ -139,7 +151,7 @@ export const Navigation = () => {
                       e.preventDefault();
                       handleNavClick('/install');
                     }}
-                    className="text-lg font-medium text-foreground transition-colors hover:text-primary py-2 px-4 rounded-md hover:bg-accent"
+                    className="text-lg font-medium text-foreground transition-all duration-150 hover:text-primary py-2 px-4 rounded-md hover:bg-accent/5"
                   >
                     Install App
                   </a>

@@ -404,35 +404,36 @@ const Dashboard = () => {
                 </TabsList>
 
                 {/* Overview Tab */}
-                <TabsContent value="overview" className="space-y-6">{/* Quick Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-2xl font-bold">${stats.totalExpenses.toFixed(0)}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Total Tracked</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-2xl font-bold text-green-600">${stats.disputeSavings.toFixed(0)}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Saved</p>
-                  </CardContent>
-                </Card>
-                {hasHSA && (
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-primary">${stats.hsaClaimableAmount.toFixed(0)}</div>
-                      <p className="text-xs text-muted-foreground mt-1">HSA Claimable</p>
-                    </CardContent>
-                  </Card>
-                )}
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-2xl font-bold text-amber-600">${stats.rewardsEarned.toFixed(0)}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Rewards Earned</p>
-                  </CardContent>
-                </Card>
-              </div>
+                <TabsContent value="overview" className="space-y-6">
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="text-2xl font-bold">${stats.totalExpenses.toFixed(0)}</div>
+                        <p className="text-xs text-muted-foreground mt-1">Total Tracked</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="text-2xl font-bold text-green-600">${stats.disputeSavings.toFixed(0)}</div>
+                        <p className="text-xs text-muted-foreground mt-1">Saved</p>
+                      </CardContent>
+                    </Card>
+                    {hasHSA && (
+                      <Card>
+                        <CardContent className="pt-6">
+                          <div className="text-2xl font-bold text-primary">${stats.hsaClaimableAmount.toFixed(0)}</div>
+                          <p className="text-xs text-muted-foreground mt-1">HSA Claimable</p>
+                        </CardContent>
+                      </Card>
+                    )}
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="text-2xl font-bold text-amber-600">${stats.rewardsEarned.toFixed(0)}</div>
+                        <p className="text-xs text-muted-foreground mt-1">Rewards Earned</p>
+                      </CardContent>
+                    </Card>
+                  </div>
 
                 {/* Quick Actions */}
                 <QuickActionBar 
@@ -463,7 +464,7 @@ const Dashboard = () => {
                 </FeatureTooltip>
 
                 {/* Recent Bills */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <div className="lg:col-span-2 space-y-4">
                     {recentExpenses.length > 0 && (
                       <ActionCard
@@ -554,7 +555,7 @@ const Dashboard = () => {
                       <CardDescription>Review AI-analyzed bills, manage disputes, and track savings</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="grid gap-4 md:grid-cols-3">
+                      <div className="grid gap-6 md:grid-cols-3">
                         <div className="p-4 bg-primary/10 rounded-lg">
                           <div className="text-2xl font-bold">{billIntelligenceData.pendingReviews}</div>
                           <p className="text-sm text-muted-foreground">Pending Reviews</p>
@@ -583,7 +584,7 @@ const Dashboard = () => {
                       <CardDescription>Track your HSA strategy and maximize your savings</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="grid gap-4 md:grid-cols-3">
+                      <div className="grid gap-6 md:grid-cols-3">
                         <div className="p-4 bg-primary/10 rounded-lg">
                           <div className="text-2xl font-bold">${stats.hsaClaimableAmount.toFixed(0)}</div>
                           <p className="text-sm text-muted-foreground">HSA Claimable</p>
