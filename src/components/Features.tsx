@@ -4,33 +4,33 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 const features = [
   {
     icon: Sparkles,
-    title: "Smart Categorization",
-    description: "Automatically identifies HSA-eligible expenses using IRS guidelines and AI-powered analysis.",
+    title: "Never Miss a Tax Deduction",
+    description: "Automatically categorize every medical expense as tax-deductible or HSA-eligible. No more spreadsheets or guessing.",
   },
   {
     icon: CreditCard,
-    title: "Payment Strategy",
-    description: "Get real-time recommendations: pay with HSA now, or use rewards cards and reimburse later.",
+    title: "Maximize Every Dollar",
+    description: "Get instant recommendations on the smartest way to pay—whether that's cash, rewards card, FSA, or HSA.",
   },
   {
     icon: FileText,
-    title: "Receipt Vault",
-    description: "Securely store and organize receipts with instant search and IRS-ready export capabilities.",
+    title: "Stress-Free Tax Time",
+    description: "All your receipts organized and instantly searchable. Export IRS-compliant reports in seconds, not hours.",
   },
   {
     icon: TrendingUp,
-    title: "Savings Dashboard",
-    description: "Track total tax savings, rewards earned, and unreimbursed balances in one beautiful view.",
+    title: "Watch Your Money Grow",
+    description: "Track tax savings, rewards earned, and HSA investment growth in one beautiful dashboard.",
   },
   {
     icon: PiggyBank,
-    title: "Maximize Benefits",
-    description: "Optimize every healthcare dollar with combined tax-free HSA benefits and credit card rewards.",
+    title: "Stack Savings Automatically",
+    description: "Combine tax advantages, credit card rewards, and strategic timing to maximize every healthcare purchase.",
   },
   {
     icon: CheckCircle2,
-    title: "IRS Compliant",
-    description: "All categorizations follow IRS Publication 502 guidelines with audit-ready documentation.",
+    title: "Audit-Proof Records",
+    description: "All categorizations follow IRS Publication 502 with detailed documentation. Sleep easy at tax time.",
   },
 ];
 
@@ -40,10 +40,10 @@ export const Features = () => {
       <div className="container mx-auto px-4">
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <h2 id="features-heading" className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-            Everything You Need to Optimize Healthcare Spending
+            Everything You Need to Take Control
           </h2>
           <p className="text-lg text-muted-foreground">
-            Powerful features designed to save you money on every medical expense.
+            Whether you have an HSA or not, these tools help you save money and reduce stress on every medical expense.
           </p>
         </div>
         

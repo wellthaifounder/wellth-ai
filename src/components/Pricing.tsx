@@ -7,21 +7,18 @@ import { useNavigate } from "react-router-dom";
 const pricingTiers = [
   {
     name: "Starter",
-    price: "Free",
+    price: "$0",
     period: "forever",
-    description: "Perfect for getting started with HSA management",
+    description: "Perfect for testing the waters with basic tracking",
     features: [
       { text: "Up to 50 bills/month", included: true },
       { text: "Manual expense entry", included: true },
-      { text: "Basic receipt storage", included: true },
-      { text: "Smart HSA categorization", included: true },
+      { text: "Basic receipt storage (50 MB)", included: true },
+      { text: "Smart expense categorization", included: true },
       { text: "Simple reimbursement PDFs", included: true },
-      { text: "Single payment method tracking", included: true },
       { text: "Basic Wellbie AI assistant (10 messages/month)", included: true },
-      { text: "Document storage (50 MB)", included: true },
-      { text: "Single bank account connection", included: true },
       { text: "Receipt OCR automation", included: false },
-      { text: "Unlimited Wellbie AI", included: false },
+      { text: "Bank account connections", included: false },
       { text: "Advanced analytics", included: false },
     ],
     cta: "Start Free",
@@ -31,25 +28,24 @@ const pricingTiers = [
     name: "Plus",
     price: "$19",
     period: "per month",
-    description: "For active HSA users who want automation",
+    description: "For anyone serious about saving on healthcare costs",
     annualPrice: "$15/mo",
-    annualSavings: "Save $48/year",
+    annualSavings: "Save $48/year with annual billing",
     features: [
       { text: "All Starter features", included: true },
       { text: "Unlimited bills/month", included: true },
       { text: "Receipt OCR automation", included: true },
-      { text: "Smart HSA categorization with AI", included: true },
-      { text: "Wellbie AI assistant (unlimited)", included: true },
+      { text: "Unlimited Wellbie AI assistant", included: true },
+      { text: "Bank/card integration via Plaid", included: true },
       { text: "Pre-Purchase Decision Tool", included: true },
       { text: "Link transactions to bills", included: true },
-      { text: "Bank/card integration via Plaid", included: true },
       { text: "Multiple payment method tracking", included: true },
       { text: "Rewards optimization alerts", included: true },
       { text: "Advanced analytics & reports", included: true },
-      { text: "Benchmarking", included: true },
-      { text: "Goal setting & tracking", included: true },
       { text: "Document storage (500 MB)", included: true },
+      { text: "HSA eligibility detection", included: true },
       { text: "AI-Powered Insights", included: false },
+      { text: "Investment tracking", included: false },
     ],
     cta: "Start 14-Day Trial",
     popular: true,
@@ -58,21 +54,20 @@ const pricingTiers = [
     name: "Premium",
     price: "$49",
     period: "per month",
-    description: "Maximum automation and insights for power users",
+    description: "Maximum automation for high healthcare spenders",
     annualPrice: "$39/mo",
-    annualSavings: "Save $120/year",
+    annualSavings: "Save $120/year with annual billing",
     features: [
       { text: "All Plus features", included: true },
-      { text: "AI-Powered Insights", included: true },
-      { text: "Investment Vault Tracker", included: true },
-      { text: "Bank/card integration via Plaid", included: true },
+      { text: "AI-Powered Insights & forecasting", included: true },
+      { text: "HSA Investment Vault Tracker", included: true },
       { text: "Tax optimization reports", included: true },
       { text: "Multi-year expense tracking", included: true },
       { text: "Export analytics to PDF/CSV", included: true },
       { text: "Priority support (1hr response)", included: true },
-      { text: "Expense forecasting & planning", included: true },
       { text: "Advanced payment strategy modeling", included: true },
       { text: "Unlimited document storage", included: true },
+      { text: "Bill dispute assistance", included: true },
     ],
     cta: "Start 14-Day Trial",
     popular: false,
@@ -99,10 +94,10 @@ export const Pricing = () => {
         {/* Header */}
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
-            Simple, Transparent Pricing
+            Pricing That Pays for Itself
           </h2>
           <p className="text-lg text-muted-foreground sm:text-xl">
-            Start free, upgrade when you need more. No hidden fees, cancel anytime.
+            Most users save 10-20x their subscription cost. Start free, upgrade when ready.
           </p>
         </div>
 
@@ -178,6 +173,12 @@ export const Pricing = () => {
           <h3 className="mb-8 text-center text-2xl font-bold">Frequently Asked Questions</h3>
           <div className="space-y-6">
             <div>
+              <h4 className="mb-2 font-semibold">Do I need an HSA to use Wellth?</h4>
+              <p className="text-muted-foreground">
+                <strong>No!</strong> Wellth helps anyone save on healthcare costs through smarter payment strategies, receipt organization, and tax-deductible expense tracking. If you <em>do</em> have an HSA, you'll unlock bonus features like investment tracking and strategic reimbursement timing.
+              </p>
+            </div>
+            <div>
               <h4 className="mb-2 font-semibold">Can I switch plans anytime?</h4>
               <p className="text-muted-foreground">
                 Yes! Upgrade or downgrade anytime. When upgrading, you'll be charged a prorated amount. When downgrading, you'll receive credit for your next billing cycle.
@@ -192,7 +193,7 @@ export const Pricing = () => {
             <div>
               <h4 className="mb-2 font-semibold">Is my financial data secure?</h4>
               <p className="text-muted-foreground">
-                Absolutely. We use bank-level encryption, never store card numbers, and are fully compliant with healthcare data regulations.
+                Absolutely. We use bank-level encryption, never store card numbers, and are fully compliant with healthcare data regulations (HIPAA).
               </p>
             </div>
             <div>
