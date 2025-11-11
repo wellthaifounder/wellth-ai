@@ -1,14 +1,28 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, DollarSign, TrendingUp, Sparkles } from "lucide-react";
 import { calculateSavings } from "@/lib/savingsCalculator";
 import { useNavigate } from "react-router-dom";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { LeadCaptureModal } from "./LeadCaptureModal";
+import { analytics } from "@/lib/analytics";
 
 export const Hero = () => {
   const navigate = useNavigate();
+  const [showLeadCapture, setShowLeadCapture] = useState(false);
   const { ref: heroRef, isVisible: heroVisible } = useScrollAnimation({ threshold: 0.2 });
   const { ref: painPointsRef, isVisible: painPointsVisible } = useScrollAnimation({ threshold: 0.1 });
   const { ref: hsaBonusRef, isVisible: hsaBonusVisible } = useScrollAnimation({ threshold: 0.1 });
+
+  const handleCalculatorClick = () => {
+    analytics.ctaClick("calculator", "hero");
+    navigate('/calculator');
+  };
+
+  const handleAuthClick = () => {
+    analytics.ctaClick("start_free", "hero");
+    navigate('/auth');
+  };
   
   return (
     <section className="relative overflow-hidden bg-gradient-hero py-12 sm:py-16 lg:py-24 xl:py-32" aria-labelledby="hero-heading">
@@ -62,7 +76,7 @@ export const Hero = () => {
             <Button
               size="lg"
               className="w-full sm:w-auto group bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg hover:shadow-xl transition-all text-sm sm:text-base"
-              onClick={() => navigate('/calculator')}
+              onClick={handleCalculatorClick}
               aria-label="Calculate your potential healthcare savings in 60 seconds"
             >
               Calculate My Savings in 60 Seconds
@@ -72,12 +86,18 @@ export const Hero = () => {
               size="lg"
               variant="outline"
               className="w-full sm:w-auto border-white/20 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 text-sm sm:text-base"
-              onClick={() => navigate('/auth')}
+              onClick={handleAuthClick}
               aria-label="Start using Wellth for free"
             >
               Start Free
             </Button>
           </div>
+
+          <LeadCaptureModal 
+            open={showLeadCapture} 
+            onOpenChange={setShowLeadCapture}
+            source="hero"
+          />
 
           {/* Trust bar */}
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 pt-6 text-xs sm:text-sm text-white/70 border-t border-white/10 px-4 sm:px-0">

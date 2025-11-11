@@ -2,10 +2,16 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { analytics } from "@/lib/analytics";
 
 export const CTA = () => {
   const navigate = useNavigate();
   const { ref: ctaRef, isVisible: ctaVisible } = useScrollAnimation({ threshold: 0.3 });
+
+  const handleCTAClick = () => {
+    analytics.ctaClick("start_free", "final_cta");
+    navigate('/auth');
+  };
 
   return (
     <section className="py-12 sm:py-16 lg:py-24 xl:py-32">
@@ -25,7 +31,7 @@ export const CTA = () => {
             <Button
               size="lg"
               className="w-full sm:w-auto group bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg hover:shadow-xl transition-all text-sm sm:text-base"
-              onClick={() => navigate('/auth')}
+              onClick={handleCTAClick}
             >
               Start Free Today
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />

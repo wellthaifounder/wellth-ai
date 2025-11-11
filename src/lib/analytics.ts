@@ -9,7 +9,13 @@ type EventType =
   | 'bill_upload'
   | 'dispute_filed'
   | 'reimbursement_request'
-  | 'provider_search';
+  | 'provider_search'
+  | 'cta_click'
+  | 'pricing_view'
+  | 'feature_view'
+  | 'testimonial_view'
+  | 'lead_capture'
+  | 'navigation_click';
 
 interface AnalyticsEvent {
   type: EventType;
@@ -98,6 +104,47 @@ class Analytics {
       type: 'provider_search',
       action: 'search',
       label: query,
+    });
+  }
+
+  ctaClick(ctaType: string, location: string) {
+    this.track({
+      type: 'cta_click',
+      action: ctaType,
+      label: location,
+      page: window.location.pathname,
+    });
+  }
+
+  pricingView(plan: string) {
+    this.track({
+      type: 'pricing_view',
+      action: 'view_plan',
+      label: plan,
+    });
+  }
+
+  featureView(feature: string) {
+    this.track({
+      type: 'feature_view',
+      action: 'view_feature',
+      label: feature,
+    });
+  }
+
+  leadCapture(source: string) {
+    this.track({
+      type: 'lead_capture',
+      action: 'email_submit',
+      label: source,
+    });
+  }
+
+  navigationClick(destination: string) {
+    this.track({
+      type: 'navigation_click',
+      action: 'nav_click',
+      label: destination,
     });
   }
 }

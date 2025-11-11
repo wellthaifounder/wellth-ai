@@ -5,6 +5,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useNavigate } from "react-router-dom";
 import { ROICalculator } from "@/components/pricing/ROICalculator";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { analytics } from "@/lib/analytics";
 
 const pricingTiers = [
   {
@@ -84,6 +85,7 @@ export const Pricing = () => {
   const { ref: faqRef, isVisible: faqVisible } = useScrollAnimation({ threshold: 0.1 });
 
   const handleCTA = (tierName: string) => {
+    analytics.pricingView(tierName);
     if (tierName === "Starter") {
       navigate("/auth");
     } else if (tierName === "Plus") {

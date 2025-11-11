@@ -11,6 +11,7 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { useState, useEffect } from "react";
+import { analytics } from "@/lib/analytics";
 
 export const Navigation = () => {
   const navigate = useNavigate();
@@ -82,10 +83,25 @@ export const Navigation = () => {
         
         {/* Desktop Auth Buttons */}
         <div className="hidden md:flex items-center gap-2 lg:gap-3" role="group" aria-label="Authentication">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/calculator')} className="text-sm">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => {
+              analytics.navigationClick("calculator");
+              navigate('/calculator');
+            }} 
+            className="text-sm"
+          >
             Calculator
           </Button>
-          <Button size="sm" onClick={() => navigate('/auth')} className="text-sm">
+          <Button 
+            size="sm" 
+            onClick={() => {
+              analytics.navigationClick("start_free");
+              navigate('/auth');
+            }} 
+            className="text-sm"
+          >
             Start Free
           </Button>
         </div>
@@ -178,6 +194,7 @@ export const Navigation = () => {
                     size="lg"
                     className="w-full text-sm sm:text-base"
                     onClick={() => {
+                      analytics.navigationClick("start_free_mobile");
                       closeMenu();
                       navigate('/auth');
                     }}
