@@ -154,23 +154,29 @@ const PrePurchaseDecision = () => {
         <div className="max-w-2xl mx-auto space-y-6">
           <div className="text-center mb-8">
             <Calculator className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h1 className="text-3xl font-bold mb-2">Pre-Purchase Decision Tool</h1>
+            <h1 className="text-3xl font-bold mb-2">HSA Savings Calculator</h1>
             <p className="text-muted-foreground">
-              Get instant recommendations on how to pay for maximum savings
+              Discover how much you can save by using your HSA strategically
             </p>
+            <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-lg max-w-lg mx-auto">
+              <p className="text-sm font-medium">💡 HSA Triple Tax Advantage</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Contributions are tax-deductible, growth is tax-free, and withdrawals for medical expenses are never taxed
+              </p>
+            </div>
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle>Enter Expense Details</CardTitle>
+              <CardTitle>HSA-Eligible Expense Details</CardTitle>
               <CardDescription>
-                Tell us about your upcoming expense to get personalized payment advice
+                Enter your upcoming HSA-eligible medical expense to optimize your strategy
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="amount">Expected Amount</Label>
+                  <Label htmlFor="amount">Expense Amount</Label>
                   <Input
                     id="amount"
                     type="number"
@@ -182,19 +188,22 @@ const PrePurchaseDecision = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="category">Expense Category</Label>
+                  <Label htmlFor="category">Medical Category</Label>
                   <Select value={category} onValueChange={setCategory}>
                     <SelectTrigger id="category">
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {HSA_CATEGORIES.map((cat) => (
+                      {HSA_CATEGORIES.filter(cat => cat !== "Not HSA Eligible").map((cat) => (
                         <SelectItem key={cat} value={cat}>
                           {cat}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">
+                    All categories listed are HSA-eligible
+                  </p>
                 </div>
               </div>
 
@@ -421,28 +430,22 @@ const PrePurchaseDecision = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20">
+              <Card className="border-primary/20 bg-primary/5">
                 <CardHeader>
-                  <CardTitle className="text-sm flex items-start gap-2">
-                    <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5" />
-                    Important Disclaimers
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    Why This Strategy Works for HSA Holders
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2 text-xs text-muted-foreground">
+                <CardContent className="space-y-3 text-sm">
                   <p>
-                    <strong>HSA Reimbursement Rules:</strong> You can only reimburse expenses incurred AFTER your HSA was opened. Keep receipts indefinitely - there's no time limit on when you can reimburse yourself.
+                    <strong>Tax-Free Growth:</strong> By paying out-of-pocket with a rewards card and leaving your HSA invested, you earn compound returns tax-free while still getting cash back.
                   </p>
                   <p>
-                    <strong>Credit Card Warning:</strong> This strategy assumes you pay off your credit card on time. Late payments or interest charges will eliminate all benefits.
+                    <strong>Delayed Reimbursement:</strong> There's no time limit on HSA reimbursements. You can reimburse yourself decades later, letting your HSA grow substantially.
                   </p>
                   <p>
-                    <strong>Investment Risk:</strong> Investment returns are not guaranteed. Actual returns may be higher or lower than estimates. HSA investments can lose value.
-                  </p>
-                  <p>
-                    <strong>Tax Advice:</strong> This calculator provides estimates only. Consult a tax professional for advice specific to your situation.
-                  </p>
-                  <p>
-                    <strong>Assumptions:</strong> Calculations assume constant investment returns and that you have sufficient HSA contributions to cover the expense. Your actual results will vary.
+                    <strong>Triple Win:</strong> Earn credit card rewards now + HSA investment growth + tax-free reimbursement later = maximum financial benefit.
                   </p>
                 </CardContent>
               </Card>

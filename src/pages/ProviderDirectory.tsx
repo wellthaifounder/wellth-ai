@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Building2, TrendingUp, TrendingDown, Star, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AdvancedFilters, FilterState } from "@/components/bills/AdvancedFilters";
@@ -22,6 +23,7 @@ export default function ProviderDirectory() {
     provider: '',
     savingsMin: 0
   });
+  const [insurancePlanFilter, setInsurancePlanFilter] = useState('all');
 
   const { data: providers, isLoading } = useQuery({
     queryKey: ['providers'],
@@ -53,10 +55,16 @@ export default function ProviderDirectory() {
       if (filters.provider && !provider.name.toLowerCase().includes(filters.provider.toLowerCase())) {
         return false;
       }
+      
+      // Insurance plan filter
+      if (insurancePlanFilter !== 'all') {
+        const hasInsurance = provider.insurance_networks?.includes(insurancePlanFilter);
+        if (!hasInsurance) return false;
+      }
 
       return true;
     });
-  }, [providers, filters]);
+  }, [providers, filters, insurancePlanFilter]);
 
   const topPerformers = filteredProviders?.slice(0, 5) || [];
   const avgAccuracy = filteredProviders?.reduce((sum, p) => sum + Number(p.billing_accuracy_score), 0) / (filteredProviders?.length || 1);
@@ -151,13 +159,37 @@ export default function ProviderDirectory() {
         </div>
 
         {/* Filters */}
-        <AdvancedFilters 
-          onFiltersChange={setFilters}
-          showAmountFilter={false}
-          showProviderFilter={true}
-          showSavingsFilter={false}
-          statusOptions={[]}
-        />
+        <div className="space-y-4">
+          <AdvancedFilters 
+            onFiltersChange={setFilters}
+            showAmountFilter={false}
+            showProviderFilter={true}
+            showSavingsFilter={false}
+            statusOptions={[]}
+          />
+          
+          {/* Insurance Plan Filter */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Insurance Plan Filter</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Select value={insurancePlanFilter} onValueChange={setInsurancePlanFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All Insurance Plans" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Insurance Plans</SelectItem>
+                  <SelectItem value="PPO">PPO</SelectItem>
+                  <SelectItem value="HMO">HMO</SelectItem>
+                  <SelectItem value="EPO">EPO</SelectItem>
+                  <SelectItem value="POS">POS</SelectItem>
+                  <SelectItem value="HDHP">High Deductible Health Plan (HDHP)</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Top Performers */}
         {topPerformers.length > 0 && (

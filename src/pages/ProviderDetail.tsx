@@ -135,43 +135,86 @@ export default function ProviderDetail() {
           </Button>
         </div>
 
-        {/* Provider Overview */}
-        <div className="flex items-start gap-6">
-          <div className="h-24 w-24 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Building2 className="h-12 w-12 text-primary" />
-          </div>
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-2">{provider.name}</h1>
-            <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-              {provider.provider_type && (
-                <Badge variant="outline">{provider.provider_type}</Badge>
-              )}
-              {provider.city && provider.state && (
-                <span className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4" />
-                  {provider.city}, {provider.state}
-                </span>
-              )}
-              {provider.phone && (
-                <span className="flex items-center gap-1">
-                  <Phone className="h-4 w-4" />
-                  {provider.phone}
-                </span>
-              )}
-              {provider.website && (
-                <a 
-                  href={provider.website} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 hover:text-primary"
-                >
-                  <Globe className="h-4 w-4" />
-                  Website
-                </a>
-              )}
+        {/* Provider Overview with Multi-dimensional Ratings */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-6">
+              <div className="h-24 w-24 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Building2 className="h-12 w-12 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold mb-2">{provider.name}</h1>
+                <div className="flex flex-wrap gap-3 text-sm text-muted-foreground mb-4">
+                  {provider.provider_type && (
+                    <Badge variant="outline">{provider.provider_type}</Badge>
+                  )}
+                  {provider.city && provider.state && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      {provider.city}, {provider.state}
+                    </span>
+                  )}
+                  {provider.phone && (
+                    <span className="flex items-center gap-1">
+                      <Phone className="h-4 w-4" />
+                      {provider.phone}
+                    </span>
+                  )}
+                  {provider.website && (
+                    <a 
+                      href={provider.website} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 hover:text-primary transition-colors"
+                    >
+                      <Globe className="h-4 w-4" />
+                      Website
+                    </a>
+                  )}
+                </div>
+                
+                {/* Multi-dimensional Ratings */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Star className="h-4 w-4 text-amber-500" />
+                      <span className="text-sm font-medium">Overall</span>
+                    </div>
+                    <div className="text-2xl font-bold">{Number(provider.overall_rating || 0).toFixed(1)}</div>
+                    <Progress value={Number(provider.overall_rating || 0) * 20} className="h-1.5" />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-green-600" />
+                      <span className="text-sm font-medium">Cost Transparency</span>
+                    </div>
+                    <div className="text-2xl font-bold">{Number(provider.cost_transparency_score || 0).toFixed(1)}</div>
+                    <Progress value={Number(provider.cost_transparency_score || 0) * 20} className="h-1.5" />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-medium">Billing Clarity</span>
+                    </div>
+                    <div className="text-2xl font-bold">{Number(provider.billing_clarity_score || 0).toFixed(1)}</div>
+                    <Progress value={Number(provider.billing_clarity_score || 0) * 20} className="h-1.5" />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-purple-600" />
+                      <span className="text-sm font-medium">Payment Flexibility</span>
+                    </div>
+                    <div className="text-2xl font-bold">{Number(provider.payment_flexibility_score || 0).toFixed(1)}</div>
+                    <Progress value={Number(provider.payment_flexibility_score || 0) * 20} className="h-1.5" />
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Key Metrics */}
         <div className="grid gap-4 md:grid-cols-4">

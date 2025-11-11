@@ -43,6 +43,11 @@ const Dashboard = () => {
   const layout = useDashboardLayout();
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [billIntelligenceData, setBillIntelligenceData] = useState({
+    pendingReviews: 0,
+    activeDisputes: 0,
+    totalSavings: 0,
+  });
   const [showWelcome, setShowWelcome] = useState(false);
 
   const sensors = useSensors(
@@ -224,6 +229,7 @@ const Dashboard = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Fetch pending reviews
       const { data: reviews, error } = await supabase
         .from('bill_reviews')
         .select(`
@@ -257,6 +263,27 @@ const Dashboard = () => {
       );
 
       setPendingReviews(reviewsWithCounts);
+      
+      // Fetch all reviews for stats
+      const { data: allReviews } = await supabase
+        .from('bill_reviews')
+        .select('total_potential_savings')
+        .eq('user_id', user.id);
+        
+      // Fetch active disputes
+      const { data: activeDisputes } = await supabase
+        .from('bill_disputes')
+        .select('id')
+        .eq('user_id', user.id)
+        .not('dispute_status', 'in', '(resolved_favorable,resolved_unfavorable,withdrawn)');
+        
+      const totalSavings = allReviews?.reduce((sum, r) => sum + Number(r.total_potential_savings || 0), 0) || 0;
+      
+      setBillIntelligenceData({
+        pendingReviews: reviewsWithCounts.length,
+        activeDisputes: activeDisputes?.length || 0,
+        totalSavings
+      });
     } catch (error) {
       console.error("Failed to fetch bill reviews:", error);
     }
@@ -345,47 +372,67 @@ const Dashboard = () => {
 
               {/* Simplified Action-Focused Dashboard */}
               <div className="space-y-6">
-                {/* Welcome Header */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div>
-                    <h1 className="text-3xl font-bold">Welcome back, {firstName}! 👋</h1>
-                    <p className="text-muted-foreground mt-1">Here's what needs your attention</p>
-                  </div>
-                  <Button onClick={() => navigate("/reports")} variant="outline" className="gap-2">
-                    <BarChart3 className="h-4 w-4" />
-                    View Reports
-                  </Button>
+              {/* Welcome Header */}
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <h1 className="text-3xl font-bold">Welcome back, {firstName}! 👋</h1>
+                  <p className="text-muted-foreground mt-1">Here's what needs your attention</p>
                 </div>
+                <Button onClick={() => navigate("/reports")} variant="outline" className="gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  View Reports
+                </Button>
+              </div>
 
-                {/* Quick Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Tabs for different dashboard views */}
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="bills">
+                    Bill Intelligence
+                    {billIntelligenceData.pendingReviews > 0 && (
+                      <Badge variant="destructive" className="ml-2">{billIntelligenceData.pendingReviews}</Badge>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="hsa">HSA & Money</TabsTrigger>
+                  <TabsTrigger value="transactions">
+                    Transactions
+                    {stats.unreviewedTransactions > 0 && (
+                      <Badge variant="destructive" className="ml-2">{stats.unreviewedTransactions}</Badge>
+                    )}
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Overview Tab */}
+                <TabsContent value="overview" className="space-y-6">{/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-2xl font-bold">${stats.totalExpenses.toFixed(0)}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Total Tracked</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-2xl font-bold text-green-600">${stats.disputeSavings.toFixed(0)}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Saved</p>
+                  </CardContent>
+                </Card>
+                {hasHSA && (
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold">${stats.totalExpenses.toFixed(0)}</div>
-                      <p className="text-xs text-muted-foreground mt-1">Total Tracked</p>
+                      <div className="text-2xl font-bold text-primary">${stats.hsaClaimableAmount.toFixed(0)}</div>
+                      <p className="text-xs text-muted-foreground mt-1">HSA Claimable</p>
                     </CardContent>
                   </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-green-600">${stats.disputeSavings.toFixed(0)}</div>
-                      <p className="text-xs text-muted-foreground mt-1">Saved</p>
-                    </CardContent>
-                  </Card>
-                  {hasHSA && (
-                    <Card>
-                      <CardContent className="pt-6">
-                        <div className="text-2xl font-bold text-primary">${stats.hsaClaimableAmount.toFixed(0)}</div>
-                        <p className="text-xs text-muted-foreground mt-1">HSA Claimable</p>
-                      </CardContent>
-                    </Card>
-                  )}
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-amber-600">${stats.rewardsEarned.toFixed(0)}</div>
-                      <p className="text-xs text-muted-foreground mt-1">Rewards Earned</p>
-                    </CardContent>
-                  </Card>
-                </div>
+                )}
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-2xl font-bold text-amber-600">${stats.rewardsEarned.toFixed(0)}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Rewards Earned</p>
+                  </CardContent>
+                </Card>
+              </div>
 
                 {/* Quick Actions */}
                 <QuickActionBar 
@@ -409,8 +456,8 @@ const Dashboard = () => {
                     totalPotentialSavings={0}
                     recentDisputeWins={disputeStats.recentWins}
                     disputeSavings={disputeStats.totalSavings}
-                    onReviewClick={() => navigate("/bill-reviews")}
-                    onDisputeClick={() => navigate("/disputes")}
+                    onReviewClick={() => navigate("/bills")}
+                    onDisputeClick={() => navigate("/bills")}
                     onProviderClick={() => navigate("/providers")}
                   />
                 </FeatureTooltip>
@@ -469,7 +516,7 @@ const Dashboard = () => {
                         count={pendingReviews.length}
                         buttonText="View All Reviews"
                         actions={
-                          <Button onClick={() => navigate("/bill-reviews")}>
+                          <Button onClick={() => navigate("/bills")}>
                             View All
                           </Button>
                         }
@@ -497,7 +544,91 @@ const Dashboard = () => {
                     />
                   </div>
                 </div>
-              </div>
+                </TabsContent>
+
+                {/* Bill Intelligence Tab */}
+                <TabsContent value="bills" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Bill Intelligence Dashboard</CardTitle>
+                      <CardDescription>Review AI-analyzed bills, manage disputes, and track savings</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-4 md:grid-cols-3">
+                        <div className="p-4 bg-primary/10 rounded-lg">
+                          <div className="text-2xl font-bold">{billIntelligenceData.pendingReviews}</div>
+                          <p className="text-sm text-muted-foreground">Pending Reviews</p>
+                        </div>
+                        <div className="p-4 bg-orange-500/10 rounded-lg">
+                          <div className="text-2xl font-bold">{billIntelligenceData.activeDisputes}</div>
+                          <p className="text-sm text-muted-foreground">Active Disputes</p>
+                        </div>
+                        <div className="p-4 bg-green-500/10 rounded-lg">
+                          <div className="text-2xl font-bold">${billIntelligenceData.totalSavings.toFixed(0)}</div>
+                          <p className="text-sm text-muted-foreground">Total Savings Found</p>
+                        </div>
+                      </div>
+                      <Button onClick={() => navigate("/bills")} className="w-full">
+                        Go to Bills Dashboard
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* HSA & Money Tab */}
+                <TabsContent value="hsa" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>HSA & Financial Overview</CardTitle>
+                      <CardDescription>Track your HSA strategy and maximize your savings</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-4 md:grid-cols-3">
+                        <div className="p-4 bg-primary/10 rounded-lg">
+                          <div className="text-2xl font-bold">${stats.hsaClaimableAmount.toFixed(0)}</div>
+                          <p className="text-sm text-muted-foreground">HSA Claimable</p>
+                        </div>
+                        <div className="p-4 bg-green-500/10 rounded-lg">
+                          <div className="text-2xl font-bold">${stats.taxSavings.toFixed(0)}</div>
+                          <p className="text-sm text-muted-foreground">Tax Savings</p>
+                        </div>
+                        <div className="p-4 bg-amber-500/10 rounded-lg">
+                          <div className="text-2xl font-bold">${stats.rewardsEarned.toFixed(0)}</div>
+                          <p className="text-sm text-muted-foreground">Rewards Earned</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <Button onClick={() => navigate("/reimbursement-requests")} className="flex-1">
+                          HSA Reimbursements
+                        </Button>
+                        <Button onClick={() => navigate("/savings-calculator")} variant="outline" className="flex-1">
+                          Savings Calculator
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Transactions Tab */}
+                <TabsContent value="transactions" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Transaction Management</CardTitle>
+                      <CardDescription>Review and categorize your healthcare transactions</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="p-4 bg-amber-500/10 rounded-lg">
+                        <div className="text-2xl font-bold">{stats.unreviewedTransactions}</div>
+                        <p className="text-sm text-muted-foreground">Unreviewed Transactions</p>
+                      </div>
+                      <Button onClick={() => navigate("/transactions")} className="w-full">
+                        Review Transactions
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
             </>
           )}
         </div>
