@@ -8,23 +8,23 @@ export const CTA = () => {
   const { ref: ctaRef, isVisible: ctaVisible } = useScrollAnimation({ threshold: 0.3 });
 
   return (
-    <section className="py-20 lg:py-32">
-      <div className="container mx-auto px-4">
+    <section className="py-12 sm:py-16 lg:py-24 xl:py-32">
+      <div className="container mx-auto px-4 sm:px-6">
         <div 
           ref={ctaRef}
-          className={`mx-auto max-w-4xl overflow-hidden rounded-3xl bg-gradient-hero p-8 text-center shadow-2xl lg:p-16 scroll-scale-in ${ctaVisible ? 'visible' : ''}`}
+          className={`mx-auto max-w-4xl overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-hero p-6 sm:p-8 lg:p-12 xl:p-16 text-center shadow-2xl scroll-scale-in ${ctaVisible ? 'visible' : ''}`}
         >
-          <h2 className="mb-4 text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
+          <h2 className="mb-3 sm:mb-4 text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white">
             Start Saving This Tax Year
           </h2>
-          <p className="mb-8 text-lg text-white/90 sm:text-xl">
+          <p className="mb-6 sm:mb-8 text-sm sm:text-base lg:text-lg xl:text-xl text-white/90 px-4 sm:px-0">
             Stop overpaying on healthcare. Join users who are saving thousands by taking control of medical expenses with smart tracking and payment strategies.
           </p>
           
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="flex flex-col items-center justify-center gap-3 sm:gap-4">
             <Button
               size="lg"
-              className="group bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg hover:shadow-xl transition-all"
+              className="w-full sm:w-auto group bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg hover:shadow-xl transition-all text-sm sm:text-base"
               onClick={() => navigate('/auth')}
             >
               Start Free Today
@@ -32,7 +32,7 @@ export const CTA = () => {
             </Button>
           </div>
           
-          <p className="mt-6 text-sm text-white/70">
+          <p className="mt-4 sm:mt-6 text-xs sm:text-sm text-white/70">
             Free forever • No credit card required • 14-day trial on paid plans
           </p>
           <p className="mt-2 text-xs text-white/60">

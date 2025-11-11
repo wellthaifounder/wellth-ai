@@ -10,11 +10,20 @@ import {
   SheetTrigger,
   SheetClose,
 } from "@/components/ui/sheet";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export const Navigation = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const closeMenu = () => setIsOpen(false);
 
@@ -30,8 +39,15 @@ export const Navigation = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border/40 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 shadow-sm" aria-label="Main navigation">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+    <nav 
+      className={`sticky top-0 z-50 border-b backdrop-blur transition-all duration-300 ${
+        isScrolled 
+          ? "border-border/40 bg-card/95 supports-[backdrop-filter]:bg-card/90 shadow-md" 
+          : "border-border/20 bg-card/80"
+      }`} 
+      aria-label="Main navigation"
+    >
+      <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6">
         <Link to="/" className="cursor-pointer group" aria-label="Wellth home">
           {/* Show full logo on desktop, icon only on mobile */}
           <div className="hidden md:block">
@@ -43,7 +59,7 @@ export const Navigation = () => {
         </Link>
         
         {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-8 md:flex" aria-label="Primary navigation">
+        <nav className="hidden items-center gap-6 lg:gap-8 md:flex" aria-label="Primary navigation">
           <a 
             href="/#features" 
             className="relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
@@ -62,21 +78,15 @@ export const Navigation = () => {
           >
             Pricing
           </a>
-          <a 
-            href="/install" 
-            className="relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
-          >
-            Install App
-          </a>
         </nav>
         
         {/* Desktop Auth Buttons */}
-        <div className="hidden md:flex items-center gap-3" role="group" aria-label="Authentication">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/auth')}>
-            Sign In
+        <div className="hidden md:flex items-center gap-2 lg:gap-3" role="group" aria-label="Authentication">
+          <Button variant="ghost" size="sm" onClick={() => navigate('/calculator')} className="text-sm">
+            Calculator
           </Button>
-          <Button size="sm" onClick={() => navigate('/auth')}>
-            Start Saving Today
+          <Button size="sm" onClick={() => navigate('/auth')} className="text-sm">
+            Start Free
           </Button>
         </div>
 
@@ -95,16 +105,16 @@ export const Navigation = () => {
           </SheetTrigger>
           <SheetContent 
             side="right" 
-            className="w-[300px] sm:w-[400px]"
+            className="w-[280px] sm:w-[360px]"
             aria-label="Mobile navigation menu"
           >
             <SheetHeader>
-              <SheetTitle className="text-left">Menu</SheetTitle>
+              <SheetTitle className="text-left text-base sm:text-lg">Menu</SheetTitle>
             </SheetHeader>
             
-            <nav className="flex flex-col gap-6 mt-8" aria-label="Mobile navigation">
+            <nav className="flex flex-col gap-4 sm:gap-6 mt-6 sm:mt-8" aria-label="Mobile navigation">
               {/* Navigation Links */}
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2 sm:gap-3">
                 <SheetClose asChild>
                   <a
                     href="/#features"
@@ -112,7 +122,7 @@ export const Navigation = () => {
                       e.preventDefault();
                       handleNavClick('/#features');
                     }}
-                    className="text-lg font-medium text-foreground transition-all duration-150 hover:text-primary py-2 px-4 rounded-md hover:bg-accent/5"
+                    className="text-base sm:text-lg font-medium text-foreground transition-all duration-150 hover:text-primary py-2 px-3 sm:px-4 rounded-md hover:bg-accent/5"
                   >
                     Features
                   </a>
@@ -125,7 +135,7 @@ export const Navigation = () => {
                       e.preventDefault();
                       handleNavClick('/#how-it-works');
                     }}
-                    className="text-lg font-medium text-foreground transition-all duration-150 hover:text-primary py-2 px-4 rounded-md hover:bg-accent/5"
+                    className="text-base sm:text-lg font-medium text-foreground transition-all duration-150 hover:text-primary py-2 px-3 sm:px-4 rounded-md hover:bg-accent/5"
                   >
                     How It Works
                   </a>
@@ -138,7 +148,7 @@ export const Navigation = () => {
                       e.preventDefault();
                       handleNavClick('/#pricing');
                     }}
-                    className="text-lg font-medium text-foreground transition-all duration-150 hover:text-primary py-2 px-4 rounded-md hover:bg-accent/5"
+                    className="text-base sm:text-lg font-medium text-foreground transition-all duration-150 hover:text-primary py-2 px-3 sm:px-4 rounded-md hover:bg-accent/5"
                   >
                     Pricing
                   </a>
@@ -146,47 +156,33 @@ export const Navigation = () => {
                 
                 <SheetClose asChild>
                   <a
-                    href="/install"
+                    href="/calculator"
                     onClick={(e) => {
                       e.preventDefault();
-                      handleNavClick('/install');
+                      handleNavClick('/calculator');
                     }}
-                    className="text-lg font-medium text-foreground transition-all duration-150 hover:text-primary py-2 px-4 rounded-md hover:bg-accent/5"
+                    className="text-base sm:text-lg font-medium text-foreground transition-all duration-150 hover:text-primary py-2 px-3 sm:px-4 rounded-md hover:bg-accent/5"
                   >
-                    Install App
+                    Calculator
                   </a>
                 </SheetClose>
               </div>
 
               {/* Divider */}
-              <div className="border-t border-border my-2" />
+              <div className="border-t border-border my-1 sm:my-2" />
 
               {/* Auth Buttons */}
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2 sm:gap-3">
                 <SheetClose asChild>
                   <Button
-                    variant="outline"
                     size="lg"
-                    className="w-full"
+                    className="w-full text-sm sm:text-base"
                     onClick={() => {
                       closeMenu();
                       navigate('/auth');
                     }}
                   >
-                    Sign In
-                  </Button>
-                </SheetClose>
-                
-                <SheetClose asChild>
-                  <Button
-                    size="lg"
-                    className="w-full"
-                    onClick={() => {
-                      closeMenu();
-                      navigate('/auth');
-                    }}
-                  >
-                    Start Saving Today
+                    Start Free
                   </Button>
                 </SheetClose>
               </div>

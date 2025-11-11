@@ -94,17 +94,17 @@ export const Pricing = () => {
   };
 
   return (
-    <section id="pricing" className="py-20 lg:py-32">
-      <div className="container mx-auto px-4">
+    <section id="pricing" className="py-12 sm:py-16 lg:py-24 xl:py-32">
+      <div className="container mx-auto px-4 sm:px-6">
         {/* Header */}
         <div 
           ref={headerRef}
-          className={`mx-auto max-w-3xl text-center mb-12 scroll-fade-in ${headerVisible ? 'visible' : ''}`}
+          className={`mx-auto max-w-3xl text-center mb-8 sm:mb-12 scroll-fade-in ${headerVisible ? 'visible' : ''}`}
         >
-          <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
+          <h2 className="mb-4 text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold">
             Pricing That Pays for Itself
           </h2>
-          <p className="text-lg text-muted-foreground sm:text-xl">
+          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground px-4 sm:px-0">
             Most users save 10-20x their subscription cost. Start free, upgrade when ready.
           </p>
         </div>
@@ -115,7 +115,7 @@ export const Pricing = () => {
         {/* Pricing Cards */}
         <div 
           ref={cardsRef}
-          className={`mx-auto mt-16 grid max-w-6xl gap-8 md:grid-cols-3 scroll-fade-in ${cardsVisible ? 'visible' : ''}`}
+          className={`mx-auto mt-12 sm:mt-16 grid max-w-6xl gap-6 sm:gap-8 grid-cols-1 md:grid-cols-3 scroll-fade-in ${cardsVisible ? 'visible' : ''}`}
         >
           {pricingTiers.map((tier) => (
             <Card
