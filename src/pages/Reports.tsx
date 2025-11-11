@@ -363,28 +363,37 @@ const Reports = () => {
                 <CardDescription>Your bills over time</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={monthlyData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
-                    <YAxis stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: 'var(--radius)'
-                      }} 
-                    />
-                    <Legend />
-                    <Line 
-                      type="monotone" 
-                      dataKey="total" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={2}
-                      name="Total Invoiced"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <div role="img" aria-label="Line chart showing monthly bill trends over time. Displays total invoiced amounts for each month to help track spending patterns.">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={monthlyData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis 
+                        dataKey="month" 
+                        stroke="hsl(var(--muted-foreground))"
+                        aria-label="Month"
+                      />
+                      <YAxis 
+                        stroke="hsl(var(--muted-foreground))"
+                        aria-label="Amount in dollars"
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--card))', 
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: 'var(--radius)'
+                        }} 
+                      />
+                      <Legend />
+                      <Line 
+                        type="monotone" 
+                        dataKey="total" 
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={2}
+                        name="Total Invoiced"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               </CardContent>
             </Card>
 
@@ -394,26 +403,35 @@ const Reports = () => {
                 <CardDescription>Breakdown of your invoices</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={categoryData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="category" stroke="hsl(var(--muted-foreground))" />
-                    <YAxis stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: 'var(--radius)'
-                      }} 
-                    />
-                    <Legend />
-                    <Bar dataKey="total" name="Amount">
-                      {categoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+                <div role="img" aria-label="Bar chart showing invoice amounts grouped by medical category. Each bar represents total spending in categories like Doctor Visits, Prescriptions, and Dental care.">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={categoryData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis 
+                        dataKey="category" 
+                        stroke="hsl(var(--muted-foreground))"
+                        aria-label="Medical category"
+                      />
+                      <YAxis 
+                        stroke="hsl(var(--muted-foreground))"
+                        aria-label="Amount in dollars"
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--card))', 
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: 'var(--radius)'
+                        }} 
+                      />
+                      <Legend />
+                      <Bar dataKey="total" name="Amount">
+                        {categoryData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </CardContent>
             </Card>
               </div>

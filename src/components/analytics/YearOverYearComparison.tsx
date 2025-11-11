@@ -28,7 +28,9 @@ export const YearOverYearComparison = ({
           <CardDescription>Track your savings growth over time</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">No data available yet. Start tracking expenses to see trends.</p>
+          <p className="text-muted-foreground text-center py-8">
+            Start tracking expenses to see your year-over-year savings trends and growth patterns.
+          </p>
         </CardContent>
       </Card>
     );

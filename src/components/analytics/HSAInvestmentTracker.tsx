@@ -101,36 +101,45 @@ export const HSAInvestmentTracker = ({
 
           <div>
             <h4 className="font-semibold mb-4">Growth Projection Over Time</h4>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={projectionData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="year" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))', 
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: 'var(--radius)'
-                  }} 
-                />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="invested" 
-                  stroke="hsl(var(--primary))" 
-                  strokeWidth={2}
-                  name="HSA Balance (Invested)"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="reimbursed" 
-                  stroke="hsl(var(--muted-foreground))" 
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  name="If Reimbursed Now"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <div role="img" aria-label="Line chart comparing HSA investment growth vs immediate reimbursement over time. Shows projected balance if money is invested versus if reimbursed immediately each year.">
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={projectionData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis 
+                    dataKey="year" 
+                    stroke="hsl(var(--muted-foreground))"
+                    aria-label="Year"
+                  />
+                  <YAxis 
+                    stroke="hsl(var(--muted-foreground))"
+                    aria-label="Balance in dollars"
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: 'var(--radius)'
+                    }} 
+                  />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="invested" 
+                    stroke="hsl(var(--primary))" 
+                    strokeWidth={2}
+                    name="HSA Balance (Invested)"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="reimbursed" 
+                    stroke="hsl(var(--muted-foreground))" 
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    name="If Reimbursed Now"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
 
           <div className="bg-accent/30 p-4 rounded-lg space-y-2">

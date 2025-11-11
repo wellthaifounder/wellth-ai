@@ -55,10 +55,10 @@ export function EmptyStateOnboarding() {
 
           <div className="flex gap-3 justify-center flex-wrap">
             <Button size="lg" onClick={() => setShowHSADialog(true)}>
-              Get Started
+              Start Setup Guide
             </Button>
             <Button variant="outline" size="lg" onClick={() => navigate("/expenses/new")}>
-              Add Expense Manually
+              Add First Expense
             </Button>
           </div>
         </div>

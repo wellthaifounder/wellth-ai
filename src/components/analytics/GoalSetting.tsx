@@ -223,8 +223,8 @@ export const GoalSetting = ({ currentStats }: GoalSettingProps) => {
         {goals.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <Target className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p>No active goals yet</p>
-            <p className="text-sm mt-1">Set a goal to track your progress</p>
+            <p className="font-medium">No savings goals yet</p>
+            <p className="text-sm mt-1">Create your first goal to start tracking progress</p>
           </div>
         ) : (
           <div className="space-y-4">

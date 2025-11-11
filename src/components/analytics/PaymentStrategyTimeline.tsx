@@ -74,8 +74,8 @@ export function PaymentStrategyTimeline({ expenses }: PaymentStrategyTimelinePro
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground text-center py-8">
-            Start using payment strategies for your expenses to see them visualized here.
+          <p className="text-muted-foreground text-center py-8">
+            Ready to track your first expense? Add an expense to see your timeline and strategy recommendations.
           </p>
         </CardContent>
       </Card>

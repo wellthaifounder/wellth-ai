@@ -76,7 +76,7 @@ export const Navigation = () => {
             Sign In
           </Button>
           <Button size="sm" onClick={() => navigate('/auth')}>
-            Get Started
+            Start Saving Today
           </Button>
         </div>
 
@@ -186,7 +186,7 @@ export const Navigation = () => {
                       navigate('/auth');
                     }}
                   >
-                    Get Started
+                    Start Saving Today
                   </Button>
                 </SheetClose>
               </div>
