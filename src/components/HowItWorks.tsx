@@ -29,8 +29,8 @@ export const HowItWorks = () => {
               ref={everyoneRef}
               className={`space-y-8 scroll-slide-left ${everyoneVisible ? 'visible' : ''}`}
             >
-              <div className="sticky top-24">
-                <h3 className="text-2xl font-bold mb-6 text-center md:text-left">
+              <div className="sticky top-24 bg-gradient-soft py-4 -mx-4 px-4 z-10">
+                <h3 className="text-2xl font-bold mb-0 text-center md:text-left">
                   For Everyone
                 </h3>
               </div>
@@ -105,8 +105,8 @@ export const HowItWorks = () => {
               ref={hsaRef}
               className={`space-y-8 md:border-l-2 md:border-dashed md:border-primary/20 md:pl-8 scroll-slide-right ${hsaVisible ? 'visible' : ''}`}
             >
-              <div className="sticky top-24">
-                <h3 className="text-2xl font-bold mb-6 text-center md:text-left flex items-center gap-2">
+              <div className="sticky top-24 bg-gradient-soft py-4 -mx-4 px-4 z-10">
+                <h3 className="text-2xl font-bold mb-0 text-center md:text-left flex items-center gap-2">
                   <span>Bonus for HSA Users</span>
                   <Sparkles className="h-6 w-6 text-primary" />
                 </h3>
