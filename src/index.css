@@ -91,6 +91,13 @@
 
     --radius: 0.75rem;
     
+    /* Chart Colors for Data Visualization */
+    --chart-1: 178 85% 36%;  /* Primary teal */
+    --chart-2: 228 36% 50%;  /* Navy blue */
+    --chart-3: 43 75% 58%;   /* Gold accent */
+    --chart-4: 122 39% 49%;  /* Success green */
+    --chart-5: 357 79% 59%;  /* Alert red */
+    
     /* Wellth.ai Refined Gradients */
     --gradient-hero: linear-gradient(135deg, hsl(178 85% 36%) 0%, hsl(178 75% 42%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(216 20% 98%) 100%);
@@ -150,6 +157,13 @@
     --border: 228 25% 25%;
     --input: 228 25% 25%;
     --ring: 178 85% 36%;
+    
+    /* Chart Colors for Data Visualization (Dark Mode) */
+    --chart-1: 178 85% 45%;  /* Lighter primary teal */
+    --chart-2: 228 40% 60%;  /* Lighter navy blue */
+    --chart-3: 43 80% 65%;   /* Lighter gold accent */
+    --chart-4: 122 45% 55%;  /* Lighter success green */
+    --chart-5: 357 75% 65%;  /* Lighter alert red */
     
     /* Wellth.ai Dark Mode Gradients */
     --gradient-hero: linear-gradient(135deg, hsl(178 85% 30%) 0%, hsl(178 75% 36%) 100%);
