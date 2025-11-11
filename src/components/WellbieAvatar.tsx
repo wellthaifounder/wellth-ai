@@ -38,7 +38,7 @@ export const WellbieAvatar = ({
   };
 
   return (
-    <div className={`${sizes[size]} ${className}`}>
+    <div className={`${sizes[size]} ${className} transition-transform duration-200 hover:scale-110 hover:animate-bounce`}>
       <svg
         viewBox="0 0 100 100"
         fill="none"

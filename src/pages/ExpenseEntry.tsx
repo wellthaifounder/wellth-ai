@@ -21,6 +21,7 @@ import { AttachDocumentDialog } from "@/components/documents/AttachDocumentDialo
 import { ReimbursementStrategySelector } from "@/components/expense/ReimbursementStrategySelector";
 import { SetHSADateDialog } from "@/components/profile/SetHSADateDialog";
 import { getDefaultReimbursementDate } from "@/lib/vaultCalculations";
+import { celebrateFirstExpense, celebrateExpenseSaved } from "@/lib/confettiUtils";
 
 const expenseSchema = z.object({
   date: z.string().min(1, "Date is required"),
@@ -315,6 +316,17 @@ const ExpenseEntry = () => {
       if (shouldAutoAnalyze) {
         setSuccess(true);
         toast.success("Expense added! Analyzing bill for errors...");
+        
+        // Check if this is the user's first expense
+        const { count: expenseCount } = await supabase
+          .from('invoices')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
+        
+        if (expenseCount === 1) {
+          celebrateFirstExpense();
+        }
+        
         setIsAnalyzing(true);
         
         try {
@@ -330,6 +342,11 @@ const ExpenseEntry = () => {
           setAnalysisResult(data);
           setShowAnalysisPrompt(true);
           toast.success(`Found ${data.errorsFound} potential issues with $${data.totalPotentialSavings.toFixed(2)} in savings!`);
+          
+          // Celebrate if significant savings found
+          if (data.totalPotentialSavings > 50) {
+            celebrateExpenseSaved();
+          }
         } catch (error) {
           console.error('Error analyzing bill:', error);
           toast.error('Bill saved, but analysis failed. You can analyze it later from the expense page.');
@@ -344,6 +361,18 @@ const ExpenseEntry = () => {
       } else {
         setSuccess(true);
         toast.success(isEditMode ? "Expense updated successfully!" : "Expense added successfully!");
+        
+        // Check if this is the user's first expense (and not edit mode)
+        if (!isEditMode) {
+          const { count: expenseCount } = await supabase
+            .from('invoices')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
+          
+          if (expenseCount === 1) {
+            celebrateFirstExpense();
+          }
+        }
         
         // Reset form after 2 seconds or navigate
         setTimeout(() => {

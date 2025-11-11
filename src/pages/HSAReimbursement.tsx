@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { WellthLogo } from '@/components/WellthLogo';
 import { ArrowLeft, FileText, Download, Send, CheckCircle2 } from 'lucide-react';
 import { generateReimbursementPDF } from '@/lib/pdfGenerator';
+import { celebrateFirstReimbursement } from '@/lib/confettiUtils';
 
 interface HSAExpense {
   id: string;
@@ -252,6 +253,16 @@ export default function HSAReimbursement() {
         title: 'Success',
         description: 'Reimbursement request created and PDF downloaded',
       });
+
+      // Check if this is the user's first reimbursement
+      const { count: reimbursementCount } = await supabase
+        .from('reimbursement_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', currentUser.id);
+      
+      if (reimbursementCount === 1) {
+        celebrateFirstReimbursement();
+      }
 
       // Show success state briefly before redirecting
       setTimeout(() => {
