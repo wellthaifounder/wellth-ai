@@ -443,7 +443,7 @@ const Dashboard = () => {
 
                 {/* Value Spotlight */}
                 <FeatureTooltip
-                  title="Provider Intel"
+                  title="Provider Ratings"
                   description="Check billing accuracy scores and dispute success rates for healthcare providers before scheduling your next appointment."
                   show={!onboarding.hasSeenProviderDirectory && stats.expenseCount >= 2}
                   onDismiss={() => onboarding.markAsSeen("hasSeenProviderDirectory")}

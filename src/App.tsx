@@ -110,7 +110,7 @@ const App = () => (
                     <Route path="/tripwire-success" element={<TripwireSuccess />} />
                     <Route path="/checkout" element={<Checkout />} />
                     
-                    {/* Provider Intel Routes */}
+                    {/* Provider Ratings Routes */}
                     <Route path="/providers" element={<ProviderDirectory />} />
                     <Route path="/providers/:id" element={<ProviderDetail />} />
                     <Route path="/provider-transparency" element={<ProviderTransparency />} />

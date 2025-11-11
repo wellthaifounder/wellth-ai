@@ -98,15 +98,15 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
         {renderMenuSection(toolsMenuItems, "Tools")}
         
         <SidebarGroup>
-          <SidebarGroupLabel>Provider Intel</SidebarGroupLabel>
+          <SidebarGroupLabel>Provider Ratings</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Provider Intel">
+                <SidebarMenuButton asChild tooltip="Provider Ratings">
                   <NavLink to="/providers" className="relative">
                     <Building2 className="h-4 w-4" />
                     <span className="flex items-center gap-2">
-                      Provider Intel
+                      Provider Ratings
                       <Badge variant="secondary" className="text-[10px] px-1 py-0">Beta</Badge>
                     </span>
                   </NavLink>

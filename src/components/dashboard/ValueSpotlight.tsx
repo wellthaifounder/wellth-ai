@@ -71,7 +71,7 @@ export function ValueSpotlight({
           icon="🏥"
           title="Track Healthcare Providers"
           description="See which providers have the best billing accuracy and avoid problematic ones"
-          cta="View Provider Intel"
+          cta="View Provider Ratings"
           onClick={onProviderClick}
           variant="info"
         />
@@ -112,7 +112,7 @@ export function ValueSpotlight({
           icon="🏥"
           title="Track Providers"
           description="See which providers have the best billing accuracy"
-          cta="View Provider Intel"
+          cta="View Provider Ratings"
           onClick={onProviderClick}
           variant="info"
         />

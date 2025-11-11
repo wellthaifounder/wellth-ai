@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-interface ProviderIntelDisclaimerProps {
+interface ProviderRatingsDisclaimerProps {
   variant?: "homepage" | "detail" | "review";
   providerName?: string;
   billCount?: number;
@@ -20,14 +20,14 @@ interface ProviderIntelDisclaimerProps {
   lastUpdated?: Date;
 }
 
-export const ProviderIntelDisclaimer = ({
+export const ProviderRatingsDisclaimer = ({
   variant = "homepage",
   providerName,
   billCount = 0,
   reviewCount = 0,
   insurancePlanType,
   lastUpdated,
-}: ProviderIntelDisclaimerProps) => {
+}: ProviderRatingsDisclaimerProps) => {
   const [showFullDisclaimer, setShowFullDisclaimer] = useState(false);
 
   if (variant === "homepage") {
@@ -37,7 +37,7 @@ export const ProviderIntelDisclaimer = ({
         <AlertDescription className="text-sm text-foreground">
           <strong className="text-amber-600">⚠️ BETA FEATURE - Community-Sourced Data</strong>
           <p className="mt-2">
-            Provider Intel displays crowd-sourced billing data and user reviews. This information is:
+            Provider Ratings displays crowd-sourced billing data and user reviews. This information is:
           </p>
           <ul className="list-disc list-inside mt-2 space-y-1 text-xs">
             <li>Based on real user experiences, not clinical outcomes</li>
@@ -56,12 +56,12 @@ export const ProviderIntelDisclaimer = ({
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>How Provider Intel Works</DialogTitle>
+                <DialogTitle>How Provider Ratings Works</DialogTitle>
                 <DialogDescription className="space-y-4 text-left">
                   <div>
                     <h4 className="font-semibold text-foreground mb-2">Data Collection</h4>
                     <p>
-                      Provider Intel ratings are generated from user-submitted medical bills and reviews. 
+                      Provider Ratings are generated from user-submitted medical bills and reviews. 
                       When you upload a bill, our AI analyzes it for potential billing errors. You then 
                       confirm whether the flagged items are actual errors. Only confirmed errors count 
                       toward a provider's Billing Accuracy Score.

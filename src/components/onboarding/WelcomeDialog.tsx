@@ -22,7 +22,7 @@ export function WelcomeDialog({ open, onClose, firstName, hasHSA }: WelcomeDialo
     },
     {
       icon: Building2,
-      title: "Provider Intel",
+      title: "Provider Ratings",
       description: "Check billing accuracy scores before your next appointment",
       color: "text-blue-500",
     },

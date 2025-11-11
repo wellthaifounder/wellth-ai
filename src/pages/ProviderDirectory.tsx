@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Building2, TrendingUp, TrendingDown, Star, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AdvancedFilters, FilterState } from "@/components/bills/AdvancedFilters";
-import { ProviderIntelDisclaimer } from "@/components/provider/ProviderIntelDisclaimer";
+import { ProviderRatingsDisclaimer } from "@/components/provider/ProviderRatingsDisclaimer";
 
 export default function ProviderDirectory() {
   const navigate = useNavigate();
@@ -95,7 +95,7 @@ export default function ProviderDirectory() {
         {/* Header */}
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold">Provider Intel</h1>
+            <h1 className="text-3xl font-bold">Provider Ratings</h1>
             <Badge variant="secondary" className="text-xs">Beta</Badge>
           </div>
           <p className="text-muted-foreground mb-4">
@@ -103,7 +103,7 @@ export default function ProviderDirectory() {
           </p>
           
           <div className="mb-4">
-            <ProviderIntelDisclaimer variant="homepage" />
+            <ProviderRatingsDisclaimer variant="homepage" />
           </div>
         </div>
 
