@@ -113,7 +113,7 @@ export const HowItWorks = () => {
               </div>
 
               {/* HSA Step 1 */}
-              <div className="opacity-0 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+              <div className="animate-fade-in" style={{ animationDelay: "0.2s" }}>
                 <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
                   <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                     <Wallet className="h-5 w-5 text-primary" />
@@ -126,7 +126,7 @@ export const HowItWorks = () => {
               </div>
 
               {/* HSA Step 2 */}
-              <div className="opacity-0 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+              <div className="animate-fade-in" style={{ animationDelay: "0.4s" }}>
                 <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
                   <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                     <TrendingUp className="h-5 w-5 text-primary" />
@@ -139,7 +139,7 @@ export const HowItWorks = () => {
               </div>
 
               {/* HSA Step 3 */}
-              <div className="opacity-0 animate-fade-in" style={{ animationDelay: "0.6s" }}>
+              <div className="animate-fade-in" style={{ animationDelay: "0.6s" }}>
                 <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
                   <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                     <Calculator className="h-5 w-5 text-primary" />
@@ -152,7 +152,7 @@ export const HowItWorks = () => {
               </div>
 
               {/* HSA Step 4 */}
-              <div className="opacity-0 animate-fade-in" style={{ animationDelay: "0.8s" }}>
+              <div className="animate-fade-in" style={{ animationDelay: "0.8s" }}>
                 <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
                   <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                     <FileCheck className="h-5 w-5 text-primary" />
