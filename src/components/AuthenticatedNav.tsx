@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { WellthLogo } from "@/components/WellthLogo";
-import { LogOut, Calculator, Receipt, FileText, BarChart3, Plus, Menu, Settings, Home, Building2, BookOpen, AlertCircle, Scale } from "lucide-react";
+import { LogOut, Calculator, Receipt, FileText, BarChart3, Plus, Menu, Settings, Home, Building2, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -42,16 +42,14 @@ export const AuthenticatedNav = ({
   // Main navigation items for header (desktop only)
   const mainNavItems = [
     { icon: Home, label: "Dashboard", path: "/dashboard" },
-    { icon: FileText, label: "Bills", path: "/invoices" },
+    { icon: FileText, label: "Bills", path: "/bills" },
     { icon: Receipt, label: "Transactions", path: "/transactions", badge: unreviewedTransactions },
     { icon: BarChart3, label: "Reports", path: "/reports" },
   ];
 
   // Tools menu items for mobile sidebar
   const toolsMenuItems = [
-    { icon: Calculator, label: "Decision Tool", path: "/decision-tool" },
-    { icon: AlertCircle, label: "Bill Reviews", path: "/bill-reviews", badge: pendingReviews },
-    { icon: Scale, label: "Disputes", path: "/disputes", badge: activeDisputes },
+    { icon: Calculator, label: "Savings Calculator", path: "/savings-calculator" },
     { icon: Building2, label: "Providers", path: "/providers" },
     { icon: FileText, label: "Documents", path: "/documents" },
     { icon: BookOpen, label: "HSA Eligibility", path: "/hsa-eligibility", hsaOnly: true },
@@ -143,11 +141,6 @@ export const AuthenticatedNav = ({
                       >
                         <item.icon className="h-5 w-5 mr-3" aria-hidden="true" />
                         <span className="flex-1 text-left">{item.label}</span>
-                        {item.badge && item.badge > 0 && (
-                          <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">
-                            {item.badge}
-                          </span>
-                        )}
                       </Button>
                     ))}
                   </div>
