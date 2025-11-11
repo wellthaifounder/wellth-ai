@@ -78,12 +78,15 @@ const App = () => (
                     <Route path="/bills/new" element={<BillDetail />} />
                     <Route path="/bills/:id" element={<BillDetail />} />
                     
-                    {/* Legacy redirects - old routes */}
+                    {/* Bill Review and Dispute Detail Pages */}
+                    <Route path="/bill-reviews/:invoiceId" element={<BillReview />} />
+                    <Route path="/disputes/:id" element={<DisputeDetail />} />
+                    <Route path="/bills/:invoiceId/dispute" element={<BillDispute />} />
+                    
+                    {/* Legacy redirects */}
                     <Route path="/invoices" element={<Bills />} />
                     <Route path="/bill-reviews" element={<Bills />} />
-                    <Route path="/bill-reviews/:id" element={<Bills />} />
                     <Route path="/disputes" element={<Bills />} />
-                    <Route path="/disputes/:id" element={<Bills />} />
                     
                     {/* Decision Tool renamed to Savings Calculator (HSA only) */}
                     <Route path="/savings-calculator" element={<PrePurchaseDecision />} />

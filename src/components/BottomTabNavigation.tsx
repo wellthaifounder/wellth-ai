@@ -8,7 +8,7 @@ interface BottomTabNavigationProps {
 export const BottomTabNavigation = ({ unreviewedTransactions = 0 }: BottomTabNavigationProps) => {
   const tabs = [
     { icon: Home, label: "Dashboard", path: "/dashboard" },
-    { icon: FileText, label: "Bills", path: "/invoices" },
+    { icon: FileText, label: "Bills", path: "/bills" },
     { icon: Receipt, label: "Transactions", path: "/transactions", badge: unreviewedTransactions },
     { icon: BarChart3, label: "Reports", path: "/reports" },
     { icon: Building2, label: "Intel", path: "/providers" },
