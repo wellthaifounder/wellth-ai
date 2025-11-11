@@ -12,7 +12,10 @@ export const Hero = () => {
   const [showLeadCapture, setShowLeadCapture] = useState(false);
   const { ref: heroRef, isVisible: heroVisible } = useScrollAnimation({ threshold: 0.2 });
   const { ref: painPointsRef, isVisible: painPointsVisible } = useScrollAnimation({ threshold: 0.1 });
-  const { ref: hsaBonusRef, isVisible: hsaBonusVisible } = useScrollAnimation({ threshold: 0.1 });
+  const { ref: hsaBonusRef, isVisible: hsaBonusVisible } = useScrollAnimation({ 
+    threshold: 0.05,
+    rootMargin: '50px'
+  });
 
   const handleCalculatorClick = () => {
     analytics.ctaClick("calculator", "hero");
