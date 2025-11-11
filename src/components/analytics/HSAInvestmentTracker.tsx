@@ -101,33 +101,41 @@ export const HSAInvestmentTracker = ({
 
           <div>
             <h4 className="font-semibold mb-4">Growth Projection Over Time</h4>
-            <div role="img" aria-label="Line chart comparing HSA investment growth vs immediate reimbursement over time. Shows projected balance if money is invested versus if reimbursed immediately each year.">
+            <div 
+              role="img" 
+              aria-label="Line chart comparing HSA investment growth vs immediate reimbursement over time. Shows projected balance if money is invested versus if reimbursed immediately each year."
+            >
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={projectionData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                   <XAxis 
                     dataKey="year" 
                     stroke="hsl(var(--muted-foreground))"
+                    tick={{ fontSize: 12 }}
                     aria-label="Year"
                   />
                   <YAxis 
                     stroke="hsl(var(--muted-foreground))"
+                    tick={{ fontSize: 12 }}
                     aria-label="Balance in dollars"
                   />
                   <Tooltip 
                     contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
+                      backgroundColor: 'hsl(var(--popover))', 
                       border: '1px solid hsl(var(--border))',
-                      borderRadius: 'var(--radius)'
+                      borderRadius: 'var(--radius)',
+                      boxShadow: 'var(--shadow-lg)',
                     }} 
                   />
-                  <Legend />
+                  <Legend wrapperStyle={{ paddingTop: '20px' }} />
                   <Line 
                     type="monotone" 
                     dataKey="invested" 
                     stroke="hsl(var(--primary))" 
                     strokeWidth={2}
                     name="HSA Balance (Invested)"
+                    dot={{ fill: 'hsl(var(--primary))', r: 3 }}
+                    activeDot={{ r: 5 }}
                   />
                   <Line 
                     type="monotone" 
@@ -136,6 +144,8 @@ export const HSAInvestmentTracker = ({
                     strokeWidth={2}
                     strokeDasharray="5 5"
                     name="If Reimbursed Now"
+                    dot={{ fill: 'hsl(var(--muted-foreground))', r: 3 }}
+                    activeDot={{ r: 5 }}
                   />
                 </LineChart>
               </ResponsiveContainer>

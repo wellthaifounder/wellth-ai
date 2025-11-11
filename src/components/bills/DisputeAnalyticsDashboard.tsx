@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, DollarSign, Clock, Target, AlertCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrency, formatNumber } from "@/lib/utils";
 
 interface DisputeAnalyticsDashboardProps {
   disputes: any[];
@@ -60,31 +61,31 @@ export const DisputeAnalyticsDashboard = ({ disputes, isLoading = false }: Dispu
   const metrics = [
     {
       title: "Total Savings",
-      value: `$${totalSavings.toLocaleString()}`,
+      value: formatCurrency(totalSavings),
       icon: DollarSign,
       color: "text-green-600",
-      bgColor: "bg-green-50",
+      bgColor: "bg-green-50 dark:bg-green-950/20",
     },
     {
       title: "Success Rate",
       value: `${successRate.toFixed(0)}%`,
       icon: Target,
       color: "text-blue-600",
-      bgColor: "bg-blue-50",
+      bgColor: "bg-blue-50 dark:bg-blue-950/20",
     },
     {
       title: "Avg Resolution Time",
       value: `${Math.round(avgResolutionDays)} days`,
       icon: Clock,
       color: "text-purple-600",
-      bgColor: "bg-purple-50",
+      bgColor: "bg-purple-50 dark:bg-purple-950/20",
     },
     {
       title: "Pending Review",
-      value: pendingDisputes,
+      value: formatNumber(pendingDisputes),
       icon: AlertCircle,
       color: "text-orange-600",
-      bgColor: "bg-orange-50",
+      bgColor: "bg-orange-50 dark:bg-orange-950/20",
     },
   ];
 

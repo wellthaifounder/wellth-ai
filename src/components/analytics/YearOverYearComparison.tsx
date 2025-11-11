@@ -101,29 +101,45 @@ export const YearOverYearComparison = ({
           </div>
         </div>
 
-        <div className="h-80">
+        <div 
+          className="h-80" 
+          role="img" 
+          aria-label="Line chart comparing year-over-year savings trends. Shows total savings, tax savings, and rewards earned across multiple years to track financial progress over time."
+        >
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
               <XAxis 
                 dataKey="year" 
+                stroke="hsl(var(--muted-foreground))"
                 tick={{ fontSize: 12 }}
+                aria-label="Year"
               />
-              <YAxis tick={{ fontSize: 12 }} />
+              <YAxis 
+                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 12 }}
+                aria-label="Amount in dollars"
+              />
               <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--popover))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: 'var(--radius)',
+                  boxShadow: 'var(--shadow-lg)',
+                }}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     return (
                       <div className="bg-popover border rounded-lg p-3 shadow-lg">
                         <p className="font-semibold mb-2">{payload[0].payload.year}</p>
                         <div className="space-y-1 text-sm">
-                          <p className="text-green-600">
+                          <p style={{ color: 'hsl(var(--primary))' }}>
                             Total Savings: ${payload[0].payload.totalSavings.toFixed(2)}
                           </p>
-                          <p className="text-blue-600">
+                          <p style={{ color: 'hsl(var(--chart-2))' }}>
                             Tax Savings: ${payload[0].payload.taxSavings.toFixed(2)}
                           </p>
-                          <p className="text-purple-600">
+                          <p style={{ color: 'hsl(var(--chart-3))' }}>
                             Rewards: ${payload[0].payload.rewards.toFixed(2)}
                           </p>
                           <p className="text-muted-foreground">
@@ -136,14 +152,15 @@ export const YearOverYearComparison = ({
                   return null;
                 }}
               />
-              <Legend />
+              <Legend wrapperStyle={{ paddingTop: '20px' }} />
               <Line 
                 type="monotone" 
                 dataKey="totalSavings" 
                 stroke="hsl(var(--primary))" 
                 strokeWidth={3}
                 name="Total Savings"
-                dot={{ fill: 'hsl(var(--primary))' }}
+                dot={{ fill: 'hsl(var(--primary))', r: 4 }}
+                activeDot={{ r: 6 }}
               />
               <Line 
                 type="monotone" 
@@ -151,7 +168,8 @@ export const YearOverYearComparison = ({
                 stroke="hsl(var(--chart-2))" 
                 strokeWidth={2}
                 name="Tax Savings"
-                dot={{ fill: 'hsl(var(--chart-2))' }}
+                dot={{ fill: 'hsl(var(--chart-2))', r: 4 }}
+                activeDot={{ r: 6 }}
               />
               <Line 
                 type="monotone" 
@@ -159,7 +177,8 @@ export const YearOverYearComparison = ({
                 stroke="hsl(var(--chart-3))" 
                 strokeWidth={2}
                 name="Rewards"
-                dot={{ fill: 'hsl(var(--chart-3))' }}
+                dot={{ fill: 'hsl(var(--chart-3))', r: 4 }}
+                activeDot={{ r: 6 }}
               />
             </LineChart>
           </ResponsiveContainer>

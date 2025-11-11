@@ -55,19 +55,35 @@ export const RewardsOptimizationDashboard = ({
         </div>
 
         {paymentMethods.length > 0 && (
-          <div className="h-64">
+          <div 
+            className="h-64" 
+            role="img" 
+            aria-label="Bar chart showing rewards earned by payment method. Each bar represents total rewards accumulated from different credit cards or payment options, helping optimize which card to use."
+          >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                 <XAxis 
                   dataKey="name" 
+                  stroke="hsl(var(--muted-foreground))"
                   tick={{ fontSize: 12 }}
                   angle={-45}
                   textAnchor="end"
                   height={80}
+                  aria-label="Payment method name"
                 />
-                <YAxis tick={{ fontSize: 12 }} />
+                <YAxis 
+                  stroke="hsl(var(--muted-foreground))"
+                  tick={{ fontSize: 12 }}
+                  aria-label="Rewards earned in dollars"
+                />
                 <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--popover))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: 'var(--radius)',
+                    boxShadow: 'var(--shadow-lg)',
+                  }}
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       const value = typeof payload[0].value === 'number' ? payload[0].value : 0;
@@ -82,7 +98,7 @@ export const RewardsOptimizationDashboard = ({
                     return null;
                   }}
                 />
-                <Bar dataKey="rewards" radius={[8, 8, 0, 0]}>
+                <Bar dataKey="rewards" radius={[8, 8, 0, 0]} name="Rewards Earned">
                   {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
