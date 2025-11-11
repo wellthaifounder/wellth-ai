@@ -841,6 +841,7 @@ export type Database = {
           has_hsa: boolean | null
           hsa_opened_date: string | null
           id: string
+          is_admin: boolean | null
           updated_at: string
         }
         Insert: {
@@ -849,6 +850,7 @@ export type Database = {
           has_hsa?: boolean | null
           hsa_opened_date?: string | null
           id: string
+          is_admin?: boolean | null
           updated_at?: string
         }
         Update: {
@@ -857,6 +859,7 @@ export type Database = {
           has_hsa?: boolean | null
           hsa_opened_date?: string | null
           id?: string
+          is_admin?: boolean | null
           updated_at?: string
         }
         Relationships: []
@@ -1415,11 +1418,50 @@ export type Database = {
         }
         Relationships: []
       }
+      review_moderation_log: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          id: string
+          reason: string | null
+          review_id: string
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          review_id: string
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          review_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_moderation_log_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           created_at: string | null
           id: string
           is_featured: boolean | null
+          moderated_at: string | null
+          moderated_by: string | null
+          moderation_notes: string | null
+          moderation_status: string | null
           rating: number
           review_text: string
           updated_at: string | null
@@ -1429,6 +1471,10 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_featured?: boolean | null
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_notes?: string | null
+          moderation_status?: string | null
           rating: number
           review_text: string
           updated_at?: string | null
@@ -1438,6 +1484,10 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_featured?: boolean | null
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_notes?: string | null
+          moderation_status?: string | null
           rating?: number
           review_text?: string
           updated_at?: string | null

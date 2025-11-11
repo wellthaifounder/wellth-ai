@@ -72,12 +72,16 @@ const UserReviews = () => {
       if (!user) throw new Error("Not authenticated");
 
       if (existingReview) {
-        // Update existing review
+        // Update existing review and reset moderation status
         const { error } = await supabase
           .from("reviews")
           .update({
             rating,
             review_text: reviewText,
+            moderation_status: 'pending',
+            moderated_by: null,
+            moderated_at: null,
+            moderation_notes: null,
             updated_at: new Date().toISOString(),
           })
           .eq("id", existingReview.id);
@@ -85,7 +89,7 @@ const UserReviews = () => {
         if (error) throw error;
         toast.success("Review updated successfully! Our team will review it soon.");
       } else {
-        // Create new review
+        // Create new review (moderation_status defaults to 'pending')
         const { error } = await supabase
           .from("reviews")
           .insert({
@@ -136,10 +140,18 @@ const UserReviews = () => {
               {existingReview ? "Update Your Review" : "Write a Review"}
             </CardTitle>
             <CardDescription>
-              {existingReview?.is_featured ? (
+              {existingReview?.moderation_status === 'approved' && existingReview?.is_featured ? (
                 <span className="flex items-center gap-2 text-green-600">
                   <CheckCircle2 className="h-4 w-4" />
                   Your review is featured on our homepage!
+                </span>
+              ) : existingReview?.moderation_status === 'approved' ? (
+                <span className="text-green-600">
+                  Your review has been approved
+                </span>
+              ) : existingReview?.moderation_status === 'rejected' ? (
+                <span className="text-destructive">
+                  Your review was not approved. {existingReview.moderation_notes ? `Reason: ${existingReview.moderation_notes}` : ''}
                 </span>
               ) : existingReview ? (
                 "Your review is under review by our team"

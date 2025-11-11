@@ -1,6 +1,7 @@
-import { Calculator, Receipt, FileText, BarChart3, Wallet, Building2, BookOpen, Settings, MessageSquare } from "lucide-react";
+import { Calculator, Receipt, FileText, BarChart3, Wallet, Building2, BookOpen, Settings, MessageSquare, Shield } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useHSA } from "@/contexts/HSAContext";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { Badge } from "@/components/ui/badge";
 import {
   Sidebar,
@@ -43,6 +44,7 @@ const toolsMenuItems: MenuItem[] = [
 export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, activeDisputes = 0 }: AppSidebarProps) {
   const { open } = useSidebar();
   const { hasHSA } = useHSA();
+  const { isAdmin } = useIsAdmin();
 
   const getBadgeCount = (badgeKey: string | null) => {
     if (!badgeKey) return 0;
@@ -128,6 +130,19 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
           <SidebarGroupLabel>Account</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              {isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild tooltip="Manage Reviews">
+                    <NavLink to="/admin/reviews">
+                      <Shield className="h-4 w-4" />
+                      <span className="flex items-center gap-2">
+                        Manage Reviews
+                        <Badge variant="secondary" className="text-[10px] px-1 py-0">Admin</Badge>
+                      </span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Share Your Feedback">
                   <NavLink to="/user-reviews">

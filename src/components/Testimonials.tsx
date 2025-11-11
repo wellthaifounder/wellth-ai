@@ -24,6 +24,7 @@ export const Testimonials = () => {
           .from("reviews")
           .select("id, rating, review_text, created_at")
           .eq("is_featured", true)
+          .eq("moderation_status", "approved")
           .order("created_at", { ascending: false })
           .limit(6);
 

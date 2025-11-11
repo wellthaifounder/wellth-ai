@@ -42,6 +42,7 @@ const ProviderDirectory = lazy(() => import("./pages/ProviderDirectory"));
 const ProviderDetail = lazy(() => import("./pages/ProviderDetail"));
 const ProviderTransparency = lazy(() => import("./pages/ProviderTransparency"));
 const UserReviews = lazy(() => import("./pages/UserReviews"));
+const AdminReviews = lazy(() => import("./pages/AdminReviews"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Loading fallback
@@ -118,6 +119,9 @@ const App = () => (
                     
                     {/* User Feedback */}
                     <Route path="/user-reviews" element={<UserReviews />} />
+                    
+                    {/* Admin Routes */}
+                    <Route path="/admin/reviews" element={<AdminReviews />} />
                     
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
