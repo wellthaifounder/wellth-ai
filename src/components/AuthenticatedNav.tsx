@@ -118,7 +118,9 @@ export const AuthenticatedNav = ({
               className="flex items-center gap-2"
               aria-label="Open Wellbie AI assistant"
             >
-              <WellbieAvatar size="sm" />
+              <div className="h-6 w-6">
+                <WellbieAvatar size="sm" className="h-full w-full hover:scale-100" />
+              </div>
               <span className="hidden sm:inline text-sm font-medium">Wellbie</span>
             </Button>
 
