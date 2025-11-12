@@ -3,7 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { WellthLogo } from "@/components/WellthLogo";
-import { LogOut, Calculator, Receipt, FileText, BarChart3, Plus, Menu, Settings, Home, Building2, BookOpen } from "lucide-react";
+import { LogOut, Calculator, Receipt, FileText, BarChart3, Menu, Settings, Home, Building2, BookOpen } from "lucide-react";
+import { WellbieAvatar } from "@/components/WellbieAvatar";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -109,13 +110,16 @@ export const AuthenticatedNav = ({
           </div>
           
           <div className="flex items-center gap-2" role="group">
-            {/* Quick Add Button */}
-            <Button className="hidden sm:flex" variant="default" size="sm" onClick={() => navigate("/bills/new")} aria-label="Add new expense entry">
-              <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
-              New Entry
-            </Button>
-            <Button className="sm:hidden" variant="default" size="icon" onClick={() => navigate("/bills/new")} aria-label="Add new expense entry">
-              <Plus className="h-4 w-4" aria-hidden="true" />
+            {/* Wellbie Button */}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => window.dispatchEvent(new Event('openWellbieChat'))}
+              className="flex items-center gap-2"
+              aria-label="Open Wellbie AI assistant"
+            >
+              <WellbieAvatar size="sm" />
+              <span className="hidden sm:inline text-sm font-medium">Wellbie</span>
             </Button>
 
             {/* Mobile Menu - only visible on mobile/tablet */}

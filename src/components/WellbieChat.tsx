@@ -46,20 +46,6 @@ export const WellbieChat = () => {
 
   return (
     <>
-      {/* Floating Bubble */}
-      <button
-        onClick={handleOpen}
-        className={cn(
-          "fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[55] rounded-full bg-primary shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-          isOpen && "hidden"
-        )}
-        aria-label="Open Wellbie AI assistant chat"
-      >
-        <div className="p-2 sm:p-3">
-          <WellbieAvatar size="md" animate={false} />
-        </div>
-      </button>
-
       {/* Chat Panel with Backdrop */}
       {isOpen && (
         <>
