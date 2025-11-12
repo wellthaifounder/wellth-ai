@@ -4,12 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { analytics } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BookOpen, MessageCircle, DollarSign, FileText, TrendingUp, Wallet, LayoutDashboard, CreditCard, BarChart3 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { BarChart3 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { ProgressTracker } from "@/components/dashboard/ProgressTracker";
-import { FriendlyStatsCards } from "@/components/dashboard/FriendlyStatsCards";
 import { ActionCard } from "@/components/dashboard/ActionCard";
 import { WellbieTip } from "@/components/dashboard/WellbieTip";
 import { EmptyStateOnboarding } from "@/components/dashboard/EmptyStateOnboarding";
@@ -21,56 +20,16 @@ import { calculateProgress, getProgressSteps } from "@/lib/userProgress";
 import { ValueSpotlight } from "@/components/dashboard/ValueSpotlight";
 import { useHSA } from "@/contexts/HSAContext";
 import { useOnboarding } from "@/contexts/OnboardingContext";
-import { useDashboardLayout } from "@/contexts/DashboardLayoutContext";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FeatureTooltip } from "@/components/onboarding/FeatureTooltip";
 import { WelcomeDialog } from "@/components/onboarding/WelcomeDialog";
-import { DashboardCustomization } from "@/components/dashboard/DashboardCustomization";
-import { SortableCard } from "@/components/dashboard/SortableCard";
-import { TabHeader } from "@/components/dashboard/TabHeader";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
-import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { DashboardCompactHeader } from "@/components/dashboard/DashboardCompactHeader";
 import { QuickActionBar } from "@/components/dashboard/QuickActionBar";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { hasHSA, hsaOpenedDate, refreshHSAStatus } = useHSA();
+  const { hasHSA, hsaOpenedDate } = useHSA();
   const onboarding = useOnboarding();
-  const layout = useDashboardLayout();
   const [user, setUser] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState("overview");
-  const [billIntelligenceData, setBillIntelligenceData] = useState({
-    pendingReviews: 0,
-    activeDisputes: 0,
-    totalSavings: 0,
-  });
   const [showWelcome, setShowWelcome] = useState(false);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      const oldIndex = layout.cardOrder.indexOf(active.id as string);
-      const newIndex = layout.cardOrder.indexOf(over.id as string);
-      
-      const newOrder = [...layout.cardOrder];
-      newOrder.splice(oldIndex, 1);
-      newOrder.splice(newIndex, 0, active.id as string);
-      
-      layout.setCardOrder(newOrder);
-    }
-  };
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalExpenses: 0,
@@ -263,27 +222,6 @@ const Dashboard = () => {
       );
 
       setPendingReviews(reviewsWithCounts);
-      
-      // Fetch all reviews for stats
-      const { data: allReviews } = await supabase
-        .from('bill_reviews')
-        .select('total_potential_savings')
-        .eq('user_id', user.id);
-        
-      // Fetch active disputes
-      const { data: activeDisputes } = await supabase
-        .from('bill_disputes')
-        .select('id')
-        .eq('user_id', user.id)
-        .not('dispute_status', 'in', '(resolved_favorable,resolved_unfavorable,withdrawn)');
-        
-      const totalSavings = allReviews?.reduce((sum, r) => sum + Number(r.total_potential_savings || 0), 0) || 0;
-      
-      setBillIntelligenceData({
-        pendingReviews: reviewsWithCounts.length,
-        activeDisputes: activeDisputes?.length || 0,
-        totalSavings
-      });
     } catch (error) {
       console.error("Failed to fetch bill reviews:", error);
     }
@@ -370,8 +308,8 @@ const Dashboard = () => {
                 hasHSA={hasHSA}
               />
 
-              {/* Simplified Action-Focused Dashboard */}
-              <div className="space-y-6">
+              {/* Simplified Single-Page Dashboard */}
+              <div className="space-y-4">
               {/* Welcome Header */}
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
@@ -384,251 +322,146 @@ const Dashboard = () => {
                 </Button>
               </div>
 
-              {/* Tabs for different dashboard views */}
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="overview">Overview</TabsTrigger>
-                  <TabsTrigger value="bills">
-                    Bill Intelligence
-                    {billIntelligenceData.pendingReviews > 0 && (
-                      <Badge variant="destructive" className="ml-2">{billIntelligenceData.pendingReviews}</Badge>
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger value="hsa">HSA & Money</TabsTrigger>
-                  <TabsTrigger value="transactions">
-                    Transactions
-                    {stats.unreviewedTransactions > 0 && (
-                      <Badge variant="destructive" className="ml-2">{stats.unreviewedTransactions}</Badge>
-                    )}
-                  </TabsTrigger>
-                </TabsList>
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="pt-4 pb-4">
+                    <div className="text-2xl font-bold">${stats.totalExpenses.toFixed(0)}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Total Tracked</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4 pb-4">
+                    <div className="text-2xl font-bold text-green-600">${stats.disputeSavings.toFixed(0)}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Saved</p>
+                  </CardContent>
+                </Card>
+                {hasHSA && (
+                  <Card>
+                    <CardContent className="pt-4 pb-4">
+                      <div className="text-2xl font-bold text-primary">${stats.hsaClaimableAmount.toFixed(0)}</div>
+                      <p className="text-xs text-muted-foreground mt-1">HSA Claimable</p>
+                    </CardContent>
+                  </Card>
+                )}
+                <Card>
+                  <CardContent className="pt-4 pb-4">
+                    <div className="text-2xl font-bold text-amber-600">${stats.rewardsEarned.toFixed(0)}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Rewards Earned</p>
+                  </CardContent>
+                </Card>
+              </div>
 
-                {/* Overview Tab */}
-                <TabsContent value="overview" className="space-y-6">
-                  {/* Quick Stats */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <Card>
-                      <CardContent className="pt-6">
-                        <div className="text-2xl font-bold">${stats.totalExpenses.toFixed(0)}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Total Tracked</p>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent className="pt-6">
-                        <div className="text-2xl font-bold text-green-600">${stats.disputeSavings.toFixed(0)}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Saved</p>
-                      </CardContent>
-                    </Card>
-                    {hasHSA && (
-                      <Card>
-                        <CardContent className="pt-6">
-                          <div className="text-2xl font-bold text-primary">${stats.hsaClaimableAmount.toFixed(0)}</div>
-                          <p className="text-xs text-muted-foreground mt-1">HSA Claimable</p>
-                        </CardContent>
-                      </Card>
-                    )}
-                    <Card>
-                      <CardContent className="pt-6">
-                        <div className="text-2xl font-bold text-amber-600">${stats.rewardsEarned.toFixed(0)}</div>
-                        <p className="text-xs text-muted-foreground mt-1">Rewards Earned</p>
-                      </CardContent>
-                    </Card>
-                  </div>
+              {/* Quick Actions */}
+              <QuickActionBar 
+                hasHSA={hasHSA} 
+                hsaClaimable={stats.hsaClaimableAmount}
+                unreviewedTransactions={stats.unreviewedTransactions}
+              />
 
-                {/* Quick Actions */}
-                <QuickActionBar 
-                  hasHSA={hasHSA} 
-                  hsaClaimable={stats.hsaClaimableAmount}
-                  unreviewedTransactions={stats.unreviewedTransactions}
+              {/* Value Spotlight */}
+              <FeatureTooltip
+                title="Provider Ratings"
+                description="Check billing accuracy scores and dispute success rates for healthcare providers before scheduling your next appointment."
+                show={!onboarding.hasSeenProviderDirectory && stats.expenseCount >= 2}
+                onDismiss={() => onboarding.markAsSeen("hasSeenProviderDirectory")}
+                position="top"
+                ctaText="Browse Providers"
+                onCtaClick={() => navigate("/providers")}
+              >
+                <ValueSpotlight
+                  pendingReviews={pendingReviews.length}
+                  totalPotentialSavings={0}
+                  recentDisputeWins={disputeStats.recentWins}
+                  disputeSavings={disputeStats.totalSavings}
+                  onReviewClick={() => navigate("/bills")}
+                  onDisputeClick={() => navigate("/bills")}
+                  onProviderClick={() => navigate("/providers")}
                 />
+              </FeatureTooltip>
 
-                {/* Value Spotlight */}
-                <FeatureTooltip
-                  title="Provider Ratings"
-                  description="Check billing accuracy scores and dispute success rates for healthcare providers before scheduling your next appointment."
-                  show={!onboarding.hasSeenProviderDirectory && stats.expenseCount >= 2}
-                  onDismiss={() => onboarding.markAsSeen("hasSeenProviderDirectory")}
-                  position="top"
-                  ctaText="Browse Providers"
-                  onCtaClick={() => navigate("/providers")}
-                >
-                  <ValueSpotlight
-                    pendingReviews={pendingReviews.length}
-                    totalPotentialSavings={0}
-                    recentDisputeWins={disputeStats.recentWins}
-                    disputeSavings={disputeStats.totalSavings}
-                    onReviewClick={() => navigate("/bills")}
-                    onDisputeClick={() => navigate("/bills")}
-                    onProviderClick={() => navigate("/providers")}
-                  />
-                </FeatureTooltip>
-
-                {/* Recent Bills */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2 space-y-4">
-                    {recentExpenses.length > 0 && (
-                      <ActionCard
-                        icon="🏥"
-                        title="Recent Medical Bills"
-                        count={recentExpenses.length}
-                        actions={
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => navigate("/bills")}
-                          >
-                            View All
-                          </Button>
-                        }
-                        buttonText="Show recent bills"
-                      >
-                        <div className="space-y-3">
-                          {recentExpenses.slice(0, 3).map((expense) => (
-                            <div key={expense.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => navigate(`/bills/${expense.id}`)}>
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <p className="font-medium">{expense.vendor}</p>
-                                  {(() => {
-                                    const rawDate = expense.invoice_date || expense.date;
-                                    const eligibleAfter = expense.is_hsa_eligible && (!hsaOpenedDate || (rawDate && new Date(rawDate) >= new Date(hsaOpenedDate)));
-                                    return eligibleAfter ? (
-                                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                                        HSA-eligible ✓
-                                      </span>
-                                    ) : null;
-                                  })()}
-                                </div>
-                                <p className="text-sm text-muted-foreground">
-                                  {new Date(expense.date).toLocaleDateString()}
-                                </p>
+              {/* Recent Bills */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="lg:col-span-2 space-y-4">
+                  {recentExpenses.length > 0 && (
+                    <ActionCard
+                      icon="🏥"
+                      title="Recent Medical Bills"
+                      count={recentExpenses.length}
+                      actions={
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => navigate("/bills")}
+                        >
+                          View All
+                        </Button>
+                      }
+                      buttonText="Show recent bills"
+                    >
+                      <div className="space-y-3">
+                        {recentExpenses.slice(0, 3).map((expense) => (
+                          <div key={expense.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => navigate(`/bills/${expense.id}`)}>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium">{expense.vendor}</p>
+                                {(() => {
+                                  const rawDate = expense.invoice_date || expense.date;
+                                  const eligibleAfter = expense.is_hsa_eligible && (!hsaOpenedDate || (rawDate && new Date(rawDate) >= new Date(hsaOpenedDate)));
+                                  return eligibleAfter ? (
+                                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                      HSA-eligible ✓
+                                    </span>
+                                  ) : null;
+                                })()}
                               </div>
-                              <p className="font-semibold">${Number(expense.amount).toFixed(2)}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {new Date(expense.date).toLocaleDateString()}
+                              </p>
                             </div>
-                          ))}
-                        </div>
-                      </ActionCard>
-                    )}
+                            <p className="font-semibold">${Number(expense.amount).toFixed(2)}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </ActionCard>
+                  )}
 
-                    {/* Pending Reviews */}
-                    {pendingReviews.length > 0 && (
-                      <ActionCard
-                        icon="🔍"
-                        title="Bills Requiring Review"
-                        count={pendingReviews.length}
-                        buttonText="View All Reviews"
-                        actions={
-                          <Button onClick={() => navigate("/bills")}>
-                            View All
-                          </Button>
-                        }
-                        defaultOpen={true}
-                      >
-                        <div className="space-y-3">
-                          {pendingReviews.map((review) => (
-                            <BillReviewCard 
-                              key={review.id}
-                              review={review}
-                              errorCount={review.errorCount}
-                            />
-                          ))}
-                        </div>
-                      </ActionCard>
-                    )}
-                  </div>
-
-                  {/* Side Cards */}
-                  <div className="space-y-4">
-                    <ProgressTracker steps={progressSteps} />
-                    <WellbieTip 
-                      unreviewedCount={stats.unreviewedTransactions}
-                      hasExpenses={stats.expenseCount > 0}
-                    />
-                  </div>
+                  {/* Pending Reviews */}
+                  {pendingReviews.length > 0 && (
+                    <ActionCard
+                      icon="🔍"
+                      title="Bills Requiring Review"
+                      count={pendingReviews.length}
+                      buttonText="View All Reviews"
+                      actions={
+                        <Button onClick={() => navigate("/bills")}>
+                          View All
+                        </Button>
+                      }
+                      defaultOpen={true}
+                    >
+                      <div className="space-y-3">
+                        {pendingReviews.map((review) => (
+                          <BillReviewCard 
+                            key={review.id}
+                            review={review}
+                            errorCount={review.errorCount}
+                          />
+                        ))}
+                      </div>
+                    </ActionCard>
+                  )}
                 </div>
-                </TabsContent>
 
-                {/* Bill Intelligence Tab */}
-                <TabsContent value="bills" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Bill Intelligence Dashboard</CardTitle>
-                      <CardDescription>Review AI-analyzed bills, manage disputes, and track savings</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid gap-6 md:grid-cols-3">
-                        <div className="p-4 bg-primary/10 rounded-lg">
-                          <div className="text-2xl font-bold">{billIntelligenceData.pendingReviews}</div>
-                          <p className="text-sm text-muted-foreground">Pending Reviews</p>
-                        </div>
-                        <div className="p-4 bg-orange-500/10 rounded-lg">
-                          <div className="text-2xl font-bold">{billIntelligenceData.activeDisputes}</div>
-                          <p className="text-sm text-muted-foreground">Active Disputes</p>
-                        </div>
-                        <div className="p-4 bg-green-500/10 rounded-lg">
-                          <div className="text-2xl font-bold">${billIntelligenceData.totalSavings.toFixed(0)}</div>
-                          <p className="text-sm text-muted-foreground">Total Savings Found</p>
-                        </div>
-                      </div>
-                      <Button onClick={() => navigate("/bills")} className="w-full">
-                        Go to Bills Dashboard
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                {/* HSA & Money Tab */}
-                <TabsContent value="hsa" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>HSA & Financial Overview</CardTitle>
-                      <CardDescription>Track your HSA strategy and maximize your savings</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid gap-6 md:grid-cols-3">
-                        <div className="p-4 bg-primary/10 rounded-lg">
-                          <div className="text-2xl font-bold">${stats.hsaClaimableAmount.toFixed(0)}</div>
-                          <p className="text-sm text-muted-foreground">HSA Claimable</p>
-                        </div>
-                        <div className="p-4 bg-green-500/10 rounded-lg">
-                          <div className="text-2xl font-bold">${stats.taxSavings.toFixed(0)}</div>
-                          <p className="text-sm text-muted-foreground">Tax Savings</p>
-                        </div>
-                        <div className="p-4 bg-amber-500/10 rounded-lg">
-                          <div className="text-2xl font-bold">${stats.rewardsEarned.toFixed(0)}</div>
-                          <p className="text-sm text-muted-foreground">Rewards Earned</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-3">
-                        <Button onClick={() => navigate("/reimbursement-requests")} className="flex-1">
-                          HSA Reimbursements
-                        </Button>
-                        <Button onClick={() => navigate("/savings-calculator")} variant="outline" className="flex-1">
-                          Savings Calculator
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                {/* Transactions Tab */}
-                <TabsContent value="transactions" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Transaction Management</CardTitle>
-                      <CardDescription>Review and categorize your healthcare transactions</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="p-4 bg-amber-500/10 rounded-lg">
-                        <div className="text-2xl font-bold">{stats.unreviewedTransactions}</div>
-                        <p className="text-sm text-muted-foreground">Unreviewed Transactions</p>
-                      </div>
-                      <Button onClick={() => navigate("/transactions")} className="w-full">
-                        Review Transactions
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
+                {/* Side Cards */}
+                <div className="space-y-4">
+                  <ProgressTracker steps={progressSteps} />
+                  <WellbieTip 
+                    unreviewedCount={stats.unreviewedTransactions}
+                    hasExpenses={stats.expenseCount > 0}
+                  />
+                </div>
+              </div>
             </div>
             </>
           )}

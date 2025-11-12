@@ -22,6 +22,7 @@ import Dashboard from "./pages/Dashboard";
 const Calculator = lazy(() => import("./pages/Calculator"));
 const Bills = lazy(() => import("./pages/Bills"));
 const BillDetail = lazy(() => import("./pages/BillDetail"));
+const Transactions = lazy(() => import("./pages/Transactions"));
 const PrePurchaseDecision = lazy(() => import("./pages/PrePurchaseDecision"));
 const HSAEligibility = lazy(() => import("./pages/HSAEligibility"));
 const ReimbursementRequests = lazy(() => import("./pages/ReimbursementRequests"));
@@ -64,7 +65,6 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
-                <WellbieChat />
                 <PWAInstallPrompt />
                 <PWAUpdatePrompt />
                 <Suspense fallback={<PageLoader />}>
@@ -98,6 +98,9 @@ const App = () => (
                     <Route path="/hsa-eligibility" element={<HSAEligibility />} />
                     <Route path="/reimbursement-requests" element={<ReimbursementRequests />} />
                     <Route path="/reimbursement/:id" element={<ReimbursementDetails />} />
+                    
+                    {/* Transactions Route */}
+                    <Route path="/transactions" element={<Transactions />} />
                     
                     {/* Supporting Routes */}
                     <Route path="/documents" element={<Documents />} />

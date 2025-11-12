@@ -76,7 +76,7 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
                       className="relative"
                     >
                       <item.icon className="h-4 w-4" />
-                      <span>{item.label}</span>
+                      {open && <span>{item.label}</span>}
                       {badgeCount > 0 && open && (
                         <span className="ml-auto bg-accent text-accent-foreground text-xs px-2 py-0.5 rounded-full">
                           {badgeCount}
@@ -107,10 +107,12 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
                 <SidebarMenuButton asChild tooltip="Provider Ratings">
                   <NavLink to="/providers" className="relative">
                     <Building2 className="h-4 w-4" />
-                    <span className="flex items-center gap-2">
-                      Provider Ratings
-                      <Badge variant="secondary" className="text-[10px] px-1 py-0">Beta</Badge>
-                    </span>
+                    {open && (
+                      <span className="flex items-center gap-2">
+                        Provider Ratings
+                        <Badge variant="secondary" className="text-[10px] px-1 py-0">Beta</Badge>
+                      </span>
+                    )}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -118,7 +120,7 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
                 <SidebarMenuButton asChild tooltip="Reports">
                   <NavLink to="/reports">
                     <BarChart3 className="h-4 w-4" />
-                    <span>Reports</span>
+                    {open && <span>Reports</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -135,10 +137,12 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
                   <SidebarMenuButton asChild tooltip="Manage Reviews">
                     <NavLink to="/admin/reviews">
                       <Shield className="h-4 w-4" />
-                      <span className="flex items-center gap-2">
-                        Manage Reviews
-                        <Badge variant="secondary" className="text-[10px] px-1 py-0">Admin</Badge>
-                      </span>
+                      {open && (
+                        <span className="flex items-center gap-2">
+                          Manage Reviews
+                          <Badge variant="secondary" className="text-[10px] px-1 py-0">Admin</Badge>
+                        </span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -147,7 +151,7 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
                 <SidebarMenuButton asChild tooltip="Share Your Feedback">
                   <NavLink to="/user-reviews">
                     <MessageSquare className="h-4 w-4" />
-                    <span>Share Feedback</span>
+                    {open && <span>Share Feedback</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -155,7 +159,7 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
                 <SidebarMenuButton asChild tooltip="Settings">
                   <NavLink to="/settings">
                     <Settings className="h-4 w-4" />
-                    <span>Settings</span>
+                    {open && <span>Settings</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>

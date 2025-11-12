@@ -28,7 +28,7 @@ export const Hero = () => {
   };
   
   return (
-    <section className="relative overflow-hidden bg-gradient-hero py-12 sm:py-16 lg:py-24 xl:py-32" aria-labelledby="hero-heading">
+    <section className="relative overflow-x-hidden bg-gradient-hero py-12 sm:py-16 lg:py-24 xl:py-32" aria-labelledby="hero-heading">
       <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" aria-hidden="true" />
       
       <div className="container relative mx-auto px-4 sm:px-6">

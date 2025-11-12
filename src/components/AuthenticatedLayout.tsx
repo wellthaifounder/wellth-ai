@@ -3,6 +3,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 import { BottomTabNavigation } from "@/components/BottomTabNavigation";
+import { WellbieChat } from "@/components/WellbieChat";
 
 interface AuthenticatedLayoutProps {
   children: ReactNode;
@@ -51,6 +52,9 @@ export const AuthenticatedLayout = ({
           <BottomTabNavigation unreviewedTransactions={unreviewedTransactions} />
         </div>
       </div>
+      
+      {/* Wellbie Chat - only for authenticated users */}
+      <WellbieChat />
     </SidebarProvider>
   );
 };

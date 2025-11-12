@@ -95,14 +95,25 @@ export const Navigation = () => {
             Calculator
           </Button>
           <Button 
+            variant="ghost"
             size="sm" 
             onClick={() => {
-              analytics.navigationClick("start_free");
+              analytics.navigationClick("sign_in");
               navigate('/auth');
             }} 
             className="text-sm"
           >
-            Start Free
+            Sign In
+          </Button>
+          <Button 
+            size="sm" 
+            onClick={() => {
+              analytics.navigationClick("sign_up");
+              navigate('/auth');
+            }} 
+            className="text-sm"
+          >
+            Sign Up
           </Button>
         </div>
 
@@ -191,15 +202,29 @@ export const Navigation = () => {
               <div className="flex flex-col gap-2 sm:gap-3">
                 <SheetClose asChild>
                   <Button
+                    variant="ghost"
                     size="lg"
                     className="w-full text-sm sm:text-base"
                     onClick={() => {
-                      analytics.navigationClick("start_free_mobile");
+                      analytics.navigationClick("sign_in_mobile");
                       closeMenu();
                       navigate('/auth');
                     }}
                   >
-                    Start Free
+                    Sign In
+                  </Button>
+                </SheetClose>
+                <SheetClose asChild>
+                  <Button
+                    size="lg"
+                    className="w-full text-sm sm:text-base"
+                    onClick={() => {
+                      analytics.navigationClick("sign_up_mobile");
+                      closeMenu();
+                      navigate('/auth');
+                    }}
+                  >
+                    Sign Up
                   </Button>
                 </SheetClose>
               </div>

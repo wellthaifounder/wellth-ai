@@ -45,6 +45,7 @@ export const AuthenticatedNav = ({
     { icon: FileText, label: "Bills", path: "/bills" },
     { icon: Receipt, label: "Transactions", path: "/transactions", badge: unreviewedTransactions },
     { icon: BarChart3, label: "Reports", path: "/reports" },
+    { icon: Building2, label: "Provider Ratings", path: "/providers" },
   ];
 
   // Tools menu items for mobile sidebar
@@ -109,11 +110,11 @@ export const AuthenticatedNav = ({
           
           <div className="flex items-center gap-2" role="group">
             {/* Quick Add Button */}
-            <Button className="hidden sm:flex" variant="default" size="sm" onClick={() => navigate("/expenses/new")} aria-label="Add new expense entry">
+            <Button className="hidden sm:flex" variant="default" size="sm" onClick={() => navigate("/bills/new")} aria-label="Add new expense entry">
               <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
               New Entry
             </Button>
-            <Button className="sm:hidden" variant="default" size="icon" onClick={() => navigate("/expenses/new")} aria-label="Add new expense entry">
+            <Button className="sm:hidden" variant="default" size="icon" onClick={() => navigate("/bills/new")} aria-label="Add new expense entry">
               <Plus className="h-4 w-4" aria-hidden="true" />
             </Button>
 

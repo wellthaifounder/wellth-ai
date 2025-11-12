@@ -19,7 +19,7 @@ export function QuickActionBar({ hasHSA, hsaClaimable, unreviewedTransactions }:
         <Button 
           variant="outline" 
           className="h-auto min-h-[44px] py-3 flex-col gap-1"
-          onClick={() => navigate("/bill-review")}
+          onClick={() => navigate("/bills/new")}
         >
           <Upload className="h-5 w-5" />
           <span className="text-xs">Upload Bill</span>
@@ -43,7 +43,7 @@ export function QuickActionBar({ hasHSA, hsaClaimable, unreviewedTransactions }:
           <Button 
             variant="outline" 
             className="h-auto min-h-[44px] py-3 flex-col gap-1"
-            onClick={() => navigate("/hsa-reimbursement")}
+            onClick={() => navigate("/reimbursement-requests")}
           >
             <DollarSign className="h-5 w-5" />
             <span className="text-xs">Claim from HSA</span>
@@ -58,7 +58,7 @@ export function QuickActionBar({ hasHSA, hsaClaimable, unreviewedTransactions }:
         <Button 
           variant="outline" 
           className="h-auto min-h-[44px] py-3 flex-col gap-1"
-          onClick={() => navigate("/expenses/new")}
+          onClick={() => navigate("/bills/new")}
         >
           <FileText className="h-5 w-5" />
           <span className="text-xs">Add Expense</span>
