@@ -506,6 +506,7 @@ export type Database = {
           date: string
           deductible_met: boolean | null
           deductible_portion: number | null
+          hsa_account_id: string | null
           id: string
           insurance_plan_name: string | null
           insurance_plan_type: string | null
@@ -537,6 +538,7 @@ export type Database = {
           date: string
           deductible_met?: boolean | null
           deductible_portion?: number | null
+          hsa_account_id?: string | null
           id?: string
           insurance_plan_name?: string | null
           insurance_plan_type?: string | null
@@ -568,6 +570,7 @@ export type Database = {
           date?: string
           deductible_met?: boolean | null
           deductible_portion?: number | null
+          hsa_account_id?: string | null
           id?: string
           insurance_plan_name?: string | null
           insurance_plan_type?: string | null
@@ -604,6 +607,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_hsa_account_id_fkey"
+            columns: ["hsa_account_id"]
+            isOneToOne: false
+            referencedRelation: "hsa_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -710,6 +720,7 @@ export type Database = {
         Row: {
           amount: number
           created_at: string
+          hsa_account_id: string | null
           id: string
           invoice_id: string
           is_reimbursed: boolean
@@ -727,6 +738,7 @@ export type Database = {
         Insert: {
           amount: number
           created_at?: string
+          hsa_account_id?: string | null
           id?: string
           invoice_id: string
           is_reimbursed?: boolean
@@ -744,6 +756,7 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string
+          hsa_account_id?: string | null
           id?: string
           invoice_id?: string
           is_reimbursed?: boolean
@@ -764,6 +777,13 @@ export type Database = {
             columns: ["invoice_id"]
             isOneToOne: false
             referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_hsa_account_id_fkey"
+            columns: ["hsa_account_id"]
+            isOneToOne: false
+            referencedRelation: "hsa_accounts"
             referencedColumns: ["id"]
           },
           {

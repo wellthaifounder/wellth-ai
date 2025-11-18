@@ -22,6 +22,9 @@ import { LabelSelector } from "@/components/labels/LabelSelector";
 import { Badge } from "@/components/ui/badge";
 import { LinkTransactionDialog } from "@/components/bills/LinkTransactionDialog";
 import { Link2 } from "lucide-react";
+import { HSAAccountSelector } from "@/components/hsa/HSAAccountSelector";
+import { useHSAAccounts } from "@/hooks/useHSAAccounts";
+import { useHSAEligibility } from "@/hooks/useHSAEligibility";
 
 const invoiceSchema = z.object({
   date: z.string().min(1, "Date is required"),
@@ -58,6 +61,9 @@ const InvoiceEntry = () => {
   const [showAttachDialog, setShowAttachDialog] = useState(false);
   const [showLinkTransactionDialog, setShowLinkTransactionDialog] = useState(false);
   const [selectedLabels, setSelectedLabels] = useState<any[]>([]);
+  const [selectedHSAAccount, setSelectedHSAAccount] = useState<string>("");
+  const { accounts: hsaAccounts } = useHSAAccounts();
+  
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     vendor: "",
@@ -75,6 +81,8 @@ const InvoiceEntry = () => {
     insurancePlanName: "",
     networkStatus: "",
   });
+  
+  const { isEligible, eligibleAccounts, requiresAccountSelection, message: eligibilityMessage } = useHSAEligibility(formData.date);
 
   const recommendation = formData.totalAmount && formData.category && parseFloat(formData.totalAmount) > 0
     ? getPaymentRecommendation({
@@ -98,6 +106,13 @@ const InvoiceEntry = () => {
     }
   }, [formData.category, isEditMode]);
 
+  // Auto-select HSA account if only one eligible account
+  useEffect(() => {
+    if (eligibleAccounts.length === 1 && !selectedHSAAccount) {
+      setSelectedHSAAccount(eligibleAccounts[0].id);
+    }
+  }, [eligibleAccounts]);
+
   const loadInvoice = async (invoiceId: string) => {
     try {
       setLoading(true);
@@ -110,23 +125,27 @@ const InvoiceEntry = () => {
       if (error) throw error;
       
       if (data) {
-        setFormData({
-          date: data.date,
-          vendor: data.vendor,
-          totalAmount: data.total_amount?.toString() || data.amount?.toString() || "",
-          category: data.category,
-          notes: data.notes || "",
-          invoiceNumber: data.invoice_number || "",
-          invoiceDate: data.invoice_date || data.date,
-          paymentPlanTotalAmount: data.payment_plan_total_amount?.toString() || "",
-          paymentPlanInstallments: data.payment_plan_installments?.toString() || "",
-          paymentPlanNotes: data.payment_plan_notes || "",
-          isHsaEligible: data.is_hsa_eligible || false,
-          npiNumber: data.npi_number || "",
-          insurancePlanType: data.insurance_plan_type || "",
-          insurancePlanName: data.insurance_plan_name || "",
-          networkStatus: data.network_status || "",
-        });
+      setFormData({
+        date: data.date,
+        vendor: data.vendor,
+        totalAmount: data.total_amount?.toString() || data.amount?.toString() || "",
+        category: data.category || "",
+        notes: data.notes || "",
+        invoiceNumber: data.invoice_number || "",
+        invoiceDate: data.invoice_date || data.date,
+        paymentPlanTotalAmount: data.payment_plan_total_amount?.toString() || "",
+        paymentPlanInstallments: data.payment_plan_installments?.toString() || "",
+        paymentPlanNotes: data.payment_plan_notes || "",
+        isHsaEligible: data.is_hsa_eligible || false,
+        npiNumber: data.npi_number || "",
+        insurancePlanType: data.insurance_plan_type || "",
+        insurancePlanName: data.insurance_plan_name || "",
+        networkStatus: data.network_status || "",
+      });
+      
+      if (data.hsa_account_id) {
+        setSelectedHSAAccount(data.hsa_account_id);
+      }
         setHasPaymentPlan(!!data.payment_plan_total_amount);
         
         const { data: receiptsData } = await supabase
@@ -186,7 +205,8 @@ const InvoiceEntry = () => {
             insurance_plan_type: formData.insurancePlanType || null,
             insurance_plan_name: formData.insurancePlanName || null,
             network_status: formData.networkStatus || null,
-            payment_plan_total_amount: hasPaymentPlan && formData.paymentPlanTotalAmount 
+            hsa_account_id: selectedHSAAccount || null,
+            payment_plan_total_amount: hasPaymentPlan && formData.paymentPlanTotalAmount
               ? parseFloat(formData.paymentPlanTotalAmount) 
               : null,
             payment_plan_installments: hasPaymentPlan && formData.paymentPlanInstallments 

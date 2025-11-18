@@ -22,6 +22,9 @@ import { ReimbursementStrategySelector } from "@/components/expense/Reimbursemen
 import { SetHSADateDialog } from "@/components/profile/SetHSADateDialog";
 import { getDefaultReimbursementDate } from "@/lib/vaultCalculations";
 import { celebrateFirstExpense, celebrateExpenseSaved } from "@/lib/confettiUtils";
+import { HSAAccountSelector } from "@/components/hsa/HSAAccountSelector";
+import { useHSAAccounts } from "@/hooks/useHSAAccounts";
+import { useHSAEligibility } from "@/hooks/useHSAEligibility";
 
 const expenseSchema = z.object({
   date: z.string().min(1, "Date is required"),
@@ -68,6 +71,9 @@ const ExpenseEntry = () => {
   const [expense, setExpense] = useState<any>(null);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [showAnalysisPrompt, setShowAnalysisPrompt] = useState(false);
+  const [selectedHSAAccount, setSelectedHSAAccount] = useState<string>("");
+  const { accounts: hsaAccounts } = useHSAAccounts();
+  
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     vendor: "",
@@ -78,6 +84,8 @@ const ExpenseEntry = () => {
     paymentPlanInstallments: "",
     paymentPlanNotes: "",
   });
+  
+  const { isEligible, eligibleAccounts, message: eligibilityMessage } = useHSAEligibility(formData.date);
 
   // Generate payment recommendation when amount and category are set
   const recommendation = formData.amount && formData.category && parseFloat(formData.amount) > 0
@@ -141,10 +149,14 @@ const ExpenseEntry = () => {
           category: data.category,
           notes: data.notes || "",
           paymentPlanTotalAmount: data.payment_plan_total_amount?.toString() || "",
-          paymentPlanInstallments: data.payment_plan_installments?.toString() || "",
-          paymentPlanNotes: data.payment_plan_notes || "",
-        });
-        setHasPaymentPlan(!!data.payment_plan_total_amount);
+        paymentPlanInstallments: data.payment_plan_installments?.toString() || "",
+        paymentPlanNotes: data.payment_plan_notes || "",
+      });
+      setHasPaymentPlan(!!data.payment_plan_total_amount);
+      
+      if (data.hsa_account_id) {
+        setSelectedHSAAccount(data.hsa_account_id);
+      }
         
         // Load reimbursement strategy
         if (data.reimbursement_strategy && data.reimbursement_strategy !== 'immediate') {
@@ -227,6 +239,7 @@ const ExpenseEntry = () => {
             reimbursement_reminder_date: useReimbursementStrategy ? reminderDate : null,
             card_payoff_months: useReimbursementStrategy ? cardPayoffMonths : 0,
             investment_notes: useReimbursementStrategy ? investmentNotes : null,
+            hsa_account_id: selectedHSAAccount || null,
           })
           .eq("id", id)
           .select()
