@@ -16,6 +16,7 @@ interface ReimbursementPackage {
   hsaProvider?: string;
   userName: string;
   userEmail: string;
+  hsaAccounts?: { id: string; account_name: string }[];
 }
 
 export const generateReimbursementPDF = async (data: ReimbursementPackage): Promise<Blob> => {

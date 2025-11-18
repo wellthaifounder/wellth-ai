@@ -95,6 +95,12 @@ const ReimbursementDetails = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Fetch HSA accounts for grouping
+      const { data: hsaAccounts } = await supabase
+        .from("hsa_accounts")
+        .select("id, account_name")
+        .eq("user_id", user.id);
+
       toast.info("Generating PDF...");
       const pdfBlob = await generateReimbursementPDF({
         expenses,
@@ -102,7 +108,8 @@ const ReimbursementDetails = () => {
         notes: request.notes,
         hsaProvider: request.hsa_provider,
         userName: user.user_metadata?.full_name || user.email || "User",
-        userEmail: user.email || ""
+        userEmail: user.email || "",
+        hsaAccounts: hsaAccounts || undefined,
       });
 
       const url = window.URL.createObjectURL(pdfBlob);

@@ -12,6 +12,8 @@ import { ArrowLeft, CheckCircle2, DollarSign } from "lucide-react";
 import { z } from "zod";
 import { MultiFileUpload } from "@/components/expense/MultiFileUpload";
 import { Badge } from "@/components/ui/badge";
+import { HSAAccountSelector } from "@/components/hsa/HSAAccountSelector";
+import { useHSAAccounts } from "@/hooks/useHSAAccounts";
 
 const paymentSchema = z.object({
   paymentDate: z.string().min(1, "Payment date is required"),
@@ -32,6 +34,9 @@ const PaymentEntry = () => {
   const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
   const [newFiles, setNewFiles] = useState<any[]>([]);
   const [selectedInvoice, setSelectedInvoice] = useState<string>("");
+  const [selectedHSAAccount, setSelectedHSAAccount] = useState<string>("");
+  const { accounts: hsaAccounts } = useHSAAccounts();
+  
   const [formData, setFormData] = useState({
     paymentDate: new Date().toISOString().split('T')[0],
     amount: "",
@@ -322,10 +327,24 @@ const PaymentEntry = () => {
                     <SelectItem value="hsa_direct">HSA Direct Payment</SelectItem>
                     <SelectItem value="out_of_pocket">Out-of-Pocket (Credit/Debit)</SelectItem>
                   </SelectContent>
-                </Select>
-              </div>
+                  </Select>
+                </div>
 
-              {formData.paymentSource === "out_of_pocket" && (
+                {formData.paymentSource === "hsa_direct" && selectedInvoiceData && (
+                  <div className="space-y-2">
+                    <Label>HSA Account</Label>
+                    <HSAAccountSelector
+                      value={selectedHSAAccount}
+                      onValueChange={setSelectedHSAAccount}
+                      filterByDate={selectedInvoiceData.date}
+                    />
+                    {!selectedHSAAccount && (
+                      <p className="text-sm text-destructive">Please select an HSA account</p>
+                    )}
+                  </div>
+                )}
+
+                {formData.paymentSource === "out_of_pocket" && (
                 <div className="space-y-2">
                   <Label htmlFor="paymentMethod">Payment Method (Optional)</Label>
                   <Select 

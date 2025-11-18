@@ -15,6 +15,7 @@ type HSAAccountSelectorProps = {
   placeholder?: string;
   disabled?: boolean;
   includeNone?: boolean;
+  filterByDate?: string;
 };
 
 export function HSAAccountSelector({
@@ -23,11 +24,22 @@ export function HSAAccountSelector({
   placeholder = "Select HSA account",
   disabled = false,
   includeNone = false,
+  filterByDate,
 }: HSAAccountSelectorProps) {
   const { accounts, isLoading } = useHSAAccounts();
 
-  // Filter to only show active accounts
-  const activeAccounts = accounts.filter((acc) => acc.is_active && !acc.closed_date);
+  // Filter to only show active accounts and by date if provided
+  let filteredAccounts = accounts.filter((acc) => acc.is_active && !acc.closed_date);
+  
+  if (filterByDate) {
+    const expenseDate = new Date(filterByDate);
+    filteredAccounts = filteredAccounts.filter(account => {
+      const openedDate = new Date(account.opened_date);
+      const closedDate = account.closed_date ? new Date(account.closed_date) : null;
+      
+      return expenseDate >= openedDate && (!closedDate || expenseDate <= closedDate);
+    });
+  }
 
   if (isLoading) {
     return (
