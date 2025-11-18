@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CalendarIcon, Filter, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useHSAAccounts } from "@/hooks/useHSAAccounts";
+import { formatHSAAccountDateRange } from "@/lib/hsaAccountUtils";
 
 export type FilterCriteria = {
   amountOperator?: "gt" | "lt" | "between" | "equal";
@@ -17,6 +19,7 @@ export type FilterCriteria = {
   dateStart?: Date;
   dateEnd?: Date;
   isHsaEligible?: "all" | "yes" | "no";
+  hsaAccountId?: string;
 };
 
 type AdvancedFiltersProps = {
@@ -27,6 +30,7 @@ type AdvancedFiltersProps = {
 export function AdvancedFilters({ onFilterChange, activeFilters }: AdvancedFiltersProps) {
   const [open, setOpen] = useState(false);
   const [filters, setFilters] = useState<FilterCriteria>(activeFilters);
+  const { accounts } = useHSAAccounts();
 
   const hasActiveFilters = Object.keys(activeFilters).length > 0;
 
@@ -198,6 +202,34 @@ export function AdvancedFilters({ onFilterChange, activeFilters }: AdvancedFilte
               </SelectContent>
             </Select>
           </div>
+
+          {/* HSA Account Filter */}
+          {accounts.length > 0 && (
+            <div className="space-y-2">
+              <Label>HSA Account</Label>
+              <Select
+                value={filters.hsaAccountId || "all"}
+                onValueChange={(value: any) => updateFilter("hsaAccountId", value === "all" ? undefined : value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All accounts" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All accounts</SelectItem>
+                  {accounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{account.account_name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatHSAAccountDateRange(account)}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="flex gap-2 pt-2">
             <Button onClick={handleApply} className="flex-1">
