@@ -51,7 +51,7 @@ export function HSAAccountSelector({
     );
   }
 
-  if (activeAccounts.length === 0) {
+  if (filteredAccounts.length === 0) {
     return (
       <div className="flex items-center gap-2 p-3 border border-muted rounded-md bg-muted/20">
         <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -77,7 +77,7 @@ export function HSAAccountSelector({
             <span className="text-muted-foreground">No HSA Account</span>
           </SelectItem>
         )}
-        {activeAccounts.map((account) => (
+        {filteredAccounts.map((account) => (
           <SelectItem key={account.id} value={account.id}>
             <div className="flex flex-col">
               <span className="font-medium">{account.account_name}</span>
