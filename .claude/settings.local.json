@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git clone:*)",
+      "Bash(uv tool install:*)",
+      "Bash(uvx:*)",
+      "Bash(uv --version:*)",
+      "Bash(pip --version:*)",
+      "Bash(pip show:*)",
+      "Bash(python -m site:*)",
+      "Bash(python:*)",
+      "Bash(\"C:\\Users\\OwenLaurie\\AppData\\Roaming\\Python\\Python314\\Scripts\\uvx.exe\" --from git+https://github.com/github/spec-kit.git specify init wellth-ai)",
+      "Bash(export PYTHONIOENCODING=utf-8)",
+      "Bash(\"C:\\Users\\OwenLaurie\\AppData\\Roaming\\Python\\Python314\\Scripts\\uvx.exe\" --from git+https://github.com/github/spec-kit.git specify init --here)",
+      "Bash(\"C:\\Users\\OwenLaurie\\AppData\\Roaming\\Python\\Python314\\Scripts\\uvx.exe\" --from git+https://github.com/github/spec-kit.git specify init --here --force)",
+      "Bash(timeout:*)",
+      "Bash(powershell.exe -Command \"$env:PYTHONIOENCODING=''utf-8''; & ''C:\\Users\\OwenLaurie\\AppData\\Roaming\\Python\\Python314\\Scripts\\uvx.exe'' --from git+https://github.com/github/spec-kit.git specify init --here --force\")",
+      "Bash(cmd.exe /c \"chcp 65001 >nul && set PYTHONIOENCODING=utf-8 && C:\\Users\\OwenLaurie\\AppData\\Roaming\\Python\\Python314\\Scripts\\uvx.exe --from git+https://github.com/github/spec-kit.git specify init --here --force\")",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(for:*)",
+      "Bash(do mv \"$file\" \"speckit.$file\")",
+      "Bash(done)",
+      "Bash(tree:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
