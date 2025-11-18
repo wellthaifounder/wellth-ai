@@ -13,6 +13,7 @@ import { useOnboarding } from "@/contexts/OnboardingContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlaidLink } from "@/components/PlaidLink";
+import { HSAAccountManager } from "@/components/hsa/HSAAccountManager";
 
 
 const Settings = () => {
@@ -335,10 +336,10 @@ const Settings = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Heart className="h-5 w-5" />
-                HSA Information
+                HSA Information (Legacy)
               </CardTitle>
               <CardDescription>
-                Track HSA eligibility for expenses
+                Single HSA date tracking - use HSA Accounts below for multiple accounts
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -357,6 +358,21 @@ const Settings = () => {
               <Button onClick={handleUpdateProfile} disabled={saving}>
                 {saving ? "Saving..." : "Save Changes"}
               </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Heart className="h-5 w-5" />
+                HSA Accounts
+              </CardTitle>
+              <CardDescription>
+                Manage multiple HSA accounts across different time periods
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <HSAAccountManager />
             </CardContent>
           </Card>
 
