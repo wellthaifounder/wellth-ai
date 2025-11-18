@@ -10,10 +10,11 @@ import { formatHSAAccountDateRange } from "@/lib/hsaAccountUtils";
 import { Calendar } from "lucide-react";
 
 type HSAAccountSelectorProps = {
-  value: string | null;
-  onValueChange: (value: string | null) => void;
+  value: string | undefined;
+  onValueChange: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  includeNone?: boolean;
 };
 
 export function HSAAccountSelector({
@@ -21,6 +22,7 @@ export function HSAAccountSelector({
   onValueChange,
   placeholder = "Select HSA account",
   disabled = false,
+  includeNone = false,
 }: HSAAccountSelectorProps) {
   const { accounts, isLoading } = useHSAAccounts();
 
@@ -50,7 +52,7 @@ export function HSAAccountSelector({
 
   return (
     <Select
-      value={value || undefined}
+      value={value}
       onValueChange={onValueChange}
       disabled={disabled}
     >
@@ -58,6 +60,11 @@ export function HSAAccountSelector({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
+        {includeNone && (
+          <SelectItem value="none">
+            <span className="text-muted-foreground">No HSA Account</span>
+          </SelectItem>
+        )}
         {activeAccounts.map((account) => (
           <SelectItem key={account.id} value={account.id}>
             <div className="flex flex-col">

@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Eye, Tag, Link2, XCircle, RotateCcw, ListRestart } from "lucide-react";
+import { MoreVertical, Eye, Tag, Link2, XCircle, RotateCcw, ListRestart, Split } from "lucide-react";
 import { format } from "date-fns";
 
 interface TransactionCardProps {
@@ -21,6 +21,10 @@ interface TransactionCardProps {
   reconciliationStatus: "unlinked" | "linked_to_invoice" | "ignored";
   isHsaEligible: boolean;
   isFromHsaAccount?: boolean;
+  isSplit?: boolean;
+  invoiceId?: string | null;
+  splitParentId?: string | null;
+  splitCount?: number;
   onViewDetails: () => void;
   onMarkMedical?: () => void;
   onLinkToInvoice?: () => void;
@@ -28,6 +32,7 @@ interface TransactionCardProps {
   onIgnore?: () => void;
   onUnignore?: () => void;
   onAddToReviewQueue?: () => void;
+  onSplitTransaction?: () => void;
 }
 
 export function TransactionCard({
@@ -39,6 +44,10 @@ export function TransactionCard({
   reconciliationStatus,
   isHsaEligible,
   isFromHsaAccount = false,
+  isSplit = false,
+  invoiceId,
+  splitParentId,
+  splitCount,
   onViewDetails,
   onMarkMedical,
   onLinkToInvoice,
@@ -46,6 +55,7 @@ export function TransactionCard({
   onIgnore,
   onUnignore,
   onAddToReviewQueue,
+  onSplitTransaction,
 }: TransactionCardProps) {
   const getStatusBadge = () => {
     switch (reconciliationStatus) {
@@ -117,6 +127,17 @@ export function TransactionCard({
             {isHsaEligible && !isFromHsaAccount && (
               <Badge className="bg-primary/10 text-primary">HSA Eligible</Badge>
             )}
+            {isSplit && splitCount && splitCount > 0 && (
+              <Badge variant="secondary" className="gap-1">
+                <Split className="h-3 w-3" />
+                {splitCount} splits
+              </Badge>
+            )}
+            {splitParentId && (
+              <Badge variant="outline" className="text-xs">
+                Part of split
+              </Badge>
+            )}
           </div>
 
           {vendor && vendor !== description && (
@@ -157,6 +178,13 @@ export function TransactionCard({
                 <DropdownMenuItem onClick={onLinkToInvoice}>
                   <Link2 className="h-4 w-4 mr-2" />
                   Link to Bill
+                </DropdownMenuItem>
+              )}
+
+              {onSplitTransaction && !isSplit && !splitParentId && !invoiceId && (
+                <DropdownMenuItem onClick={onSplitTransaction}>
+                  <Split className="h-4 w-4 mr-2" />
+                  Split Transaction
                 </DropdownMenuItem>
               )}
 
