@@ -18,6 +18,7 @@ import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { AnalyticsEmptyState } from "@/components/analytics/AnalyticsEmptyState";
 import { AnalyticsSettings, AnalyticsAssumptions } from "@/components/analytics/AnalyticsSettings";
 import { TimeRangeFilter, TimeRange } from "@/components/analytics/TimeRangeFilter";
+import { HSAAccountFilter } from "@/components/analytics/HSAAccountFilter";
 import { GoalSetting } from "@/components/analytics/GoalSetting";
 import { ExportAnalytics } from "@/components/analytics/ExportAnalytics";
 import { TaxPackageExport } from "@/components/analytics/TaxPackageExport";
@@ -49,6 +50,9 @@ const Reports = () => {
   const [timeRange, setTimeRange] = useState<TimeRange>("all");
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
   
+  // HSA Account filtering
+  const [selectedHSAAccount, setSelectedHSAAccount] = useState<string>("all");
+  
   // Customizable assumptions
   const [assumptions, setAssumptions] = useState<AnalyticsAssumptions>(() => {
     const saved = localStorage.getItem("analyticsAssumptions");
@@ -70,7 +74,7 @@ const Reports = () => {
   useEffect(() => {
     fetchAnalytics();
     analytics.pageView('/reports');
-  }, [timeRange, customDateRange]);
+  }, [timeRange, customDateRange, selectedHSAAccount]);
 
   const getDateRangeFilter = () => {
     const now = new Date();
@@ -100,6 +104,11 @@ const Reports = () => {
       
       if (timeRange === "custom" && customDateRange?.to) {
         query = query.lte("date", customDateRange.to.toISOString().split('T')[0]);
+      }
+
+      // Filter by HSA account if selected
+      if (selectedHSAAccount !== "all") {
+        query = query.eq("hsa_account_id", selectedHSAAccount);
       }
 
       const { data: invoices, error } = await query;
@@ -257,12 +266,16 @@ const Reports = () => {
             </div>
             
             {hasData && (
-              <div className="mt-4">
+              <div className="flex flex-col sm:flex-row gap-3 mt-4">
                 <TimeRangeFilter
                   selectedRange={timeRange}
                   customDateRange={customDateRange}
                   onRangeChange={setTimeRange}
                   onCustomDateChange={setCustomDateRange}
+                />
+                <HSAAccountFilter
+                  value={selectedHSAAccount}
+                  onValueChange={setSelectedHSAAccount}
                 />
               </div>
             )}
