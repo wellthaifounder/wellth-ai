@@ -23,6 +23,7 @@ import { useOnboarding } from "@/contexts/OnboardingContext";
 import { FeatureTooltip } from "@/components/onboarding/FeatureTooltip";
 import { WelcomeDialog } from "@/components/onboarding/WelcomeDialog";
 import { QuickActionBar } from "@/components/dashboard/QuickActionBar";
+import { HSAAccountPerformance } from "@/components/dashboard/HSAAccountPerformance";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -358,6 +359,9 @@ const Dashboard = () => {
                 hsaClaimable={stats.hsaClaimableAmount}
                 unreviewedTransactions={stats.unreviewedTransactions}
               />
+
+              {/* HSA Account Performance */}
+              {hasHSA && <HSAAccountPerformance />}
 
               {/* Value Spotlight */}
               <FeatureTooltip

@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, TrendingUp, Calendar, DollarSign, Clock, CheckSquare } from "lucide-react";
 import { toast } from "sonner";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
+import { HSAAccountFilter } from "@/components/analytics/HSAAccountFilter";
 import { calculateVaultSummary, calculateExpenseProjectedValue, type VaultExpense } from "@/lib/vaultCalculations";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,10 +17,11 @@ const VaultTracker = () => {
   const [expenses, setExpenses] = useState<VaultExpense[]>([]);
   const [investmentReturn, setInvestmentReturn] = useState(0.08);
   const [selectedExpenses, setSelectedExpenses] = useState<Set<string>>(new Set());
+  const [selectedHSAAccount, setSelectedHSAAccount] = useState<string>("all");
 
   useEffect(() => {
     loadVaultExpenses();
-  }, []);
+  }, [selectedHSAAccount]);
 
   const loadVaultExpenses = async () => {
     try {
@@ -29,13 +31,20 @@ const VaultTracker = () => {
         return;
       }
 
-      const { data, error } = await supabase
+      let query = supabase
         .from("invoices")
-        .select("*")
+        .select("*, hsa_accounts(account_name)")
         .eq("user_id", user.id)
         .eq("is_hsa_eligible", true)
         .in("reimbursement_strategy", ["medium", "vault"])
         .order("planned_reimbursement_date", { ascending: true });
+
+      // Filter by HSA account if selected
+      if (selectedHSAAccount !== "all") {
+        query = query.eq("hsa_account_id", selectedHSAAccount);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       
@@ -146,6 +155,14 @@ const VaultTracker = () => {
           <p className="text-muted-foreground">
             Track expenses held for long-term HSA investment growth
           </p>
+          
+          {/* HSA Account Filter */}
+          <div className="mt-4">
+            <HSAAccountFilter
+              value={selectedHSAAccount}
+              onValueChange={setSelectedHSAAccount}
+            />
+          </div>
         </div>
 
         {/* Summary Cards */}
