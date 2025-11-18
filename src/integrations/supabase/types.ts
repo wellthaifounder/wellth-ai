@@ -1614,6 +1614,54 @@ export type Database = {
           },
         ]
       }
+      transaction_splits: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          hsa_account_id: string | null
+          id: string
+          notes: string | null
+          parent_transaction_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          hsa_account_id?: string | null
+          id?: string
+          notes?: string | null
+          parent_transaction_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          hsa_account_id?: string | null
+          id?: string
+          notes?: string | null
+          parent_transaction_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_splits_hsa_account_id_fkey"
+            columns: ["hsa_account_id"]
+            isOneToOne: false
+            referencedRelation: "hsa_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_splits_parent_transaction_id_fkey"
+            columns: ["parent_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           amount: number
@@ -1624,11 +1672,13 @@ export type Database = {
           invoice_id: string | null
           is_hsa_eligible: boolean | null
           is_medical: boolean | null
+          is_split: boolean | null
           notes: string | null
           payment_method_id: string | null
           plaid_transaction_id: string | null
           reconciliation_status: string | null
           source: string | null
+          split_parent_id: string | null
           transaction_date: string
           updated_at: string
           user_id: string
@@ -1643,11 +1693,13 @@ export type Database = {
           invoice_id?: string | null
           is_hsa_eligible?: boolean | null
           is_medical?: boolean | null
+          is_split?: boolean | null
           notes?: string | null
           payment_method_id?: string | null
           plaid_transaction_id?: string | null
           reconciliation_status?: string | null
           source?: string | null
+          split_parent_id?: string | null
           transaction_date: string
           updated_at?: string
           user_id: string
@@ -1662,11 +1714,13 @@ export type Database = {
           invoice_id?: string | null
           is_hsa_eligible?: boolean | null
           is_medical?: boolean | null
+          is_split?: boolean | null
           notes?: string | null
           payment_method_id?: string | null
           plaid_transaction_id?: string | null
           reconciliation_status?: string | null
           source?: string | null
+          split_parent_id?: string | null
           transaction_date?: string
           updated_at?: string
           user_id?: string
@@ -1685,6 +1739,13 @@ export type Database = {
             columns: ["payment_method_id"]
             isOneToOne: false
             referencedRelation: "payment_methods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_split_parent_id_fkey"
+            columns: ["split_parent_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
             referencedColumns: ["id"]
           },
         ]

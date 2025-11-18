@@ -13,6 +13,9 @@ import { TransactionInlineDetail } from "@/components/transactions/TransactionIn
 import { QuickAddTransactionDialog } from "@/components/transactions/QuickAddTransactionDialog";
 import { ReviewQueue } from "@/components/transactions/ReviewQueue";
 import { AdvancedFilters, type FilterCriteria } from "@/components/transactions/AdvancedFilters";
+import { TransactionSplitDialog } from "@/components/transactions/TransactionSplitDialog";
+import { SplitTransactionCard } from "@/components/transactions/SplitTransactionCard";
+import { useTransactionSplits } from "@/hooks/useTransactionSplits";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { MissingHSADateBanner } from "@/components/dashboard/MissingHSADateBanner";
 import { TransactionsSkeleton } from "@/components/skeletons/TransactionsSkeleton";
@@ -20,6 +23,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 type Transaction = {
   id: string;
+  user_id: string;
   transaction_date: string;
   vendor: string | null;
   amount: number;
@@ -31,6 +35,12 @@ type Transaction = {
   notes: string | null;
   payment_method_id: string | null;
   invoice_id: string | null;
+  is_split: boolean;
+  split_parent_id: string | null;
+  plaid_transaction_id: string | null;
+  source: string | null;
+  created_at: string;
+  updated_at: string;
   payment_methods?: {
     is_hsa_account: boolean;
   } | null;
@@ -46,6 +56,8 @@ export default function Transactions() {
   const [expandedTransactionId, setExpandedTransactionId] = useState<string | null>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [splitDialogOpen, setSplitDialogOpen] = useState(false);
+  const [transactionToSplit, setTransactionToSplit] = useState<Transaction | null>(null);
   const [activeTab, setActiveTab] = useState("all");
   const [advancedFilters, setAdvancedFilters] = useState<FilterCriteria>({});
   const [hsaOpenedDate, setHsaOpenedDate] = useState<string | null>(null);
@@ -315,6 +327,11 @@ export default function Transactions() {
     }
   };
 
+  const handleSplitTransaction = (transaction: Transaction) => {
+    setTransactionToSplit(transaction);
+    setSplitDialogOpen(true);
+  };
+
   const stats = {
     total: transactions.length,
     medical: transactions.filter((t) => t.is_medical).length,
@@ -437,46 +454,83 @@ export default function Transactions() {
                 </Card>
               ) : (
                 <div className="space-y-3">
-                  {filteredTransactions.map((transaction) => (
-                    <div key={transaction.id}>
-                      <TransactionCard
-                        id={transaction.id}
-                        date={transaction.transaction_date}
-                        vendor={transaction.vendor || "Unknown"}
-                        amount={transaction.amount}
-                        description={transaction.description}
-                        isMedical={transaction.is_medical}
-                        reconciliationStatus={transaction.reconciliation_status as any}
-                        isHsaEligible={transaction.is_hsa_eligible}
-                        isFromHsaAccount={transaction.payment_methods?.is_hsa_account || false}
-                        onViewDetails={() => handleViewDetails(transaction)}
-                        onMarkMedical={() => handleMarkMedical(transaction)}
-                        onLinkToInvoice={() => handleLinkToInvoice(transaction)}
-                        onToggleMedical={() => handleToggleMedical(transaction)}
-                        onIgnore={() => handleIgnore(transaction)}
-                        onUnignore={() => handleUnignore(transaction)}
-                        onAddToReviewQueue={() => handleAddToReviewQueue(transaction)}
-                      />
-                      {expandedTransactionId === transaction.id && (
-                        <TransactionInlineDetail
-                          transaction={transaction}
-                          onClose={() => setExpandedTransactionId(null)}
-                          onUpdate={fetchTransactions}
+                  {filteredTransactions.map((transaction) => {
+                    // Show split transaction card for split transactions
+                    if (transaction.is_split) {
+                      return <SplitTransactionCard key={transaction.id} transaction={transaction} />;
+                    }
+
+                    return (
+                      <div key={transaction.id}>
+                        <TransactionCard
+                          id={transaction.id}
+                          date={transaction.transaction_date}
+                          vendor={transaction.vendor || "Unknown"}
+                          amount={transaction.amount}
+                          description={transaction.description}
+                          isMedical={transaction.is_medical}
+                          reconciliationStatus={transaction.reconciliation_status as any}
+                          isHsaEligible={transaction.is_hsa_eligible}
+                          isFromHsaAccount={transaction.payment_methods?.is_hsa_account || false}
+                          isSplit={transaction.is_split}
+                          invoiceId={transaction.invoice_id}
+                          splitParentId={transaction.split_parent_id}
+                          onViewDetails={() => handleViewDetails(transaction)}
+                          onMarkMedical={() => handleMarkMedical(transaction)}
+                          onLinkToInvoice={() => handleLinkToInvoice(transaction)}
+                          onToggleMedical={() => handleToggleMedical(transaction)}
+                          onIgnore={() => handleIgnore(transaction)}
+                          onUnignore={() => handleUnignore(transaction)}
+                          onAddToReviewQueue={() => handleAddToReviewQueue(transaction)}
+                          onSplitTransaction={() => handleSplitTransaction(transaction)}
                         />
-                      )}
-                    </div>
-                  ))}
+                        {expandedTransactionId === transaction.id && (
+                          <TransactionInlineDetail
+                            transaction={transaction}
+                            onClose={() => setExpandedTransactionId(null)}
+                            onUpdate={fetchTransactions}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </TabsContent>
           </Tabs>
         </div>
 
+        <TransactionDetailDialog
+          open={detailDialogOpen}
+          onOpenChange={setDetailDialogOpen}
+          transaction={selectedTransaction}
+          onUpdate={fetchTransactions}
+          onLinkToInvoice={() => {
+            if (selectedTransaction) {
+              handleLinkToInvoice(selectedTransaction);
+            }
+          }}
+        />
+
         <QuickAddTransactionDialog
           open={addDialogOpen}
           onOpenChange={setAddDialogOpen}
           onSuccess={fetchTransactions}
         />
+
+        {transactionToSplit && (
+          <TransactionSplitDialog
+            open={splitDialogOpen}
+            onOpenChange={(open) => {
+              setSplitDialogOpen(open);
+              if (!open) {
+                setTransactionToSplit(null);
+                fetchTransactions();
+              }
+            }}
+            transaction={transactionToSplit}
+          />
+        )}
       </AuthenticatedLayout>
     </ErrorBoundary>
   );

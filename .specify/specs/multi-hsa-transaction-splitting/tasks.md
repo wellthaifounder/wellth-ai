@@ -94,10 +94,10 @@
 
 ---
 
-## Phase 2: Transaction Splitting ⏳
+## Phase 2: Transaction Splitting ✅
 
 ### Task 2.1: Database Schema - Transaction Splits
-**Status**: 🔴 Not Started  
+**Status**: ✅ Complete
 **Estimated**: 30 min  
 **Dependencies**: Phase 1 Complete
 
@@ -107,7 +107,7 @@
 - [ ] Add updated_at trigger
 
 ### Task 2.2: Database Schema - Modify Transactions Table
-**Status**: 🔴 Not Started  
+**Status**: ✅ Complete
 **Estimated**: 15 min  
 **Dependencies**: Task 2.1
 
@@ -117,7 +117,7 @@
 - [ ] Test backward compatibility
 
 ### Task 2.3: Component - TransactionSplitDialog
-**Status**: 🔴 Not Started  
+**Status**: ✅ Complete
 **Estimated**: 3 hours  
 **Dependencies**: Task 2.1
 
@@ -129,7 +129,7 @@
 - [ ] Handle validation errors
 
 ### Task 2.4: Component - SplitTransactionCard
-**Status**: 🔴 Not Started  
+**Status**: ✅ Complete
 **Estimated**: 1.5 hours  
 **Dependencies**: Task 2.1
 
@@ -418,13 +418,13 @@
 ## Progress Summary
 
 **Total Tasks**: 41  
-**Completed**: 8  
+**Completed**: 17  
 **In Progress**: 0  
-**Not Started**: 33
+**Not Started**: 24
 
 **Phase Status**:
 - Phase 1: ✅ Complete (8 tasks)
-- Phase 2: 🔴 Not Started (9 tasks)
+- Phase 2: ✅ Complete (9 tasks)
 - Phase 3: 🔴 Not Started (5 tasks)
 - Phase 4: 🔴 Not Started (5 tasks)
 - Phase 5: 🔴 Not Started (5 tasks)
