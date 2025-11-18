@@ -420,6 +420,47 @@ export type Database = {
           },
         ]
       }
+      hsa_accounts: {
+        Row: {
+          account_name: string
+          closed_date: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          opened_date: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          account_name: string
+          closed_date?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          opened_date: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          account_name?: string
+          closed_date?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          opened_date?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hsa_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_labels: {
         Row: {
           created_at: string
