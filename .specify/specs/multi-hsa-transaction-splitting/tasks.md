@@ -6,91 +6,91 @@
 
 ---
 
-## Phase 1: HSA Account Management ⏳
+## Phase 1: HSA Account Management ✅
 
 ### Task 1.1: Database Schema - HSA Accounts Table
-**Status**: 🔴 Not Started  
+**Status**: ✅ Complete  
 **Estimated**: 30 min  
 **Dependencies**: None
 
-- [ ] Create `hsa_accounts` table with all columns
-- [ ] Add RLS policies for user access control
-- [ ] Create indexes for performance
-- [ ] Add trigger for updated_at timestamp
+- [x] Create `hsa_accounts` table with all columns
+- [x] Add RLS policies for user access control
+- [x] Create indexes for performance
+- [x] Add trigger for updated_at timestamp
 
 ### Task 1.2: Data Migration - Existing HSA Dates
-**Status**: 🔴 Not Started  
+**Status**: ✅ Complete  
 **Estimated**: 30 min  
 **Dependencies**: Task 1.1
 
-- [ ] Create migration script to populate hsa_accounts from profiles.hsa_opened_date
-- [ ] Set default account name as "Primary HSA"
-- [ ] Verify all users with hsa_opened_date get an account
-- [ ] Test migration on sample data
+- [x] Create migration script to populate hsa_accounts from profiles.hsa_opened_date
+- [x] Set default account name as "Primary HSA"
+- [x] Verify all users with hsa_opened_date get an account
+- [x] Test migration on sample data
 
 ### Task 1.3: Component - HSAAccountManager
-**Status**: 🔴 Not Started  
+**Status**: ✅ Complete  
 **Estimated**: 2 hours  
 **Dependencies**: Task 1.1
 
-- [ ] Create HSAAccountManager.tsx component
-- [ ] Build account list view with add/edit/delete actions
-- [ ] Implement form validation (dates, required fields)
-- [ ] Add confirmation dialog for delete
-- [ ] Handle active/inactive status toggle
+- [x] Create HSAAccountManager.tsx component
+- [x] Build account list view with add/edit/delete actions
+- [x] Implement form validation (dates, required fields)
+- [x] Add confirmation dialog for delete
+- [x] Handle active/inactive status toggle
 
 ### Task 1.4: Component - HSAAccountSelector
-**Status**: 🔴 Not Started  
+**Status**: ✅ Complete  
 **Estimated**: 1 hour  
 **Dependencies**: Task 1.1
 
-- [ ] Create HSAAccountSelector.tsx dropdown component
-- [ ] Display account name and date range
-- [ ] Filter to show only active accounts
-- [ ] Handle empty state (no accounts)
+- [x] Create HSAAccountSelector.tsx dropdown component
+- [x] Display account name and date range
+- [x] Filter to show only active accounts
+- [x] Handle empty state (no accounts)
 
 ### Task 1.5: Hook - useHSAAccounts
-**Status**: 🔴 Not Started  
+**Status**: ✅ Complete  
 **Estimated**: 1 hour  
 **Dependencies**: Task 1.1
 
-- [ ] Create useHSAAccounts.ts hook
-- [ ] Implement fetchAccounts with TanStack Query
-- [ ] Add CRUD operations (create, update, delete)
-- [ ] Handle loading and error states
-- [ ] Add optimistic updates
+- [x] Create useHSAAccounts.ts hook
+- [x] Implement fetchAccounts with TanStack Query
+- [x] Add CRUD operations (create, update, delete)
+- [x] Handle loading and error states
+- [x] Add optimistic updates
 
 ### Task 1.6: Utility - hsaAccountUtils
-**Status**: 🔴 Not Started  
+**Status**: ✅ Complete  
 **Estimated**: 1 hour  
 **Dependencies**: Task 1.1
 
-- [ ] Create hsaAccountUtils.ts
-- [ ] Implement getActiveHSAAccount function
-- [ ] Implement getEligibleHSAAccounts function
-- [ ] Implement isDateInHSAPeriod function
-- [ ] Add unit tests
+- [x] Create hsaAccountUtils.ts
+- [x] Implement getActiveHSAAccount function
+- [x] Implement getEligibleHSAAccounts function
+- [x] Implement isDateInHSAPeriod function
+- [x] Add unit tests
 
 ### Task 1.7: Update - hsaCalculations.ts
-**Status**: 🔴 Not Started  
+**Status**: ✅ Complete  
 **Estimated**: 1 hour  
 **Dependencies**: Task 1.1, Task 1.6
 
-- [ ] Update eligibility logic to check hsa_accounts table
-- [ ] Add fallback to profiles.hsa_opened_date
-- [ ] Update function signatures to accept HSA account parameter
-- [ ] Ensure backward compatibility
-- [ ] Test with both old and new data
+- [x] Update eligibility logic to check hsa_accounts table
+- [x] Add fallback to profiles.hsa_opened_date
+- [x] Update function signatures to accept HSA account parameter
+- [x] Ensure backward compatibility
+- [x] Test with both old and new data
 
 ### Task 1.8: UI - Settings HSA Accounts Page
-**Status**: 🔴 Not Started  
+**Status**: ✅ Complete  
 **Estimated**: 1 hour  
 **Dependencies**: Task 1.3, Task 1.4
 
-- [ ] Add HSA Accounts section to Settings page
-- [ ] Integrate HSAAccountManager component
-- [ ] Add explanatory text and tooltips
-- [ ] Test responsive design
+- [x] Add HSA Accounts section to Settings page
+- [x] Integrate HSAAccountManager component
+- [x] Add explanatory text and tooltips
+- [x] Test responsive design
 
 ---
 
@@ -418,12 +418,12 @@
 ## Progress Summary
 
 **Total Tasks**: 41  
-**Completed**: 0  
+**Completed**: 8  
 **In Progress**: 0  
-**Not Started**: 41
+**Not Started**: 33
 
 **Phase Status**:
-- Phase 1: 🔴 Not Started (8 tasks)
+- Phase 1: ✅ Complete (8 tasks)
 - Phase 2: 🔴 Not Started (9 tasks)
 - Phase 3: 🔴 Not Started (5 tasks)
 - Phase 4: 🔴 Not Started (5 tasks)
