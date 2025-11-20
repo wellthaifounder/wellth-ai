@@ -137,6 +137,27 @@ export const AuthenticatedNav = ({
                 </SheetHeader>
                 <nav className="flex flex-col gap-4" aria-label="Mobile navigation menu">
                   <div className="space-y-2">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">Main</h3>
+                    {mainNavItems.map((item) => (
+                      <Button
+                        key={item.path}
+                        variant="ghost"
+                        className="justify-start w-full"
+                        onClick={() => handleNavigation(item.path)}
+                        aria-label={item.label}
+                      >
+                        <item.icon className="h-5 w-5 mr-3" aria-hidden="true" />
+                        <span className="flex-1 text-left">{item.label}</span>
+                        {item.badge && item.badge > 0 && (
+                          <span className="bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                            {item.badge}
+                          </span>
+                        )}
+                      </Button>
+                    ))}
+                  </div>
+                  
+                  <div className="space-y-2">
                     <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">Tools</h3>
                     {visibleToolsItems.map((item) => (
                       <Button
