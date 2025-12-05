@@ -162,7 +162,7 @@ export const useWellbieChat = () => {
         setIsLoading(false);
       }
     },
-    [messages, isLoading, location.pathname, currentConversationId]
+    [messages, isLoading, location.pathname, currentConversationId, toast, loadConversations]
   );
 
   const switchConversation = (conversationId: string) => {

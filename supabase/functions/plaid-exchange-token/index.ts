@@ -1,9 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { encryptPlaidToken } from '../_shared/encryption.ts';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://wellth.ai',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Credentials': 'true',
 };
 
 serve(async (req) => {
@@ -12,6 +15,7 @@ serve(async (req) => {
   }
 
   try {
+    const requestId = crypto.randomUUID();
     const { public_token } = await req.json();
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -30,7 +34,7 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    console.log('Exchanging public token for user:', user.id);
+    console.log(`[${requestId}] Exchanging public token`);
 
     // Exchange public token for access token
     const exchangeResponse = await fetch('https://sandbox.plaid.com/item/public_token/exchange', {
@@ -68,20 +72,24 @@ serve(async (req) => {
     });
 
     const accountsData = await accountsResponse.json();
-    
+
     if (!accountsResponse.ok) {
       console.error('Plaid accounts error:', accountsData);
       throw new Error(accountsData.error_message || 'Failed to get accounts');
     }
 
-    console.log('Successfully retrieved accounts:', accountsData.accounts.length);
+    console.log(`[${requestId}] Successfully retrieved accounts:`, accountsData.accounts.length);
 
-    // Store connection in database (you'll need to create a plaid_connections table)
+    // Encrypt the access token before storing
+    console.log(`[${requestId}] Encrypting Plaid access token`);
+    const encryptedToken = await encryptPlaidToken(access_token);
+
+    // Store connection in database with encrypted token
     const { error: insertError } = await supabase
       .from('plaid_connections')
       .insert({
         user_id: user.id,
-        access_token,
+        encrypted_access_token: encryptedToken,
         item_id,
         institution_name: accountsData.item?.institution_id || 'Unknown',
       });

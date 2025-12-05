@@ -23,3 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 dev-dist/
+.env.encryption-keys
+.env.encryption-keys
+add-cors-headers.*
+fix-*.sh
+remove-*.sh

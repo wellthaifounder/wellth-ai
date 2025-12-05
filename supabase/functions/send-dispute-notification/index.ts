@@ -5,8 +5,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 const resend = new Resend.Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": Deno.env.get('ALLOWED_ORIGIN') || 'https://wellth.ai',
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Credentials': 'true',
 };
 
 interface NotificationRequest {
@@ -21,14 +23,19 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    const requestId = crypto.randomUUID();
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      throw new Error("Missing required environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     const { disputeId, notificationType, email: providedEmail }: NotificationRequest = await req.json();
 
-    console.log(`Processing ${notificationType} notification for dispute ${disputeId}`);
+    console.log(`[${requestId}] Processing dispute notification: ${notificationType}`);
 
     // Fetch dispute details
     const { data: dispute, error: disputeError } = await supabase

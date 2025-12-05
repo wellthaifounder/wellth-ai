@@ -1,8 +1,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://wellth.ai',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Credentials': 'true',
 };
 
 interface BillError {
@@ -26,6 +28,7 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const requestId = crypto.randomUUID();
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
@@ -52,7 +55,7 @@ Deno.serve(async (req) => {
       throw new Error('Missing required parameters');
     }
 
-    console.log(`Analyzing bill for invoice ${invoiceId}, receipt ${receiptId}`);
+    console.log(`[${requestId}] Analyzing medical bill`);
 
     // Get receipt file
     const { data: receipt, error: receiptError } = await supabase
@@ -226,6 +229,7 @@ IMPORTANT:
     // Extract JSON from markdown code blocks if present
     let analysisResult: AnalysisResult;
     try {
+    const requestId = crypto.randomUUID();
       const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) || 
                        content.match(/```\s*([\s\S]*?)\s*```/);
       const jsonText = jsonMatch ? jsonMatch[1] : content;
@@ -320,6 +324,7 @@ IMPORTANT:
 
     // Sync provider data in the background
     try {
+    const requestId = crypto.randomUUID();
       await supabase.functions.invoke('sync-provider-data', {
         body: { 
           invoiceId,

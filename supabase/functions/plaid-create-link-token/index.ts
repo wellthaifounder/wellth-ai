@@ -2,8 +2,10 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://wellth.ai',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Credentials': 'true',
 };
 
 serve(async (req) => {
@@ -12,6 +14,7 @@ serve(async (req) => {
   }
 
   try {
+    const requestId = crypto.randomUUID();
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const plaidClientId = Deno.env.get('PLAID_CLIENT_ID')!;
@@ -28,7 +31,7 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    console.log('Creating Plaid link token for user:', user.id);
+    console.log(`[${requestId}] Creating Plaid link token`);
 
     // Create Plaid link token
     const response = await fetch('https://sandbox.plaid.com/link/token/create', {

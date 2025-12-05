@@ -1,9 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { decryptPlaidToken } from '../_shared/encryption.ts';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://wellth.ai',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Credentials': 'true',
 };
 
 // Comprehensive medical expense keywords for auto-categorization
@@ -61,6 +64,7 @@ serve(async (req) => {
   }
 
   try {
+    const requestId = crypto.randomUUID();
     const { connection_id, start_date, end_date } = await req.json();
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -79,12 +83,12 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    console.log('Syncing transactions for user:', user.id);
+    console.log(`[${requestId}] Syncing transactions`);
 
     // Get Plaid connection
     const { data: connection, error: connectionError } = await supabase
       .from('plaid_connections')
-      .select('*')
+      .select('encrypted_access_token, item_id, institution_name')
       .eq('id', connection_id)
       .eq('user_id', user.id)
       .single();
@@ -93,6 +97,10 @@ serve(async (req) => {
       console.error('Connection error:', connectionError);
       throw new Error('Connection not found');
     }
+
+    // Decrypt the access token
+    console.log(`[${requestId}] Decrypting Plaid access token`);
+    const access_token = await decryptPlaidToken(connection.encrypted_access_token);
 
     // Fetch transactions from Plaid
     const transactionsResponse = await fetch('https://sandbox.plaid.com/transactions/get', {
@@ -103,7 +111,7 @@ serve(async (req) => {
       body: JSON.stringify({
         client_id: plaidClientId,
         secret: plaidSecretKey,
-        access_token: connection.access_token,
+        access_token,
         start_date: start_date || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         end_date: end_date || new Date().toISOString().split('T')[0],
       }),

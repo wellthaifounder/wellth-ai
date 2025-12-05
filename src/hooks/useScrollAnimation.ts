@@ -35,9 +35,8 @@ export const useScrollAnimation = (options: UseScrollAnimationOptions = {}) => {
     observer.observe(currentRef);
 
     return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
+      // Disconnect observer to prevent memory leaks
+      observer.disconnect();
     };
   }, [threshold, rootMargin, triggerOnce]);
 
