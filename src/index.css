@@ -305,6 +305,11 @@
     transform: scale(1);
   }
 
+  /* Gradient backgrounds */
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+
   /* Staggered animations */
   .scroll-fade-in.delay-100 { transition-delay: 0.1s; }
   .scroll-fade-in.delay-200 { transition-delay: 0.2s; }
