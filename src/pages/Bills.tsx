@@ -100,27 +100,27 @@ const Bills = () => {
           invoices (
             vendor,
             amount
-          )
+          ),
+          bill_errors!bill_review_id(id, status)
         `)
         .eq('user_id', user.id)
         .order('analyzed_at', { ascending: false });
 
       if (error) throw error;
 
-      const reviewsWithCounts = await Promise.all(
-        (reviews || []).map(async (review) => {
-          const { data: errors } = await supabase
-            .from('bill_errors')
-            .select('id')
-            .eq('bill_review_id', review.id)
-            .eq('status', 'identified');
+      // Count identified errors from the joined data (no additional queries!)
+      const reviewsWithCounts = (reviews || []).map((review: any) => {
+        const identifiedErrors = (review.bill_errors || []).filter(
+          (err: any) => err.status === 'identified'
+        );
 
-          return {
-            ...review,
-            errorCount: errors?.length || 0
-          };
-        })
-      );
+        return {
+          ...review,
+          errorCount: identifiedErrors.length,
+          // Remove the raw bill_errors array to keep interface clean
+          bill_errors: undefined
+        };
+      });
 
       return reviewsWithCounts;
     }

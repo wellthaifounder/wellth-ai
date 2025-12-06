@@ -27,7 +27,7 @@ export default function BillReviews() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Fetch reviews with invoice data
+      // Fetch reviews with invoice data and error counts in a single query
       const { data: reviews, error } = await supabase
         .from('bill_reviews')
         .select(`
@@ -35,30 +35,27 @@ export default function BillReviews() {
           invoices (
             vendor,
             amount
-          )
+          ),
+          bill_errors!bill_review_id(id, status)
         `)
         .eq('user_id', user.id)
         .order('analyzed_at', { ascending: false });
 
       if (error) throw error;
 
-      // Fetch error counts for each review
-      const reviewsWithCounts = await Promise.all(
-        (reviews || []).map(async (review) => {
-          const { data: errors, error: errorsError } = await supabase
-            .from('bill_errors')
-            .select('id')
-            .eq('bill_review_id', review.id)
-            .eq('status', 'identified');
+      // Count identified errors from the joined data (no additional queries!)
+      const reviewsWithCounts = (reviews || []).map((review: any) => {
+        const identifiedErrors = (review.bill_errors || []).filter(
+          (err: any) => err.status === 'identified'
+        );
 
-          if (errorsError) throw errorsError;
-
-          return {
-            ...review,
-            errorCount: errors?.length || 0
-          };
-        })
-      );
+        return {
+          ...review,
+          errorCount: identifiedErrors.length,
+          // Remove the raw bill_errors array to keep interface clean
+          bill_errors: undefined
+        };
+      });
 
       return reviewsWithCounts;
     }
