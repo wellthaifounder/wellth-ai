@@ -25,46 +25,34 @@ export default function ProviderDirectory() {
   });
   const [insurancePlanFilter, setInsurancePlanFilter] = useState('all');
 
-  const { data: providers, isLoading } = useQuery({
-    queryKey: ['providers'],
+  const { data: filteredProviders, isLoading } = useQuery({
+    queryKey: ['providers', filters.searchQuery, filters.provider, insurancePlanFilter],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('providers')
         .select('id, name, city, state, insurance_networks, billing_accuracy_score, total_bills_analyzed, provider_type, overall_rating')
         .order('billing_accuracy_score', { ascending: false });
 
+      // Apply search filter at database level (case-insensitive)
+      if (filters.searchQuery) {
+        query = query.or(`name.ilike.%${filters.searchQuery}%,city.ilike.%${filters.searchQuery}%`);
+      }
+
+      // Provider name filter
+      if (filters.provider) {
+        query = query.ilike('name', `%${filters.provider}%`);
+      }
+
+      // Insurance plan filter (using PostgreSQL array contains)
+      if (insurancePlanFilter !== 'all') {
+        query = query.contains('insurance_networks', [insurancePlanFilter]);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
-      return data;
+      return data || [];
     }
   });
-
-  // Apply filters
-  const filteredProviders = useMemo(() => {
-    if (!providers) return [];
-
-    return providers.filter(provider => {
-      // Search query
-      if (filters.searchQuery) {
-        const query = filters.searchQuery.toLowerCase();
-        const matchesName = provider.name.toLowerCase().includes(query);
-        const matchesCity = provider.city?.toLowerCase().includes(query);
-        if (!matchesName && !matchesCity) return false;
-      }
-
-      // Provider filter (duplicate but kept for consistency)
-      if (filters.provider && !provider.name.toLowerCase().includes(filters.provider.toLowerCase())) {
-        return false;
-      }
-      
-      // Insurance plan filter
-      if (insurancePlanFilter !== 'all') {
-        const hasInsurance = provider.insurance_networks?.includes(insurancePlanFilter);
-        if (!hasInsurance) return false;
-      }
-
-      return true;
-    });
-  }, [providers, filters, insurancePlanFilter]);
 
   const topPerformers = filteredProviders?.slice(0, 5) || [];
   const avgAccuracy = filteredProviders?.reduce((sum, p) => sum + Number(p.billing_accuracy_score), 0) / (filteredProviders?.length || 1);
