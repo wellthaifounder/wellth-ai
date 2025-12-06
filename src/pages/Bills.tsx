@@ -79,7 +79,8 @@ const Bills = () => {
           )
         `)
         .eq('user_id', user.id)
-        .order("date", { ascending: false });
+        .order("date", { ascending: false })
+        .limit(500); // Limit to most recent 500 bills for performance
 
       if (error) throw error;
       return data as BillWithReview[];

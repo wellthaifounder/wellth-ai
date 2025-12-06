@@ -95,7 +95,8 @@ const Reports = () => {
       let query = supabase
         .from("invoices")
         .select("*")
-        .order("date", { ascending: true });
+        .order("date", { ascending: true })
+        .limit(1000); // Prevent loading excessive data for performance
 
       const startDate = getDateRangeFilter();
       if (startDate) {
