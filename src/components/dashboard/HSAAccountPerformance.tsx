@@ -16,46 +16,54 @@ export function HSAAccountPerformance() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      const stats = await Promise.all(
-        accounts.map(async (account) => {
-          // Get invoices for this account
-          const { data: invoices } = await supabase
-            .from("invoices")
-            .select("amount, is_reimbursed")
-            .eq("user_id", user.id)
-            .eq("hsa_account_id", account.id);
+      const accountIds = accounts.map(a => a.id);
 
-          // Get payment transactions for this account
-          const { data: payments } = await supabase
-            .from("payment_transactions")
-            .select("amount")
-            .eq("user_id", user.id)
-            .eq("hsa_account_id", account.id);
+      // Fetch all data in parallel (3 queries total instead of 3*N)
+      const [
+        { data: allInvoices },
+        { data: allPayments },
+        { data: allSplits }
+      ] = await Promise.all([
+        supabase
+          .from("invoices")
+          .select("amount, is_reimbursed, hsa_account_id")
+          .eq("user_id", user.id)
+          .in("hsa_account_id", accountIds),
+        supabase
+          .from("payment_transactions")
+          .select("amount, hsa_account_id")
+          .eq("user_id", user.id)
+          .in("hsa_account_id", accountIds),
+        supabase
+          .from("transaction_splits")
+          .select("amount, hsa_account_id")
+          .in("hsa_account_id", accountIds)
+      ]);
 
-          // Get split transactions for this account
-          const { data: splits } = await supabase
-            .from("transaction_splits")
-            .select("amount")
-            .eq("hsa_account_id", account.id);
+      // Group data by account ID and calculate stats
+      const stats = accounts.map((account) => {
+        const invoices = (allInvoices || []).filter(inv => inv.hsa_account_id === account.id);
+        const payments = (allPayments || []).filter(p => p.hsa_account_id === account.id);
+        const splits = (allSplits || []).filter(s => s.hsa_account_id === account.id);
 
-          const totalExpenses = invoices?.reduce((sum, inv) => sum + Number(inv.amount), 0) || 0;
-          const reimbursed = invoices?.filter(inv => inv.is_reimbursed)
-            .reduce((sum, inv) => sum + Number(inv.amount), 0) || 0;
-          const unreimbursed = totalExpenses - reimbursed;
-          const paymentsTotal = payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
-          const splitsTotal = splits?.reduce((sum, s) => sum + Number(s.amount), 0) || 0;
+        const totalExpenses = invoices.reduce((sum, inv) => sum + Number(inv.amount), 0);
+        const reimbursed = invoices
+          .filter(inv => inv.is_reimbursed)
+          .reduce((sum, inv) => sum + Number(inv.amount), 0);
+        const unreimbursed = totalExpenses - reimbursed;
+        const paymentsTotal = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+        const splitsTotal = splits.reduce((sum, s) => sum + Number(s.amount), 0);
 
-          return {
-            account,
-            totalExpenses,
-            reimbursed,
-            unreimbursed,
-            paymentsTotal,
-            splitsTotal,
-            taxSavings: totalExpenses * 0.22, // Assuming 22% tax bracket
-          };
-        })
-      );
+        return {
+          account,
+          totalExpenses,
+          reimbursed,
+          unreimbursed,
+          paymentsTotal,
+          splitsTotal,
+          taxSavings: totalExpenses * 0.22, // Assuming 22% tax bracket
+        };
+      });
 
       return stats;
     },
