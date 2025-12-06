@@ -6,6 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, X, FileText, Image as ImageIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { validateFiles } from "@/utils/fileValidation";
 
 interface FileWithMetadata {
   file: File;
@@ -34,16 +36,40 @@ export function MultiFileUpload({ onFilesChange, disabled }: MultiFileUploadProp
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
 
-    const newFiles: FileWithMetadata[] = Array.from(e.target.files).map((file) => ({
-      file,
-      documentType: "receipt",
-      description: "",
-      id: Math.random().toString(36).substring(7),
-    }));
+    const selectedFiles = Array.from(e.target.files);
 
-    const updatedFiles = [...files, ...newFiles];
-    setFiles(updatedFiles);
-    onFilesChange(updatedFiles);
+    // Validate files before adding
+    const { valid, invalid } = validateFiles(selectedFiles);
+
+    // Show error for invalid files
+    if (invalid.length > 0) {
+      const errorMessages = invalid.map(({ file, errors }) =>
+        `${file.name}: ${errors[0]}`
+      ).join('\n');
+
+      toast.error(
+        `${invalid.length} file(s) rejected:\n${errorMessages}`,
+        { duration: 5000 }
+      );
+    }
+
+    // Add valid files
+    if (valid.length > 0) {
+      const newFiles: FileWithMetadata[] = valid.map((file) => ({
+        file,
+        documentType: "receipt",
+        description: "",
+        id: Math.random().toString(36).substring(7),
+      }));
+
+      const updatedFiles = [...files, ...newFiles];
+      setFiles(updatedFiles);
+      onFilesChange(updatedFiles);
+
+      if (valid.length > 0 && invalid.length > 0) {
+        toast.success(`${valid.length} file(s) added successfully`);
+      }
+    }
 
     // Reset input
     e.target.value = "";
@@ -73,7 +99,7 @@ export function MultiFileUpload({ onFilesChange, disabled }: MultiFileUploadProp
           <Input
             id="file-upload"
             type="file"
-            accept="image/*,.pdf"
+            accept=".jpg,.jpeg,.png,.pdf,.gif,.webp,image/jpeg,image/png,application/pdf,image/gif,image/webp"
             multiple
             onChange={handleFileSelect}
             disabled={disabled}
