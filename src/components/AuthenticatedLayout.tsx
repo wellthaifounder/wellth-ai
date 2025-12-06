@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 import { BottomTabNavigation } from "@/components/BottomTabNavigation";
 import { WellbieChat } from "@/components/WellbieChat";
+import { useSessionTimeout } from "@/hooks/useSessionTimeout";
 
 interface AuthenticatedLayoutProps {
   children: ReactNode;
@@ -12,12 +13,15 @@ interface AuthenticatedLayoutProps {
   activeDisputes?: number;
 }
 
-export const AuthenticatedLayout = ({ 
-  children, 
+export const AuthenticatedLayout = ({
+  children,
   unreviewedTransactions = 0,
   pendingReviews = 0,
   activeDisputes = 0
 }: AuthenticatedLayoutProps) => {
+  // Enable session timeout for security (15 min inactivity, 2 min warning)
+  useSessionTimeout(15, 2);
+
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full">
