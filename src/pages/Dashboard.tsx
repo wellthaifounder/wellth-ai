@@ -90,7 +90,7 @@ const Dashboard = () => {
 
       const { data: invoices, error } = await supabase
         .from("invoices")
-        .select("*")
+        .select("id, amount, is_hsa_eligible, invoice_date, date")
         .order("date", { ascending: false });
 
       if (error) throw error;

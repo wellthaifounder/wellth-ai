@@ -94,7 +94,7 @@ const Reports = () => {
     try {
       let query = supabase
         .from("invoices")
-        .select("*")
+        .select("date, amount, category, is_hsa_eligible, is_reimbursed, payment_method_id")
         .order("date", { ascending: true })
         .limit(1000); // Prevent loading excessive data for performance
 
@@ -116,7 +116,7 @@ const Reports = () => {
 
       const { data: paymentMethods } = await supabase
         .from("payment_methods")
-        .select("*");
+        .select("id, name, rewards_rate");
 
       if (error) throw error;
 

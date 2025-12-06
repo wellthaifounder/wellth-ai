@@ -30,7 +30,7 @@ export default function ProviderDirectory() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('providers')
-        .select('*')
+        .select('id, name, city, state, insurance_networks, billing_accuracy_score, total_bills_analyzed, provider_type, overall_rating')
         .order('billing_accuracy_score', { ascending: false });
 
       if (error) throw error;
