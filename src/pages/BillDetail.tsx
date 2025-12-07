@@ -58,6 +58,11 @@ export default function BillDetail() {
     queryKey: ['bill', id],
     queryFn: async () => {
       if (isNewBill) return null;
+
+      // Get current user for ownership verification
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       const { data, error } = await supabase
         .from('invoices')
         .select(`
@@ -79,9 +84,11 @@ export default function BillDetail() {
           )
         `)
         .eq('id', id)
+        .eq('user_id', user.id) // Explicit ownership check
         .single();
 
       if (error) throw error;
+      if (!data) throw new Error('Bill not found or access denied');
       return data;
     },
     enabled: !isNewBill && !!id
