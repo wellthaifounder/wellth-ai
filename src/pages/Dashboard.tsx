@@ -3,6 +3,7 @@ import { BillReviewCard } from "@/components/bills/BillReviewCard";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { analytics } from "@/lib/analytics";
+import { logError } from "@/utils/errorHandler";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart3 } from "lucide-react";
@@ -223,7 +224,7 @@ const Dashboard = () => {
 
       setPendingReviews(reviewsWithCounts);
     } catch (error) {
-      console.error("Failed to fetch bill reviews:", error);
+      logError("Failed to fetch bill reviews", error);
     }
   };
 
