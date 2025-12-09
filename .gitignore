@@ -28,3 +28,4 @@ dev-dist/
 add-cors-headers.*
 fix-*.sh
 remove-*.sh
+supabase/.temp/

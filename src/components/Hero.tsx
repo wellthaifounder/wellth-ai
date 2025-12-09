@@ -39,15 +39,15 @@ export const Hero = () => {
             className={`text-center space-y-4 sm:space-y-6 scroll-fade-in ${heroVisible ? 'visible' : ''}`}
           >
             <h1 id="hero-heading" className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl xl:text-6xl leading-tight px-4 sm:px-0">
-              Turn Healthcare Complexity
+              Medical Bills Overcharged You.
               <span className="block bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent mt-2">
-                Into Simple Savings
+                We'll Prove It.
               </span>
             </h1>
-            
+
             <p className="text-base sm:text-lg lg:text-xl text-white/90 leading-relaxed max-w-3xl mx-auto px-4 sm:px-6">
-              Medical bills are confusing. Payment strategies are overwhelming. Tax deductions slip through the cracks.
-              <span className="block mt-2 font-medium text-white">We make it simple—and save you thousands.</span>
+              Catch billing errors, optimize HSA payments, and track every tax deduction—automatically.
+              <span className="block mt-2 font-medium text-white">Join 10,000+ families who've recovered $2.4M in overcharges.</span>
             </p>
           </div>
 
@@ -80,9 +80,9 @@ export const Hero = () => {
               size="lg"
               className="w-full sm:w-auto group bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg hover:shadow-xl transition-all text-sm sm:text-base"
               onClick={handleCalculatorClick}
-              aria-label="Calculate your potential healthcare savings in 60 seconds"
+              aria-label="Find your billing errors and potential savings"
             >
-              Calculate My Savings in 60 Seconds
+              Find My Billing Errors
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Button>
             <Button

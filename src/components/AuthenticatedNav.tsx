@@ -3,12 +3,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { WellthLogo } from "@/components/WellthLogo";
-import { LogOut, Calculator, Receipt, FileText, BarChart3, Menu, Settings, Home, Building2, BookOpen } from "lucide-react";
+import { LogOut, Calculator, Receipt, FileText, BarChart3, Menu, Settings, Home, Building2, BookOpen, Wallet, DollarSign, TrendingUp, Upload } from "lucide-react";
 import { WellbieAvatar } from "@/components/WellbieAvatar";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useHSA } from "@/contexts/HSAContext";
+import { OnboardingProgressBar } from "@/components/onboarding/OnboardingProgressBar";
 
 interface AuthenticatedNavProps {
   unreviewedTransactions?: number;
@@ -40,28 +41,26 @@ export const AuthenticatedNav = ({
     setMobileMenuOpen(false);
   };
 
-  // Main navigation items for header (desktop only)
+  // Consolidated 5-category navigation
   const mainNavItems = [
-    { icon: Home, label: "Dashboard", path: "/dashboard" },
-    { icon: FileText, label: "Bills", path: "/bills" },
-    { icon: Receipt, label: "Transactions", path: "/transactions", badge: unreviewedTransactions },
-    { icon: BarChart3, label: "Reports", path: "/reports" },
-    { icon: Building2, label: "Provider Ratings", path: "/providers" },
-  ];
-
-  // Tools menu items for mobile sidebar
-  const toolsMenuItems = [
-    { icon: Calculator, label: "Savings Calculator", path: "/savings-calculator" },
+    { icon: DollarSign, label: "Money", path: "/dashboard" },
+    { icon: Receipt, label: "Bills", path: "/bills", badge: pendingReviews },
+    { icon: TrendingUp, label: "Insights", path: "/reports" },
     { icon: Building2, label: "Providers", path: "/providers" },
-    { icon: FileText, label: "Documents", path: "/documents" },
-    { icon: BookOpen, label: "HSA Eligibility", path: "/hsa-eligibility", hsaOnly: true },
-    { icon: FileText, label: "HSA Requests", path: "/reimbursement-requests", hsaOnly: true },
   ];
 
-  const visibleToolsItems = toolsMenuItems.filter(item => {
-    if (item.hsaOnly) return hasHSA;
-    return true;
-  });
+  // Sub-items for Money section
+  const moneySubItems = [
+    { icon: Home, label: "Dashboard", path: "/dashboard" },
+    { icon: Wallet, label: "Transactions", path: "/transactions", badge: unreviewedTransactions },
+    { icon: Calculator, label: "Savings Tools", path: "/savings-calculator" },
+  ];
+
+  // Sub-items for Bills section
+  const billsSubItems = [
+    { icon: Receipt, label: "Bills", path: "/bills", badge: pendingReviews },
+    { icon: FileText, label: "Documents", path: "/documents" },
+  ];
 
   const isActivePath = (path: string) => {
     if (path === "/dashboard") return location.pathname === path;
@@ -69,9 +68,10 @@ export const AuthenticatedNav = ({
   };
 
   return (
-    <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-[60] shadow-sm" aria-label="Main navigation">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between gap-4">
+    <>
+      <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-[60] shadow-sm" aria-label="Main navigation">
+        <div className="container mx-auto px-4">
+          <div className="flex h-16 items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-1">
             <button 
               onClick={() => navigate("/dashboard")}
@@ -110,10 +110,22 @@ export const AuthenticatedNav = ({
           </div>
           
           <div className="flex items-center gap-2" role="group">
+            {/* Upload Bill Button - Primary CTA */}
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => navigate("/bills/new")}
+              className="flex items-center gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
+              aria-label="Upload a new medical bill"
+            >
+              <Upload className="h-4 w-4" aria-hidden="true" />
+              <span className="hidden md:inline text-sm font-medium">Upload Bill</span>
+            </Button>
+
             {/* Wellbie Button */}
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => window.dispatchEvent(new Event('openWellbieChat'))}
               className="flex items-center gap-2"
               aria-label="Open Wellbie AI assistant"
@@ -137,8 +149,8 @@ export const AuthenticatedNav = ({
                 </SheetHeader>
                 <nav className="flex flex-col gap-4" aria-label="Mobile navigation menu">
                   <div className="space-y-2">
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">Main</h3>
-                    {mainNavItems.map((item) => (
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">Money</h3>
+                    {moneySubItems.map((item) => (
                       <Button
                         key={item.path}
                         variant="ghost"
@@ -156,10 +168,10 @@ export const AuthenticatedNav = ({
                       </Button>
                     ))}
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">Tools</h3>
-                    {visibleToolsItems.map((item) => (
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">Bills</h3>
+                    {billsSubItems.map((item) => (
                       <Button
                         key={item.path}
                         variant="ghost"
@@ -169,11 +181,43 @@ export const AuthenticatedNav = ({
                       >
                         <item.icon className="h-5 w-5 mr-3" aria-hidden="true" />
                         <span className="flex-1 text-left">{item.label}</span>
+                        {item.badge && item.badge > 0 && (
+                          <span className="bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                            {item.badge}
+                          </span>
+                        )}
                       </Button>
                     ))}
                   </div>
-                  
+
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">Insights</h3>
+                    <Button
+                      variant="ghost"
+                      className="justify-start w-full"
+                      onClick={() => handleNavigation("/reports")}
+                      aria-label="Reports"
+                    >
+                      <BarChart3 className="h-5 w-5 mr-3" aria-hidden="true" />
+                      <span className="flex-1 text-left">Reports</span>
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">Providers</h3>
+                    <Button
+                      variant="ghost"
+                      className="justify-start w-full"
+                      onClick={() => handleNavigation("/providers")}
+                      aria-label="Provider Directory"
+                    >
+                      <Building2 className="h-5 w-5 mr-3" aria-hidden="true" />
+                      <span className="flex-1 text-left">Provider Directory</span>
+                    </Button>
+                  </div>
+
                   <div className="border-t pt-4 space-y-2">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">Account</h3>
                     <Button
                       variant="ghost"
                       className="justify-start w-full"
@@ -203,5 +247,8 @@ export const AuthenticatedNav = ({
         </div>
       </div>
     </nav>
+
+    <OnboardingProgressBar />
+    </>
   );
 };

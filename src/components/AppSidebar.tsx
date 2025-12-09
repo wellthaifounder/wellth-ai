@@ -1,4 +1,4 @@
-import { Calculator, Receipt, FileText, BarChart3, Wallet, Building2, BookOpen, Settings, MessageSquare, Shield } from "lucide-react";
+import { Calculator, Receipt, FileText, BarChart3, Wallet, Building2, BookOpen, Settings, MessageSquare, Shield, DollarSign, Home, TrendingUp } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useHSA } from "@/contexts/HSAContext";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -29,16 +29,24 @@ interface MenuItem {
   hsaOnly?: boolean;
 }
 
-// Organized menu structure with logical grouping
-const billsMenuItems: MenuItem[] = [
-  { icon: Receipt, label: "Bills", path: "/bills", badgeKey: null },
+// Consolidated 5-category navigation structure
+const moneyMenuItems: MenuItem[] = [
+  { icon: Home, label: "Dashboard", path: "/dashboard", badgeKey: null },
+  { icon: Wallet, label: "Transactions", path: "/transactions", badgeKey: "unreviewedTransactions" },
+  { icon: Calculator, label: "Savings Tools", path: "/savings-calculator", badgeKey: null },
 ];
 
-const toolsMenuItems: MenuItem[] = [
-  { icon: Calculator, label: "Savings Calculator", path: "/savings-calculator", badgeKey: null, hsaOnly: true },
+const billsMenuItems: MenuItem[] = [
+  { icon: Receipt, label: "Bills", path: "/bills", badgeKey: "pendingReviews" },
   { icon: FileText, label: "Documents", path: "/documents", badgeKey: null },
-  { icon: BookOpen, label: "HSA Eligibility", path: "/hsa-eligibility", badgeKey: null, hsaOnly: true },
-  { icon: Wallet, label: "HSA Requests", path: "/reimbursement-requests", badgeKey: null, hsaOnly: true },
+];
+
+const insightsMenuItems: MenuItem[] = [
+  { icon: BarChart3, label: "Reports", path: "/reports", badgeKey: null },
+];
+
+const providersMenuItems: MenuItem[] = [
+  { icon: Building2, label: "Provider Directory", path: "/providers", badgeKey: null },
 ];
 
 export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, activeDisputes = 0 }: AppSidebarProps) {
@@ -96,37 +104,10 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarContent>
+        {renderMenuSection(moneyMenuItems, "Money")}
         {renderMenuSection(billsMenuItems, "Bills")}
-        {renderMenuSection(toolsMenuItems, "Tools")}
-        
-        <SidebarGroup>
-          <SidebarGroupLabel>Provider Ratings</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Provider Ratings">
-                  <NavLink to="/providers" className="relative">
-                    <Building2 className="h-4 w-4" />
-                    {open && (
-                      <span className="flex items-center gap-2">
-                        Provider Ratings
-                        <Badge variant="secondary" className="text-[10px] px-1 py-0">Beta</Badge>
-                      </span>
-                    )}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Reports">
-                  <NavLink to="/reports">
-                    <BarChart3 className="h-4 w-4" />
-                    {open && <span>Reports</span>}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {renderMenuSection(insightsMenuItems, "Insights")}
+        {renderMenuSection(providersMenuItems, "Providers")}
 
         <SidebarGroup className="mt-auto">
           <SidebarGroupLabel>Account</SidebarGroupLabel>

@@ -12,6 +12,8 @@ import { useNavigate } from "react-router-dom";
 import { WellthLogo } from "@/components/WellthLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useHSA } from "@/contexts/HSAContext";
+import { HSAUpgradePrompt } from "@/components/HSAUpgradePrompt";
 
 const HSA_CATEGORIES = [
   "Doctor Visit",
@@ -29,6 +31,7 @@ const HSA_CATEGORIES = [
 
 const PrePurchaseDecision = () => {
   const navigate = useNavigate();
+  const { hasHSA } = useHSA();
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
   const [paymentStrategy, setPaymentStrategy] = useState("immediate");
@@ -342,7 +345,17 @@ const PrePurchaseDecision = () => {
           {showRecommendation && recommendation && (
             <>
               <PaymentRecommendation recommendation={recommendation} />
-              
+
+              {/* Show HSA upgrade prompt for non-HSA users when expense is HSA-eligible */}
+              {!hasHSA && category !== "Not HSA Eligible" && (
+                <HSAUpgradePrompt
+                  expenseAmount={parseFloat(amount)}
+                  context="calculator"
+                  variant="default"
+                  title="💡 Unlock Advanced HSA Strategy"
+                />
+              )}
+
               <div className="flex gap-3">
                 <Button 
                   onClick={handleSaveDecision}

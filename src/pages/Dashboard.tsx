@@ -25,6 +25,9 @@ import { FeatureTooltip } from "@/components/onboarding/FeatureTooltip";
 import { WelcomeDialog } from "@/components/onboarding/WelcomeDialog";
 import { QuickActionBar } from "@/components/dashboard/QuickActionBar";
 import { HSAAccountPerformance } from "@/components/dashboard/HSAAccountPerformance";
+import { TotalValueCard } from "@/components/dashboard/TotalValueCard";
+import { HSAHealthCheck } from "@/components/dashboard/HSAHealthCheck";
+import { InsurancePlanPrompt } from "@/components/dashboard/InsurancePlanPrompt";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -323,42 +326,59 @@ const Dashboard = () => {
                 </Button>
               </div>
 
-              {/* Quick Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Total Value Created - Hero Metric */}
+              <TotalValueCard
+                taxSavings={stats.taxSavings}
+                disputeSavings={stats.disputeSavings}
+                rewardsEarned={stats.rewardsEarned}
+                paymentOptimizations={0}
+                hasHSA={hasHSA}
+              />
+
+              {/* Quick Stats - Secondary Metrics */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <Card>
                   <CardContent className="pt-4 pb-4">
                     <div className="text-2xl font-bold">${stats.totalExpenses.toFixed(0)}</div>
                     <p className="text-xs text-muted-foreground mt-1">Total Tracked</p>
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardContent className="pt-4 pb-4">
-                    <div className="text-2xl font-bold text-green-600">${stats.disputeSavings.toFixed(0)}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Saved</p>
-                  </CardContent>
-                </Card>
                 {hasHSA && (
                   <Card>
                     <CardContent className="pt-4 pb-4">
                       <div className="text-2xl font-bold text-primary">${stats.hsaClaimableAmount.toFixed(0)}</div>
-                      <p className="text-xs text-muted-foreground mt-1">HSA Claimable</p>
+                      <p className="text-xs text-muted-foreground mt-1">Ready to Claim</p>
                     </CardContent>
                   </Card>
                 )}
                 <Card>
                   <CardContent className="pt-4 pb-4">
-                    <div className="text-2xl font-bold text-amber-600">${stats.rewardsEarned.toFixed(0)}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Rewards Earned</p>
+                    <div className="text-2xl font-bold">{stats.expenseCount}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Bills Tracked</p>
                   </CardContent>
                 </Card>
               </div>
 
               {/* Quick Actions */}
-              <QuickActionBar 
-                hasHSA={hasHSA} 
+              <QuickActionBar
+                hasHSA={hasHSA}
                 hsaClaimable={stats.hsaClaimableAmount}
                 unreviewedTransactions={stats.unreviewedTransactions}
               />
+
+              {/* HSA Health Check - Adaptive Widget */}
+              <HSAHealthCheck
+                hasHSA={hasHSA}
+                hsaBalance={stats.totalExpenses * 0.5} // Mock data - replace with actual HSA balance
+                ytdContributions={stats.totalExpenses * 0.3} // Mock data
+                maxContribution={4150}
+                unreimbursedExpenses={stats.hsaClaimableAmount}
+                investedAmount={stats.totalExpenses * 0.25} // Mock data
+                investedPercentage={50} // Mock data
+              />
+
+              {/* Insurance Plan Prompt - Collects user insurance info */}
+              <InsurancePlanPrompt />
 
               {/* HSA Account Performance */}
               {hasHSA && <HSAAccountPerformance />}

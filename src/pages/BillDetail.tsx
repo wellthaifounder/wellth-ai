@@ -21,6 +21,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { useHSA } from "@/contexts/HSAContext";
+import { HSAUpgradePrompt } from "@/components/HSAUpgradePrompt";
 
 const HSA_ELIGIBLE_CATEGORIES = [
   "Doctor Visit",
@@ -38,6 +40,7 @@ const HSA_ELIGIBLE_CATEGORIES = [
 export default function BillDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { hasHSA } = useHSA();
   const isNewBill = id === 'new';
   const [activeTab, setActiveTab] = useState("overview");
   const [newFiles, setNewFiles] = useState<any[]>([]);
@@ -529,6 +532,15 @@ export default function BillDetail() {
                       rows={4}
                     />
                   </div>
+
+                  {/* Show HSA upgrade prompt for non-HSA users when expense is HSA-eligible */}
+                  {!hasHSA && formData.isHsaEligible && formData.totalAmount && (
+                    <HSAUpgradePrompt
+                      expenseAmount={parseFloat(formData.totalAmount)}
+                      context="bill-detail"
+                      variant="compact"
+                    />
+                  )}
 
                   {!isNewBill && breakdown && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted rounded-lg">
