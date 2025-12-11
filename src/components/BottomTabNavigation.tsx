@@ -1,17 +1,18 @@
 import { NavLink } from "@/components/NavLink";
-import { Home, FileText, Receipt, BarChart3, Building2 } from "lucide-react";
+import { DollarSign, Receipt, TrendingUp, Building2, Settings } from "lucide-react";
 
 interface BottomTabNavigationProps {
   unreviewedTransactions?: number;
 }
 
 export const BottomTabNavigation = ({ unreviewedTransactions = 0 }: BottomTabNavigationProps) => {
+  // Matching the 5-category structure: Money, Bills, Insights, Providers, Account
   const tabs = [
-    { icon: Home, label: "Dashboard", path: "/dashboard" },
-    { icon: FileText, label: "Bills", path: "/bills" },
-    { icon: Receipt, label: "Transactions", path: "/transactions", badge: unreviewedTransactions },
-    { icon: BarChart3, label: "Reports", path: "/reports" },
-    { icon: Building2, label: "Ratings", path: "/providers" },
+    { icon: DollarSign, label: "Money", path: "/dashboard" },
+    { icon: Receipt, label: "Bills", path: "/bills" },
+    { icon: TrendingUp, label: "Insights", path: "/reports" },
+    { icon: Building2, label: "Providers", path: "/providers" },
+    { icon: Settings, label: "Account", path: "/settings" },
   ];
 
   return (
