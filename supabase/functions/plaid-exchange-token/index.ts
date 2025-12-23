@@ -3,10 +3,23 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { encryptPlaidToken } from '../_shared/encryption.ts';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://wellth.ai',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://wellth-ai.app',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Credentials': 'true',
+};
+
+// Helper function to get Plaid URL based on environment
+const getPlaidUrl = (): string => {
+  const env = Deno.env.get('PLAID_ENV') || 'sandbox';
+
+  const urls: Record<string, string> = {
+    'sandbox': 'https://sandbox.plaid.com',
+    'development': 'https://development.plaid.com',
+    'production': 'https://production.plaid.com'
+  };
+
+  return urls[env] || urls['sandbox'];
 };
 
 serve(async (req) => {
@@ -17,11 +30,12 @@ serve(async (req) => {
   try {
     const requestId = crypto.randomUUID();
     const { public_token } = await req.json();
-    
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const plaidClientId = Deno.env.get('PLAID_CLIENT_ID')!;
-    const plaidSecretKey = Deno.env.get('PLAID_SANDBOX_SECRET_KEY')!
+    const plaidSecretKey = Deno.env.get('PLAID_SECRET')!;
+    const plaidBaseUrl = getPlaidUrl();
     
     const supabase = createClient(supabaseUrl, supabaseKey);
     
@@ -34,10 +48,10 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    console.log(`[${requestId}] Exchanging public token`);
+    console.log(`[${requestId}] Exchanging public token using ${plaidBaseUrl}`);
 
     // Exchange public token for access token
-    const exchangeResponse = await fetch('https://sandbox.plaid.com/item/public_token/exchange', {
+    const exchangeResponse = await fetch(`${plaidBaseUrl}/item/public_token/exchange`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -59,7 +73,7 @@ serve(async (req) => {
     const { access_token, item_id } = exchangeData;
 
     // Get account info
-    const accountsResponse = await fetch('https://sandbox.plaid.com/accounts/get', {
+    const accountsResponse = await fetch(`${plaidBaseUrl}/accounts/get`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

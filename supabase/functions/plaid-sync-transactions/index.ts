@@ -3,10 +3,23 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { decryptPlaidToken } from '../_shared/encryption.ts';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://wellth.ai',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://wellth-ai.app',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Credentials': 'true',
+};
+
+// Helper function to get Plaid URL based on environment
+const getPlaidUrl = (): string => {
+  const env = Deno.env.get('PLAID_ENV') || 'sandbox';
+
+  const urls: Record<string, string> = {
+    'sandbox': 'https://sandbox.plaid.com',
+    'development': 'https://development.plaid.com',
+    'production': 'https://production.plaid.com'
+  };
+
+  return urls[env] || urls['sandbox'];
 };
 
 // Comprehensive medical expense keywords for auto-categorization
@@ -70,8 +83,9 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const plaidClientId = Deno.env.get('PLAID_CLIENT_ID')!;
-    const plaidSecretKey = Deno.env.get('PLAID_SANDBOX_SECRET_KEY')!;
-    
+    const plaidSecretKey = Deno.env.get('PLAID_SECRET')!;
+    const plaidBaseUrl = getPlaidUrl();
+
     const supabase = createClient(supabaseUrl, supabaseKey);
     
     const authHeader = req.headers.get('Authorization')!;
@@ -103,7 +117,8 @@ serve(async (req) => {
     const access_token = await decryptPlaidToken(connection.encrypted_access_token);
 
     // Fetch transactions from Plaid
-    const transactionsResponse = await fetch('https://sandbox.plaid.com/transactions/get', {
+    console.log(`[${requestId}] Fetching transactions from ${plaidBaseUrl}`);
+    const transactionsResponse = await fetch(`${plaidBaseUrl}/transactions/get`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
