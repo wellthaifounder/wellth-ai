@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Navigation Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            border: 2px solid #e5e7eb;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .pass { border-color: #10b981; background: #d1fae5; }
+        .fail { border-color: #ef4444; background: #fee2e2; }
+        .status { font-weight: bold; font-size: 1.2em; margin-bottom: 10px; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover { background: #2563eb; }
+        .result { margin-top: 15px; padding: 10px; background: #f3f4f6; border-radius: 4px; font-family: monospace; }
+        .instructions { background: #fef3c7; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #f59e0b; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Navigation Visibility Test</h1>
+    <p>This page will help diagnose why you're not seeing the navigation sidebar.</p>
+
+    <div class="instructions">
+        <strong>📱 IMPORTANT:</strong> The sidebar only shows on screens wider than <strong>1024px</strong>.
+        If your window is narrower, you'll see a mobile menu instead.
+    </div>
+
+    <div class="test-section" id="width-test">
+        <div class="status">Test 1: Screen Width</div>
+        <button onclick="checkWidth()">Check My Screen Width</button>
+        <div id="width-result" class="result"></div>
+    </div>
+
+    <div class="test-section" id="breakpoint-test">
+        <div class="status">Test 2: Tailwind Breakpoint</div>
+        <button onclick="checkBreakpoint()">Check if 'lg' breakpoint is active</button>
+        <div id="breakpoint-result" class="result"></div>
+    </div>
+
+    <div class="test-section" id="recommendation">
+        <div class="status">💡 Recommendation</div>
+        <div id="recommendation-text" class="result">
+            Click the buttons above to see recommendations...
+        </div>
+    </div>
+
+    <div class="instructions">
+        <h3>What Should You See?</h3>
+        <ul>
+            <li><strong>Desktop (≥ 1024px):</strong> Left sidebar with 5 sections: Money, Bills, Insights, Providers, Account</li>
+            <li><strong>Mobile/Tablet (< 1024px):</strong> Hamburger menu (☰) in top-right corner</li>
+        </ul>
+    </div>
+
+    <script>
+        function checkWidth() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const result = document.getElementById('width-result');
+            const section = document.getElementById('width-test');
+
+            result.innerHTML = `
+                <strong>Your Screen:</strong><br>
+                Width: ${width}px<br>
+                Height: ${height}px<br>
+                <br>
+                <strong>Required for sidebar:</strong> ≥ 1024px wide<br>
+                <br>
+                <strong>Status:</strong> ${width >= 1024 ? '✅ WIDE ENOUGH - Sidebar should be visible!' : '❌ TOO NARROW - You will see mobile menu instead'}
+            `;
+
+            if (width >= 1024) {
+                section.classList.add('pass');
+                section.classList.remove('fail');
+            } else {
+                section.classList.add('fail');
+                section.classList.remove('pass');
+            }
+
+            updateRecommendation(width);
+        }
+
+        function checkBreakpoint() {
+            const isLg = window.matchMedia('(min-width: 1024px)').matches;
+            const result = document.getElementById('breakpoint-result');
+            const section = document.getElementById('breakpoint-test');
+
+            result.innerHTML = `
+                <strong>Tailwind 'lg' breakpoint (≥ 1024px):</strong><br>
+                ${isLg ? '✅ ACTIVE - Desktop layout should show' : '❌ INACTIVE - Mobile layout is active'}
+            `;
+
+            if (isLg) {
+                section.classList.add('pass');
+                section.classList.remove('fail');
+            } else {
+                section.classList.add('fail');
+                section.classList.remove('pass');
+            }
+        }
+
+        function updateRecommendation(width) {
+            const rec = document.getElementById('recommendation-text');
+
+            if (width >= 1280) {
+                rec.innerHTML = `
+                    <strong>✅ Perfect!</strong> Your screen is wide enough (${width}px).<br><br>
+                    If you still don't see the sidebar:<br>
+                    1. Hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)<br>
+                    2. Clear browser cache<br>
+                    3. Look for the sidebar toggle button below the top nav bar<br>
+                    4. Check browser console (F12) for errors
+                `;
+            } else if (width >= 1024) {
+                rec.innerHTML = `
+                    <strong>⚠️ Barely Wide Enough</strong> (${width}px - need ≥1024px)<br><br>
+                    Try:<br>
+                    1. Maximize your browser window<br>
+                    2. Use a wider monitor if available<br>
+                    3. Zoom out (Ctrl + -)<br>
+                    4. If in Lovable, click "Open in new tab" to use full screen
+                `;
+            } else {
+                rec.innerHTML = `
+                    <strong>❌ Too Narrow</strong> (${width}px - need ≥1024px)<br><br>
+                    <strong>THIS IS WHY YOU DON'T SEE THE SIDEBAR!</strong><br><br>
+                    The sidebar is WORKING CORRECTLY - it's just hidden on narrow screens.<br><br>
+                    <strong>Solutions:</strong><br>
+                    1. <strong>Maximize your browser window</strong><br>
+                    2. <strong>Use a wider monitor</strong> (need ≥1024px)<br>
+                    3. <strong>Zoom out:</strong> Ctrl + - (Windows) or Cmd + - (Mac)<br>
+                    4. <strong>Look for the hamburger menu (☰)</strong> instead - it has the same navigation!<br>
+                    5. If in Lovable preview, click "Open in new tab" to expand<br><br>
+                    <strong>Mobile Navigation:</strong><br>
+                    Look for the hamburger icon (☰) in the top-right corner.<br>
+                    Click it to see all 5 navigation sections in a slide-out menu.
+                `;
+            }
+        }
+
+        // Auto-run tests on load
+        window.addEventListener('load', () => {
+            checkWidth();
+            checkBreakpoint();
+        });
+
+        // Re-run on resize
+        window.addEventListener('resize', () => {
+            checkWidth();
+            checkBreakpoint();
+        });
+    </script>
+</body>
+</html>

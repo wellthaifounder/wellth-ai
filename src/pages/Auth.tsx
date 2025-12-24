@@ -10,6 +10,7 @@ import { WellthLogo } from "@/components/WellthLogo";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Separator } from "@/components/ui/separator";
+import { UserIntentDialog } from "@/components/onboarding/UserIntentDialog";
 
 const signUpSchema = z.object({
   fullName: z.string().trim().min(1, "Name is required").max(100),
@@ -30,6 +31,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showReset, setShowReset] = useState(false);
+  const [showIntentDialog, setShowIntentDialog] = useState(false);
 
   // Sign up form
   const [signUpData, setSignUpData] = useState({
@@ -52,17 +54,14 @@ const Auth = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // Only show tripwire to NEW sign-ups who came from calculator
+        // Check if this is a new signup that needs intent selection
         const isNewSignup = sessionStorage.getItem('isNewSignup') === 'true';
-        const hasTripwireData = sessionStorage.getItem('estimatedSavings') && sessionStorage.getItem('calculatorData');
-        
-        if (isNewSignup && hasTripwireData) {
-          // Clear the new signup flag
-          sessionStorage.removeItem('isNewSignup');
-          navigate("/tripwire-offer");
+
+        if (isNewSignup) {
+          // Show intent dialog for new users
+          setShowIntentDialog(true);
         } else {
-          // Clear any stale flags
-          sessionStorage.removeItem('isNewSignup');
+          // Existing users go straight to dashboard
           navigate("/dashboard");
         }
       }
@@ -72,17 +71,14 @@ const Auth = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && event === "SIGNED_IN") {
-        // Only show tripwire to NEW sign-ups who came from calculator
+        // Check if this is a new signup
         const isNewSignup = sessionStorage.getItem('isNewSignup') === 'true';
-        const hasTripwireData = sessionStorage.getItem('estimatedSavings') && sessionStorage.getItem('calculatorData');
-        
-        if (isNewSignup && hasTripwireData) {
-          // Clear the new signup flag
-          sessionStorage.removeItem('isNewSignup');
-          navigate("/tripwire-offer");
+
+        if (isNewSignup) {
+          // Show intent dialog for new signups
+          setShowIntentDialog(true);
         } else {
-          // Clear any stale flags
-          sessionStorage.removeItem('isNewSignup');
+          // Existing users go straight to dashboard
           navigate("/dashboard");
         }
       }
@@ -183,6 +179,9 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
+      // Mark as new signup for Google OAuth users
+      sessionStorage.setItem('isNewSignup', 'true');
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -198,6 +197,13 @@ const Auth = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleIntentComplete = (intent: 'billing' | 'hsa' | 'both') => {
+    // Clear the new signup flag
+    sessionStorage.removeItem('isNewSignup');
+    // Navigate to dashboard
+    navigate("/dashboard");
   };
 
   if (showReset) {
@@ -412,6 +418,12 @@ const Auth = () => {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* User Intent Dialog for New Signups */}
+      <UserIntentDialog
+        open={showIntentDialog}
+        onComplete={handleIntentComplete}
+      />
     </div>
   );
 };

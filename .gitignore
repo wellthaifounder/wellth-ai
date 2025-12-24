@@ -29,3 +29,6 @@ add-cors-headers.*
 fix-*.sh
 remove-*.sh
 supabase/.temp/
+
+.vercel
+.env*.local
