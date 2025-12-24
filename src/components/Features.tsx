@@ -1,37 +1,44 @@
-import { CheckCircle2, CreditCard, FileText, PiggyBank, Sparkles, TrendingUp } from "lucide-react";
+import { AlertCircle, Shield, FileText, CheckCircle2, PiggyBank, Sparkles } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
+// Reordered to prioritize bill error detection (Bill Error Detection First strategy)
 const features = [
   {
-    icon: Sparkles,
-    title: "Never Miss a Tax Deduction",
-    description: "Automatically categorize every medical expense as tax-deductible or HSA-eligible. No more spreadsheets or guessing.",
-  },
-  {
-    icon: CreditCard,
-    title: "Maximize Every Dollar",
-    description: "Get instant recommendations on the smartest way to pay—whether that's cash, rewards card, FSA, or HSA.",
+    icon: AlertCircle,
+    title: "AI-Powered Bill Analysis",
+    description: "Automatically detect billing errors, duplicate charges, and overcharges before you pay. Our AI scans every line item.",
+    isPrimary: true,
   },
   {
     icon: FileText,
-    title: "Stress-Free Tax Time",
-    description: "All your receipts organized and instantly searchable. Export IRS-compliant reports in seconds, not hours.",
+    title: "Dispute Automation",
+    description: "Generate professional dispute letters instantly when errors are found. We handle the paperwork, you keep the savings.",
+    isPrimary: true,
   },
   {
-    icon: TrendingUp,
-    title: "Watch Your Money Grow",
-    description: "Track tax savings, rewards earned, and HSA investment growth in one beautiful dashboard.",
-  },
-  {
-    icon: PiggyBank,
-    title: "Stack Savings Automatically",
-    description: "Combine tax advantages, credit card rewards, and strategic timing to maximize every healthcare purchase.",
+    icon: Shield,
+    title: "Provider Transparency",
+    description: "Check billing accuracy scores and dispute success rates for healthcare providers before scheduling your next appointment.",
+    isPrimary: true,
   },
   {
     icon: CheckCircle2,
-    title: "Audit-Proof Records",
-    description: "All categorizations follow IRS Publication 502 with detailed documentation. Sleep easy at tax time.",
+    title: "Tax Deduction Tracking",
+    description: "Automatically categorize every medical expense as tax-deductible. Export IRS-compliant reports in seconds.",
+    isPrimary: false,
+  },
+  {
+    icon: PiggyBank,
+    title: "HSA Optimization (Bonus for HSA Users)",
+    description: "Strategic reimbursement timing and claimable balance tracking to maximize your tax-advantaged healthcare account.",
+    isPrimary: false,
+  },
+  {
+    icon: Sparkles,
+    title: "Organized Records",
+    description: "All your bills, receipts, and payments in one searchable place. Never lose a document again.",
+    isPrimary: false,
   },
 ];
 

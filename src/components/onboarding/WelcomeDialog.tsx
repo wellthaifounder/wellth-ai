@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, FileSearch, Building2, DollarSign } from "lucide-react";
+import { Sparkles, FileSearch, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface WelcomeDialogProps {
@@ -13,25 +13,20 @@ interface WelcomeDialogProps {
 export function WelcomeDialog({ open, onClose, firstName, hasHSA }: WelcomeDialogProps) {
   const navigate = useNavigate();
 
+  // Simplified to 2 core features - defer HSA feature tour
   const features = [
     {
       icon: FileSearch,
-      title: "Bill Intelligence",
-      description: "Automatically detect errors and overcharges in your medical bills",
+      title: "Upload Bills for AI Error Detection",
+      description: "Our AI automatically scans for billing errors, duplicate charges, and overcharges",
       color: "text-amber-500",
     },
     {
-      icon: Building2,
-      title: "Provider Ratings",
-      description: "Check billing accuracy scores before your next appointment",
+      icon: MessageSquare,
+      title: "File Disputes with One Click",
+      description: "Generate professional dispute letters instantly when errors are found",
       color: "text-blue-500",
     },
-    ...(hasHSA ? [{
-      icon: DollarSign,
-      title: "HSA Optimization",
-      description: "Maximize tax savings and track reimbursement opportunities",
-      color: "text-green-500",
-    }] : []),
   ];
 
   return (
@@ -65,18 +60,21 @@ export function WelcomeDialog({ open, onClose, firstName, hasHSA }: WelcomeDialo
         </div>
 
         <div className="flex flex-col gap-2">
-          <Button onClick={onClose} size="lg">
-            Start Exploring
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm"
+          <Button
             onClick={() => {
               onClose();
-              navigate("/expenses/new");
+              navigate("/bills/new");
             }}
+            size="lg"
           >
-            Add Your First Expense →
+            Upload Your First Bill
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+          >
+            I'll explore first →
           </Button>
         </div>
       </DialogContent>

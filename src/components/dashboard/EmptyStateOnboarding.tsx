@@ -1,17 +1,43 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Upload, Sparkles, CheckCircle2, TrendingUp } from "lucide-react";
+import { Upload, Sparkles, CheckCircle2, TrendingUp, DollarSign } from "lucide-react";
 
-export function EmptyStateOnboarding() {
+interface EmptyStateOnboardingProps {
+  projectedSavings?: number;
+}
+
+export function EmptyStateOnboarding({ projectedSavings }: EmptyStateOnboardingProps) {
   const navigate = useNavigate();
 
   return (
     <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
       <CardContent className="pt-8 pb-8">
         <div className="text-center space-y-6 max-w-2xl mx-auto">
+          {/* Show personalized projection if available from calculator */}
+          {projectedSavings && projectedSavings > 0 ? (
+            <div className="bg-accent/20 p-6 rounded-lg mb-6 border-2 border-accent/30">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <div className="h-12 w-12 rounded-full bg-accent flex items-center justify-center">
+                  <DollarSign className="h-6 w-6 text-accent-foreground" />
+                </div>
+              </div>
+              <h2 className="text-3xl font-bold text-accent mb-2">
+                ${projectedSavings.toLocaleString()}/year
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Your Personalized Savings Projection
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Based on your calculator results. Upload your first bill to find exact savings.
+              </p>
+            </div>
+          ) : null}
+
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold">Find Your First $380 in Savings</h2>
+            <h2 className="text-2xl font-bold">
+              {projectedSavings ? "Let's Find Those Savings" : "Find Your First $380 in Savings"}
+            </h2>
             <p className="text-muted-foreground">
               Most users discover billing errors on their first upload.
             </p>

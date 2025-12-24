@@ -31,11 +31,15 @@ import { InsurancePlanPrompt } from "@/components/dashboard/InsurancePlanPrompt"
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { hasHSA, hsaOpenedDate } = useHSA();
+  const { hasHSA, hsaOpenedDate, userIntent } = useHSA();
+
+  // Show HSA features if user selected HSA intent or actually has an HSA
+  const showHSAFeatures = userIntent === 'hsa' || userIntent === 'both' || hasHSA;
   const onboarding = useOnboarding();
   const [user, setUser] = useState<User | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [projectedSavings, setProjectedSavings] = useState<number | null>(null);
   const [stats, setStats] = useState({
     totalExpenses: 0,
     taxSavings: 0,
@@ -86,6 +90,46 @@ const Dashboard = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  // Load calculator data if available (for new users)
+  useEffect(() => {
+    const loadCalculatorData = async () => {
+      // Only load if user has 0 expenses
+      if (stats.expenseCount > 0) return;
+
+      const calculatorDataRaw = sessionStorage.getItem('calculatorData');
+      if (!calculatorDataRaw) return;
+
+      try {
+        const calculatorData = JSON.parse(calculatorDataRaw);
+
+        // Set projected savings from calculator
+        if (calculatorData.estimatedSavings) {
+          setProjectedSavings(calculatorData.estimatedSavings);
+        }
+
+        // Pre-fill HSA status from calculator if user indicated they have HSA
+        if (calculatorData.hasHSA && user) {
+          const { error } = await supabase
+            .from('profiles')
+            .update({ has_hsa: true })
+            .eq('id', user.id);
+
+          if (error) {
+            console.error('Error updating HSA status:', error);
+          }
+        }
+
+        // Clear calculator data after using it
+        sessionStorage.removeItem('calculatorData');
+        sessionStorage.removeItem('estimatedSavings');
+      } catch (error) {
+        console.error('Error loading calculator data:', error);
+      }
+    };
+
+    loadCalculatorData();
+  }, [stats.expenseCount, user]);
 
   const fetchStats = async () => {
     try {
@@ -274,7 +318,7 @@ const Dashboard = () => {
   }
 
   // Prepare compact header stats
-  const headerStats = hasHSA 
+  const headerStats = (showHSAFeatures && hasHSA)
     ? [
         { icon: "💰", value: `$${stats.hsaClaimableAmount.toFixed(0)}`, label: "Claimable", variant: "success" as const },
         { icon: "💸", value: `$${stats.taxSavings.toFixed(0)}`, label: "Tax Savings", variant: "accent" as const },
@@ -299,7 +343,7 @@ const Dashboard = () => {
           {!hsaOpenedDate && stats.expenseCount > 0 && <MissingHSADateBanner onDateSet={fetchStats} />}
           
           {isNewUser ? (
-            <EmptyStateOnboarding />
+            <EmptyStateOnboarding projectedSavings={projectedSavings} />
           ) : (
             <>
               <WelcomeDialog
@@ -343,7 +387,7 @@ const Dashboard = () => {
                     <p className="text-xs text-muted-foreground mt-1">Total Tracked</p>
                   </CardContent>
                 </Card>
-                {hasHSA && (
+                {showHSAFeatures && hasHSA && (
                   <Card>
                     <CardContent className="pt-4 pb-4">
                       <div className="text-2xl font-bold text-primary">${stats.hsaClaimableAmount.toFixed(0)}</div>
@@ -367,21 +411,23 @@ const Dashboard = () => {
               />
 
               {/* HSA Health Check - Adaptive Widget */}
-              <HSAHealthCheck
-                hasHSA={hasHSA}
-                hsaBalance={stats.totalExpenses * 0.5} // Mock data - replace with actual HSA balance
-                ytdContributions={stats.totalExpenses * 0.3} // Mock data
-                maxContribution={4150}
-                unreimbursedExpenses={stats.hsaClaimableAmount}
-                investedAmount={stats.totalExpenses * 0.25} // Mock data
-                investedPercentage={50} // Mock data
-              />
+              {showHSAFeatures && (
+                <HSAHealthCheck
+                  hasHSA={hasHSA}
+                  hsaBalance={stats.totalExpenses * 0.5} // Mock data - replace with actual HSA balance
+                  ytdContributions={stats.totalExpenses * 0.3} // Mock data
+                  maxContribution={4150}
+                  unreimbursedExpenses={stats.hsaClaimableAmount}
+                  investedAmount={stats.totalExpenses * 0.25} // Mock data
+                  investedPercentage={50} // Mock data
+                />
+              )}
 
               {/* Insurance Plan Prompt - Collects user insurance info */}
-              <InsurancePlanPrompt />
+              <InsurancePlanPrompt expenseCount={stats.expenseCount} />
 
               {/* HSA Account Performance */}
-              {hasHSA && <HSAAccountPerformance />}
+              {showHSAFeatures && hasHSA && <HSAAccountPerformance />}
 
               {/* Value Spotlight */}
               <FeatureTooltip

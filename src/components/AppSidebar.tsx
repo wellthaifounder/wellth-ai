@@ -53,8 +53,11 @@ const providersMenuItems: MenuItem[] = [
 
 export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, activeDisputes = 0 }: AppSidebarProps) {
   const { open } = useSidebar();
-  const { hasHSA } = useHSA();
+  const { hasHSA, userIntent } = useHSA();
   const { isAdmin } = useIsAdmin();
+
+  // Show HSA features if user selected HSA intent or actually has an HSA
+  const showHSAFeatures = userIntent === 'hsa' || userIntent === 'both' || hasHSA;
 
   // State for collapsible sections - default all open
   const [openSections, setOpenSections] = useState({
@@ -78,8 +81,8 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
   };
 
   const renderMenuSection = (items: MenuItem[], label: string, sectionKey: keyof typeof openSections) => {
-    // Filter HSA-only items if user doesn't have HSA
-    const filteredItems = items.filter(item => !item.hsaOnly || hasHSA);
+    // Filter HSA-only items if user doesn't have HSA features enabled
+    const filteredItems = items.filter(item => !item.hsaOnly || showHSAFeatures);
 
     if (filteredItems.length === 0) return null;
 

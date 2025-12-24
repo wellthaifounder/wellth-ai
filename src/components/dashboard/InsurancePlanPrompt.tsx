@@ -6,7 +6,11 @@ import { InsurancePlanDialog } from "@/components/onboarding/InsurancePlanDialog
 import { useInsurancePlan } from "@/hooks/useInsurancePlan";
 import { Progress } from "@/components/ui/progress";
 
-export function InsurancePlanPrompt() {
+interface InsurancePlanPromptProps {
+  expenseCount: number;
+}
+
+export function InsurancePlanPrompt({ expenseCount }: InsurancePlanPromptProps) {
   const [showDialog, setShowDialog] = useState(false);
   const {
     hasInsurancePlan,
@@ -16,6 +20,12 @@ export function InsurancePlanPrompt() {
     deductibleMet,
     outOfPocketMet
   } = useInsurancePlan();
+
+  // Don't show prompt until user has uploaded 3+ bills
+  // This defers insurance collection to reduce early friction
+  if (!hasInsurancePlan && expenseCount < 3) {
+    return null;
+  }
 
   // Don't show if user hasn't added insurance plan
   if (!hasInsurancePlan) {
@@ -27,12 +37,12 @@ export function InsurancePlanPrompt() {
               <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
                 <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <CardTitle className="text-lg">Add Your Insurance Plan</CardTitle>
+              <CardTitle className="text-lg">Get Accurate Deductible Tracking</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Get personalized cost estimates and see how close you are to meeting your deductible.
+              We've analyzed {expenseCount} bills for you. Add your insurance details to see exactly how much counts toward your deductible.
             </p>
 
             <div className="space-y-2">

@@ -46,8 +46,9 @@ export const Hero = () => {
             </h1>
 
             <p className="text-base sm:text-lg lg:text-xl text-white/90 leading-relaxed max-w-3xl mx-auto px-4 sm:px-6">
-              Catch billing errors, optimize HSA payments, and track every tax deduction—automatically.
+              Upload your medical bills and get instant AI-powered error detection. Find overcharges, duplicate charges, and billing mistakes—automatically.
               <span className="block mt-2 font-medium text-white">Join families taking control of their healthcare costs.</span>
+              <span className="block mt-2 text-sm text-white/70">Have an HSA? Get advanced tax-advantaged strategies included.</span>
             </p>
           </div>
 

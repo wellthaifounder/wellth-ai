@@ -27,7 +27,11 @@ type EventType =
   | 'free_to_plus_conversion'
   | 'user_retention_d7'
   | 'user_retention_d30'
-  | 'time_to_first_value';
+  | 'time_to_first_value'
+  // Cohort tracking events
+  | 'user_intent_selected'
+  | 'billing_cohort_action'
+  | 'hsa_cohort_action';
 
 interface AnalyticsEvent {
   type: EventType;
@@ -245,6 +249,50 @@ class Analytics {
       type: 'navigation_click',
       action: 'nav_click',
       label: destination,
+    });
+  }
+
+  // Cohort Analytics - Bill Error Detection First Strategy
+  trackUserIntent(intent: 'billing' | 'hsa' | 'both') {
+    this.track({
+      type: 'user_intent_selected',
+      action: 'select_intent',
+      label: intent,
+      metadata: {
+        intent,
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
+
+  trackBillingCohortAction(action: string, metadata?: Record<string, any>) {
+    this.track({
+      type: 'billing_cohort_action',
+      action,
+      metadata: {
+        cohort: 'billing',
+        ...metadata
+      }
+    });
+  }
+
+  trackHSACohortAction(action: string, metadata?: Record<string, any>) {
+    this.track({
+      type: 'hsa_cohort_action',
+      action,
+      metadata: {
+        cohort: 'hsa',
+        ...metadata
+      }
+    });
+  }
+
+  // Convenience method for tracking cohort-specific events
+  trackEvent(eventName: string, properties?: Record<string, any>) {
+    this.track({
+      type: 'button_click', // Generic type for custom events
+      action: eventName,
+      metadata: properties
     });
   }
 }
