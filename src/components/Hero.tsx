@@ -47,7 +47,7 @@ export const Hero = () => {
 
             <p className="text-base sm:text-lg lg:text-xl text-white/90 leading-relaxed max-w-3xl mx-auto px-4 sm:px-6">
               Catch billing errors, optimize HSA payments, and track every tax deduction—automatically.
-              <span className="block mt-2 font-medium text-white">Join 10,000+ families who've recovered $2.4M in overcharges.</span>
+              <span className="block mt-2 font-medium text-white">Join families taking control of their healthcare costs.</span>
             </p>
           </div>
 

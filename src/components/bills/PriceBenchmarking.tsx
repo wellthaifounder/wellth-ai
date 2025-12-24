@@ -95,6 +95,9 @@ export function PriceBenchmarking({ invoiceAmount, cptCodes = [], category }: Pr
         <p className="text-sm text-muted-foreground">
           Compare charged amount against Medicare rates and market averages
         </p>
+        <p className="text-xs text-muted-foreground/80 italic mt-1">
+          *Estimates based on typical healthcare pricing patterns. Actual market rates may vary.
+        </p>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Your Bill */}

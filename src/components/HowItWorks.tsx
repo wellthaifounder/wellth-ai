@@ -120,7 +120,7 @@ export const HowItWorks = () => {
                   </div>
                   <h4 className="mb-2 font-semibold">Strategic Reimbursement</h4>
                   <p className="text-sm text-muted-foreground">
-                    Get AI recommendations on when to reimburse (now vs. later) to maximize your HSA investment growth.
+                    Choose your reimbursement strategy (now vs. later) to maximize your HSA tax advantages.
                   </p>
                 </div>
               </div>
@@ -133,7 +133,7 @@ export const HowItWorks = () => {
                   </div>
                   <h4 className="mb-2 font-semibold">Investment Vault Tracker</h4>
                   <p className="text-sm text-muted-foreground">
-                    Track your HSA investment growth alongside eligible expenses. See your "vault" balance grow over time.
+                    Track your claimable HSA balance alongside eligible expenses. See your "vault" of unreimbursed expenses grow over time.
                   </p>
                 </div>
               </div>
