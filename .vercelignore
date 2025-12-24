@@ -6,8 +6,9 @@ node_modules/
 .env.local
 .env.*.local
 
-# Supabase
-supabase/
+# Supabase backend (edge functions and config)
+# Note: src/integrations/supabase/ is needed for the build
+/supabase/
 
 # Documentation
 docs/
