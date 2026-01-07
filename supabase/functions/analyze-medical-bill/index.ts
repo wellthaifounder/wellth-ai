@@ -130,6 +130,41 @@ Analyze the bill image and extract:
    - Priority: MEDIUM
    - Look for: Codes that don't exist, modifiers used incorrectly
 
+   **EXCESSIVE MARKUP**: Charges significantly above Medicare allowable rates
+   - Priority: HIGH if charge > 300% of Medicare rate, MEDIUM if > 200%
+   - Common examples: $15 aspirin (Medicare: $0.50), $100 band-aid (Medicare: $1), $500 saline bag (Medicare: $5)
+   - Look for: Common supplies with extreme markups, basic medications priced far above standard rates
+
+   **FACILITY FEES QUESTIONABLE**: Unjustified or excessive facility fees
+   - Priority: MEDIUM
+   - Look for: Facility fee for simple office visit, ER facility fee when treated in urgent care setting, operating room fee when procedure was done in office
+   - Red flags: Multiple facility fees on same date, facility fee higher than actual service charge
+
+   **TIMELINE INCONSISTENCY**: Services that don't make chronological sense
+   - Priority: MEDIUM
+   - Look for: Follow-up visit before initial consultation, post-op care without corresponding surgery on bill, services dated on weekends/holidays for non-emergency procedures
+   - Red flag: Multiple procedures requiring sedation on same day
+
+   **INAPPROPRIATE FOR DIAGNOSIS**: Services that don't match patient demographics or diagnosis
+   - Priority: MEDIUM to HIGH
+   - Look for: Pregnancy-related services for male patients, pediatric services for adult patients, cardiac testing for broken arm treatment
+   - Red flag: Services unrelated to chief complaint or diagnosis codes
+
+   **PRICING TRANSPARENCY VIOLATION**: Charges exceed hospital's published rates (if applicable)
+   - Priority: HIGH
+   - Only flag if you can identify this is a hospital bill
+   - Note: "This charge may exceed the hospital's published pricing under 45 CFR § 180.50"
+   - Recommend: Patient should check hospital's CMS pricing file
+
+   **BALANCE BILLING - NO SURPRISES ACT**: Enhanced balance billing detection
+   - Priority: HIGH
+   - Categorize specific scenarios:
+     * Emergency services at out-of-network facility
+     * Non-emergency services from out-of-network providers at in-network facilities (when patient didn't consent)
+     * Air ambulance services
+   - Cite: No Surprises Act protections apply
+   - Note: Patient should only pay in-network cost-sharing amount
+
 For each error found, provide:
 - Error type (one of the categories above)
 - Priority level (high_priority, medium_priority, low_priority)

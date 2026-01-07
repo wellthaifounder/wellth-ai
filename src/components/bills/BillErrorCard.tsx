@@ -37,6 +37,12 @@ const ERROR_TYPE_LABELS: Record<string, string> = {
   wrong_insurance_info: "Insurance Info Error",
   coding_error: "Coding Error",
   uncovered_service: "Uncovered Service",
+  pricing_transparency_violation: "Price Transparency Violation",
+  excessive_markup: "Excessive Markup",
+  facility_fees_questionable: "Questionable Facility Fees",
+  timeline_inconsistency: "Timeline Inconsistency",
+  inappropriate_for_diagnosis: "Inappropriate for Diagnosis",
+  services_not_documented: "Services Not Documented",
   other: "Other Issue"
 };
 
@@ -191,6 +197,12 @@ function getWhyItMatters(errorType: string): string {
     wrong_insurance_info: "Incorrect insurance information can lead to denied claims and unexpected out-of-pocket costs.",
     coding_error: "The wrong medical code was used, which can result in incorrect charges or insurance denials.",
     uncovered_service: "This service may not be covered by your insurance, resulting in unexpected costs.",
+    pricing_transparency_violation: "You were charged MORE than the hospital's own published rate. Under federal law (45 CFR § 180.50), hospitals must publish their standard charges and honor them. This is a violation of the Hospital Price Transparency Rule.",
+    excessive_markup: "You're being charged far more than the Medicare allowable rate for common items or services. Markups of 200-300%+ above Medicare rates are excessive and indicate price gouging. These charges are highly negotiable.",
+    facility_fees_questionable: "Facility fees are legitimate for hospital-based care, but charging facility fees for simple office visits or when services weren't performed in a facility setting is improper. This inflates costs unnecessarily.",
+    timeline_inconsistency: "The billing timeline doesn't make medical sense - services may be listed in illogical order or on dates that don't align with typical care patterns. This could indicate data entry errors or fraudulent billing.",
+    inappropriate_for_diagnosis: "You're being charged for services that don't match your diagnosis, demographics, or medical situation. This could be a coding error or indicate services you didn't actually receive.",
+    services_not_documented: "You're being charged for services that don't appear in your medical record. If a service isn't documented, it may not have been provided. This is serious and could indicate fraudulent billing.",
     other: "This billing issue could result in unnecessary charges on your account."
   };
 
@@ -208,6 +220,12 @@ function getNextSteps(errorType: string): string {
     wrong_insurance_info: "Provide correct insurance information and request that the claim be resubmitted.",
     coding_error: "Request a review by a certified medical coder and correction of the billing code.",
     uncovered_service: "Request an explanation of why the service wasn't covered and explore appeal options with your insurance.",
+    pricing_transparency_violation: "Cite the Hospital Price Transparency Rule (45 CFR § 180.50) and provide proof of the hospital's published rate. Request immediate adjustment to the published rate. If not resolved, file complaints with CMS and your state Attorney General.",
+    excessive_markup: "Compare charges to Medicare allowable rates and typical commercial rates. Negotiate for a reduction citing excessive markup. Reference Medicare rates as fair market value. Demand adjustment to reasonable pricing (within 150-200% of Medicare).",
+    facility_fees_questionable: "Request detailed explanation of why facility fees apply. If service was in an office setting, request removal of facility fee. Challenge fees that exceed the actual service charge. Ask for itemized breakdown showing how facility fee is justified.",
+    timeline_inconsistency: "Request medical records to verify service dates and sequence. Compare bill to your appointment records. Ask billing department to explain the timeline discrepancy. May indicate data entry error requiring correction.",
+    inappropriate_for_diagnosis: "Request medical records showing medical necessity for the service. Compare billed services to your diagnosis codes. Ask for clinical notes justifying why this service was appropriate for your condition. May require removal if service was unnecessary.",
+    services_not_documented: "This is serious - request complete medical records immediately. Compare every billed service to documented services in your chart. Any service not documented should be removed. Consider filing a fraud complaint if multiple undocumented services appear.",
     other: "Contact the billing department to discuss this issue and request a review."
   };
 

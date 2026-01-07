@@ -413,6 +413,136 @@ Date: [SERVICE_DATE]
 The bill shows code [INCORRECT_CODE], but [explain issue]. Can you have this reviewed by a medical coder?
 
 [Document conversation]`
+  },
+
+  pricing_transparency_violation: {
+    errorType: 'pricing_transparency_violation',
+    subject: 'URGENT: Billing Dispute - Charges Exceed Published Price Transparency Rates',
+    letterTemplate: `[Your Name]
+[Your Address]
+[City, State ZIP]
+[Date]
+
+[Hospital Name]
+[Hospital Address]
+[City, State ZIP]
+
+Re: Account Number: [ACCOUNT_NUMBER]
+    Patient: [PATIENT_NAME]
+    Service Date: [SERVICE_DATE]
+    Federal Regulation: 45 CFR § 180.50 (Hospital Price Transparency Rule)
+
+Dear Billing Department,
+
+I am disputing charges that exceed your hospital's own published pricing as disclosed in your CMS-compliant machine-readable file.
+
+VIOLATION DETAILS:
+
+Under the Hospital Price Transparency Rule (45 CFR § 180.50), hospitals must make standard charges publicly available. Your hospital's machine-readable file, as required by federal law, shows the following:
+
+Service: [SERVICE_DESCRIPTION]
+CPT Code: [CPT_CODE]
+Your Published Rate for [INSURANCE_NAME]: $[PUBLISHED_RATE]
+Amount Billed to Me: $[BILLED_AMOUNT]
+OVERCHARGE: $[OVERCHARGE_AMOUNT]
+
+Source: [HOSPITAL_PRICING_FILE_URL]
+Retrieved: [RETRIEVAL_DATE]
+
+LEGAL BASIS:
+
+This discrepancy constitutes a potential violation of federal price transparency requirements under 45 CFR § 180.50. The regulation requires hospitals to:
+1. Make standard charges public in a machine-readable file
+2. Update this information at least annually
+3. Make the file available without barriers to access
+
+Your hospital published this rate, and I relied upon this public disclosure in good faith. Charging me $[OVERCHARGE_AMOUNT] MORE than your published rate may constitute:
+- Breach of the Hospital Price Transparency Rule
+- Deceptive billing practices
+- Violation of consumer protection laws
+
+REQUESTED REMEDY:
+
+I request immediate action:
+1. Adjust charges to match your published rate of $[PUBLISHED_RATE]
+2. Provide written confirmation of adjustment within 15 business days
+3. Issue refund of $[OVERCHARGE_AMOUNT] if payment has been made
+4. Explain the discrepancy between published and actual charges
+
+If this matter is not resolved within 30 days, I am prepared to:
+- File a complaint with the Centers for Medicare & Medicaid Services (CMS)
+- Report this violation to the Office of Inspector General
+- File a complaint with my state Attorney General
+- Pursue legal action for violation of federal transparency requirements
+- Report to state consumer protection agencies
+
+I trust this can be resolved promptly without need for regulatory involvement.
+
+Sincerely,
+[Your Signature]
+[Your Printed Name]
+[Phone Number]
+[Email Address]
+
+Enclosures:
+- Copy of bill showing charges
+- Screenshot/printout of hospital's published pricing from CMS file
+- Documentation of price discrepancy`,
+    emailTemplate: `Subject: URGENT - Price Transparency Violation / Billing Dispute
+
+Dear [Hospital Name] Billing Department,
+
+I am disputing charges that exceed your hospital's published pricing under federal price transparency requirements (45 CFR § 180.50).
+
+VIOLATION SUMMARY:
+Service: [SERVICE_DESCRIPTION] (CPT [CPT_CODE])
+Your Published Rate: $[PUBLISHED_RATE]
+Amount You Billed Me: $[BILLED_AMOUNT]
+Overcharge: $[OVERCHARGE_AMOUNT]
+
+Source: Your CMS-compliant pricing file at [HOSPITAL_PRICING_FILE_URL]
+
+Under the Hospital Price Transparency Rule, you are required to honor the standard charges you publish. I was charged $[OVERCHARGE_AMOUNT] MORE than your published rate for [INSURANCE_NAME].
+
+REQUESTED REMEDY:
+1. Immediate adjustment to published rate of $[PUBLISHED_RATE]
+2. Written confirmation within 15 business days
+3. Refund of $[OVERCHARGE_AMOUNT] overcharge
+
+If not resolved within 30 days, I will file complaints with CMS, OIG, and my state Attorney General for violation of federal transparency requirements.
+
+I have documentation of your published rates and this billing discrepancy. Please resolve this promptly.
+
+Account: [ACCOUNT_NUMBER]
+Service Date: [SERVICE_DATE]
+
+Sincerely,
+[Your Name]
+[PHONE] | [EMAIL]`,
+    phoneScript: `Hi, I need to speak with someone about a serious billing issue regarding federal price transparency violations.
+
+Account: [ACCOUNT_NUMBER]
+Service Date: [SERVICE_DATE]
+
+I was charged $[BILLED_AMOUNT] for [SERVICE_DESCRIPTION], but your hospital's published rate in your CMS-required pricing file shows $[PUBLISHED_RATE]. That's an overcharge of $[OVERCHARGE_AMOUNT].
+
+Under the Hospital Price Transparency Rule - 45 CFR section 180.50 - you are required to publish your standard charges, and I relied on that information in good faith.
+
+I have:
+- A copy of your published pricing file from [HOSPITAL_PRICING_FILE_URL]
+- Screenshots showing the discrepancy
+- Documentation that this violates federal transparency requirements
+
+I need:
+1. Immediate adjustment to your published rate
+2. Refund of the $[OVERCHARGE_AMOUNT] overcharge
+3. Written confirmation
+
+If this isn't resolved, I'll be filing complaints with CMS, the OIG, and my state Attorney General. This is a federal compliance issue.
+
+Can you escalate this to a supervisor or compliance officer?
+
+[Take detailed notes: name, title, date, what they said, next steps, reference number]`
   }
 };
 
