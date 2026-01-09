@@ -16,10 +16,29 @@ interface BillError {
   evidence: Record<string, any>;
 }
 
+interface ExtractedField {
+  value: any;
+  confidence: number;
+  source?: string;
+}
+
+interface BillMetadata {
+  provider_name?: ExtractedField;
+  total_amount?: ExtractedField;
+  service_date?: ExtractedField;
+  bill_date?: ExtractedField;
+  invoice_number?: ExtractedField;
+  patient_name?: ExtractedField;
+  insurance_company?: ExtractedField;
+  category?: ExtractedField;
+}
+
 interface AnalysisResult {
+  metadata?: BillMetadata;
   errors: BillError[];
   total_potential_savings: number;
   confidence_score: number;
+  extraction_warnings?: string[];
 }
 
 Deno.serve(async (req) => {
@@ -87,12 +106,43 @@ Deno.serve(async (req) => {
     // Call Lovable AI for bill analysis
     const analysisPrompt = `You are a medical billing expert analyzing this bill for potential errors and overcharges.
 
+CRITICAL INSTRUCTIONS FOR ACCURACY:
+1. Only extract information that is CLEARLY VISIBLE on the bill
+2. If you cannot confidently read a value, return null with low confidence
+3. Do not infer, estimate, or hallucinate values
+4. Cross-validate extracted amounts with line item totals when visible
+5. Verify dates are in logical chronological order
+
 Analyze the bill image and extract:
 
-1. **Provider Information**: Name, address, tax ID
-2. **Patient Information**: Name, date of birth (if visible)
-3. **Service Date(s)**: When services were rendered
-4. **Line Items**: For each charge, extract:
+**PART 1: METADATA EXTRACTION** (Required for bill creation):
+
+Extract the following fields with HIGH ACCURACY. For each field, provide:
+- value: The extracted value (or null if not found/unclear)
+- confidence: 0.0-1.0 confidence score
+- source: Where on bill this was found (e.g., "header", "bottom total line")
+
+Required fields:
+- **provider_name**: Exact name as shown on bill header (not billing department contact)
+- **total_amount**: Final amount due (NOT subtotals, look for "TOTAL", "AMOUNT DUE", "BALANCE")
+- **service_date**: Date services were rendered (YYYY-MM-DD format)
+- **bill_date**: Date bill was issued/statement date (YYYY-MM-DD format)
+- **category**: HSA-eligible category - choose ONE:
+  * "medical" (doctor visits, ER, hospital, surgery, lab tests)
+  * "dental" (dentist, orthodontist)
+  * "vision" (eye exams, glasses, contacts)
+  * "pharmacy" (prescriptions, medications)
+  * "mental_health" (therapy, counseling, psychiatry)
+  * "other_hsa_eligible" (medical equipment, hearing aids)
+
+Optional fields:
+- **invoice_number**: Bill/invoice/account number if present
+- **patient_name**: Patient name if visible
+- **insurance_company**: Insurance payer name if shown
+
+**PART 2: LINE ITEMS** (For error detection):
+
+For each charge, extract:
    - CPT/HCPCS code (if present)
    - Procedure/service description
    - Quantity
@@ -100,7 +150,7 @@ Analyze the bill image and extract:
    - Total charge
    - Any modifiers
 
-5. **Billing Errors**: Identify potential issues:
+**PART 3: BILLING ERRORS** (Identify potential issues):
 
    **DUPLICATE CHARGES**: Same CPT code billed multiple times on same date with same amount
    - Priority: HIGH if savings > $100, MEDIUM otherwise
@@ -175,6 +225,16 @@ For each error found, provide:
 
 Return ONLY valid JSON in this exact format:
 {
+  "metadata": {
+    "provider_name": { "value": "Memorial Regional Medical Center", "confidence": 0.95, "source": "header" },
+    "total_amount": { "value": 13297.75, "confidence": 0.98, "source": "bottom total line" },
+    "service_date": { "value": "2024-12-15", "confidence": 0.92, "source": "line items" },
+    "bill_date": { "value": "2026-01-08", "confidence": 0.85, "source": "statement date" },
+    "category": { "value": "medical", "confidence": 0.90, "source": "inferred from services" },
+    "invoice_number": { "value": "MR-2024-12345", "confidence": 0.93, "source": "header" },
+    "patient_name": { "value": "John Doe", "confidence": 0.88, "source": "patient info section" },
+    "insurance_company": { "value": "Blue Cross Blue Shield", "confidence": 0.91, "source": "insurance section" }
+  },
   "errors": [
     {
       "error_type": "duplicate_charge",
@@ -190,22 +250,29 @@ Return ONLY valid JSON in this exact format:
     }
   ],
   "total_potential_savings": 150.00,
-  "confidence_score": 0.85
+  "confidence_score": 0.85,
+  "extraction_warnings": [
+    "Unable to clearly read patient name due to image quality"
+  ]
 }
 
-If no errors are found, return:
+If no errors are found, return metadata with empty errors array:
 {
+  "metadata": { ... },
   "errors": [],
   "total_potential_savings": 0,
-  "confidence_score": 0.95
+  "confidence_score": 0.95,
+  "extraction_warnings": []
 }
 
-IMPORTANT: 
+IMPORTANT:
 - Be conservative with error flagging - only flag clear issues
 - Provide specific line references when possible
 - Explain errors in simple, non-technical language
 - Calculate realistic savings estimates
 - Confidence score should reflect certainty (0.0-1.0)
+- For metadata: set confidence < 0.90 if uncertain about any field
+- If a metadata field is not found or unclear, set value to null and confidence to 0
 `;
 
     console.log('Calling Lovable AI for bill analysis...');
@@ -260,12 +327,11 @@ IMPORTANT:
 
     // Parse AI response
     const content = aiResult.choices[0].message.content;
-    
+
     // Extract JSON from markdown code blocks if present
     let analysisResult: AnalysisResult;
     try {
-    const requestId = crypto.randomUUID();
-      const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) || 
+      const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) ||
                        content.match(/```\s*([\s\S]*?)\s*```/);
       const jsonText = jsonMatch ? jsonMatch[1] : content;
       analysisResult = JSON.parse(jsonText.trim());
@@ -273,6 +339,87 @@ IMPORTANT:
       console.error('Failed to parse AI response:', content);
       throw new Error('Failed to parse AI analysis');
     }
+
+    // Validate AI results for consistency and prevent hallucinations
+    const validationWarnings: string[] = [];
+
+    if (analysisResult.metadata) {
+      // Validate service date is before or equal to bill date
+      const serviceDate = analysisResult.metadata.service_date?.value;
+      const billDate = analysisResult.metadata.bill_date?.value;
+      if (serviceDate && billDate && new Date(serviceDate) > new Date(billDate)) {
+        validationWarnings.push('Service date is after bill date - please verify dates');
+      }
+
+      // Check provider name isn't generic
+      const providerName = analysisResult.metadata.provider_name?.value;
+      if (providerName && ['Hospital', 'Clinic', 'Medical Center', 'Billing Department'].some(generic =>
+        providerName === generic)) {
+        validationWarnings.push('Provider name appears generic - may need manual verification');
+        if (analysisResult.metadata.provider_name) {
+          analysisResult.metadata.provider_name.confidence = Math.min(
+            analysisResult.metadata.provider_name.confidence,
+            0.70
+          );
+        }
+      }
+
+      // Flag amounts over $100k for review
+      const totalAmount = analysisResult.metadata.total_amount?.value;
+      if (totalAmount && totalAmount > 100000) {
+        validationWarnings.push('Amount exceeds $100,000 - flagged for review');
+      }
+
+      // Ensure confidence scores are in valid range
+      for (const field of Object.values(analysisResult.metadata)) {
+        if (field && typeof field === 'object' && 'confidence' in field) {
+          if (field.confidence < 0 || field.confidence > 1) {
+            console.warn(`Invalid confidence score ${field.confidence}, clamping to 0-1`);
+            field.confidence = Math.max(0, Math.min(1, field.confidence));
+          }
+        }
+      }
+    }
+
+    // Validate error calculations
+    if (analysisResult.errors && analysisResult.errors.length > 0) {
+      // Check total savings matches sum of individual errors
+      const calculatedTotal = analysisResult.errors.reduce((sum, e) => sum + (e.potential_savings || 0), 0);
+      const reportedTotal = analysisResult.total_potential_savings || 0;
+
+      if (Math.abs(calculatedTotal - reportedTotal) > 1) {
+        console.warn(`Savings mismatch: calculated ${calculatedTotal}, reported ${reportedTotal}`);
+        // Use calculated total as it's more accurate
+        analysisResult.total_potential_savings = calculatedTotal;
+      }
+
+      // Validate duplicate charge logic
+      const duplicates = analysisResult.errors.filter(e => e.error_type === 'duplicate_charge');
+      for (const dup of duplicates) {
+        if (dup.evidence?.duplicate_count && dup.evidence?.charge_amount) {
+          const expectedSavings = dup.evidence.charge_amount * (dup.evidence.duplicate_count - 1);
+          if (Math.abs(expectedSavings - dup.potential_savings) > 1) {
+            console.warn(`Duplicate charge calculation error in: ${dup.description}`);
+          }
+        }
+      }
+    }
+
+    // Validate overall confidence score
+    if (analysisResult.confidence_score < 0 || analysisResult.confidence_score > 1) {
+      console.warn(`Invalid overall confidence ${analysisResult.confidence_score}, setting to 0.5`);
+      analysisResult.confidence_score = 0.5;
+    }
+
+    // Merge validation warnings with extraction warnings
+    if (validationWarnings.length > 0) {
+      analysisResult.extraction_warnings = [
+        ...(analysisResult.extraction_warnings || []),
+        ...validationWarnings
+      ];
+    }
+
+    console.log(`Validation complete. ${validationWarnings.length} warnings generated.`);
 
     // Update or create bill review record
     const { data: existingReview } = await supabase
@@ -357,6 +504,48 @@ IMPORTANT:
       console.log(`Inserted ${errorInserts.length} error findings`);
     }
 
+    // Store extracted metadata in receipt_ocr_data table
+    if (analysisResult.metadata) {
+      const metadata = analysisResult.metadata;
+
+      // Calculate average confidence across all extracted fields
+      const confidenceScores = Object.values(metadata)
+        .filter((field): field is ExtractedField => field !== null && typeof field === 'object' && 'confidence' in field)
+        .map(field => field.confidence);
+      const avgConfidence = confidenceScores.length > 0
+        ? confidenceScores.reduce((sum, c) => sum + c, 0) / confidenceScores.length
+        : 0.5;
+
+      // Upsert metadata to receipt_ocr_data
+      const { error: ocrError } = await supabase
+        .from('receipt_ocr_data')
+        .upsert({
+          receipt_id: receiptId,
+          extracted_vendor: metadata.provider_name?.value || null,
+          extracted_amount: metadata.total_amount?.value || null,
+          extracted_date: metadata.service_date?.value || metadata.bill_date?.value || null,
+          extracted_category: metadata.category?.value || null,
+          extracted_invoice_number: metadata.invoice_number?.value || null,
+          extracted_insurance: metadata.insurance_company?.value || null,
+          extracted_service_date: metadata.service_date?.value || null,
+          extracted_bill_date: metadata.bill_date?.value || null,
+          metadata_confidence: avgConfidence,
+          metadata_full: metadata,
+          extraction_warnings: analysisResult.extraction_warnings || [],
+          confidence_score: analysisResult.confidence_score,
+          processed_at: new Date().toISOString()
+        }, {
+          onConflict: 'receipt_id'
+        });
+
+      if (ocrError) {
+        console.error('Error storing metadata (non-fatal):', ocrError);
+        // Don't throw - metadata storage failure shouldn't break the whole flow
+      } else {
+        console.log('Metadata stored successfully');
+      }
+    }
+
     // Sync provider data in the background
     try {
     const requestId = crypto.randomUUID();
@@ -376,9 +565,11 @@ IMPORTANT:
       JSON.stringify({
         success: true,
         billReviewId: billReview.id,
+        metadata: analysisResult.metadata || null,
         totalPotentialSavings: analysisResult.total_potential_savings,
         errorsFound: analysisResult.errors?.length || 0,
-        confidenceScore: analysisResult.confidence_score
+        confidenceScore: analysisResult.confidence_score,
+        warnings: analysisResult.extraction_warnings || []
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
