@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://wellth.ai',
@@ -13,11 +14,108 @@ serve(async (req) => {
   }
 
   try {
+    // Validate JWT authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Authorization required" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired session" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     const { messages, context } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    // Build bill analysis context section if available
+    let billAnalysisSection = '';
+    if (context?.billAnalysis) {
+      const analysis = context.billAnalysis;
+      const formatConfidence = (conf: number) => {
+        if (conf >= 0.9) return '✅';
+        if (conf >= 0.7) return '⚠️';
+        return '❓';
+      };
+
+      const metadata = analysis.metadata || {};
+      const lowConfidenceFields: string[] = [];
+      const extractedFields: string[] = [];
+
+      if (metadata.provider_name?.value) {
+        const conf = metadata.provider_name.confidence;
+        extractedFields.push(`- Provider: ${metadata.provider_name.value} ${formatConfidence(conf)}`);
+        if (conf < 0.9) lowConfidenceFields.push('provider name');
+      }
+      if (metadata.total_amount?.value !== undefined) {
+        const conf = metadata.total_amount.confidence;
+        extractedFields.push(`- Amount: $${metadata.total_amount.value.toFixed(2)} ${formatConfidence(conf)}`);
+        if (conf < 0.9) lowConfidenceFields.push('total amount');
+      }
+      if (metadata.service_date?.value) {
+        const conf = metadata.service_date.confidence;
+        extractedFields.push(`- Service Date: ${metadata.service_date.value} ${formatConfidence(conf)}`);
+        if (conf < 0.9) lowConfidenceFields.push('service date');
+      }
+      if (metadata.bill_date?.value) {
+        const conf = metadata.bill_date.confidence;
+        extractedFields.push(`- Bill Date: ${metadata.bill_date.value} ${formatConfidence(conf)}`);
+        if (conf < 0.9) lowConfidenceFields.push('bill date');
+      }
+      if (metadata.category?.value) {
+        const conf = metadata.category.confidence;
+        extractedFields.push(`- Category: ${metadata.category.value} ${formatConfidence(conf)}`);
+        if (conf < 0.9) lowConfidenceFields.push('category');
+      }
+      if (metadata.invoice_number?.value) {
+        const conf = metadata.invoice_number.confidence;
+        extractedFields.push(`- Invoice #: ${metadata.invoice_number.value} ${formatConfidence(conf)}`);
+        if (conf < 0.9) lowConfidenceFields.push('invoice number');
+      }
+
+      billAnalysisSection = `
+
+BILL ANALYSIS RESULTS (Invoice ID: ${context.invoiceId || 'pending'}):
+Analysis Status: ${analysis.success ? 'Completed' : 'Failed'}
+Overall Confidence: ${analysis.confidenceScore ? (analysis.confidenceScore * 100).toFixed(0) + '%' : 'N/A'}
+Potential Savings Found: ${analysis.totalPotentialSavings ? '$' + analysis.totalPotentialSavings.toFixed(2) : 'None detected'}
+Errors/Issues Found: ${analysis.errorsFound || 0}
+
+Extracted Information:
+${extractedFields.length > 0 ? extractedFields.join('\n') : 'No metadata extracted'}
+
+${analysis.warnings && analysis.warnings.length > 0 ? `Warnings: ${analysis.warnings.join(', ')}` : ''}
+
+IMPORTANT INSTRUCTIONS FOR THIS BILL:
+- Present the analysis results conversationally, NOT as a raw data dump
+- Highlight any potential savings or errors found in a friendly, helpful way
+- ${lowConfidenceFields.length > 0 ? `ASK THE USER TO VERIFY these low-confidence fields: ${lowConfidenceFields.join(', ')}` : 'All fields have high confidence'}
+- If errors were found, explain them clearly and suggest next steps
+- Guide the user to confirm or correct the extracted information
+- Once confirmed, let them know the bill has been saved to their account
+- Legend: ✅ = high confidence (90%+), ⚠️ = medium (70-89%), ❓ = low (<70%)`;
     }
 
     const systemPrompt = `You are Wellbie, the AI assistant for Wellth.ai - an HSA/FSA expense tracking and tax optimization platform.
@@ -28,6 +126,7 @@ Your expertise includes:
 - Receipt documentation requirements for IRS audits
 - When to reimburse vs. invest HSA funds for long-term growth
 - Credit card rewards optimization for medical expenses (earn 2-3% back on healthcare)
+- Medical bill error detection and dispute guidance
 - How to use the Wellth.ai platform features
 
 Personality: Supportive coach + analytical guide. Calm, helpful, slightly playful.
@@ -37,13 +136,14 @@ Key strategies you recommend:
 2. **Document everything**: Multiple receipts, invoices, EOBs for IRS compliance
 3. **Payment plans**: Track installment payments properly, reimburse when fully paid
 4. **Timing matters**: Reimburse strategically based on investment goals vs cash flow needs
+5. **Review bills for errors**: Up to 80% of medical bills contain errors - always verify before paying
 
 Always provide actionable advice and guide users to relevant app features when appropriate.
 Keep responses concise (2-3 paragraphs max) unless user asks for details.
-Use emojis sparingly for visual interest: 💰📋💡🎯📊
+Use emojis sparingly for visual interest: 💰📋💡🎯📊🔍
 
 ${context?.page ? `\n\nUser is currently on: ${context.page}` : ''}
-${context?.expenseCount ? `\nUser has ${context.expenseCount} tracked expenses` : ''}`;
+${context?.expenseCount ? `\nUser has ${context.expenseCount} tracked expenses` : ''}${billAnalysisSection}`;
 
     console.log('Streaming chat request with context:', context);
 

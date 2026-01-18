@@ -1,5 +1,21 @@
 type Message = { role: "user" | "assistant"; content: string };
 
+interface BillAnalysisContext {
+  success: boolean;
+  metadata?: {
+    provider_name?: { value: string; confidence: number };
+    total_amount?: { value: number; confidence: number };
+    service_date?: { value: string; confidence: number };
+    bill_date?: { value: string; confidence: number };
+    category?: { value: string; confidence: number };
+    invoice_number?: { value: string; confidence: number };
+  };
+  totalPotentialSavings?: number;
+  errorsFound?: number;
+  confidenceScore?: number;
+  warnings?: string[];
+}
+
 interface StreamChatOptions {
   messages: Message[];
   onDelta: (deltaText: string) => void;
@@ -8,6 +24,8 @@ interface StreamChatOptions {
   context?: {
     page?: string;
     expenseCount?: number;
+    billAnalysis?: BillAnalysisContext;
+    invoiceId?: string;
   };
 }
 

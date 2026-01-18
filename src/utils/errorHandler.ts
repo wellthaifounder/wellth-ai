@@ -84,3 +84,86 @@ export const sanitizeErrorMessage = (error: unknown): string => {
   }
   return 'An unexpected error occurred';
 };
+
+/**
+ * HIPAA-compliant PHI sanitization
+ * Redacts Protected Health Information from strings before logging or display
+ *
+ * PHI includes (per HIPAA Safe Harbor):
+ * - Names, addresses, dates, phone/fax numbers
+ * - SSN, MRN, health plan numbers, account numbers
+ * - Email, URLs, IPs, biometric IDs, photos
+ * - Any unique identifying number or code
+ */
+export const sanitizePHI = (text: string): string => {
+  if (!text || typeof text !== 'string') return text;
+
+  return text
+    // Social Security Numbers (XXX-XX-XXXX or XXXXXXXXX)
+    .replace(/\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/g, '[SSN-REDACTED]')
+
+    // Medical Record Numbers (MRN patterns)
+    .replace(/\b(MRN|mrn|Medical Record|Patient ID)[\s:]*[\w-]+/gi, '[MRN-REDACTED]')
+
+    // Account/Invoice numbers that might contain patient identifiers
+    .replace(/\b(Account|Acct|Invoice|Bill)[\s#:]*[\w-]{6,}/gi, '[ACCOUNT-REDACTED]')
+
+    // Phone numbers (various formats)
+    .replace(/\b(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g, '[PHONE-REDACTED]')
+
+    // Email addresses
+    .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/gi, '[EMAIL-REDACTED]')
+
+    // Dates of birth (various formats)
+    .replace(/\b(DOB|Date of Birth|Birth Date)[\s:]*\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/gi, '[DOB-REDACTED]')
+
+    // Insurance/Health Plan numbers
+    .replace(/\b(Policy|Member|Subscriber|Group)[\s#:]*[\w-]{6,}/gi, '[INSURANCE-REDACTED]')
+
+    // IP addresses
+    .replace(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g, '[IP-REDACTED]')
+
+    // URLs with patient data
+    .replace(/https?:\/\/[^\s]+/g, '[URL-REDACTED]')
+
+    // File paths that might contain patient names
+    .replace(/[A-Za-z]:\\[^\s]+/g, '[PATH-REDACTED]')
+    .replace(/\/[a-z]+\/[^\s]+/gi, '[PATH-REDACTED]')
+
+    // Names following common prefixes
+    .replace(/\b(Patient|Name|Mr\.|Mrs\.|Ms\.|Dr\.)\s+[A-Z][a-z]+(\s+[A-Z][a-z]+)*/g, '[NAME-REDACTED]');
+};
+
+/**
+ * Safe logging wrapper that sanitizes PHI
+ * Use this instead of console.log for any data that might contain PHI
+ */
+export const safeLog = (message: string, data?: unknown) => {
+  if (import.meta.env.DEV) {
+    const sanitizedMessage = sanitizePHI(message);
+    if (data) {
+      const sanitizedData = typeof data === 'string'
+        ? sanitizePHI(data)
+        : JSON.parse(sanitizePHI(JSON.stringify(data)));
+      console.log(`[${new Date().toISOString()}] ${sanitizedMessage}`, sanitizedData);
+    } else {
+      console.log(`[${new Date().toISOString()}] ${sanitizedMessage}`);
+    }
+  }
+};
+
+/**
+ * Check if a value contains potential PHI
+ * Returns true if PHI patterns are detected
+ */
+export const containsPHI = (value: string): boolean => {
+  if (!value || typeof value !== 'string') return false;
+
+  const phiPatterns = [
+    /\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/, // SSN
+    /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/i, // Email
+    /\b(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/, // Phone
+  ];
+
+  return phiPatterns.some(pattern => pattern.test(value));
+};

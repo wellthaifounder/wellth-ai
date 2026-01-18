@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { WellbieAvatar } from "./WellbieAvatar";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
-import { X, Minimize2, Send, MessageSquarePlus, Trash2, Menu } from "lucide-react";
+import { X, Minimize2, Send, MessageSquarePlus, Trash2, Menu, Paperclip, FileText, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocation } from "react-router-dom";
 import { ScrollArea } from "./ui/scroll-area";
@@ -13,6 +13,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
+import { Badge } from "./ui/badge";
 
 type Message = { role: "user" | "assistant"; content: string };
 type Conversation = {
@@ -22,13 +23,20 @@ type Conversation = {
   updated_at: string;
 };
 
+type FileAttachment = {
+  file: File;
+  preview?: string;
+  status: 'pending' | 'uploading' | 'analyzing' | 'complete' | 'error';
+  error?: string;
+};
+
 interface WellbieChatPanelProps {
   conversations: Conversation[];
   currentConversationId: string | null;
   messages: Message[];
   isLoading: boolean;
   error: string | null;
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string, attachments?: File[]) => void;
   onSwitchConversation: (id: string) => void;
   onStartNew: () => void;
   onDeleteConversation: (id: string) => void;
@@ -59,8 +67,13 @@ export const WellbieChatPanel = ({
 }: WellbieChatPanelProps) => {
   const [input, setInput] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const location = useLocation();
+
+  const ALLOWED_FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
   const quickActions = quickActionsByPage[location.pathname] || [
     "How does Wellth.ai work?",
@@ -72,10 +85,51 @@ export const WellbieChatPanel = ({
   }, [messages]);
 
   const handleSend = () => {
-    if (input.trim()) {
-      onSendMessage(input);
+    if (input.trim() || attachments.length > 0) {
+      const files = attachments.map(a => a.file);
+      onSendMessage(input || "I'm uploading a medical bill for analysis.", files.length > 0 ? files : undefined);
       setInput("");
+      setAttachments([]);
     }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+
+    const validFiles = files.filter(file => {
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        console.warn(`File type ${file.type} not allowed`);
+        return false;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        console.warn(`File ${file.name} exceeds 10MB limit`);
+        return false;
+      }
+      return true;
+    });
+
+    const newAttachments: FileAttachment[] = validFiles.map(file => ({
+      file,
+      preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
+      status: 'pending'
+    }));
+
+    setAttachments(prev => [...prev, ...newAttachments]);
+
+    // Reset input so same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => {
+      const attachment = prev[index];
+      if (attachment.preview) {
+        URL.revokeObjectURL(attachment.preview);
+      }
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const handleQuickAction = (action: string) => {
@@ -238,7 +292,65 @@ export const WellbieChatPanel = ({
             ))}
           </div>
         )}
+
+        {/* File Attachments Preview */}
+        {attachments.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-2 sm:mb-3">
+            {attachments.map((attachment, index) => (
+              <div
+                key={index}
+                className="relative flex items-center gap-2 bg-muted rounded-lg p-2 pr-8"
+              >
+                {attachment.preview ? (
+                  <img
+                    src={attachment.preview}
+                    alt={attachment.file.name}
+                    className="h-8 w-8 object-cover rounded"
+                  />
+                ) : (
+                  <FileText className="h-8 w-8 text-muted-foreground" />
+                )}
+                <div className="text-xs truncate max-w-[120px]">
+                  {attachment.file.name}
+                </div>
+                {attachment.status === 'uploading' || attachment.status === 'analyzing' ? (
+                  <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                ) : (
+                  <button
+                    onClick={() => removeAttachment(index)}
+                    className="absolute top-1 right-1 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="flex gap-2">
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
+            multiple
+            className="hidden"
+            onChange={handleFileSelect}
+          />
+
+          {/* Attach file button */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading}
+            className="shrink-0 h-[50px] w-[50px] sm:h-[60px] sm:w-[60px]"
+            title="Upload medical bill"
+          >
+            <Paperclip className="h-4 w-4" />
+          </Button>
+
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -248,17 +360,17 @@ export const WellbieChatPanel = ({
                 handleSend();
               }
             }}
-            placeholder="Ask Wellbie anything..."
+            placeholder={attachments.length > 0 ? "Add a note about your bill..." : "Ask Wellbie anything..."}
             className="min-h-[50px] sm:min-h-[60px] resize-none text-xs sm:text-sm"
             disabled={isLoading}
           />
           <Button
             onClick={handleSend}
-            disabled={!input.trim() || isLoading}
+            disabled={(!input.trim() && attachments.length === 0) || isLoading}
             size="icon"
             className="shrink-0 h-[50px] w-[50px] sm:h-[60px] sm:w-[60px]"
           >
-            <Send className="h-4 w-4" />
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </div>
       </div>
