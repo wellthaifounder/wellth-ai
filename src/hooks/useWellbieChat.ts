@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { streamWellbieChat } from "@/utils/wellbieChatStream";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -35,9 +35,7 @@ export const useWellbieChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pendingAnalysis, setPendingAnalysis] = useState<BillAnalysisResult | null>(null);
   const location = useLocation();
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   const loadConversations = useCallback(async () => {
@@ -268,7 +266,6 @@ export const useWellbieChat = () => {
               .eq('id', uploadResult.invoiceId);
           }
 
-          setPendingAnalysis(analysisResult);
         }
       } else {
         const newUserMessage: Message = { role: "user", content: userMessage };
