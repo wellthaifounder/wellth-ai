@@ -36,6 +36,7 @@ const TripwireOffer = lazy(() => import("./pages/TripwireOffer"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const BillReviews = lazy(() => import("./pages/BillReviews"));
 const BillReview = lazy(() => import("./pages/BillReview"));
+const NewBillUpload = lazy(() => import("./pages/NewBillUpload"));
 const BillDispute = lazy(() => import("./pages/BillDispute"));
 const DisputeManagement = lazy(() => import("./pages/DisputeManagement"));
 const DisputeDetail = lazy(() => import("./pages/DisputeDetail"));
@@ -77,7 +78,8 @@ const App = () => (
                     
                     {/* Unified Bills Management Routes */}
                     <Route path="/bills" element={<Bills />} />
-                    <Route path="/bills/new" element={<BillDetail />} />
+                    <Route path="/bills/new" element={<NewBillUpload />} />
+                    <Route path="/bills/upload" element={<NewBillUpload />} />
                     <Route path="/bills/:id" element={<BillDetail />} />
                     
                     {/* Bill Review and Dispute Detail Pages */}
