@@ -40,6 +40,11 @@ const NewBillUpload = lazy(() => import("./pages/NewBillUpload"));
 const BillDispute = lazy(() => import("./pages/BillDispute"));
 const DisputeManagement = lazy(() => import("./pages/DisputeManagement"));
 const DisputeDetail = lazy(() => import("./pages/DisputeDetail"));
+
+// Medical Events pages
+const MedicalEvents = lazy(() => import("./pages/MedicalEvents"));
+const MedicalEventDetail = lazy(() => import("./pages/MedicalEventDetail"));
+const NewMedicalEvent = lazy(() => import("./pages/NewMedicalEvent"));
 const ProviderDirectory = lazy(() => import("./pages/ProviderDirectory"));
 const ProviderDetail = lazy(() => import("./pages/ProviderDetail"));
 const ProviderTransparency = lazy(() => import("./pages/ProviderTransparency"));
@@ -103,7 +108,12 @@ const App = () => (
                     
                     {/* Transactions Route */}
                     <Route path="/transactions" element={<Transactions />} />
-                    
+
+                    {/* Medical Events Routes */}
+                    <Route path="/medical-events" element={<MedicalEvents />} />
+                    <Route path="/medical-events/new" element={<NewMedicalEvent />} />
+                    <Route path="/medical-events/:id" element={<MedicalEventDetail />} />
+
                     {/* Supporting Routes */}
                     <Route path="/documents" element={<Documents />} />
                     <Route path="/settings" element={<Settings />} />
