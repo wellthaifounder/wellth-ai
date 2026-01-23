@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calculator, Receipt, FileText, BarChart3, Wallet, Building2, BookOpen, Settings, MessageSquare, Shield, DollarSign, Home, TrendingUp, ChevronDown, ChevronRight } from "lucide-react";
+import { Calculator, Receipt, FileText, BarChart3, Wallet, Building2, BookOpen, Settings, MessageSquare, Shield, DollarSign, Home, TrendingUp, ChevronDown, ChevronRight, FolderHeart } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useHSA } from "@/contexts/HSAContext";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -38,17 +38,14 @@ const moneyMenuItems: MenuItem[] = [
   { icon: Calculator, label: "Savings Tools", path: "/savings-calculator", badgeKey: null },
 ];
 
-const billsMenuItems: MenuItem[] = [
+const medicalEventsMenuItems: MenuItem[] = [
+  { icon: FolderHeart, label: "Medical Events", path: "/medical-events", badgeKey: null },
   { icon: Receipt, label: "Bills", path: "/bills", badgeKey: "pendingReviews" },
   { icon: FileText, label: "Documents", path: "/documents", badgeKey: null },
 ];
 
 const insightsMenuItems: MenuItem[] = [
   { icon: BarChart3, label: "Reports", path: "/reports", badgeKey: null },
-];
-
-const providersMenuItems: MenuItem[] = [
-  { icon: Building2, label: "Provider Directory", path: "/providers", badgeKey: null },
 ];
 
 export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, activeDisputes = 0 }: AppSidebarProps) {
@@ -62,9 +59,8 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
   // State for collapsible sections - default all open
   const [openSections, setOpenSections] = useState({
     money: true,
-    bills: true,
+    medicalEvents: true,
     insights: true,
-    providers: true,
     account: true,
   });
 
@@ -138,9 +134,8 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarContent className="overflow-y-auto">
         {renderMenuSection(moneyMenuItems, "Money", "money")}
-        {renderMenuSection(billsMenuItems, "Bills", "bills")}
+        {renderMenuSection(medicalEventsMenuItems, "Medical Events", "medicalEvents")}
         {renderMenuSection(insightsMenuItems, "Insights", "insights")}
-        {renderMenuSection(providersMenuItems, "Providers", "providers")}
 
         <Collapsible open={openSections.account} onOpenChange={() => toggleSection("account")} className="mt-auto">
           <SidebarGroup>

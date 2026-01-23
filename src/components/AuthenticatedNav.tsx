@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { WellthLogo } from "@/components/WellthLogo";
-import { LogOut, Calculator, Receipt, FileText, BarChart3, Menu, Settings, Home, Building2, BookOpen, Wallet, DollarSign, TrendingUp, Upload } from "lucide-react";
+import { LogOut, Calculator, Receipt, FileText, BarChart3, Menu, Settings, Home, Building2, BookOpen, Wallet, DollarSign, TrendingUp, Upload, FolderHeart } from "lucide-react";
 import { WellbieAvatar } from "@/components/WellbieAvatar";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -41,12 +41,12 @@ export const AuthenticatedNav = ({
     setMobileMenuOpen(false);
   };
 
-  // Consolidated 5-category navigation
+  // Consolidated navigation with Medical Events as primary hub
   const mainNavItems = [
     { icon: DollarSign, label: "Money", path: "/dashboard" },
+    { icon: FolderHeart, label: "Medical Events", path: "/medical-events" },
     { icon: Receipt, label: "Bills", path: "/bills", badge: pendingReviews },
     { icon: TrendingUp, label: "Insights", path: "/reports" },
-    { icon: Building2, label: "Providers", path: "/providers" },
   ];
 
   // Sub-items for Money section
@@ -58,6 +58,7 @@ export const AuthenticatedNav = ({
 
   // Sub-items for Bills section
   const billsSubItems = [
+    { icon: FolderHeart, label: "Medical Events", path: "/medical-events" },
     { icon: Receipt, label: "Bills", path: "/bills", badge: pendingReviews },
     { icon: FileText, label: "Documents", path: "/documents" },
   ];
@@ -200,19 +201,6 @@ export const AuthenticatedNav = ({
                     >
                       <BarChart3 className="h-5 w-5 mr-3" aria-hidden="true" />
                       <span className="flex-1 text-left">Reports</span>
-                    </Button>
-                  </div>
-
-                  <div className="space-y-2">
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">Providers</h3>
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full"
-                      onClick={() => handleNavigation("/providers")}
-                      aria-label="Provider Directory"
-                    >
-                      <Building2 className="h-5 w-5 mr-3" aria-hidden="true" />
-                      <span className="flex-1 text-left">Provider Directory</span>
                     </Button>
                   </div>
 

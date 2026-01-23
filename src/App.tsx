@@ -45,9 +45,10 @@ const DisputeDetail = lazy(() => import("./pages/DisputeDetail"));
 const MedicalEvents = lazy(() => import("./pages/MedicalEvents"));
 const MedicalEventDetail = lazy(() => import("./pages/MedicalEventDetail"));
 const NewMedicalEvent = lazy(() => import("./pages/NewMedicalEvent"));
-const ProviderDirectory = lazy(() => import("./pages/ProviderDirectory"));
-const ProviderDetail = lazy(() => import("./pages/ProviderDetail"));
-const ProviderTransparency = lazy(() => import("./pages/ProviderTransparency"));
+// Provider Directory removed - V2 feature
+// const ProviderDirectory = lazy(() => import("./pages/ProviderDirectory"));
+// const ProviderDetail = lazy(() => import("./pages/ProviderDetail"));
+// const ProviderTransparency = lazy(() => import("./pages/ProviderTransparency"));
 const UserReviews = lazy(() => import("./pages/UserReviews"));
 const AdminReviews = lazy(() => import("./pages/AdminReviews"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -126,12 +127,12 @@ const App = () => (
                     {/* Checkout & Onboarding */}
                     <Route path="/tripwire-success" element={<TripwireSuccess />} />
                     <Route path="/checkout" element={<Checkout />} />
-                    
-                    {/* Provider Ratings Routes */}
-                    <Route path="/providers" element={<ProviderDirectory />} />
-                    <Route path="/providers/:id" element={<ProviderDetail />} />
-                    <Route path="/provider-transparency" element={<ProviderTransparency />} />
-                    
+
+                    {/* Provider Directory removed - V2 feature */}
+                    {/* <Route path="/providers" element={<ProviderDirectory />} /> */}
+                    {/* <Route path="/providers/:id" element={<ProviderDetail />} /> */}
+                    {/* <Route path="/provider-transparency" element={<ProviderTransparency />} /> */}
+
                     {/* User Feedback */}
                     <Route path="/user-reviews" element={<UserReviews />} />
                     
