@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { BillReviewCard } from "@/components/bills/BillReviewCard";
+// Bill review feature archived
+// import { BillReviewCard } from "@/components/bills/BillReviewCard";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { analytics } from "@/lib/analytics";
@@ -18,7 +19,7 @@ import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { getNextAction } from "@/lib/dashboardActions";
 import { calculateProgress, getProgressSteps } from "@/lib/userProgress";
-import { ValueSpotlight } from "@/components/dashboard/ValueSpotlight";
+
 import { useHSA } from "@/contexts/HSAContext";
 import { useOnboarding } from "@/contexts/OnboardingContext";
 import { FeatureTooltip } from "@/components/onboarding/FeatureTooltip";
@@ -51,12 +52,8 @@ const Dashboard = () => {
   });
   const [recentExpenses, setRecentExpenses] = useState<any[]>([]);
   const [reimbursementRequests, setReimbursementRequests] = useState<any[]>([]);
-  const [pendingReviews, setPendingReviews] = useState<any[]>([]);
   const [hasConnectedBank, setHasConnectedBank] = useState(false);
-  const [disputeStats, setDisputeStats] = useState({
-    recentWins: 0,
-    totalSavings: 0,
-  });
+  // Bill review feature archived - removed pendingReviews and disputeStats
 
   useEffect(() => {
     const checkUser = async () => {
@@ -75,9 +72,7 @@ const Dashboard = () => {
     fetchStats();
     fetchReimbursementRequests();
     fetchTransactionStats();
-    fetchBillReviews();
     checkBankConnection();
-    fetchDisputeStats();
     analytics.pageView('/dashboard');
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -232,55 +227,7 @@ const Dashboard = () => {
     }
   };
 
-  const fetchBillReviews = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Fetch pending reviews with error counts in a single efficient query
-      const { data: reviews, error } = await supabase
-        .from('bill_reviews')
-        .select(`
-          *,
-          invoices (
-            vendor,
-            amount
-          ),
-          bill_errors!bill_review_id(id, status)
-        `)
-        .eq('user_id', user.id)
-        .eq('review_status', 'pending')
-        .order('analyzed_at', { ascending: false })
-        .limit(3);
-
-      if (error) throw error;
-
-      // Count identified errors from the joined data (no additional queries!)
-      const reviewsWithCounts = (reviews || []).map((review: any) => {
-        const identifiedErrors = (review.bill_errors || []).filter(
-          (err: any) => err.status === 'identified'
-        );
-
-        return {
-          ...review,
-          errorCount: identifiedErrors.length,
-          // Remove the raw bill_errors array to keep interface clean
-          bill_errors: undefined
-        };
-      });
-
-      setPendingReviews(reviewsWithCounts);
-    } catch (error) {
-      logError("Failed to fetch bill reviews", error);
-    }
-  };
-
-  const fetchDisputeStats = async () => {
-    setDisputeStats({
-      recentWins: 0,
-      totalSavings: 0,
-    });
-  };
+  // Bill review feature archived - removed fetchBillReviews and fetchDisputeStats
 
   // Calculate derived values before early returns
   const userProgress = calculateProgress(
@@ -326,7 +273,7 @@ const Dashboard = () => {
       ]
     : [
         { icon: "📊", value: `$${stats.totalExpenses.toFixed(0)}`, label: "Tracked", variant: "default" as const },
-        { icon: "🎉", value: `$${stats.disputeSavings.toFixed(0)}`, label: "Saved", variant: "success" as const },
+        { icon: "📋", value: `${stats.expenseCount}`, label: "Bills", variant: "info" as const },
         { icon: "🏆", value: `$${stats.rewardsEarned.toFixed(0)}`, label: "Rewards", variant: "info" as const },
       ];
 
@@ -430,25 +377,7 @@ const Dashboard = () => {
               {showHSAFeatures && hasHSA && <HSAAccountPerformance />}
 
               {/* Value Spotlight */}
-              <FeatureTooltip
-                title="Provider Ratings"
-                description="Check billing accuracy scores and dispute success rates for healthcare providers before scheduling your next appointment."
-                show={!onboarding.hasSeenProviderDirectory && stats.expenseCount >= 2}
-                onDismiss={() => onboarding.markAsSeen("hasSeenProviderDirectory")}
-                position="top"
-                ctaText="Browse Providers"
-                onCtaClick={() => navigate("/providers")}
-              >
-                <ValueSpotlight
-                  pendingReviews={pendingReviews.length}
-                  totalPotentialSavings={0}
-                  recentDisputeWins={disputeStats.recentWins}
-                  disputeSavings={disputeStats.totalSavings}
-                  onReviewClick={() => navigate("/bills")}
-                  onDisputeClick={() => navigate("/bills")}
-                  onProviderClick={() => navigate("/providers")}
-                />
-              </FeatureTooltip>
+              {/* Bill review feature archived - removed ValueSpotlight */}
 
               {/* Recent Bills */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -496,31 +425,7 @@ const Dashboard = () => {
                     </ActionCard>
                   )}
 
-                  {/* Pending Reviews */}
-                  {pendingReviews.length > 0 && (
-                    <ActionCard
-                      icon="🔍"
-                      title="Bills Requiring Review"
-                      count={pendingReviews.length}
-                      buttonText="View All Reviews"
-                      actions={
-                        <Button onClick={() => navigate("/bills")}>
-                          View All
-                        </Button>
-                      }
-                      defaultOpen={true}
-                    >
-                      <div className="space-y-3">
-                        {pendingReviews.map((review) => (
-                          <BillReviewCard 
-                            key={review.id}
-                            review={review}
-                            errorCount={review.errorCount}
-                          />
-                        ))}
-                      </div>
-                    </ActionCard>
-                  )}
+                  {/* Bill review feature archived - removed pending reviews section */}
                 </div>
 
                 {/* Side Cards */}

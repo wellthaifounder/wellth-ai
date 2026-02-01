@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calculator, Receipt, FileText, BarChart3, Wallet, Building2, BookOpen, Settings, MessageSquare, Shield, DollarSign, Home, TrendingUp, ChevronDown, ChevronRight, FolderHeart } from "lucide-react";
+import { Calculator, Receipt, FileText, BarChart3, Wallet, Building2, BookOpen, Settings, MessageSquare, Shield, DollarSign, Home, TrendingUp, ChevronDown, ChevronRight, FolderOpen } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useHSA } from "@/contexts/HSAContext";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -19,8 +19,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 
 interface AppSidebarProps {
   unreviewedTransactions?: number;
-  pendingReviews?: number;
-  activeDisputes?: number;
 }
 
 interface MenuItem {
@@ -38,9 +36,9 @@ const moneyMenuItems: MenuItem[] = [
   { icon: Calculator, label: "Savings Tools", path: "/savings-calculator", badgeKey: null },
 ];
 
-const medicalEventsMenuItems: MenuItem[] = [
-  { icon: FolderHeart, label: "Medical Events", path: "/medical-events", badgeKey: null },
-  { icon: Receipt, label: "Bills", path: "/bills", badgeKey: "pendingReviews" },
+const collectionsMenuItems: MenuItem[] = [
+  { icon: FolderOpen, label: "Collections", path: "/collections", badgeKey: null },
+  { icon: Receipt, label: "Bills", path: "/bills", badgeKey: null },
   { icon: FileText, label: "Documents", path: "/documents", badgeKey: null },
 ];
 
@@ -48,7 +46,7 @@ const insightsMenuItems: MenuItem[] = [
   { icon: BarChart3, label: "Reports", path: "/reports", badgeKey: null },
 ];
 
-export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, activeDisputes = 0 }: AppSidebarProps) {
+export function AppSidebar({ unreviewedTransactions = 0 }: AppSidebarProps) {
   const { open } = useSidebar();
   const { hasHSA, userIntent } = useHSA();
   const { isAdmin } = useIsAdmin();
@@ -59,7 +57,7 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
   // State for collapsible sections - default all open
   const [openSections, setOpenSections] = useState({
     money: true,
-    medicalEvents: true,
+    collections: true,
     insights: true,
     account: true,
   });
@@ -71,8 +69,6 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
   const getBadgeCount = (badgeKey: string | null) => {
     if (!badgeKey) return 0;
     if (badgeKey === "unreviewedTransactions") return unreviewedTransactions;
-    if (badgeKey === "pendingReviews") return pendingReviews;
-    if (badgeKey === "activeDisputes") return activeDisputes;
     return 0;
   };
 
@@ -134,7 +130,7 @@ export function AppSidebar({ unreviewedTransactions = 0, pendingReviews = 0, act
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarContent className="overflow-y-auto">
         {renderMenuSection(moneyMenuItems, "Money", "money")}
-        {renderMenuSection(medicalEventsMenuItems, "Medical Events", "medicalEvents")}
+        {renderMenuSection(collectionsMenuItems, "Organize", "collections")}
         {renderMenuSection(insightsMenuItems, "Insights", "insights")}
 
         <Collapsible open={openSections.account} onOpenChange={() => toggleSection("account")} className="mt-auto">

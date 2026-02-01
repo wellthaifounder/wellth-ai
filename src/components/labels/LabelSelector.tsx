@@ -10,7 +10,7 @@ import { toast } from "sonner";
 
 interface LabelSelectorProps {
   resourceId: string;
-  resourceType: "invoice" | "payment";
+  resourceType: "invoice" | "payment" | "receipt";
   selectedLabels: any[];
   onLabelsChange: (labels: any[]) => void;
 }
@@ -47,31 +47,25 @@ export const LabelSelector = ({
 
   const fetchResourceLabels = async () => {
     try {
-      if (resourceType === "invoice") {
-        const { data, error } = await supabase
-          .from("invoice_labels")
-          .select(`
-            label_id,
-            labels (*)
-          `)
-          .eq("invoice_id", resourceId);
+      const tableMap = {
+        invoice: { table: "invoice_labels", column: "invoice_id" },
+        payment: { table: "payment_labels", column: "payment_transaction_id" },
+        receipt: { table: "receipt_labels", column: "receipt_id" },
+      } as const;
 
-        if (error) throw error;
-        const labels = data?.map((item: any) => item.labels).filter(Boolean) || [];
-        onLabelsChange(labels);
-      } else {
-        const { data, error } = await supabase
-          .from("payment_labels")
-          .select(`
-            label_id,
-            labels (*)
-          `)
-          .eq("payment_transaction_id", resourceId);
+      const { table, column } = tableMap[resourceType];
 
-        if (error) throw error;
-        const labels = data?.map((item: any) => item.labels).filter(Boolean) || [];
-        onLabelsChange(labels);
-      }
+      const { data, error } = await supabase
+        .from(table)
+        .select(`
+          label_id,
+          labels (*)
+        `)
+        .eq(column, resourceId);
+
+      if (error) throw error;
+      const labels = data?.map((item: any) => item.labels).filter(Boolean) || [];
+      onLabelsChange(labels);
     } catch (error) {
       console.error("Error fetching resource labels:", error);
     }
@@ -82,49 +76,36 @@ export const LabelSelector = ({
     try {
       const isSelected = selectedLabels.some((l) => l.id === label.id);
 
+      const tableMap = {
+        invoice: { table: "invoice_labels", column: "invoice_id" },
+        payment: { table: "payment_labels", column: "payment_transaction_id" },
+        receipt: { table: "receipt_labels", column: "receipt_id" },
+      } as const;
+
+      const { table, column } = tableMap[resourceType];
+
       if (isSelected) {
         // Remove label
-        if (resourceType === "invoice") {
-          const { error } = await supabase
-            .from("invoice_labels")
-            .delete()
-            .eq("invoice_id", resourceId)
-            .eq("label_id", label.id);
+        const { error } = await supabase
+          .from(table)
+          .delete()
+          .eq(column, resourceId)
+          .eq("label_id", label.id);
 
-          if (error) throw error;
-        } else {
-          const { error } = await supabase
-            .from("payment_labels")
-            .delete()
-            .eq("payment_transaction_id", resourceId)
-            .eq("label_id", label.id);
-
-          if (error) throw error;
-        }
+        if (error) throw error;
 
         onLabelsChange(selectedLabels.filter((l) => l.id !== label.id));
         toast.success(`Removed label "${label.name}"`);
       } else {
         // Add label
-        if (resourceType === "invoice") {
-          const { error } = await supabase
-            .from("invoice_labels")
-            .insert({
-              invoice_id: resourceId,
-              label_id: label.id,
-            });
+        const { error } = await supabase
+          .from(table)
+          .insert({
+            [column]: resourceId,
+            label_id: label.id,
+          });
 
-          if (error) throw error;
-        } else {
-          const { error } = await supabase
-            .from("payment_labels")
-            .insert({
-              payment_transaction_id: resourceId,
-              label_id: label.id,
-            });
-
-          if (error) throw error;
-        }
+        if (error) throw error;
 
         onLabelsChange([...selectedLabels, label]);
         toast.success(`Added label "${label.name}"`);
