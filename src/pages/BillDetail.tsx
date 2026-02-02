@@ -77,13 +77,6 @@ export default function BillDetail() {
             payment_source,
             is_reimbursed,
             reimbursed_date
-          ),
-          bill_reviews (
-            id,
-            review_status,
-            total_potential_savings,
-            confidence_score,
-            analyzed_at
           )
         `)
         .eq('id', id)
@@ -114,25 +107,7 @@ export default function BillDetail() {
     enabled: !isNewBill && !!id
   });
 
-  // Fetch bill errors
-  const { data: errors } = useQuery({
-    queryKey: ['bill-errors', bill?.bill_reviews?.[0]?.id],
-    queryFn: async () => {
-      const reviewId = bill?.bill_reviews?.[0]?.id;
-      if (!reviewId) return [];
-      
-      const { data, error } = await supabase
-        .from('bill_errors')
-        .select('*')
-        .eq('bill_review_id', reviewId)
-        .order('error_category', { ascending: true })
-        .order('potential_savings', { ascending: false });
-
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!bill?.bill_reviews?.[0]?.id
-  });
+  // Bill review feature archived - removed error fetching
 
   // Fetch provider data
   const { data: providerData } = useQuery({
@@ -149,43 +124,7 @@ export default function BillDetail() {
     enabled: !!bill?.vendor
   });
 
-  // Trigger AI analysis function
-  const triggerAIAnalysis = async (invoiceId: string, receiptId: string) => {
-    setIsAnalyzing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('analyze-medical-bill', {
-        body: {
-          invoiceId,
-          receiptId,
-        },
-      });
-
-      if (error) {
-        console.error('Error invoking AI analysis:', error);
-        
-        // Check for specific error messages
-        const errorMessage = error.message || '';
-        if (errorMessage.includes('rate limit')) {
-          toast.error("AI rate limit exceeded. Please try again in a few minutes.");
-        } else if (errorMessage.includes('credits exhausted')) {
-          toast.error("AI credits exhausted. Please add funds to continue analysis.");
-        } else {
-          toast.error("AI analysis failed. Please try again.");
-        }
-      } else {
-        toast.success(`AI analysis complete! Found ${data.errorsFound || 0} potential issues.`);
-        // Refetch data to show updated review status
-        setTimeout(() => {
-          refetch();
-          setIsAnalyzing(false);
-        }, 2000);
-      }
-    } catch (error) {
-      console.error('Error triggering AI analysis:', error);
-      toast.error("Failed to start AI analysis");
-      setIsAnalyzing(false);
-    }
-  };
+  // Bill review feature archived - removed AI analysis function
 
   // Load bill data into form when editing
   useEffect(() => {
@@ -300,40 +239,7 @@ export default function BillDetail() {
           r => r.document_type === 'bill' || r.document_type === 'eob'
         );
         
-        if (billOrEOBReceipt) {
-          toast.info("Analyzing bill for potential errors...");
-          
-          // Create bill review record
-          const { data: existingReview } = await supabase
-            .from('bill_reviews')
-            .select('id')
-            .eq('invoice_id', billId)
-            .maybeSingle();
-
-          if (!existingReview) {
-            const { data: reviewData, error: reviewError } = await supabase
-              .from('bill_reviews')
-              .insert({
-                user_id: user.id,
-                invoice_id: billId,
-                review_status: 'pending',
-                total_potential_savings: 0,
-              })
-              .select()
-              .single();
-
-            if (reviewError) {
-              console.error('Error creating bill review:', reviewError);
-              toast.error("Failed to start AI review");
-            } else if (reviewData) {
-              // Trigger AI analysis in background
-              triggerAIAnalysis(billId, billOrEOBReceipt.id);
-            }
-          } else {
-            // Review already exists, just trigger analysis
-            triggerAIAnalysis(billId, billOrEOBReceipt.id);
-          }
-        }
+        // Bill review feature archived - removed AI analysis trigger
       }
     } catch (error) {
       console.error("Error saving bill:", error);
@@ -341,29 +247,7 @@ export default function BillDetail() {
     }
   };
 
-  const handleStartDispute = () => {
-    navigate(`/bills/${id}/dispute`);
-  };
-
-  const handleMarkCorrect = async () => {
-    const reviewId = bill?.bill_reviews?.[0]?.id;
-    if (!reviewId) return;
-    
-    try {
-      const { error } = await supabase
-        .from('bill_reviews')
-        .update({ review_status: 'resolved' })
-        .eq('id', reviewId);
-
-      if (error) throw error;
-      
-      toast.success("Bill marked as correct");
-      refetch();
-    } catch (error) {
-      console.error('Error updating bill review:', error);
-      toast.error("Failed to update bill status");
-    }
-  };
+  // Bill review feature archived - removed handleStartDispute and handleMarkCorrect
 
   if (isLoading && !isNewBill) {
     return (
@@ -373,9 +257,8 @@ export default function BillDetail() {
     );
   }
 
-  const review = bill?.bill_reviews?.[0];
   const breakdown = bill ? calculateHSAEligibility(bill, (bill.payment_transactions || []) as any) : null;
-  const errorCount = errors?.length || 0;
+  // Bill review feature archived - removed review and errorCount
 
   return (
     <div className="min-h-screen bg-background">
@@ -412,16 +295,12 @@ export default function BillDetail() {
                     {isNewBill ? "Track your medical bill and manage payments" : `Bill #${bill?.invoice_number || 'N/A'}`}
                   </CardDescription>
                 </div>
-                {!isNewBill && review && (
-                  <Badge variant={errorCount > 0 ? "destructive" : "default"}>
-                    {errorCount > 0 ? `${errorCount} Issues Found` : "Verified"}
-                  </Badge>
-                )}
+                {/* Bill review feature archived - removed review badge */}
               </div>
             </CardHeader>
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="overview">
                     <FileText className="h-4 w-4 mr-2" />
                     Overview
@@ -430,12 +309,6 @@ export default function BillDetail() {
                     <Upload className="h-4 w-4 mr-2" />
                     Documents
                   </TabsTrigger>
-                  {!isNewBill && review && (
-                    <TabsTrigger value="ai-review">
-                      <AlertTriangle className="h-4 w-4 mr-2" />
-                      AI Review
-                    </TabsTrigger>
-                  )}
                   {!isNewBill && (
                     <TabsTrigger value="payments">
                       <CreditCard className="h-4 w-4 mr-2" />
@@ -617,89 +490,7 @@ export default function BillDetail() {
                   </div>
                 </TabsContent>
 
-                {/* AI Review Tab */}
-                {!isNewBill && review && (
-                  <TabsContent value="ai-review" className="space-y-6 mt-6">
-                    {(isAnalyzing || review.review_status === 'pending') ? (
-                      <div className="p-8 text-center">
-                        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
-                        <h3 className="text-2xl font-bold mb-2">Analyzing Bill...</h3>
-                        <p className="text-muted-foreground">
-                          Our AI is reviewing your bill for potential errors and overcharges.
-                          <br />
-                          This typically takes 15-30 seconds.
-                        </p>
-                      </div>
-                    ) : errorCount > 0 ? (
-                      <>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <Card>
-                            <CardContent className="pt-6">
-                              <div className="flex items-center gap-2 mb-2">
-                                <AlertTriangle className="h-5 w-5 text-destructive" />
-                                <span className="font-semibold">Total Issues</span>
-                              </div>
-                              <p className="text-3xl font-bold">{errorCount}</p>
-                            </CardContent>
-                          </Card>
-
-                          <Card>
-                            <CardContent className="pt-6">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Scale className="h-5 w-5 text-green-600" />
-                                <span className="font-semibold">Potential Savings</span>
-                              </div>
-                              <p className="text-3xl font-bold text-green-600">
-                                ${(review.total_potential_savings || 0).toFixed(2)}
-                              </p>
-                            </CardContent>
-                          </Card>
-
-                          <Card>
-                            <CardContent className="pt-6">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="font-semibold">Confidence</span>
-                              </div>
-                              <p className="text-3xl font-bold">
-                                {((review.confidence_score || 0) * 100).toFixed(0)}%
-                              </p>
-                            </CardContent>
-                          </Card>
-                        </div>
-
-                        {providerData && <ProviderPerformanceCard provider={providerData} />}
-                        <PriceBenchmarking 
-                          invoiceAmount={bill?.amount || 0}
-                          category={bill?.category}
-                        />
-
-                        <div className="space-y-4">
-                          <h3 className="text-xl font-bold">Identified Issues</h3>
-                          {errors?.map((error) => (
-                            <BillErrorCard key={error.id} error={error} />
-                          ))}
-                        </div>
-
-                        <div className="flex gap-3">
-                          <Button onClick={handleStartDispute}>
-                            Start Dispute Process
-                          </Button>
-                          <Button variant="outline" onClick={handleMarkCorrect}>
-                            Mark as Correct
-                          </Button>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="text-center py-12">
-                        <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-4" />
-                        <h3 className="text-2xl font-bold mb-2">No Issues Found</h3>
-                        <p className="text-muted-foreground">
-                          This bill appears to be accurate. No billing errors were detected.
-                        </p>
-                      </div>
-                    )}
-                  </TabsContent>
-                )}
+                {/* Bill review feature archived - removed AI Review tab */}
 
                 {/* Payments Tab */}
                 {!isNewBill && (

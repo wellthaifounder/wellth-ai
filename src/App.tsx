@@ -34,17 +34,18 @@ const Reports = lazy(() => import("./pages/Reports"));
 const TripwireSuccess = lazy(() => import("./pages/TripwireSuccess"));
 const TripwireOffer = lazy(() => import("./pages/TripwireOffer"));
 const Checkout = lazy(() => import("./pages/Checkout"));
-const BillReviews = lazy(() => import("./pages/BillReviews"));
-const BillReview = lazy(() => import("./pages/BillReview"));
 const NewBillUpload = lazy(() => import("./pages/NewBillUpload"));
-const BillDispute = lazy(() => import("./pages/BillDispute"));
-const DisputeManagement = lazy(() => import("./pages/DisputeManagement"));
-const DisputeDetail = lazy(() => import("./pages/DisputeDetail"));
+// Bill Review & Dispute features archived - V2 feature
+// const BillReviews = lazy(() => import("./pages/BillReviews"));
+// const BillReview = lazy(() => import("./pages/BillReview"));
+// const BillDispute = lazy(() => import("./pages/BillDispute"));
+// const DisputeManagement = lazy(() => import("./pages/DisputeManagement"));
+// const DisputeDetail = lazy(() => import("./pages/DisputeDetail"));
 
-// Medical Events pages
-const MedicalEvents = lazy(() => import("./pages/MedicalEvents"));
-const MedicalEventDetail = lazy(() => import("./pages/MedicalEventDetail"));
-const NewMedicalEvent = lazy(() => import("./pages/NewMedicalEvent"));
+// Collections pages
+const Collections = lazy(() => import("./pages/Collections"));
+const CollectionDetail = lazy(() => import("./pages/CollectionDetail"));
+const NewCollection = lazy(() => import("./pages/NewCollection"));
 // Provider Directory removed - V2 feature
 // const ProviderDirectory = lazy(() => import("./pages/ProviderDirectory"));
 // const ProviderDetail = lazy(() => import("./pages/ProviderDetail"));
@@ -88,11 +89,11 @@ const App = () => (
                     <Route path="/bills/upload" element={<NewBillUpload />} />
                     <Route path="/bills/:id" element={<BillDetail />} />
                     
-                    {/* Bill Review and Dispute Detail Pages */}
-                    <Route path="/bill-reviews/:invoiceId" element={<BillReview />} />
-                    <Route path="/disputes/:id" element={<DisputeDetail />} />
-                    <Route path="/bills/:invoiceId/dispute" element={<BillDispute />} />
-                    
+                    {/* Bill Review & Dispute features archived - redirected to bills */}
+                    <Route path="/bill-reviews/:invoiceId" element={<Bills />} />
+                    <Route path="/disputes/:id" element={<Bills />} />
+                    <Route path="/bills/:invoiceId/dispute" element={<Bills />} />
+
                     {/* Legacy redirects */}
                     <Route path="/invoices" element={<Bills />} />
                     <Route path="/bill-reviews" element={<Bills />} />
@@ -110,10 +111,15 @@ const App = () => (
                     {/* Transactions Route */}
                     <Route path="/transactions" element={<Transactions />} />
 
-                    {/* Medical Events Routes */}
-                    <Route path="/medical-events" element={<MedicalEvents />} />
-                    <Route path="/medical-events/new" element={<NewMedicalEvent />} />
-                    <Route path="/medical-events/:id" element={<MedicalEventDetail />} />
+                    {/* Collections Routes */}
+                    <Route path="/collections" element={<Collections />} />
+                    <Route path="/collections/new" element={<NewCollection />} />
+                    <Route path="/collections/:id" element={<CollectionDetail />} />
+
+                    {/* Legacy redirects for medical events */}
+                    <Route path="/medical-events" element={<Collections />} />
+                    <Route path="/medical-events/new" element={<NewCollection />} />
+                    <Route path="/medical-events/:id" element={<CollectionDetail />} />
 
                     {/* Supporting Routes */}
                     <Route path="/documents" element={<Documents />} />

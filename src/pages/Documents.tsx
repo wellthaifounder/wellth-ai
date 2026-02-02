@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Upload, Search, FileText, Calendar, Tag, ArrowLeft } from "lucide-react";
+import { Upload, Search, FileText, Tag } from "lucide-react";
 import { DocumentCard } from "@/components/documents/DocumentCard";
 import { EditDocumentDialog } from "@/components/documents/EditDocumentDialog";
+import { LinkToCollectionDialog } from "@/components/documents/LinkToCollectionDialog";
 import { MultiFileUpload } from "@/components/expense/MultiFileUpload";
 import { Badge } from "@/components/ui/badge";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
@@ -21,6 +22,12 @@ interface Receipt {
   uploaded_at: string;
   invoice_id: string | null;
   payment_transaction_id: string | null;
+  collection_id: string | null;
+  collections?: {
+    id: string;
+    title: string;
+    color: string | null;
+  } | null;
 }
 
 const Documents = () => {
@@ -31,6 +38,7 @@ const Documents = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string>("all");
   const [editingReceipt, setEditingReceipt] = useState<Receipt | null>(null);
+  const [linkingReceiptId, setLinkingReceiptId] = useState<string | null>(null);
   const [showUpload, setShowUpload] = useState(false);
   const [newFiles, setNewFiles] = useState<any[]>([]);
 
@@ -50,7 +58,14 @@ const Documents = () => {
 
       const { data, error } = await supabase
         .from("receipts")
-        .select("*")
+        .select(`
+          *,
+          collections (
+            id,
+            title,
+            color
+          )
+        `)
         .eq("user_id", user.id)
         .order("uploaded_at", { ascending: false });
 
@@ -165,13 +180,6 @@ const Documents = () => {
   return (
     <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Button variant="ghost" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
-        </div>
-
         <Card className="mb-6">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -273,6 +281,7 @@ const Documents = () => {
                 receipt={receipt}
                 onEdit={() => setEditingReceipt(receipt)}
                 onDelete={handleDelete}
+                onLinkToCollection={() => setLinkingReceiptId(receipt.id)}
               />
             ))
           )}
@@ -288,6 +297,15 @@ const Documents = () => {
             loadReceipts();
             setEditingReceipt(null);
           }}
+        />
+      )}
+
+      {linkingReceiptId && (
+        <LinkToCollectionDialog
+          open={!!linkingReceiptId}
+          onOpenChange={(open) => !open && setLinkingReceiptId(null)}
+          documentId={linkingReceiptId}
+          onSuccess={loadReceipts}
         />
       )}
     </AuthenticatedLayout>

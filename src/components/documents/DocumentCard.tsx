@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Eye, Download, Edit, Trash2, FileText, Link2 } from "lucide-react";
+import { Eye, Download, Edit, Trash2, FileText, Link2, FolderOpen, Unlink } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { format } from "date-fns";
@@ -18,12 +19,19 @@ interface DocumentCardProps {
     uploaded_at: string;
     invoice_id: string | null;
     payment_transaction_id: string | null;
+    collection_id?: string | null;
+    collections?: {
+      id: string;
+      title: string;
+      color: string | null;
+    } | null;
   };
   onEdit: () => void;
   onDelete: (id: string) => void;
+  onLinkToCollection?: () => void;
 }
 
-export const DocumentCard = ({ receipt, onEdit, onDelete }: DocumentCardProps) => {
+export const DocumentCard = ({ receipt, onEdit, onDelete, onLinkToCollection }: DocumentCardProps) => {
   const [viewUrl, setViewUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -68,6 +76,8 @@ export const DocumentCard = ({ receipt, onEdit, onDelete }: DocumentCardProps) =
 
   const isImage = receipt.file_type.startsWith('image/');
   const isAttached = receipt.invoice_id || receipt.payment_transaction_id;
+  const hasCollection = receipt.collection_id && receipt.collections;
+  const isOrphaned = !isAttached && !hasCollection;
 
   return (
     <>
@@ -92,11 +102,42 @@ export const DocumentCard = ({ receipt, onEdit, onDelete }: DocumentCardProps) =
             </div>
           </div>
 
+          {/* Collection Link */}
+          {hasCollection && (
+            <Link
+              to={`/collections/${receipt.collections!.id}`}
+              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 bg-primary/5 hover:bg-primary/10 p-2 rounded transition-colors"
+            >
+              {receipt.collections!.color && (
+                <div
+                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: receipt.collections!.color }}
+                />
+              )}
+              <FolderOpen className="h-3 w-3" />
+              <span className="truncate">{receipt.collections!.title}</span>
+            </Link>
+          )}
+
+          {/* Bill/Payment Attachment */}
           {isAttached && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 p-2 rounded">
               <Link2 className="h-3 w-3" />
               <span>Attached to {receipt.invoice_id ? 'bill' : 'payment'}</span>
             </div>
+          )}
+
+          {/* Orphaned Warning */}
+          {isOrphaned && onLinkToCollection && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onLinkToCollection}
+              className="w-full text-xs gap-1 border-dashed border-amber-500/50 text-amber-600 hover:bg-amber-50 hover:text-amber-700"
+            >
+              <Unlink className="h-3 w-3" />
+              Not linked to any collection
+            </Button>
           )}
 
           <div className="flex gap-2 pt-2 border-t">
