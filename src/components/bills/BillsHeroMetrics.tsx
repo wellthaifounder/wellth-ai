@@ -15,9 +15,7 @@ export function BillsHeroMetrics({
   unpaidBalance,
 }: BillsHeroMetricsProps) {
   const hsaEligible = paidOther + unpaidBalance;
-  
-  console.log("BillsHeroMetrics values:", { totalBilled, paidViaHSA, paidOther, unpaidBalance });
-  
+
   // Compute unpaid from inputs to guarantee consistency in the bar
   const unpaidCalc = totalBilled > 0 
     ? Math.max(0, totalBilled - paidViaHSA - paidOther)

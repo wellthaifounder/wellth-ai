@@ -8,23 +8,23 @@ import { Screen4Expenses } from "@/components/calculator/Screen4Expenses";
 import { ResultsScreen } from "@/components/calculator/ResultsScreen";
 
 export interface CalculatorData {
-  monthlySpending: number;
+  accountType: string;
+  annualSpending: number;
   householdSize: number;
-  hasHSA: string;
-  paymentMethod: string;
-  hasRewards: string;
-  upcomingExpenses: string;
+  taxBracket: number;
+  trackingMethod: string;
+  topPriority: string;
 }
 
 const Calculator = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<CalculatorData>({
-    monthlySpending: 200,
+    accountType: "",
+    annualSpending: 3000,
     householdSize: 1,
-    hasHSA: "",
-    paymentMethod: "",
-    hasRewards: "",
-    upcomingExpenses: "",
+    taxBracket: 22,
+    trackingMethod: "",
+    topPriority: "",
   });
 
   const totalSteps = 4;
@@ -37,9 +37,8 @@ const Calculator = () => {
     if (currentStep < totalSteps) {
       setCurrentStep((prev) => prev + 1);
     } else {
-      // Save to session storage for use on auth page
       sessionStorage.setItem("calculatorResults", JSON.stringify(data));
-      setCurrentStep(5); // Results screen
+      setCurrentStep(5);
     }
   };
 

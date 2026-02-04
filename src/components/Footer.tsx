@@ -10,7 +10,7 @@ export const Footer = () => {
               <WellthLogo size="sm" showTagline />
             </div>
             <p className="mb-4 text-sm text-muted-foreground">
-              Your financial health companion. Optimize medical spending, maximize HSA benefits and rewards through smart automation and AI insights.
+              Your healthcare expense companion. Track medical spending, organize by episode of care, and maximize your HSA and FSA savings.
             </p>
             <p className="text-xs text-muted-foreground">
               © 2025 Wellth.ai. All rights reserved.

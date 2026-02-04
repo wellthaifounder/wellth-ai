@@ -1,44 +1,37 @@
-import { AlertCircle, Shield, FileText, CheckCircle2, PiggyBank, Sparkles } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Receipt, FolderOpen, Calculator, CheckCircle2, PiggyBank, FileText } from "lucide-react";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
-// Reordered to prioritize bill error detection (Bill Error Detection First strategy)
 const features = [
   {
-    icon: AlertCircle,
-    title: "AI-Powered Bill Analysis",
-    description: "Automatically detect billing errors, duplicate charges, and overcharges before you pay. Our AI scans every line item.",
-    isPrimary: true,
+    icon: Receipt,
+    title: "Smart Expense Tracking",
+    description: "Upload bills and receipts — amounts, vendors, dates, and categories are extracted automatically so you never have to enter data by hand.",
   },
   {
-    icon: FileText,
-    title: "Dispute Automation",
-    description: "Generate professional dispute letters instantly when errors are found. We handle the paperwork, you keep the savings.",
-    isPrimary: true,
+    icon: FolderOpen,
+    title: "Collections",
+    description: "Group related medical expenses into episodes of care. Track outstanding balances and HSA-eligible totals for each collection.",
   },
   {
-    icon: Shield,
-    title: "Provider Transparency",
-    description: "Check billing accuracy scores and dispute success rates for healthcare providers before scheduling your next appointment.",
-    isPrimary: true,
+    icon: Calculator,
+    title: "HSA Savings Calculator",
+    description: "Model reimbursement timing to see how much your HSA could grow. Understand the long-term impact of delaying reimbursement.",
   },
   {
     icon: CheckCircle2,
     title: "Tax Deduction Tracking",
-    description: "Automatically categorize every medical expense as tax-deductible. Export IRS-compliant reports in seconds.",
-    isPrimary: false,
+    description: "Every medical expense is automatically categorized for tax purposes. Export IRS-compliant reports in seconds.",
   },
   {
     icon: PiggyBank,
-    title: "HSA Optimization (Bonus for HSA Users)",
-    description: "Strategic reimbursement timing and claimable balance tracking to maximize your tax-advantaged healthcare account.",
-    isPrimary: false,
+    title: "HSA/FSA Optimization",
+    description: "Strategic reimbursement timing, claimable balance tracking, and investment vault monitoring for your tax-advantaged accounts.",
   },
   {
-    icon: Sparkles,
+    icon: FileText,
     title: "Organized Records",
-    description: "All your bills, receipts, and payments in one searchable place. Never lose a document again.",
-    isPrimary: false,
+    description: "All your bills, receipts, and payments in one searchable place. Organize by collection, category, or date.",
   },
 ];
 
@@ -57,7 +50,7 @@ export const Features = () => {
             Everything You Need to Take Control
           </h2>
           <p className="text-base sm:text-lg text-muted-foreground px-4 sm:px-0">
-            Whether you have an HSA or not, these tools help you save money and reduce stress on every medical expense.
+            Track, organize, and optimize your medical expenses — with powerful tools built for HSA and FSA holders.
           </p>
         </div>
         

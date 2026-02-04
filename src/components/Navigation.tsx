@@ -83,16 +83,16 @@ export const Navigation = () => {
         
         {/* Desktop Auth Buttons */}
         <div className="hidden md:flex items-center gap-2 lg:gap-3" role="group" aria-label="Authentication">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => {
               analytics.navigationClick("calculator");
               navigate('/calculator');
-            }} 
+            }}
             className="text-sm"
           >
-            Calculator
+            Savings Calculator
           </Button>
           <Button 
             variant="ghost"
@@ -190,7 +190,7 @@ export const Navigation = () => {
                     }}
                     className="text-base sm:text-lg font-medium text-foreground transition-all duration-150 hover:text-primary py-2 px-3 sm:px-4 rounded-md hover:bg-accent/5"
                   >
-                    Calculator
+                    Savings Calculator
                   </a>
                 </SheetClose>
               </div>

@@ -20,6 +20,22 @@ interface ResultsScreenProps {
   data: CalculatorData;
 }
 
+const getPersonalizedMessage = (data: CalculatorData): string => {
+  if (data.trackingMethod === "none") {
+    return "You're not tracking medical expenses yet — Wellth gives you one organized place for every bill, receipt, and payment.";
+  }
+  if (data.topPriority === "taxes") {
+    return "Tax savings are your top priority — Wellth automatically categorizes expenses and tracks your deductions year-round.";
+  }
+  if (data.topPriority === "hsa_growth") {
+    return "Growing your HSA is your goal — Wellth's savings calculator and reimbursement timing tools help you maximize compound growth.";
+  }
+  if (data.topPriority === "organizing") {
+    return "Staying organized matters most — Wellth lets you group expenses by episode of care and find any receipt in seconds.";
+  }
+  return "Wellth helps you track expenses, optimize your HSA or FSA, and keep every receipt organized in one place.";
+};
+
 export const ResultsScreen = ({ data }: ResultsScreenProps) => {
   const navigate = useNavigate();
   const [displayedSavings, setDisplayedSavings] = useState(0);
@@ -50,9 +66,8 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
       toast.error("Please enter a valid email address");
       return;
     }
-    
+
     try {
-      // Send nurture email sequence
       const { error } = await supabase.functions.invoke('send-nurture-email', {
         body: {
           email,
@@ -67,62 +82,84 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
       sessionStorage.setItem("leadEmail", email);
       sessionStorage.setItem('calculatorData', JSON.stringify(data));
       sessionStorage.setItem('estimatedSavings', savings.total.toString());
-      toast.success("Results sent! Redirecting to special offer...");
-      
-      // Navigate to tripwire offer page after email capture
-      setTimeout(() => {
-        navigate("/tripwire-offer");
-      }, 1500);
+      toast.success("Savings breakdown sent to your email!");
     } catch (error) {
-      console.error('Error sending email:', error);
       toast.error("Something went wrong. Please try again.");
     }
   };
+
+  const personalizedMessage = getPersonalizedMessage(data);
+  const accountLabel = data.accountType === "hsa" ? "HSA" : data.accountType === "fsa" ? "FSA" : "HSA/FSA";
 
   return (
     <div className="space-y-8">
       {/* Big Savings Number */}
       <div className="space-y-4 rounded-2xl bg-card p-8 shadow-lg text-center">
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-2">
-          <span className="text-xl">💰</span>
-          <span className="text-sm font-semibold text-primary">Wellth Savings Calculator</span>
+          <span className="text-sm font-semibold text-primary">Your Estimated Savings</span>
         </div>
-        <h1 className="text-2xl font-bold">Your Personalized Savings</h1>
         <div className="rounded-xl bg-primary/10 p-8">
           <div className="text-5xl font-bold text-primary">
             ${displayedSavings.toLocaleString()}
           </div>
           <div className="mt-2 text-lg text-muted-foreground">
-            Estimated annual savings with Wellth
+            potential annual savings with {accountLabel} optimization
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          Join thousands saving on healthcare costs
+          {personalizedMessage}
         </p>
       </div>
 
-      {/* Savings Breakdown */}
+      {/* Transparent Math Breakdown */}
       <div className="space-y-4 rounded-2xl bg-card p-8 shadow-lg">
-        <div className="space-y-3">
-          <p className="text-xs text-muted-foreground">Breakdown</p>
-          <div className="text-sm space-y-2">
-            <div className="flex justify-between items-center py-2 border-b border-border">
-              <span className="text-muted-foreground">Rewards:</span>
-              <span className="font-medium">${savings.rewardsSavings.toLocaleString()}</span>
+        <h2 className="text-lg font-semibold">How we calculated this</h2>
+        <div className="space-y-4">
+          {/* Tax Savings */}
+          <div className="rounded-lg border border-border p-4 space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="font-medium">Tax Savings</span>
+              <span className="font-bold text-green-600">${savings.taxSavings.toLocaleString()}/year</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-border">
-              <span className="text-muted-foreground">Tax Savings:</span>
-              <span className="font-medium text-green-600">${savings.taxSavings.toLocaleString()}</span>
+            <div className="text-sm text-muted-foreground font-mono bg-muted/50 rounded px-3 py-1.5">
+              {savings.formulas.taxLabel}
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-border">
-              <span className="text-muted-foreground">Timing Growth:</span>
-              <span className="font-medium">${savings.timingSavings.toLocaleString()}</span>
-            </div>
+            <p className="text-xs text-muted-foreground">
+              {savings.formulas.taxExplanation}
+            </p>
           </div>
+
+          {/* Investment Growth */}
+          {savings.investmentGrowth > 0 && (
+            <div className="rounded-lg border border-border p-4 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="font-medium">Projected Investment Growth</span>
+                <span className="font-bold">${savings.investmentGrowth.toLocaleString()}</span>
+              </div>
+              <div className="text-sm text-muted-foreground font-mono bg-muted/50 rounded px-3 py-1.5">
+                {savings.formulas.growthLabel}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {savings.formulas.growthExplanation}
+              </p>
+            </div>
+          )}
+
+          {savings.investmentGrowth === 0 && data.accountType === "fsa" && (
+            <div className="rounded-lg border border-border p-4 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="font-medium">Investment Growth</span>
+                <span className="text-muted-foreground">N/A</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {savings.formulas.growthExplanation}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Free Signup/Email Options */}
+      {/* CTAs */}
       <div className="space-y-3 rounded-2xl bg-card p-8 shadow-lg">
         <Button
           onClick={() => {
@@ -133,7 +170,7 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
           size="lg"
           className="w-full"
         >
-          Get Started with Wellth – Sign Up Free
+          Start Free with Wellth
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
 
@@ -141,14 +178,14 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
           <DialogTrigger asChild>
             <Button variant="outline" size="lg" className="w-full">
               <Mail className="mr-2 h-4 w-4" />
-              Email Me These Results
+              Email Me This Breakdown
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Get Your Results via Email</DialogTitle>
+              <DialogTitle>Get Your Savings Breakdown</DialogTitle>
               <DialogDescription>
-                We'll send you a detailed breakdown of your potential savings
+                We'll send a detailed breakdown of your ${savings.total.toLocaleString()} estimated savings.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
@@ -159,14 +196,14 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
                 onChange={(e) => setEmail(e.target.value)}
               />
               <Button onClick={handleEmailCapture} className="w-full">
-                Send Results
+                Send Breakdown
               </Button>
             </div>
           </DialogContent>
         </Dialog>
 
         <p className="text-center text-xs text-muted-foreground">
-          You can always update these answers later
+          Free forever to start — no credit card required
         </p>
       </div>
     </div>

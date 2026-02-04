@@ -10,9 +10,9 @@ interface SEOHeadProps {
 }
 
 export const SEOHead = ({
-  title = "Wellth - Smart HSA Management & Healthcare Savings",
-  description = "Maximize your HSA benefits with Wellth. Track expenses, optimize tax savings, dispute medical bills, and make smarter healthcare financial decisions.",
-  keywords = "HSA, health savings account, healthcare savings, medical bills, tax savings, healthcare finance, FSA, medical expense tracking",
+  title = "Wellth - HSA/FSA Expense Management & Tax Savings",
+  description = "Track medical expenses, organize by episode of care, and optimize your HSA or FSA for maximum tax savings. Free to start.",
+  keywords = "HSA, health savings account, FSA, flexible spending account, medical expense tracking, tax savings, healthcare finance, HSA optimization, reimbursement timing",
   ogImage = "https://wellth.ai/og-image.jpg",
   ogType = "website",
   canonical = "https://wellth.ai",

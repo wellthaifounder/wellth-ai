@@ -1,5 +1,4 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { TrendingUp, CreditCard, Lightbulb } from "lucide-react";
 import { PaymentRecommendation as PaymentRec } from "@/lib/paymentRecommendation";
 
@@ -20,24 +19,10 @@ export const PaymentRecommendation = ({ recommendation, className = "" }: Paymen
     }
   };
 
-  const getConfidenceBadge = () => {
-    const variants = {
-      high: "default" as const,
-      medium: "secondary" as const,
-      low: "outline" as const,
-    };
-    
-    return (
-      <Badge variant={variants[recommendation.confidence]} className="text-xs">
-        {recommendation.confidence} confidence
-      </Badge>
-    );
-  };
-
   return (
     <Card className={`border-primary/20 bg-primary/5 ${className}`}>
       <CardContent className="p-4 space-y-3">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start gap-2">
           <div className="flex items-center gap-2">
             {getIcon()}
             <div>
@@ -47,7 +32,6 @@ export const PaymentRecommendation = ({ recommendation, className = "" }: Paymen
               </p>
             </div>
           </div>
-          {getConfidenceBadge()}
         </div>
 
         {recommendation.savingsAmount > 0 && (
@@ -56,12 +40,12 @@ export const PaymentRecommendation = ({ recommendation, className = "" }: Paymen
               <div className="text-2xl font-bold text-primary">
                 ${recommendation.savingsAmount.toFixed(2)}
               </div>
-              <div className="text-xs text-muted-foreground">Estimated Total Benefit</div>
+              <div className="text-xs text-muted-foreground">Estimated Total Savings</div>
             </div>
             
             {recommendation.breakdown && (
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Breakdown</p>
+                <p className="text-xs text-muted-foreground">Savings Breakdown</p>
                 <div className="text-sm space-y-1">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Rewards:</span>

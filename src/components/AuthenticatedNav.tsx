@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { WellthLogo } from "@/components/WellthLogo";
-import { LogOut, Calculator, Receipt, FileText, BarChart3, Menu, Settings, Home, Building2, BookOpen, Wallet, DollarSign, TrendingUp, Upload, FolderHeart } from "lucide-react";
+import { LogOut, Calculator, Receipt, FileText, BarChart3, Menu, Settings, Home, BookOpen, Wallet, DollarSign, TrendingUp, Upload, FolderHeart } from "lucide-react";
 import { WellbieAvatar } from "@/components/WellbieAvatar";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -14,13 +14,11 @@ import { OnboardingProgressBar } from "@/components/onboarding/OnboardingProgres
 interface AuthenticatedNavProps {
   unreviewedTransactions?: number;
   pendingReviews?: number;
-  activeDisputes?: number;
 }
 
-export const AuthenticatedNav = ({ 
+export const AuthenticatedNav = ({
   unreviewedTransactions = 0,
   pendingReviews = 0,
-  activeDisputes = 0 
 }: AuthenticatedNavProps) => {
   const navigate = useNavigate();
   const location = useLocation();

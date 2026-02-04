@@ -173,7 +173,7 @@ const PrePurchaseDecision = () => {
             <CardHeader>
               <CardTitle>HSA-Eligible Expense Details</CardTitle>
               <CardDescription>
-                Enter your upcoming HSA-eligible medical expense to optimize your strategy
+                Enter your upcoming medical expense to see your estimated savings
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -337,7 +337,7 @@ const PrePurchaseDecision = () => {
                 size="lg"
               >
                 <TrendingUp className="h-4 w-4 mr-2" />
-                Get Recommendation
+                Calculate My Savings
               </Button>
             </CardContent>
           </Card>
@@ -387,7 +387,7 @@ const PrePurchaseDecision = () => {
               
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Quick Action Steps</CardTitle>
+                  <CardTitle className="text-lg">How This Strategy Works</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {recommendation.method === "hsa-invest" && (
@@ -397,9 +397,9 @@ const PrePurchaseDecision = () => {
                           <CreditCard className="h-4 w-4 text-primary" />
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium text-sm">Use your rewards card</p>
+                          <p className="font-medium text-sm">Pay with a rewards card</p>
                           <p className="text-xs text-muted-foreground">
-                            Pay with your best rewards card to earn cash back immediately
+                            Earn cash back on the expense immediately
                           </p>
                         </div>
                       </div>
@@ -408,9 +408,9 @@ const PrePurchaseDecision = () => {
                           <Receipt className="h-4 w-4 text-primary" />
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium text-sm">Save all receipts</p>
+                          <p className="font-medium text-sm">Save your receipts</p>
                           <p className="text-xs text-muted-foreground">
-                            Keep detailed records - you'll need them for HSA reimbursement
+                            Receipts are needed when you reimburse from your HSA later
                           </p>
                         </div>
                       </div>
@@ -419,9 +419,9 @@ const PrePurchaseDecision = () => {
                           <TrendingUp className="h-4 w-4 text-primary" />
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium text-sm">Let your HSA grow</p>
+                          <p className="font-medium text-sm">HSA funds keep growing</p>
                           <p className="text-xs text-muted-foreground">
-                            Keep funds invested - reimburse yourself later for maximum benefit
+                            Your HSA stays invested and compounds tax-free until you reimburse
                           </p>
                         </div>
                       </div>
@@ -433,9 +433,9 @@ const PrePurchaseDecision = () => {
                         <CreditCard className="h-4 w-4 text-primary" />
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium text-sm">Use your rewards card</p>
+                        <p className="font-medium text-sm">Pay with a rewards card</p>
                         <p className="text-xs text-muted-foreground">
-                          Maximize your cash back since this isn't HSA-eligible
+                          This expense isn't HSA-eligible, but you can still earn cash back
                         </p>
                       </div>
                     </div>
@@ -447,18 +447,18 @@ const PrePurchaseDecision = () => {
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-primary" />
-                    Why This Strategy Works for HSA Holders
+                    Understanding HSA Savings
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
                   <p>
-                    <strong>Tax-Free Growth:</strong> By paying out-of-pocket with a rewards card and leaving your HSA invested, you earn compound returns tax-free while still getting cash back.
+                    <strong>Tax-Free Growth:</strong> HSA funds grow tax-free when invested. Paying out-of-pocket with a rewards card lets your HSA balance keep compounding while you earn cash back.
                   </p>
                   <p>
-                    <strong>Delayed Reimbursement:</strong> There's no time limit on HSA reimbursements. You can reimburse yourself decades later, letting your HSA grow substantially.
+                    <strong>No Reimbursement Deadline:</strong> There's no time limit on HSA reimbursements. You can reimburse yourself decades later, giving your HSA more time to grow.
                   </p>
                   <p>
-                    <strong>Triple Win:</strong> Earn credit card rewards now + HSA investment growth + tax-free reimbursement later = maximum financial benefit.
+                    <strong>Triple Tax Advantage:</strong> HSA contributions are tax-deductible, growth is tax-free, and qualified withdrawals are never taxed — a benefit unique to HSAs.
                   </p>
                 </CardContent>
               </Card>

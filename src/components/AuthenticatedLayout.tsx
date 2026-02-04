@@ -10,14 +10,12 @@ interface AuthenticatedLayoutProps {
   children: ReactNode;
   unreviewedTransactions?: number;
   pendingReviews?: number;
-  activeDisputes?: number;
 }
 
 export const AuthenticatedLayout = ({
   children,
   unreviewedTransactions = 0,
   pendingReviews = 0,
-  activeDisputes = 0
 }: AuthenticatedLayoutProps) => {
   // Enable session timeout for security (15 min inactivity, 2 min warning)
   useSessionTimeout(15, 2);
@@ -27,19 +25,17 @@ export const AuthenticatedLayout = ({
       <div className="min-h-screen flex w-full">
         {/* Desktop Sidebar - hidden on mobile */}
         <div className="hidden lg:block">
-      <AppSidebar 
+      <AppSidebar
         unreviewedTransactions={unreviewedTransactions}
         pendingReviews={pendingReviews}
-        activeDisputes={activeDisputes}
       />
         </div>
 
         <div className="flex-1 flex flex-col w-full">
           {/* Top Navigation Bar */}
-          <AuthenticatedNav 
+          <AuthenticatedNav
             unreviewedTransactions={unreviewedTransactions}
             pendingReviews={pendingReviews}
-            activeDisputes={activeDisputes}
           />
           
           {/* Desktop Sidebar Trigger - visible on desktop */}
