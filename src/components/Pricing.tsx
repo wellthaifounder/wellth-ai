@@ -70,7 +70,7 @@ const pricingTiers = [
       { text: "Priority support (1hr response)", included: true },
       { text: "Advanced payment strategy modeling", included: true },
       { text: "Unlimited document storage", included: true },
-      { text: "Bill dispute assistance", included: true },
+      { text: "Family expense consolidation", included: true },
     ],
     cta: "Start 14-Day Trial",
     popular: false,

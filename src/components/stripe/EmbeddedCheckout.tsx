@@ -10,7 +10,6 @@ interface EmbeddedCheckoutProps {
 }
 
 const stripeKey = "pk_test_51SHqh32Oq7FyVuCtKXpEc9rlEqa7NhrxnfacTjGjZwY01Xfkxny6zpFU4SQqvmeH30qgwDOF6JdtmPoBBKoTssmM00BBOHEBdH";
-console.log('Stripe publishable key available:', !!stripeKey);
 
 const stripePromise = loadStripe(stripeKey || "");
 
@@ -26,7 +25,6 @@ export const EmbeddedCheckout = ({ clientSecret, onComplete }: EmbeddedCheckoutP
     }
 
     if (clientSecret) {
-      console.log('Client secret received, loading checkout');
       setIsLoading(false);
     }
   }, [clientSecret]);

@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, FileSearch, MessageSquare } from "lucide-react";
+import { Sparkles, Receipt, Wallet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface WelcomeDialogProps {
@@ -13,19 +13,18 @@ interface WelcomeDialogProps {
 export function WelcomeDialog({ open, onClose, firstName, hasHSA }: WelcomeDialogProps) {
   const navigate = useNavigate();
 
-  // Simplified to 2 core features - defer HSA feature tour
   const features = [
     {
-      icon: FileSearch,
-      title: "Upload Bills for AI Error Detection",
-      description: "Our AI automatically scans for billing errors, duplicate charges, and overcharges",
+      icon: Receipt,
+      title: "Track Every Healthcare Expense",
+      description: "Upload bills and receipts, organize them into collections, and keep everything in one place",
       color: "text-amber-500",
     },
     {
-      icon: MessageSquare,
-      title: "File Disputes with One Click",
-      description: "Generate professional dispute letters instantly when errors are found",
-      color: "text-blue-500",
+      icon: Wallet,
+      title: "Maximize Your HSA & FSA Savings",
+      description: "See exactly how much you can save with tax-advantaged accounts and smart reimbursement timing",
+      color: "text-teal-500",
     },
   ];
 
@@ -67,7 +66,7 @@ export function WelcomeDialog({ open, onClose, firstName, hasHSA }: WelcomeDialo
             }}
             size="lg"
           >
-            Upload Your First Bill
+            Add Your First Expense
           </Button>
           <Button
             variant="ghost"

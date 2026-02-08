@@ -21,10 +21,10 @@ export const CTA = () => {
           className={`mx-auto max-w-4xl overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-hero p-6 sm:p-8 lg:p-12 xl:p-16 text-center shadow-2xl scroll-scale-in ${ctaVisible ? 'visible' : ''}`}
         >
           <h2 className="mb-3 sm:mb-4 text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white">
-            Start Saving This Tax Year
+            Take Control of Your Healthcare Dollars
           </h2>
           <p className="mb-6 sm:mb-8 text-sm sm:text-base lg:text-lg xl:text-xl text-white/90 px-4 sm:px-0">
-            Stop overpaying on healthcare. Join users who are saving thousands by taking control of medical expenses with smart tracking and payment strategies.
+            Track every expense, organize by episode of care, and optimize your HSA or FSA for maximum tax savings.
           </p>
           
           <div className="flex flex-col items-center justify-center gap-3 sm:gap-4">

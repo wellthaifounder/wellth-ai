@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, Wallet, CheckCircle } from "lucide-react";
+import { Receipt, Wallet, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { analytics } from "@/lib/analytics";
@@ -53,35 +53,35 @@ export function UserIntentDialog({ open, onComplete }: UserIntentDialogProps) {
   const intents = [
     {
       id: 'billing' as const,
-      title: 'Check My Bills for Errors',
-      description: 'Find overcharges, duplicate charges, and billing mistakes',
-      icon: AlertCircle,
+      title: 'Track & Organize Expenses',
+      description: 'Upload bills and receipts, organize into collections, and stay on top of spending',
+      icon: Receipt,
       badge: 'Most Popular',
       benefits: [
-        'AI-powered error detection',
-        'Automated dispute letters',
-        'Provider transparency scores',
+        'Smart expense categorization',
+        'Receipt scanning & OCR',
+        'Collections for episodes of care',
       ],
     },
     {
       id: 'hsa' as const,
-      title: 'Optimize My HSA',
-      description: 'Strategic tax-advantaged reimbursement and investment tracking',
+      title: 'Optimize My HSA/FSA',
+      description: 'Maximize tax savings with strategic reimbursement and investment tracking',
       icon: Wallet,
       benefits: [
+        'Tax savings calculator',
         'Strategic reimbursement timing',
-        'Vault balance tracking',
         'HSA eligibility detection',
       ],
     },
     {
       id: 'both' as const,
       title: 'Both',
-      description: 'Get the full Wellth experience with all features',
+      description: 'Get the full Wellth experience — track expenses and maximize HSA/FSA savings',
       icon: CheckCircle,
       benefits: [
-        'Complete bill error detection',
-        'Full HSA optimization',
+        'Complete expense tracking',
+        'Full HSA/FSA optimization',
         'Maximum savings potential',
       ],
     },

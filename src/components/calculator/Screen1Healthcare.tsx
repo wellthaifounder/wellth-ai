@@ -1,6 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 import { CalculatorData } from "@/pages/Calculator";
+import { Wallet, CreditCard, HelpCircle } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Screen1Props {
   data: CalculatorData;
@@ -9,69 +15,82 @@ interface Screen1Props {
 }
 
 export const Screen1Healthcare = ({ data, updateData, onNext }: Screen1Props) => {
-  const householdOptions = [1, 2, 3, 4, 5];
+  const options = [
+    {
+      value: "hsa",
+      label: "HSA (Health Savings Account)",
+      description: "Tax-deductible contributions, tax-free growth, tax-free withdrawals for medical expenses",
+      icon: Wallet,
+    },
+    {
+      value: "fsa",
+      label: "FSA (Flexible Spending Account)",
+      description: "Pre-tax contributions through your employer, use-it-or-lose-it each year",
+      icon: CreditCard,
+    },
+    {
+      value: "neither",
+      label: "Neither / Not sure",
+      description: "We'll show you what you could save by opening one",
+      icon: HelpCircle,
+    },
+  ];
 
   return (
     <div className="space-y-8 rounded-2xl bg-card p-8 shadow-lg">
       <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold">🎯 Let's find your hidden savings</h1>
+        <h1 className="text-3xl font-bold">Let's estimate your savings</h1>
         <p className="text-muted-foreground">
-          Just a few quick questions to get started
+          First, tell us about your healthcare account
         </p>
       </div>
 
-      <div className="space-y-6">
-        <div className="space-y-4">
-          <label className="block text-lg font-medium">
-            Roughly how much do you spend on healthcare each month?
-          </label>
-          <div className="space-y-2">
-            <Slider
-              value={[data.monthlySpending]}
-              onValueChange={(value) => updateData("monthlySpending", value[0])}
-              min={0}
-              max={2000}
-              step={50}
-              className="w-full"
-            />
-            <div className="text-center">
-              <span className="text-3xl font-bold text-primary">
-                ${data.monthlySpending}
-              </span>
-              <span className="text-muted-foreground">/month</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <label className="block text-lg font-medium">
-            How many people are in your household?
-          </label>
-          <div className="grid grid-cols-5 gap-3">
-            {householdOptions.map((size) => (
-              <button
-                key={size}
-                onClick={() => updateData("householdSize", size)}
-                className={`rounded-lg border-2 p-4 text-center transition-all hover:scale-105 ${
-                  data.householdSize === size
-                    ? "border-primary bg-primary/10"
-                    : "border-border bg-background"
-                }`}
-              >
-                <div className="text-2xl font-bold">{size}</div>
-                {size === 5 && <div className="text-xs text-muted-foreground">+</div>}
-              </button>
-            ))}
-          </div>
-        </div>
+      <div className="space-y-3">
+        <label className="block text-lg font-medium">
+          Do you have an HSA, FSA, or neither?
+        </label>
+        {options.map((option) => {
+          const Icon = option.icon;
+          return (
+            <button
+              key={option.value}
+              onClick={() => updateData("accountType", option.value)}
+              className={`flex w-full items-start gap-4 rounded-xl border-2 p-5 text-left transition-all hover:scale-[1.02] ${
+                data.accountType === option.value
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-background"
+              }`}
+            >
+              <div className="rounded-lg bg-primary/10 p-2 mt-0.5">
+                <Icon className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <div className="text-base font-medium">{option.label}</div>
+                <div className="text-sm text-muted-foreground mt-1">{option.description}</div>
+              </div>
+            </button>
+          );
+        })}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <p className="text-center text-xs text-muted-foreground cursor-help underline decoration-dotted">
+                What's the difference between an HSA and FSA?
+              </p>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p>HSAs are available with high-deductible health plans and funds roll over forever. FSAs are employer-sponsored and typically must be used each year.</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
-      <Button onClick={onNext} size="lg" className="w-full">
+      <Button onClick={onNext} disabled={!data.accountType} size="lg" className="w-full">
         Continue
       </Button>
 
       <p className="text-center text-xs text-muted-foreground">
-        🔒 We never share your info — your data stays safe with us
+        Your data stays private — we never share your information
       </p>
     </div>
   );

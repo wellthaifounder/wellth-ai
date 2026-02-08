@@ -1,18 +1,14 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, DollarSign, TrendingUp, Sparkles } from "lucide-react";
-import { calculateSavings } from "@/lib/savingsCalculator";
+import { ArrowRight, Receipt, FolderOpen, Wallet, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import { LeadCaptureModal } from "./LeadCaptureModal";
 import { analytics } from "@/lib/analytics";
 
 export const Hero = () => {
   const navigate = useNavigate();
-  const [showLeadCapture, setShowLeadCapture] = useState(false);
   const { ref: heroRef, isVisible: heroVisible } = useScrollAnimation({ threshold: 0.2 });
   const { ref: painPointsRef, isVisible: painPointsVisible } = useScrollAnimation({ threshold: 0.1 });
-  const { ref: hsaBonusRef, isVisible: hsaBonusVisible } = useScrollAnimation({ 
+  const { ref: hsaBonusRef, isVisible: hsaBonusVisible } = useScrollAnimation({
     threshold: 0.05,
     rootMargin: '50px'
   });
@@ -39,16 +35,15 @@ export const Hero = () => {
             className={`text-center space-y-4 sm:space-y-6 scroll-fade-in ${heroVisible ? 'visible' : ''}`}
           >
             <h1 id="hero-heading" className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl xl:text-6xl leading-tight px-4 sm:px-0">
-              Medical Bills Overcharged You.
+              Your HSA Could Be Saving You
               <span className="block bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent mt-2">
-                We'll Prove It.
+                Thousands More.
               </span>
             </h1>
 
             <p className="text-base sm:text-lg lg:text-xl text-white/90 leading-relaxed max-w-3xl mx-auto px-4 sm:px-6">
-              Upload your medical bills and get instant AI-powered error detection. Find overcharges, duplicate charges, and billing mistakes—automatically.
-              <span className="block mt-2 font-medium text-white">Join families taking control of their healthcare costs.</span>
-              <span className="block mt-2 text-sm text-white/70">Have an HSA? Get advanced tax-advantaged strategies included.</span>
+              Track medical expenses, organize receipts, and optimize your HSA or FSA—all in one place.
+              <span className="block mt-2 font-medium text-white">See exactly how much you could save with smarter reimbursement timing.</span>
             </p>
           </div>
 
@@ -58,20 +53,24 @@ export const Hero = () => {
             className={`grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-8 sm:mt-12 px-4 sm:px-0 scroll-fade-in ${painPointsVisible ? 'visible' : ''}`}
           >
             <div className="rounded-lg bg-white/10 p-4 sm:p-6 backdrop-blur-sm border border-white/20 transition-all hover:bg-white/15">
-              <h3 className="font-semibold text-white mb-2 text-sm sm:text-base">Catch Billing Errors</h3>
-              <p className="text-xs sm:text-sm text-white/80">Spot duplicate charges and overcharges before you pay</p>
+              <Receipt className="h-5 w-5 text-accent mb-2" aria-hidden="true" />
+              <h3 className="font-semibold text-white mb-2 text-sm sm:text-base">Track Every Expense</h3>
+              <p className="text-xs sm:text-sm text-white/80">Upload bills and receipts — details are extracted automatically</p>
             </div>
             <div className="rounded-lg bg-white/10 p-4 sm:p-6 backdrop-blur-sm border border-white/20 transition-all hover:bg-white/15">
-              <h3 className="font-semibold text-white mb-2 text-sm sm:text-base">Choose Smart</h3>
-              <p className="text-xs sm:text-sm text-white/80">Pick providers with proven track records, not guesswork</p>
+              <FolderOpen className="h-5 w-5 text-accent mb-2" aria-hidden="true" />
+              <h3 className="font-semibold text-white mb-2 text-sm sm:text-base">Organize by Collection</h3>
+              <p className="text-xs sm:text-sm text-white/80">Group related expenses by episode of care or treatment</p>
             </div>
             <div className="rounded-lg bg-white/10 p-4 sm:p-6 backdrop-blur-sm border border-white/20 transition-all hover:bg-white/15">
-              <h3 className="font-semibold text-white mb-2 text-sm sm:text-base">Track Everything</h3>
-              <p className="text-xs sm:text-sm text-white/80">All bills, payments, and receipts in one organized place</p>
+              <Wallet className="h-5 w-5 text-accent mb-2" aria-hidden="true" />
+              <h3 className="font-semibold text-white mb-2 text-sm sm:text-base">Connect Your HSA/FSA</h3>
+              <p className="text-xs sm:text-sm text-white/80">Link accounts securely and auto-detect HSA-eligible expenses</p>
             </div>
             <div className="rounded-lg bg-white/10 p-4 sm:p-6 backdrop-blur-sm border border-white/20 transition-all hover:bg-white/15">
-              <h3 className="font-semibold text-white mb-2 text-sm sm:text-base">Maximize Savings</h3>
-              <p className="text-xs sm:text-sm text-white/80">Get the best payment strategy for every medical expense</p>
+              <TrendingUp className="h-5 w-5 text-accent mb-2" aria-hidden="true" />
+              <h3 className="font-semibold text-white mb-2 text-sm sm:text-base">Maximize Tax Savings</h3>
+              <p className="text-xs sm:text-sm text-white/80">Time your reimbursements strategically and let your HSA grow</p>
             </div>
           </div>
 
@@ -81,9 +80,9 @@ export const Hero = () => {
               size="lg"
               className="w-full sm:w-auto group bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg hover:shadow-xl transition-all text-sm sm:text-base"
               onClick={handleCalculatorClick}
-              aria-label="Find your billing errors and potential savings"
+              aria-label="See how much you could save with Wellth"
             >
-              Find My Billing Errors
+              See How Much You Could Save
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Button>
             <Button
@@ -96,12 +95,6 @@ export const Hero = () => {
               Start Free
             </Button>
           </div>
-
-          <LeadCaptureModal 
-            open={showLeadCapture} 
-            onOpenChange={setShowLeadCapture}
-            source="hero"
-          />
 
           {/* Trust bar */}
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 pt-6 text-xs sm:text-sm text-white/70 border-t border-white/10 px-4 sm:px-0">
@@ -125,40 +118,35 @@ export const Hero = () => {
             </div>
           </div>
 
-          {/* HSA Bonus Section */}
-          <div 
+          {/* HSA/FSA Highlights */}
+          <div
             ref={hsaBonusRef}
             className={`rounded-2xl bg-white/5 p-6 sm:p-8 backdrop-blur-sm border border-white/10 mt-8 sm:mt-12 scroll-scale-in ${hsaBonusVisible ? 'visible' : ''}`}
           >
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className="rounded-lg bg-accent/20 p-2 sm:p-3 shrink-0">
-                <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-accent" aria-hidden="true" />
-              </div>
-              <div>
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Bonus for HSA Users</h3>
-                <p className="text-sm sm:text-base text-white/80 mb-4">
-                  Have an HSA? Unlock advanced tax-advantaged strategies to save even more:
-                </p>
-                <ul className="grid gap-2 sm:grid-cols-2 text-xs sm:text-sm text-white/90">
-                  <li className="flex items-center gap-2">
-                    <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-accent shrink-0" />
-                    <span>Automatic HSA eligibility detection</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-accent shrink-0" />
-                    <span>Investment vault tracking</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-accent shrink-0" />
-                    <span>Strategic reimbursement timing</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-accent shrink-0" />
-                    <span>Tax-free growth optimization</span>
-                  </li>
-                </ul>
-              </div>
+            <div className="text-center mb-4">
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-2">Built for HSA & FSA Holders</h3>
+              <p className="text-sm sm:text-base text-white/80">
+                Wellth is designed to help you get the most from your tax-advantaged healthcare accounts.
+              </p>
             </div>
+            <ul className="grid gap-2 sm:grid-cols-2 text-xs sm:text-sm text-white/90">
+              <li className="flex items-center gap-2">
+                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-accent shrink-0" />
+                <span>Automatic HSA eligibility detection</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-accent shrink-0" />
+                <span>Investment vault tracking</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-accent shrink-0" />
+                <span>Strategic reimbursement timing</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-accent shrink-0" />
+                <span>Tax-free growth optimization</span>
+              </li>
+            </ul>
           </div>
         </div>
       </div>

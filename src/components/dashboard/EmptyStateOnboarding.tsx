@@ -29,17 +29,17 @@ export function EmptyStateOnboarding({ projectedSavings }: EmptyStateOnboardingP
                 Your Personalized Savings Projection
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Based on your calculator results. Upload your first bill to find exact savings.
+                Based on your calculator results. Start tracking expenses to put this into action.
               </p>
             </div>
           ) : null}
 
           <div className="space-y-2">
             <h2 className="text-2xl font-bold">
-              {projectedSavings ? "Let's Find Those Savings" : "Find Your First $380 in Savings"}
+              {projectedSavings ? "Let's Start Tracking" : "Start Saving on Healthcare Today"}
             </h2>
             <p className="text-muted-foreground">
-              Most users discover billing errors on their first upload.
+              Upload your first expense and see how Wellth organizes everything for you.
             </p>
           </div>
 
@@ -74,8 +74,8 @@ export function EmptyStateOnboarding({ projectedSavings }: EmptyStateOnboardingP
                   <span className="text-sm font-bold text-muted-foreground">2</span>
                 </div>
                 <div>
-                  <p className="font-semibold text-muted-foreground">See Errors Found</p>
-                  <p className="text-sm text-muted-foreground">Our AI analyzes for billing errors, overcharges, and HSA opportunities.</p>
+                  <p className="font-semibold text-muted-foreground">Organize & Categorize</p>
+                  <p className="text-sm text-muted-foreground">Wellth auto-categorizes expenses and helps you organize them into collections.</p>
                 </div>
               </div>
 
@@ -103,7 +103,7 @@ export function EmptyStateOnboarding({ projectedSavings }: EmptyStateOnboardingP
 
             <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
               <TrendingUp className="h-4 w-4" />
-              <span>Average first-bill savings: <strong className="text-foreground">$380</strong></span>
+              <span>HSA holders save an average of <strong className="text-foreground">$1,800/year</strong> in taxes</span>
             </div>
           </div>
 

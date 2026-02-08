@@ -77,13 +77,12 @@ export const getPaymentRecommendation = (input: RecommendationInput): PaymentRec
     return {
       method: "rewards-card",
       title: "Use Your Rewards Card",
-      description: `This expense isn't HSA-eligible, so maximize your rewards instead.`,
+      description: `This expense isn't HSA-eligible. Here's what you'd earn from card rewards.`,
       savingsAmount,
       confidence: "high",
       reasoning: [
-        "Not eligible for HSA reimbursement",
-        `Earn ${(rewardsRate * 100).toFixed(1)}% back in rewards`,
-        `Estimated rewards: $${savingsAmount.toFixed(2)}`,
+        "This expense is not eligible for HSA reimbursement",
+        `A ${(rewardsRate * 100).toFixed(1)}% rewards card earns $${savingsAmount.toFixed(2)} back on this expense`,
       ],
       breakdown: {
         rewards: savingsAmount,
@@ -140,8 +139,8 @@ export const getPaymentRecommendation = (input: RecommendationInput): PaymentRec
   }
 
   reasoning.push(
-    "💡 Pay off card on time to avoid interest charges",
-    "📄 Keep receipts - reimburse from HSA anytime!"
+    "⏰ Card must be paid off on time to avoid interest charges",
+    "📄 Receipts are required for HSA reimbursement — there's no deadline to submit"
   );
 
   const payoffDescription = cardPayoffMonths <= 1 
@@ -150,8 +149,8 @@ export const getPaymentRecommendation = (input: RecommendationInput): PaymentRec
 
   return {
     method: "hsa-invest",
-    title: "Pay with Rewards Card + Save Receipt",
-    description: `Pay with rewards card ${payoffDescription}, let HSA grow ${hsaInvestmentYears} years, then reimburse yourself.`,
+    title: "Rewards Card + Delayed HSA Reimbursement",
+    description: `Paying with a rewards card ${payoffDescription} and reimbursing from your HSA in ${hsaInvestmentYears} years could save you $${totalBenefit.toFixed(2)}.`,
     savingsAmount: totalBenefit,
     taxSavings,
     confidence: "high",
