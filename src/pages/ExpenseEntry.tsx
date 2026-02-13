@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { ArrowLeft, Upload, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
 import { z } from "zod";
 import { getPaymentRecommendation } from "@/lib/paymentRecommendation";
 import { PaymentRecommendation } from "@/components/expense/PaymentRecommendation";
@@ -21,7 +21,7 @@ import { AttachDocumentDialog } from "@/components/documents/AttachDocumentDialo
 import { ReimbursementStrategySelector } from "@/components/expense/ReimbursementStrategySelector";
 import { SetHSADateDialog } from "@/components/profile/SetHSADateDialog";
 import { getDefaultReimbursementDate } from "@/lib/vaultCalculations";
-import { celebrateFirstExpense, celebrateExpenseSaved } from "@/lib/confettiUtils";
+import { celebrateFirstExpense } from "@/lib/confettiUtils";
 import { HSAAccountSelector } from "@/components/hsa/HSAAccountSelector";
 import { useHSAAccounts } from "@/hooks/useHSAAccounts";
 import { useHSAEligibility } from "@/hooks/useHSAEligibility";
@@ -67,10 +67,7 @@ const ExpenseEntry = () => {
   const [investmentNotes, setInvestmentNotes] = useState("");
   const [hsaOpenedDate, setHsaOpenedDate] = useState<string | null>(null);
   const [hsaDateDialogOpen, setHsaDateDialogOpen] = useState(false);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [expense, setExpense] = useState<any>(null);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
-  const [showAnalysisPrompt, setShowAnalysisPrompt] = useState(false);
   const [selectedHSAAccount, setSelectedHSAAccount] = useState<string>("");
   const { accounts: hsaAccounts } = useHSAAccounts();
   
@@ -283,7 +280,6 @@ const ExpenseEntry = () => {
       }
 
       // Upload new files
-      let uploadedReceiptId = null;
       if (newFiles.length > 0 && expense) {
         for (let i = 0; i < newFiles.length; i++) {
           const fileData = newFiles[i];
@@ -297,7 +293,7 @@ const ExpenseEntry = () => {
 
           if (uploadError) throw uploadError;
 
-          const { data: receiptData, error: receiptError } = await supabase
+          const { error: receiptError } = await supabase
             .from("receipts")
             .insert({
               user_id: user.id,
@@ -307,92 +303,31 @@ const ExpenseEntry = () => {
               document_type: fileData.documentType,
               description: fileData.description || null,
               display_order: i,
-            })
-            .select()
-            .single();
+            });
 
           if (receiptError) throw receiptError;
-          
-          // Store first receipt/bill for analysis
-          if (!uploadedReceiptId && ['receipt', 'bill'].includes(fileData.documentType)) {
-            uploadedReceiptId = receiptData.id;
-          }
         }
       }
 
-      // Auto-trigger expense analysis for bills over $500
-      const shouldAutoAnalyze =
-        uploadedReceiptId &&
-        parseFloat(formData.amount) >= 500 &&
-        !isEditMode; // Only for new expenses
+      setSuccess(true);
+      toast.success(isEditMode ? "Expense updated successfully!" : "Expense added successfully!");
 
-      if (shouldAutoAnalyze) {
-        setSuccess(true);
-        toast.success("Expense added! Checking for savings opportunities...");
-        
-        // Check if this is the user's first expense
+      // Check if this is the user's first expense (and not edit mode)
+      if (!isEditMode) {
         const { count: expenseCount } = await supabase
           .from('invoices')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
-        
+
         if (expenseCount === 1) {
           celebrateFirstExpense();
         }
-        
-        setIsAnalyzing(true);
-        
-        try {
-          const { data, error } = await supabase.functions.invoke('analyze-medical-bill', {
-            body: {
-              invoiceId: expense.id,
-              receiptId: uploadedReceiptId
-            }
-          });
-
-          if (error) throw error;
-
-          setAnalysisResult(data);
-          setShowAnalysisPrompt(true);
-          toast.success(`Found ${data.errorsFound} savings ${data.errorsFound === 1 ? 'opportunity' : 'opportunities'} worth up to $${data.totalPotentialSavings.toFixed(2)}!`);
-          
-          // Celebrate if significant savings found
-          if (data.totalPotentialSavings > 50) {
-            celebrateExpenseSaved();
-          }
-        } catch (error) {
-          console.error('Error analyzing bill:', error);
-          toast.error('Expense saved, but analysis failed. You can review it from the expense page.');
-          // Still navigate away after error
-          setTimeout(() => {
-            setSuccess(false);
-            navigate("/expenses");
-          }, 2000);
-        } finally {
-          setIsAnalyzing(false);
-        }
-      } else {
-        setSuccess(true);
-        toast.success(isEditMode ? "Expense updated successfully!" : "Expense added successfully!");
-        
-        // Check if this is the user's first expense (and not edit mode)
-        if (!isEditMode) {
-          const { count: expenseCount } = await supabase
-            .from('invoices')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
-          
-          if (expenseCount === 1) {
-            celebrateFirstExpense();
-          }
-        }
-        
-        // Reset form after 2 seconds or navigate
-        setTimeout(() => {
-          setSuccess(false);
-          navigate("/expenses");
-        }, 2000);
       }
+
+      setTimeout(() => {
+        setSuccess(false);
+        navigate("/expenses");
+      }, 2000);
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
@@ -405,39 +340,7 @@ const ExpenseEntry = () => {
     }
   };
 
-  const handleAnalyzeBill = async () => {
-    if (receipts.length === 0) {
-      toast.error("Please upload a bill first");
-      return;
-    }
-
-    if (!expense?.id) {
-      toast.error("Please save the expense first");
-      return;
-    }
-
-    setIsAnalyzing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('analyze-medical-bill', {
-        body: {
-          invoiceId: expense.id,
-          receiptId: receipts[0].id
-        }
-      });
-
-      if (error) throw error;
-
-      toast.success(`Analysis complete! Found ${data.errorsFound} potential issues with $${data.totalPotentialSavings} in savings.`);
-      navigate(`/bills/${expense.id}/review`);
-    } catch (error) {
-      console.error('Error analyzing bill:', error);
-      toast.error('Failed to analyze bill. Please try again.');
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  if (success && !showAnalysisPrompt) {
+  if (success) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="max-w-md mx-auto text-center p-8">
@@ -446,38 +349,6 @@ const ExpenseEntry = () => {
           <CardDescription>
             {isAnalyzing ? "Checking for savings opportunities..." : "Redirecting to expenses..."}
           </CardDescription>
-        </Card>
-      </div>
-    );
-  }
-
-  if (success && showAnalysisPrompt && analysisResult) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-lg mx-auto text-center p-8">
-          <Sparkles className="h-16 w-16 text-primary mx-auto mb-4" />
-          <CardTitle className="mb-2">Expense Analysis Complete!</CardTitle>
-          <CardDescription className="mb-6">
-            We found {analysisResult.errorsFound} potential savings {analysisResult.errorsFound === 1 ? 'opportunity' : 'opportunities'} worth up to{' '}
-            <span className="font-bold text-primary">${analysisResult.totalPotentialSavings.toFixed(2)}</span>
-          </CardDescription>
-
-          <div className="flex flex-col gap-3">
-            <Button
-              onClick={() => navigate(`/bills/${expense.id}`)}
-              size="lg"
-              className="w-full"
-            >
-              View Expense Details
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={() => navigate("/expenses")}
-              className="w-full"
-            >
-              Skip for Now
-            </Button>
-          </div>
         </Card>
       </div>
     );
@@ -694,17 +565,6 @@ const ExpenseEntry = () => {
               )}
 
               <div className="flex gap-2">
-                {expense?.id && receipts.length > 0 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleAnalyzeBill}
-                    disabled={isAnalyzing || loading}
-                    className="flex-1"
-                  >
-                    {isAnalyzing ? 'Analyzing...' : 'Analyze Bill for Errors'}
-                  </Button>
-                )}
                 <Button type="submit" className="flex-1" disabled={loading}>
                   {loading ? (isEditMode ? "Updating..." : "Adding...") : (isEditMode ? "Update Expense" : "Add Expense")}
                 </Button>
