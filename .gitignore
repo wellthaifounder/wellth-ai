@@ -32,3 +32,21 @@ supabase/.temp/
 
 .vercel
 .env*.local
+.env
+.claude/settings.local.json
+
+# Claude Code temporary files
+tmpclaude-*
+
+# Build artifacts
+build-output.txt
+
+# Binaries and archives
+bin/
+*.zip
+
+# Test files
+test-sample-bill.html
+
+# Temporary directories
+_ul
