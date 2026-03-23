@@ -108,8 +108,6 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      react: path.resolve(__dirname, "node_modules/react"),
-      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
     },
     dedupe: ["react", "react-dom"],
   },
@@ -119,20 +117,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     commonjsOptions: {
       include: [/node_modules/],
-      transformMixedEsModules: true,
     },
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // Vendor chunks for better caching
-          "react-vendor": ["react", "react-dom", "react-router-dom"],
-          "ui-vendor": ["lucide-react", "@radix-ui/react-accordion", "@radix-ui/react-dialog"],
-          "chart-vendor": ["recharts"],
-          "form-vendor": ["react-hook-form", "@hookform/resolvers", "zod"],
-          "supabase": ["@supabase/supabase-js"],
-          "query": ["@tanstack/react-query"],
-        },
-      },
-    },
+    rollupOptions: {},
   },
 }));
