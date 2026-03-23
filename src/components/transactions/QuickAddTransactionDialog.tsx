@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -19,7 +20,7 @@ export function QuickAddTransactionDialog({
   onOpenChange,
   onSuccess,
 }: QuickAddTransactionDialogProps) {
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     transaction_date: new Date().toISOString().split("T")[0],
     vendor: "",
@@ -29,14 +30,10 @@ export function QuickAddTransactionDialog({
     notes: "",
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
+  const addTransaction = useMutation({
+    mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
-
       const { error } = await supabase.from("transactions").insert({
         user_id: user.id,
         transaction_date: formData.transaction_date,
@@ -50,14 +47,13 @@ export function QuickAddTransactionDialog({
         source: "manual",
         reconciliation_status: "unlinked",
       });
-
       if (error) throw error;
-
+    },
+    onSuccess: () => {
       toast.success("Transaction added successfully");
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
       onSuccess();
       onOpenChange(false);
-      
-      // Reset form
       setFormData({
         transaction_date: new Date().toISOString().split("T")[0],
         vendor: "",
@@ -66,12 +62,13 @@ export function QuickAddTransactionDialog({
         is_medical: false,
         notes: "",
       });
-    } catch (error) {
-      console.error("Error adding transaction:", error);
-      toast.error("Failed to add transaction");
-    } finally {
-      setLoading(false);
-    }
+    },
+    onError: () => toast.error("Failed to add transaction"),
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    addTransaction.mutate();
   };
 
   return (
@@ -148,8 +145,8 @@ export function QuickAddTransactionDialog({
           </div>
 
           <div className="flex gap-2 pt-4">
-            <Button type="submit" disabled={loading} className="flex-1">
-              {loading ? "Adding..." : "Add Transaction"}
+            <Button type="submit" disabled={addTransaction.isPending} className="flex-1">
+              {addTransaction.isPending ? "Adding..." : "Add Transaction"}
             </Button>
             <Button
               type="button"

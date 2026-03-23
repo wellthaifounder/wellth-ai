@@ -24,24 +24,18 @@ export const TripwireOffer = ({ estimatedSavings, calculatorData, onPurchaseComp
     setIsProcessing(true);
 
     try {
-      console.log('Creating embedded checkout for savings:', estimatedSavings);
-      
       const { data, error } = await supabase.functions.invoke('create-tripwire-checkout', {
-        body: { 
+        body: {
           estimatedSavings,
-          calculatorData 
+          calculatorData
         }
       });
 
-      console.log('Checkout response:', { data, error });
-
       if (error) {
-        console.error('Checkout error:', error);
         throw error;
       }
 
       if (data?.clientSecret) {
-        console.log('Embedded checkout session created');
         sessionStorage.setItem('stripe_tripwire_client_secret', data.clientSecret);
         
         // Clear calculator data since they're purchasing (won't need to see tripwire again)
@@ -54,7 +48,6 @@ export const TripwireOffer = ({ estimatedSavings, calculatorData, onPurchaseComp
 
       throw new Error('No client secret returned');
     } catch (error) {
-      console.error('Purchase error:', error);
       toast.error(`Error: ${error instanceof Error ? error.message : 'Something went wrong'}`);
     } finally {
       setIsProcessing(false);

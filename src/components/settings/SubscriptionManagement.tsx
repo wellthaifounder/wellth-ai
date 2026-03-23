@@ -28,17 +28,17 @@ export const SubscriptionManagement = () => {
     free: {
       name: 'Starter',
       icon: <Sparkles className="h-5 w-5" />,
-      color: 'secondary',
+      color: 'secondary' as const,
     },
     plus: {
       name: 'Plus',
       icon: <Check className="h-5 w-5" />,
-      color: 'default',
+      color: 'default' as const,
     },
     premium: {
       name: 'Premium',
       icon: <Crown className="h-5 w-5" />,
-      color: 'default',
+      color: 'default' as const,
     },
   };
 
@@ -54,7 +54,7 @@ export const SubscriptionManagement = () => {
               {tier === 'free' ? 'Manage your subscription and upgrade options' : 'Manage your subscription'}
             </CardDescription>
           </div>
-          <Badge variant={currentTier.color as any} className="flex items-center gap-2">
+          <Badge variant={currentTier.color} className="flex items-center gap-2">
             {currentTier.icon}
             {currentTier.name}
           </Badge>

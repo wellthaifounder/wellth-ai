@@ -60,8 +60,8 @@ const InvoicePaymentListEnhanced = () => {
     }
   };
 
-  const toggleHSAEligibility = async (invoiceId: string, currentStatus: boolean, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent navigation to detail page
+  const toggleHSAEligibility = async (invoiceId: string, currentStatus: boolean, e?: React.MouseEvent) => {
+    e?.stopPropagation(); // Prevent navigation to detail page
     
     try {
       const { error } = await supabase
@@ -290,7 +290,7 @@ const InvoicePaymentListEnhanced = () => {
                             <Switch
                               id={`hsa-toggle-${expense.id}`}
                               checked={expense.is_hsa_eligible}
-                              onCheckedChange={(checked) => toggleHSAEligibility(expense.id, expense.is_hsa_eligible, {} as any)}
+                              onCheckedChange={() => toggleHSAEligibility(expense.id, expense.is_hsa_eligible)}
                               onClick={(e) => toggleHSAEligibility(expense.id, expense.is_hsa_eligible, e)}
                             />
                           </div>

@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,9 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, CheckCircle2, Upload, Paperclip } from "lucide-react";
+import { CheckCircle2, Upload, Paperclip } from "lucide-react";
 import { z } from "zod";
 import { getPaymentRecommendation } from "@/lib/paymentRecommendation";
 import { PaymentRecommendation } from "@/components/expense/PaymentRecommendation";
@@ -22,96 +23,122 @@ import { LabelSelector } from "@/components/labels/LabelSelector";
 import { Badge } from "@/components/ui/badge";
 import { LinkTransactionDialog } from "@/components/bills/LinkTransactionDialog";
 import { Link2 } from "lucide-react";
-import { HSAAccountSelector } from "@/components/hsa/HSAAccountSelector";
-import { useHSAAccounts } from "@/hooks/useHSAAccounts";
 import { useHSAEligibility } from "@/hooks/useHSAEligibility";
+import { logError } from "@/utils/errorHandler";
 
 const invoiceSchema = z.object({
   date: z.string().min(1, "Date is required"),
   vendor: z.string().trim().min(1, "Vendor is required").max(100),
-  totalAmount: z.number().positive("Amount must be greater than 0"),
+  totalAmount: z.number({ invalid_type_error: "Amount is required" }).positive("Amount must be greater than 0"),
   category: z.string().min(1, "Category is required"),
   notes: z.string().max(500).optional(),
   invoiceNumber: z.string().max(50).optional(),
 });
 
+type InvoiceFormValues = z.infer<typeof invoiceSchema>;
+
 const HSA_ELIGIBLE_CATEGORIES = [
-  "Doctor Visit",
-  "Prescription",
-  "Dental",
-  "Vision",
-  "Medical Equipment",
-  "Lab Tests",
-  "Hospital",
-  "Physical Therapy",
-  "Mental Health",
-  "Other Medical"
+  "Doctor Visit", "Prescription", "Dental", "Vision", "Medical Equipment",
+  "Lab Tests", "Hospital", "Physical Therapy", "Mental Health", "Other Medical",
 ];
+
+interface Receipt {
+  id: string;
+  file_path: string;
+  file_type: string;
+  document_type: string;
+  description: string | null;
+  display_order: number | null;
+  invoice_id: string;
+}
+
+interface NewFile {
+  file: File;
+  documentType: string;
+  description?: string;
+  id?: string;
+}
 
 const InvoiceEntry = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = Boolean(id);
-  
+
+  const {
+    register,
+    handleSubmit: rhfHandleSubmit,
+    watch,
+    control,
+    reset,
+    formState: { errors },
+  } = useForm<InvoiceFormValues>({
+    resolver: zodResolver(invoiceSchema),
+    defaultValues: {
+      date: new Date().toISOString().split("T")[0],
+      vendor: "",
+      category: "",
+      notes: "",
+      invoiceNumber: "",
+    },
+  });
+
+  const watchedDate = watch("date");
+  const watchedAmount = watch("totalAmount");
+  const watchedCategory = watch("category");
+  const watchedVendor = watch("vendor");
+
   const [loading, setLoading] = useState(false);
-  const [receipts, setReceipts] = useState<any[]>([]);
-  const [newFiles, setNewFiles] = useState<any[]>([]);
+  const [receipts, setReceipts] = useState<Receipt[]>([]);
+  const [newFiles, setNewFiles] = useState<NewFile[]>([]);
   const [success, setSuccess] = useState(false);
   const [hasPaymentPlan, setHasPaymentPlan] = useState(false);
   const [showAttachDialog, setShowAttachDialog] = useState(false);
   const [showLinkTransactionDialog, setShowLinkTransactionDialog] = useState(false);
-  const [selectedLabels, setSelectedLabels] = useState<any[]>([]);
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [selectedHSAAccount, setSelectedHSAAccount] = useState<string>("");
-  const { accounts: hsaAccounts } = useHSAAccounts();
-  
-  const [formData, setFormData] = useState({
-    date: new Date().toISOString().split('T')[0],
-    vendor: "",
+  const [isHsaEligible, setIsHsaEligible] = useState(false);
+  const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split("T")[0]);
+  const [npiNumber, setNpiNumber] = useState("");
+  const [insurancePlanType, setInsurancePlanType] = useState("");
+  const [insurancePlanName, setInsurancePlanName] = useState("");
+  const [networkStatus, setNetworkStatus] = useState("");
+  const [paymentPlanData, setPaymentPlanData] = useState({
     totalAmount: "",
-    category: "",
+    installments: "",
     notes: "",
-    invoiceNumber: "",
-    invoiceDate: new Date().toISOString().split('T')[0],
-    paymentPlanTotalAmount: "",
-    paymentPlanInstallments: "",
-    paymentPlanNotes: "",
-    isHsaEligible: false,
-    npiNumber: "",
-    insurancePlanType: "",
-    insurancePlanName: "",
-    networkStatus: "",
   });
-  
-  const { isEligible, eligibleAccounts, requiresAccountSelection, message: eligibilityMessage } = useHSAEligibility(formData.date);
 
-  const recommendation = formData.totalAmount && formData.category && parseFloat(formData.totalAmount) > 0
-    ? getPaymentRecommendation({
-        amount: parseFloat(formData.totalAmount),
-        category: formData.category,
-        isHsaEligible: formData.isHsaEligible,
-      })
-    : null;
+  const { eligibleAccounts } = useHSAEligibility(watchedDate);
+
+  const recommendation =
+    watchedAmount > 0 && watchedCategory
+      ? getPaymentRecommendation({
+          amount: watchedAmount,
+          category: watchedCategory,
+          isHsaEligible,
+        })
+      : null;
 
   useEffect(() => {
     if (isEditMode && id) {
       loadInvoice(id);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isEditMode]);
 
   // Auto-set HSA eligibility based on category selection (for new invoices)
   useEffect(() => {
-    if (!isEditMode && formData.category) {
-      const isEligible = HSA_ELIGIBLE_CATEGORIES.includes(formData.category);
-      setFormData(prev => ({ ...prev, isHsaEligible: isEligible }));
+    if (!isEditMode && watchedCategory) {
+      setIsHsaEligible(HSA_ELIGIBLE_CATEGORIES.includes(watchedCategory));
     }
-  }, [formData.category, isEditMode]);
+  }, [watchedCategory, isEditMode]);
 
   // Auto-select HSA account if only one eligible account
   useEffect(() => {
     if (eligibleAccounts.length === 1 && !selectedHSAAccount) {
       setSelectedHSAAccount(eligibleAccounts[0].id);
     }
-  }, [eligibleAccounts]);
+  }, [eligibleAccounts, selectedHSAAccount]);
 
   const loadInvoice = async (invoiceId: string) => {
     try {
@@ -121,45 +148,39 @@ const InvoiceEntry = () => {
         .select("*")
         .eq("id", invoiceId)
         .single();
-
       if (error) throw error;
-      
       if (data) {
-      setFormData({
-        date: data.date,
-        vendor: data.vendor,
-        totalAmount: data.total_amount?.toString() || data.amount?.toString() || "",
-        category: data.category || "",
-        notes: data.notes || "",
-        invoiceNumber: data.invoice_number || "",
-        invoiceDate: data.invoice_date || data.date,
-        paymentPlanTotalAmount: data.payment_plan_total_amount?.toString() || "",
-        paymentPlanInstallments: data.payment_plan_installments?.toString() || "",
-        paymentPlanNotes: data.payment_plan_notes || "",
-        isHsaEligible: data.is_hsa_eligible || false,
-        npiNumber: data.npi_number || "",
-        insurancePlanType: data.insurance_plan_type || "",
-        insurancePlanName: data.insurance_plan_name || "",
-        networkStatus: data.network_status || "",
-      });
-      
-      if (data.hsa_account_id) {
-        setSelectedHSAAccount(data.hsa_account_id);
-      }
+        reset({
+          date: data.date,
+          vendor: data.vendor,
+          totalAmount: data.total_amount ?? data.amount ?? 0,
+          category: data.category || "",
+          notes: data.notes || "",
+          invoiceNumber: data.invoice_number || "",
+        });
+        setInvoiceDate(data.invoice_date || data.date);
+        setIsHsaEligible(data.is_hsa_eligible || false);
+        setNpiNumber(data.npi_number || "");
+        setInsurancePlanType(data.insurance_plan_type || "");
+        setInsurancePlanName(data.insurance_plan_name || "");
+        setNetworkStatus(data.network_status || "");
+        setPaymentPlanData({
+          totalAmount: data.payment_plan_total_amount?.toString() || "",
+          installments: data.payment_plan_installments?.toString() || "",
+          notes: data.payment_plan_notes || "",
+        });
         setHasPaymentPlan(!!data.payment_plan_total_amount);
-        
+        if (data.hsa_account_id) setSelectedHSAAccount(data.hsa_account_id);
+
         const { data: receiptsData } = await supabase
           .from("receipts")
-          .select("*")
+          .select("id, file_path, file_type, document_type, description, display_order, invoice_id")
           .eq("invoice_id", invoiceId)
           .order("display_order");
-        
-        if (receiptsData) {
-          setReceipts(receiptsData);
-        }
+        if (receiptsData) setReceipts(receiptsData);
       }
     } catch (error) {
-      console.error("Error loading invoice:", error);
+      logError("Error loading invoice", error);
       toast.error("Failed to load invoice");
       navigate("/invoices");
     } finally {
@@ -167,27 +188,17 @@ const InvoiceEntry = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (validatedData: InvoiceFormValues) => {
     setLoading(true);
-
     try {
-      const validatedData = invoiceSchema.parse({
-        ...formData,
-        totalAmount: parseFloat(formData.totalAmount),
-      });
-
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const dateObj = new Date(validatedData.date + 'T00:00:00');
-      const formattedDate = dateObj.toISOString().split('T')[0];
-      
-      const invoiceDateObj = new Date(formData.invoiceDate + 'T00:00:00');
-      const formattedInvoiceDate = invoiceDateObj.toISOString().split('T')[0];
+      const formattedDate = new Date(validatedData.date + "T00:00:00").toISOString().split("T")[0];
+      const formattedInvoiceDate = new Date(invoiceDate + "T00:00:00").toISOString().split("T")[0];
 
       let expenseReport;
-      
+
       if (isEditMode && id) {
         const { data, error: invoiceError } = await supabase
           .from("invoices")
@@ -198,26 +209,27 @@ const InvoiceEntry = () => {
             total_amount: validatedData.totalAmount,
             category: validatedData.category,
             notes: validatedData.notes || null,
-            invoice_number: formData.invoiceNumber || null,
+            invoice_number: validatedData.invoiceNumber || null,
             invoice_date: formattedInvoiceDate,
-            is_hsa_eligible: formData.isHsaEligible,
-            npi_number: formData.npiNumber || null,
-            insurance_plan_type: formData.insurancePlanType || null,
-            insurance_plan_name: formData.insurancePlanName || null,
-            network_status: formData.networkStatus || null,
+            is_hsa_eligible: isHsaEligible,
+            npi_number: npiNumber || null,
+            insurance_plan_type: insurancePlanType || null,
+            insurance_plan_name: insurancePlanName || null,
+            network_status: networkStatus || null,
             hsa_account_id: selectedHSAAccount || null,
-            payment_plan_total_amount: hasPaymentPlan && formData.paymentPlanTotalAmount
-              ? parseFloat(formData.paymentPlanTotalAmount) 
-              : null,
-            payment_plan_installments: hasPaymentPlan && formData.paymentPlanInstallments 
-              ? parseInt(formData.paymentPlanInstallments) 
-              : null,
-            payment_plan_notes: hasPaymentPlan ? formData.paymentPlanNotes : null,
+            payment_plan_total_amount:
+              hasPaymentPlan && paymentPlanData.totalAmount
+                ? parseFloat(paymentPlanData.totalAmount)
+                : null,
+            payment_plan_installments:
+              hasPaymentPlan && paymentPlanData.installments
+                ? parseInt(paymentPlanData.installments)
+                : null,
+            payment_plan_notes: hasPaymentPlan ? paymentPlanData.notes : null,
           })
           .eq("id", id)
           .select()
           .single();
-
         if (invoiceError) throw invoiceError;
         expenseReport = data;
       } else {
@@ -231,25 +243,26 @@ const InvoiceEntry = () => {
             total_amount: validatedData.totalAmount,
             category: validatedData.category,
             notes: validatedData.notes || null,
-            invoice_number: formData.invoiceNumber || null,
+            invoice_number: validatedData.invoiceNumber || null,
             invoice_date: formattedInvoiceDate,
-            is_hsa_eligible: formData.isHsaEligible,
+            is_hsa_eligible: isHsaEligible,
             is_reimbursed: false,
-            npi_number: formData.npiNumber || null,
-            insurance_plan_type: formData.insurancePlanType || null,
-            insurance_plan_name: formData.insurancePlanName || null,
-            network_status: formData.networkStatus || null,
-            payment_plan_total_amount: hasPaymentPlan && formData.paymentPlanTotalAmount 
-              ? parseFloat(formData.paymentPlanTotalAmount) 
-              : null,
-            payment_plan_installments: hasPaymentPlan && formData.paymentPlanInstallments 
-              ? parseInt(formData.paymentPlanInstallments) 
-              : null,
-            payment_plan_notes: hasPaymentPlan ? formData.paymentPlanNotes : null,
+            npi_number: npiNumber || null,
+            insurance_plan_type: insurancePlanType || null,
+            insurance_plan_name: insurancePlanName || null,
+            network_status: networkStatus || null,
+            payment_plan_total_amount:
+              hasPaymentPlan && paymentPlanData.totalAmount
+                ? parseFloat(paymentPlanData.totalAmount)
+                : null,
+            payment_plan_installments:
+              hasPaymentPlan && paymentPlanData.installments
+                ? parseInt(paymentPlanData.installments)
+                : null,
+            payment_plan_notes: hasPaymentPlan ? paymentPlanData.notes : null,
           })
           .select()
           .single();
-
         if (invoiceError) throw invoiceError;
         expenseReport = data;
       }
@@ -257,46 +270,35 @@ const InvoiceEntry = () => {
       if (newFiles.length > 0 && expenseReport) {
         for (let i = 0; i < newFiles.length; i++) {
           const fileData = newFiles[i];
-          const fileExt = fileData.file.name.split('.').pop();
+          const fileExt = fileData.file.name.split(".").pop();
           const timestamp = Date.now();
           const filePath = `${user.id}/${expenseReport.id}/${fileData.documentType}_${timestamp}.${fileExt}`;
-
           const { error: uploadError } = await supabase.storage
-            .from('receipts')
-            .upload(filePath, fileData.file);
-
-          if (uploadError) throw uploadError;
-
-          const { error: receiptError } = await supabase
             .from("receipts")
-            .insert({
-              user_id: user.id,
-              invoice_id: expenseReport.id,
-              file_path: filePath,
-              file_type: fileData.file.type,
-              document_type: fileData.documentType,
-              description: fileData.description || null,
-              display_order: i,
-            });
-
+            .upload(filePath, fileData.file);
+          if (uploadError) throw uploadError;
+          const { error: receiptError } = await supabase.from("receipts").insert({
+            user_id: user.id,
+            invoice_id: expenseReport.id,
+            file_path: filePath,
+            file_type: fileData.file.type,
+            document_type: fileData.documentType,
+            description: fileData.description || null,
+            display_order: i,
+          });
           if (receiptError) throw receiptError;
         }
       }
 
       setSuccess(true);
       toast.success(isEditMode ? "Bill updated successfully!" : "Bill added successfully!");
-      
       setTimeout(() => {
         setSuccess(false);
         navigate("/invoices");
       }, 2000);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.errors[0].message);
-      } else {
-        toast.error("Failed to save bill");
-        console.error(error);
-      }
+      toast.error("Failed to save bill");
+      logError("InvoiceEntry submit", error);
     } finally {
       setLoading(false);
     }
@@ -308,9 +310,7 @@ const InvoiceEntry = () => {
         <Card className="max-w-md mx-auto text-center p-8">
           <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-4" />
           <CardTitle className="mb-2">{isEditMode ? "Bill Updated!" : "Bill Added!"}</CardTitle>
-          <CardDescription>
-            Redirecting to bills...
-          </CardDescription>
+          <CardDescription>Redirecting to bills...</CardDescription>
         </Card>
       </div>
     );
@@ -337,18 +337,20 @@ const InvoiceEntry = () => {
               <div>
                 <CardTitle>{isEditMode ? "Edit Bill" : "Add New Bill"}</CardTitle>
                 <CardDescription>
-                  {isEditMode ? "Update your bill details" : "Track medical bills for strategic payment optimization"}
+                  {isEditMode
+                    ? "Update your bill details"
+                    : "Track medical bills for strategic payment optimization"}
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={rhfHandleSubmit(onSubmit)} className="space-y-6">
               {isEditMode && receipts.length > 0 && (
                 <div className="space-y-2">
                   <Label>Existing Documents</Label>
-                  <ReceiptGallery 
-                    expenseId={id!} 
+                  <ReceiptGallery
+                    expenseId={id!}
                     receipts={receipts}
                     onReceiptDeleted={() => loadInvoice(id!)}
                   />
@@ -373,7 +375,7 @@ const InvoiceEntry = () => {
                             description: "",
                             id: Math.random().toString(36).substring(7),
                           }));
-                          setNewFiles(prev => [...prev, ...newFilesArray]);
+                          setNewFiles((prev) => [...prev, ...newFilesArray]);
                           e.target.value = "";
                         }}
                         disabled={loading}
@@ -402,7 +404,9 @@ const InvoiceEntry = () => {
                   </div>
                   {newFiles.length > 0 && (
                     <div className="mt-2">
-                      <Badge variant="secondary">{newFiles.length} file{newFiles.length !== 1 ? 's' : ''} selected</Badge>
+                      <Badge variant="secondary">
+                        {newFiles.length} file{newFiles.length !== 1 ? "s" : ""} selected
+                      </Badge>
                     </div>
                   )}
                 </div>
@@ -424,22 +428,25 @@ const InvoiceEntry = () => {
               )}
 
               {!isEditMode && (
-                <MultiFileUpload
-                  onFilesChange={setNewFiles}
-                  disabled={loading}
-                />
+                <MultiFileUpload onFilesChange={setNewFiles} disabled={loading} />
               )}
 
               <PaymentPlanFields
                 hasPaymentPlan={hasPaymentPlan}
                 onHasPaymentPlanChange={setHasPaymentPlan}
-                totalAmount={formData.paymentPlanTotalAmount}
-                onTotalAmountChange={(value) => setFormData({ ...formData, paymentPlanTotalAmount: value })}
-                installments={formData.paymentPlanInstallments}
-                onInstallmentsChange={(value) => setFormData({ ...formData, paymentPlanInstallments: value })}
-                notes={formData.paymentPlanNotes}
-                onNotesChange={(value) => setFormData({ ...formData, paymentPlanNotes: value })}
-                currentAmount={formData.totalAmount}
+                totalAmount={paymentPlanData.totalAmount}
+                onTotalAmountChange={(value) =>
+                  setPaymentPlanData((prev) => ({ ...prev, totalAmount: value }))
+                }
+                installments={paymentPlanData.installments}
+                onInstallmentsChange={(value) =>
+                  setPaymentPlanData((prev) => ({ ...prev, installments: value }))
+                }
+                notes={paymentPlanData.notes}
+                onNotesChange={(value) =>
+                  setPaymentPlanData((prev) => ({ ...prev, notes: value }))
+                }
+                currentAmount={watchedAmount?.toString() || ""}
               />
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -448,8 +455,8 @@ const InvoiceEntry = () => {
                   <Input
                     id="invoiceDate"
                     type="date"
-                    value={formData.invoiceDate}
-                    onChange={(e) => setFormData({ ...formData, invoiceDate: e.target.value })}
+                    value={invoiceDate}
+                    onChange={(e) => setInvoiceDate(e.target.value)}
                     required
                   />
                 </div>
@@ -459,9 +466,8 @@ const InvoiceEntry = () => {
                   <Input
                     id="invoiceNumber"
                     placeholder="e.g., INV-12345"
-                    value={formData.invoiceNumber}
-                    onChange={(e) => setFormData({ ...formData, invoiceNumber: e.target.value })}
                     maxLength={50}
+                    {...register("invoiceNumber")}
                   />
                 </div>
               </div>
@@ -471,11 +477,12 @@ const InvoiceEntry = () => {
                 <Input
                   id="vendor"
                   placeholder="e.g., City Hospital"
-                  value={formData.vendor}
-                  onChange={(e) => setFormData({ ...formData, vendor: e.target.value })}
-                  required
                   maxLength={100}
+                  {...register("vendor")}
                 />
+                {errors.vendor && (
+                  <p className="text-sm text-destructive">{errors.vendor.message}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -483,34 +490,40 @@ const InvoiceEntry = () => {
                 <Input
                   id="npiNumber"
                   placeholder="e.g., 1234567890"
-                  value={formData.npiNumber}
-                  onChange={(e) => setFormData({ ...formData, npiNumber: e.target.value })}
+                  value={npiNumber}
+                  onChange={(e) => setNpiNumber(e.target.value)}
                   maxLength={10}
                   pattern="[0-9]*"
                 />
                 <p className="text-xs text-muted-foreground">
-                  National Provider Identifier - helps improve provider insights
+                  National Provider Identifier — helps improve provider insights
                 </p>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(value) => setFormData({ ...formData, category: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {HSA_ELIGIBLE_CATEGORIES.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label>Category</Label>
+                  <Controller
+                    name="category"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {HSA_ELIGIBLE_CATEGORIES.map((category) => (
+                            <SelectItem key={category} value={category}>
+                              {category}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {errors.category && (
+                    <p className="text-sm text-destructive">{errors.category.message}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -520,20 +533,18 @@ const InvoiceEntry = () => {
                     type="number"
                     step="0.01"
                     placeholder="0.00"
-                    value={formData.totalAmount}
-                    onChange={(e) => setFormData({ ...formData, totalAmount: e.target.value })}
-                    required
+                    {...register("totalAmount", { valueAsNumber: true })}
                   />
+                  {errors.totalAmount && (
+                    <p className="text-sm text-destructive">{errors.totalAmount.message}</p>
+                  )}
                 </div>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="insurancePlanType">Insurance Plan Type (Optional)</Label>
-                  <Select
-                    value={formData.insurancePlanType}
-                    onValueChange={(value) => setFormData({ ...formData, insurancePlanType: value })}
-                  >
+                  <Label>Insurance Plan Type (Optional)</Label>
+                  <Select value={insurancePlanType} onValueChange={setInsurancePlanType}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select plan type" />
                     </SelectTrigger>
@@ -549,11 +560,8 @@ const InvoiceEntry = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="networkStatus">Network Status (Optional)</Label>
-                  <Select
-                    value={formData.networkStatus}
-                    onValueChange={(value) => setFormData({ ...formData, networkStatus: value })}
-                  >
+                  <Label>Network Status (Optional)</Label>
+                  <Select value={networkStatus} onValueChange={setNetworkStatus}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select network status" />
                     </SelectTrigger>
@@ -571,8 +579,8 @@ const InvoiceEntry = () => {
                 <Input
                   id="insurancePlanName"
                   placeholder="e.g., Blue Cross Blue Shield - Silver Plan"
-                  value={formData.insurancePlanName}
-                  onChange={(e) => setFormData({ ...formData, insurancePlanName: e.target.value })}
+                  value={insurancePlanName}
+                  onChange={(e) => setInsurancePlanName(e.target.value)}
                   maxLength={100}
                 />
               </div>
@@ -588,8 +596,8 @@ const InvoiceEntry = () => {
                 </div>
                 <Switch
                   id="hsaEligible"
-                  checked={formData.isHsaEligible}
-                  onCheckedChange={(checked) => setFormData({ ...formData, isHsaEligible: checked })}
+                  checked={isHsaEligible}
+                  onCheckedChange={setIsHsaEligible}
                 />
               </div>
 
@@ -598,9 +606,8 @@ const InvoiceEntry = () => {
                 <Textarea
                   id="notes"
                   placeholder="Additional details about this invoice..."
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   maxLength={500}
+                  {...register("notes")}
                 />
               </div>
 
@@ -621,7 +628,13 @@ const InvoiceEntry = () => {
               )}
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? (isEditMode ? "Updating..." : "Adding...") : (isEditMode ? "Update Bill" : "Add Bill")}
+                {loading
+                  ? isEditMode
+                    ? "Updating..."
+                    : "Adding..."
+                  : isEditMode
+                  ? "Update Bill"
+                  : "Add Bill"}
               </Button>
             </form>
           </CardContent>
@@ -636,16 +649,16 @@ const InvoiceEntry = () => {
           />
         )}
 
-        {isEditMode && formData.vendor && (
+        {isEditMode && watchedVendor && (
           <LinkTransactionDialog
             open={showLinkTransactionDialog}
             onOpenChange={setShowLinkTransactionDialog}
             invoice={{
               id: id!,
-              vendor: formData.vendor,
-              amount: parseFloat(formData.totalAmount) || 0,
-              total_amount: parseFloat(formData.totalAmount) || 0,
-              date: formData.date,
+              vendor: watchedVendor,
+              amount: watchedAmount || 0,
+              total_amount: watchedAmount || 0,
+              date: watchedDate,
             }}
             onSuccess={() => {
               toast.success("Transactions updated");

@@ -53,10 +53,8 @@ class Analytics {
   }
 
   async track(event: AnalyticsEvent) {
-    if (!this.enabled) {
+    if (import.meta.env.DEV) {
       console.log('Analytics (dev):', event);
-    } else {
-      console.log('Analytics:', event);
     }
 
     // Store event in database for KPI analysis

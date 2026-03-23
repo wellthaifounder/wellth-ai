@@ -3,9 +3,6 @@ project_id = "fzmdfhdfvayaalhogskm"
 [functions.process-receipt-ocr]
 verify_jwt = true
 
-[functions.send-nurture-email]
-verify_jwt = false
-
 [functions.create-tripwire-checkout]
 verify_jwt = false
 

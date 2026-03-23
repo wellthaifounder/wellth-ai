@@ -11,6 +11,8 @@ import { DashboardLayoutProvider } from "@/contexts/DashboardLayoutContext";
 import { WellbieChat } from "@/components/WellbieChat";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Loader2 } from "lucide-react";
 
 // Critical pages - load immediately
@@ -75,80 +77,78 @@ const App = () => (
               <BrowserRouter>
                 <PWAInstallPrompt />
                 <PWAUpdatePrompt />
+                <ErrorBoundary>
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
+                    {/* Public routes */}
                     <Route path="/" element={<Index />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/calculator" element={<Calculator />} />
                     <Route path="/tripwire-offer" element={<TripwireOffer />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    
-                    {/* Unified Bills Management Routes */}
-                    <Route path="/bills" element={<Bills />} />
-                    <Route path="/bills/new" element={<NewBillUpload />} />
-                    <Route path="/bills/upload" element={<NewBillUpload />} />
-                    <Route path="/bills/:id" element={<BillDetail />} />
-                    
-                    {/* Bill Review & Dispute features archived - redirected to bills */}
-                    <Route path="/bill-reviews/:invoiceId" element={<Bills />} />
-                    <Route path="/disputes/:id" element={<Bills />} />
-                    <Route path="/bills/:invoiceId/dispute" element={<Bills />} />
-
-                    {/* Legacy redirects */}
-                    <Route path="/invoices" element={<Bills />} />
-                    <Route path="/bill-reviews" element={<Bills />} />
-                    <Route path="/disputes" element={<Bills />} />
-                    
-                    {/* Decision Tool renamed to Savings Calculator (HSA only) */}
-                    <Route path="/savings-calculator" element={<PrePurchaseDecision />} />
-                    <Route path="/decision-tool" element={<PrePurchaseDecision />} /> {/* Legacy redirect */}
-                    
-                    {/* HSA Routes */}
-                    <Route path="/hsa-eligibility" element={<HSAEligibility />} />
-                    <Route path="/reimbursement-requests" element={<ReimbursementRequests />} />
-                    <Route path="/reimbursement/:id" element={<ReimbursementDetails />} />
-                    
-                    {/* Transactions Route */}
-                    <Route path="/transactions" element={<Transactions />} />
-
-                    {/* Collections Routes */}
-                    <Route path="/collections" element={<Collections />} />
-                    <Route path="/collections/new" element={<NewCollection />} />
-                    <Route path="/collections/:id" element={<CollectionDetail />} />
-
-                    {/* Legacy redirects for medical events */}
-                    <Route path="/medical-events" element={<Collections />} />
-                    <Route path="/medical-events/new" element={<NewCollection />} />
-                    <Route path="/medical-events/:id" element={<CollectionDetail />} />
-
-                    {/* Supporting Routes */}
-                    <Route path="/documents" element={<Documents />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/install" element={<Install />} />
-                    
-                    {/* Reports (formerly Analytics) */}
-                    <Route path="/reports" element={<Reports />} />
-                    <Route path="/analytics" element={<Reports />} /> {/* Legacy redirect */}
-                    
-                    {/* Checkout & Onboarding */}
                     <Route path="/tripwire-success" element={<TripwireSuccess />} />
                     <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/install" element={<Install />} />
 
-                    {/* Provider Directory removed - V2 feature */}
-                    {/* <Route path="/providers" element={<ProviderDirectory />} /> */}
-                    {/* <Route path="/providers/:id" element={<ProviderDetail />} /> */}
-                    {/* <Route path="/provider-transparency" element={<ProviderTransparency />} /> */}
+                    {/* Protected routes */}
+                    <Route path="/dashboard" element={<ProtectedRoute><ErrorBoundary><Dashboard /></ErrorBoundary></ProtectedRoute>} />
+
+                    {/* Unified Bills Management Routes */}
+                    <Route path="/bills" element={<ProtectedRoute><ErrorBoundary><Bills /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/bills/new" element={<ProtectedRoute><ErrorBoundary><NewBillUpload /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/bills/upload" element={<ProtectedRoute><ErrorBoundary><NewBillUpload /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/bills/:id" element={<ProtectedRoute><ErrorBoundary><BillDetail /></ErrorBoundary></ProtectedRoute>} />
+
+                    {/* Bill Review & Dispute features archived - redirected to bills */}
+                    <Route path="/bill-reviews/:invoiceId" element={<ProtectedRoute><Bills /></ProtectedRoute>} />
+                    <Route path="/disputes/:id" element={<ProtectedRoute><Bills /></ProtectedRoute>} />
+                    <Route path="/bills/:invoiceId/dispute" element={<ProtectedRoute><Bills /></ProtectedRoute>} />
+
+                    {/* Legacy redirects */}
+                    <Route path="/invoices" element={<ProtectedRoute><Bills /></ProtectedRoute>} />
+                    <Route path="/bill-reviews" element={<ProtectedRoute><Bills /></ProtectedRoute>} />
+                    <Route path="/disputes" element={<ProtectedRoute><Bills /></ProtectedRoute>} />
+
+                    {/* Decision Tool renamed to Savings Calculator (HSA only) */}
+                    <Route path="/savings-calculator" element={<ProtectedRoute><ErrorBoundary><PrePurchaseDecision /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/decision-tool" element={<ProtectedRoute><PrePurchaseDecision /></ProtectedRoute>} />
+
+                    {/* HSA Routes */}
+                    <Route path="/hsa-eligibility" element={<ProtectedRoute><ErrorBoundary><HSAEligibility /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/reimbursement-requests" element={<ProtectedRoute><ErrorBoundary><ReimbursementRequests /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/reimbursement/:id" element={<ProtectedRoute><ErrorBoundary><ReimbursementDetails /></ErrorBoundary></ProtectedRoute>} />
+
+                    {/* Transactions Route */}
+                    <Route path="/transactions" element={<ProtectedRoute><ErrorBoundary><Transactions /></ErrorBoundary></ProtectedRoute>} />
+
+                    {/* Collections Routes */}
+                    <Route path="/collections" element={<ProtectedRoute><ErrorBoundary><Collections /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/collections/new" element={<ProtectedRoute><ErrorBoundary><NewCollection /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/collections/:id" element={<ProtectedRoute><ErrorBoundary><CollectionDetail /></ErrorBoundary></ProtectedRoute>} />
+
+                    {/* Legacy redirects for medical events */}
+                    <Route path="/medical-events" element={<ProtectedRoute><Collections /></ProtectedRoute>} />
+                    <Route path="/medical-events/new" element={<ProtectedRoute><NewCollection /></ProtectedRoute>} />
+                    <Route path="/medical-events/:id" element={<ProtectedRoute><CollectionDetail /></ProtectedRoute>} />
+
+                    {/* Supporting Routes */}
+                    <Route path="/documents" element={<ProtectedRoute><ErrorBoundary><Documents /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/settings" element={<ProtectedRoute><ErrorBoundary><Settings /></ErrorBoundary></ProtectedRoute>} />
+
+                    {/* Reports (formerly Analytics) */}
+                    <Route path="/reports" element={<ProtectedRoute><ErrorBoundary><Reports /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/analytics" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
 
                     {/* User Feedback */}
-                    <Route path="/user-reviews" element={<UserReviews />} />
-                    
+                    <Route path="/user-reviews" element={<ProtectedRoute><ErrorBoundary><UserReviews /></ErrorBoundary></ProtectedRoute>} />
+
                     {/* Admin Routes */}
-                    <Route path="/admin/reviews" element={<AdminReviews />} />
-                    
+                    <Route path="/admin/reviews" element={<ProtectedRoute><ErrorBoundary><AdminReviews /></ErrorBoundary></ProtectedRoute>} />
+
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
+                </ErrorBoundary>
               </BrowserRouter>
             </DashboardLayoutProvider>
           </OnboardingProvider>

@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Plus, Loader2, FileText } from "lucide-react";
 import { toast } from "sonner";
-import { calculateHSAEligibility } from "@/lib/hsaCalculations";
+import { calculateHSAEligibility, type PaymentTransaction } from "@/lib/hsaCalculations";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { BillsHeroMetrics } from "@/components/bills/BillsHeroMetrics";
 // Bill review feature archived
@@ -24,7 +24,7 @@ interface Bill {
   amount: number;
   total_amount?: number;
   is_hsa_eligible: boolean;
-  payment_transactions: any[];
+  payment_transactions: PaymentTransaction[];
 }
 
 const Bills = () => {
@@ -87,7 +87,7 @@ const Bills = () => {
   const filteredBills = useMemo(() => {
     if (!bills) return [];
     return bills.filter(bill => {
-      const breakdown = calculateHSAEligibility(bill as any, bill.payment_transactions || []);
+      const breakdown = calculateHSAEligibility(bill, bill.payment_transactions || []);
       
       if (hideFullyReimbursed && breakdown.paidViaHSA === breakdown.totalInvoiced && breakdown.totalInvoiced > 0) {
         return false;
@@ -115,7 +115,7 @@ const Bills = () => {
     let totalHSAEligible = 0;
 
     filteredBills.forEach(bill => {
-      const breakdown = calculateHSAEligibility(bill as any, bill.payment_transactions || []);
+      const breakdown = calculateHSAEligibility(bill, bill.payment_transactions || []);
       totalInvoiced += breakdown.totalInvoiced;
       totalPaidHSA += breakdown.paidViaHSA;
       totalPaidOther += breakdown.paidViaOther;

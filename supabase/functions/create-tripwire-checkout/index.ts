@@ -38,7 +38,7 @@ serve(async (req) => {
       );
     }
     
-    const { estimatedSavings, calculatorData } = validation.data;
+    const { estimatedSavings } = validation.data;
     
     console.log('Creating checkout session for savings:', estimatedSavings);
     
@@ -69,7 +69,6 @@ serve(async (req) => {
       metadata: {
         type: 'tripwire',
         estimatedSavings: estimatedSavings.toString(),
-        calculatorData: JSON.stringify(calculatorData),
       },
     });
 

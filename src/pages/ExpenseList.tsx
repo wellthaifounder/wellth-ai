@@ -1,5 +1,6 @@
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,31 +17,37 @@ import { TableColumnHeader } from "@/components/ui/table-column-header";
 
 type Expense = Tables<"invoices">;
 
+interface DateFilter { from?: Date; to?: Date }
+interface AmountFilter { from?: number; to?: number }
+
+type ExpenseWithRelations = Expense & {
+  reimbursement_items?: Array<{
+    reimbursement_request_id: string;
+    reimbursement_requests: { status: string } | null;
+  }>;
+  receipts?: Array<{ count: number }>;
+};
+
 const ExpenseList = () => {
   const navigate = useNavigate();
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   
   // Filters
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [vendorFilter, setVendorFilter] = useState("");
-  const [dateFilter, setDateFilter] = useState<any>(null);
-  const [amountFilter, setAmountFilter] = useState<any>(null);
+  const [dateFilter, setDateFilter] = useState<DateFilter | Date | null>(null);
+  const [amountFilter, setAmountFilter] = useState<AmountFilter | null>(null);
   
   // Sort
   const [sortBy, setSortBy] = useState<"date" | "amount" | "vendor" | "category" | "status">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [statusColumnFilter, setStatusColumnFilter] = useState("");
 
-  useEffect(() => {
-    fetchExpenses();
-  }, []);
-
-  const fetchExpenses = async () => {
-    setLoading(true);
-    try {
+  const { data: expenses = [], isLoading: loading } = useQuery({
+    queryKey: ["expenses"],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from("invoices")
         .select(`
@@ -52,50 +59,41 @@ const ExpenseList = () => {
           receipts(count)
         `)
         .order("date", { ascending: false });
-
       if (error) throw error;
-      setExpenses(data || []);
-    } catch (error) {
-      toast.error("Failed to load expenses");
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return (data || []) as ExpenseWithRelations[];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const handleDelete = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from("invoices")
-        .delete()
-        .eq("id", id);
-
+  const deleteExpense = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("invoices").delete().eq("id", id);
       if (error) throw error;
+    },
+    onSuccess: () => {
       toast.success("Expense deleted");
-      fetchExpenses();
-    } catch (error) {
-      toast.error("Failed to delete expense");
-      console.error(error);
-    }
-  };
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+    },
+    onError: () => toast.error("Failed to delete expense"),
+  });
 
-  const handleBulkDelete = async () => {
-    if (selectedIds.size === 0) return;
-    
-    try {
-      const { error } = await supabase
-        .from("invoices")
-        .delete()
-        .in("id", Array.from(selectedIds));
-
+  const bulkDeleteExpenses = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase.from("invoices").delete().in("id", ids);
       if (error) throw error;
+    },
+    onSuccess: () => {
       toast.success(`Deleted ${selectedIds.size} expense(s)`);
       setSelectedIds(new Set());
-      fetchExpenses();
-    } catch (error) {
-      toast.error("Failed to delete expenses");
-      console.error(error);
-    }
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+    },
+    onError: () => toast.error("Failed to delete expenses"),
+  });
+
+  const handleDelete = (id: string) => deleteExpense.mutate(id);
+  const handleBulkDelete = () => {
+    if (selectedIds.size === 0) return;
+    bulkDeleteExpenses.mutate(Array.from(selectedIds));
   };
 
   const toggleSelectAll = () => {
@@ -133,7 +131,7 @@ const ExpenseList = () => {
   const uniqueStatuses = useMemo(() => {
     const statuses = new Set<string>();
     expenses.forEach(exp => {
-      const reimbursementStatus = (exp as any).reimbursement_items?.[0]?.reimbursement_requests?.status;
+      const reimbursementStatus = exp.reimbursement_items?.[0]?.reimbursement_requests?.status;
       if (reimbursementStatus) {
         statuses.add(reimbursementStatus.charAt(0).toUpperCase() + reimbursementStatus.slice(1));
       } else if (exp.is_hsa_eligible) {
@@ -190,7 +188,7 @@ const ExpenseList = () => {
       
       // Status column filter
       if (statusColumnFilter) {
-        const reimbursementStatus = (exp as any).reimbursement_items?.[0]?.reimbursement_requests?.status;
+        const reimbursementStatus = exp.reimbursement_items?.[0]?.reimbursement_requests?.status;
         const status = reimbursementStatus || (exp.is_hsa_eligible ? "hsa-eligible" : "not-submitted");
         if (!status.toLowerCase().includes(statusColumnFilter.toLowerCase())) return false;
       }
@@ -210,8 +208,8 @@ const ExpenseList = () => {
       } else if (sortBy === "category") {
         comparison = a.category.localeCompare(b.category);
       } else if (sortBy === "status") {
-        const statusA = (a as any).reimbursement_items?.[0]?.reimbursement_requests?.status || (a.is_hsa_eligible ? "hsa-eligible" : "not-submitted");
-        const statusB = (b as any).reimbursement_items?.[0]?.reimbursement_requests?.status || (b.is_hsa_eligible ? "hsa-eligible" : "not-submitted");
+        const statusA = a.reimbursement_items?.[0]?.reimbursement_requests?.status || (a.is_hsa_eligible ? "hsa-eligible" : "not-submitted");
+        const statusB = b.reimbursement_items?.[0]?.reimbursement_requests?.status || (b.is_hsa_eligible ? "hsa-eligible" : "not-submitted");
         comparison = statusA.localeCompare(statusB);
       }
       return sortOrder === "asc" ? comparison : -comparison;
@@ -459,7 +457,7 @@ const ExpenseList = () => {
                          <TableCell>
                            <div className="flex items-center gap-2">
                              <span>${Number(expense.amount).toFixed(2)}</span>
-                             {(expense as any).receipts?.[0]?.count > 0 && (
+                             {expense.receipts?.[0]?.count > 0 && (
                                <Button 
                                  variant="ghost" 
                                  size="sm"
@@ -467,14 +465,14 @@ const ExpenseList = () => {
                                  className="flex items-center gap-1"
                                >
                                 <FileText className="h-3 w-3" />
-                                {(expense as any).receipts[0].count}
+                                {expense.receipts[0].count}
                               </Button>
                             )}
                           </div>
                         </TableCell>
                         <TableCell>
                           {(() => {
-                            const reimbursementStatus = (expense as any).reimbursement_items?.[0]?.reimbursement_requests?.status;
+                            const reimbursementStatus = expense.reimbursement_items?.[0]?.reimbursement_requests?.status;
                             if (reimbursementStatus) {
                               return (
                                 <Badge variant={

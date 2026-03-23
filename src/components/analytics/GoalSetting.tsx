@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,38 +44,29 @@ const GOAL_TYPES = {
 };
 
 export const GoalSetting = ({ currentStats }: GoalSettingProps) => {
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  
+
   const [newGoal, setNewGoal] = useState({
     goal_type: "annual_savings",
     target_amount: 0,
     deadline: "",
   });
 
-  useEffect(() => {
-    fetchGoals();
-  }, []);
-
-  const fetchGoals = async () => {
-    try {
+  const { data: goals = [], isLoading: loading } = useQuery({
+    queryKey: ["savings_goals"],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from("savings_goals")
         .select("*")
         .eq("is_active", true)
         .order("created_at", { ascending: false });
-
       if (error) throw error;
-      setGoals(data || []);
-    } catch (error) {
-      console.error("Error fetching goals:", error);
-      toast.error("Failed to load goals");
-    } finally {
-      setLoading(false);
-    }
-  };
+      return data as Goal[];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
   const calculateCurrentAmount = (goal: Goal) => {
     switch (goal.goal_type) {
@@ -91,19 +83,10 @@ export const GoalSetting = ({ currentStats }: GoalSettingProps) => {
     }
   };
 
-  const addGoal = async () => {
-    if (!newGoal.target_amount || newGoal.target_amount <= 0) {
-      toast.error("Please enter a valid target amount");
-      return;
-    }
-
-    try {
+  const addGoalMutation = useMutation({
+    mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("You must be logged in");
-        return;
-      }
-
+      if (!user) throw new Error("Not authenticated");
       const { error } = await supabase.from("savings_goals").insert([{
         user_id: user.id,
         goal_type: newGoal.goal_type,
@@ -111,37 +94,35 @@ export const GoalSetting = ({ currentStats }: GoalSettingProps) => {
         current_amount: 0,
         deadline: newGoal.deadline || null,
       }]);
-
       if (error) throw error;
-      
+    },
+    onSuccess: () => {
       toast.success("Goal added successfully");
       setShowAddGoal(false);
       setNewGoal({ goal_type: "annual_savings", target_amount: 0, deadline: "" });
-      fetchGoals();
-    } catch (error) {
-      console.error("Error adding goal:", error);
-      toast.error("Failed to add goal");
-    }
-  };
+      queryClient.invalidateQueries({ queryKey: ["savings_goals"] });
+    },
+    onError: () => toast.error("Failed to add goal"),
+  });
 
-  const deleteGoal = async (id: string) => {
-    try {
+  const deleteGoalMutation = useMutation({
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from("savings_goals")
         .update({ is_active: false })
         .eq("id", id);
-
       if (error) throw error;
-      
+    },
+    onSuccess: () => {
       toast.success("Goal deleted");
-      fetchGoals();
-    } catch (error) {
-      console.error("Error deleting goal:", error);
+      queryClient.invalidateQueries({ queryKey: ["savings_goals"] });
+    },
+    onError: () => {
       toast.error("Failed to delete goal");
-    }
-  };
+    },
+  });
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <CardContent className="py-8">
@@ -213,7 +194,7 @@ export const GoalSetting = ({ currentStats }: GoalSettingProps) => {
               />
             </div>
 
-            <Button onClick={addGoal} className="w-full">
+            <Button onClick={() => addGoalMutation.mutate()} disabled={addGoalMutation.isPending} className="w-full">
               <Check className="h-4 w-4 mr-2" />
               Create Goal
             </Button>
@@ -260,7 +241,7 @@ export const GoalSetting = ({ currentStats }: GoalSettingProps) => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => deleteGoal(goal.id)}
+                      onClick={() => deleteGoalMutation.mutate(goal.id)}
                       className="text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />

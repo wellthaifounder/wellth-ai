@@ -10,7 +10,7 @@ export interface PaymentTransaction {
 
 export interface ExpenseReport {
   id: string;
-  total_amount: number;
+  total_amount?: number;
   amount: number;
   is_hsa_eligible: boolean;
   vendor: string;

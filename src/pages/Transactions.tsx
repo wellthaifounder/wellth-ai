@@ -30,7 +30,7 @@ type Transaction = {
   description: string;
   category: string;
   is_medical: boolean;
-  reconciliation_status: string;
+  reconciliation_status: "unlinked" | "linked_to_invoice" | "ignored";
   is_hsa_eligible: boolean;
   notes: string | null;
   payment_method_id: string | null;
@@ -91,14 +91,14 @@ export default function Transactions() {
   }, [transactions, searchQuery, activeTab, advancedFilters]);
 
   useEffect(() => {
-    // Default to review queue if there are unlinked transactions
+    // Default to review queue if there are unlinked transactions (runs once on load)
     if (transactions.length > 0 && activeTab === "all") {
       const unlinkedCount = transactions.filter(t => t.reconciliation_status === "unlinked").length;
       if (unlinkedCount > 0) {
         setActiveTab("review");
       }
     }
-  }, [transactions]);
+  }, [transactions, activeTab]);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -469,7 +469,7 @@ export default function Transactions() {
                           amount={transaction.amount}
                           description={transaction.description}
                           isMedical={transaction.is_medical}
-                          reconciliationStatus={transaction.reconciliation_status as any}
+                          reconciliationStatus={transaction.reconciliation_status}
                           isHsaEligible={transaction.is_hsa_eligible}
                           isFromHsaAccount={transaction.payment_methods?.is_hsa_account || false}
                           isSplit={transaction.is_split}

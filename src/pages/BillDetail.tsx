@@ -23,6 +23,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useHSA } from "@/contexts/HSAContext";
 import { HSAUpgradePrompt } from "@/components/HSAUpgradePrompt";
+import type { PaymentTransaction } from "@/lib/hsaCalculations";
+
+interface UploadedFile {
+  file: File;
+  documentType: string;
+  description?: string;
+}
+
+interface BillPayment {
+  id: string;
+  payment_date: string;
+  amount: number;
+  payment_source: PaymentTransaction["payment_source"];
+  is_reimbursed: boolean;
+  reimbursed_date: string | null;
+}
 
 const HSA_ELIGIBLE_CATEGORIES = [
   "Doctor Visit",
@@ -43,7 +59,7 @@ export default function BillDetail() {
   const { hasHSA } = useHSA();
   const isNewBill = id === 'new';
   const [activeTab, setActiveTab] = useState("overview");
-  const [newFiles, setNewFiles] = useState<any[]>([]);
+  const [newFiles, setNewFiles] = useState<UploadedFile[]>([]);
   const [showLinkTransactionDialog, setShowLinkTransactionDialog] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [formData, setFormData] = useState({
@@ -199,7 +215,7 @@ export default function BillDetail() {
 
       // Upload new files if any
       if (newFiles.length > 0 && billId) {
-        const uploadedReceipts: any[] = [];
+        const uploadedReceipts: { id: string; document_type: string }[] = [];
         
         for (let i = 0; i < newFiles.length; i++) {
           const fileData = newFiles[i];
@@ -257,7 +273,7 @@ export default function BillDetail() {
     );
   }
 
-  const breakdown = bill ? calculateHSAEligibility(bill, (bill.payment_transactions || []) as any) : null;
+  const breakdown = bill ? calculateHSAEligibility(bill, (bill.payment_transactions || []) as BillPayment[]) : null;
   // Bill review feature archived - removed review and errorCount
 
   return (
@@ -516,7 +532,7 @@ export default function BillDetail() {
 
                       {bill?.payment_transactions && bill.payment_transactions.length > 0 ? (
                         <div className="space-y-2">
-                          {bill.payment_transactions.map((payment: any) => (
+                          {bill.payment_transactions.map((payment: BillPayment) => (
                             <Card key={payment.id}>
                               <CardContent className="pt-6">
                                 <div className="flex items-center justify-between">

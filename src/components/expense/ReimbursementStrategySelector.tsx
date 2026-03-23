@@ -73,7 +73,7 @@ export function ReimbursementStrategySelector({
         <div className="ml-6 space-y-4 bg-muted/30 p-4 rounded-lg">
           <div className="space-y-2">
             <Label htmlFor="strategy">Reimbursement Strategy</Label>
-            <Select value={strategy} onValueChange={(value) => handleStrategyChange(value as any)}>
+            <Select value={strategy} onValueChange={(value) => handleStrategyChange(value as 'immediate' | 'medium' | 'vault')}>
               <SelectTrigger id="strategy">
                 <SelectValue />
               </SelectTrigger>

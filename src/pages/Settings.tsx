@@ -1,20 +1,64 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, User, Mail, Shield, Heart, Download, RotateCcw, Wallet, Building2, Plus, Trash2, CreditCard } from "lucide-react";
+import {
+  ArrowLeft, User, Mail, Shield, Heart, Download, RotateCcw, Wallet,
+  Building2, Plus, Trash2, CreditCard,
+} from "lucide-react";
 import { toast } from "sonner";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 import { SubscriptionManagement } from "@/components/settings/SubscriptionManagement";
 import { useOnboarding } from "@/contexts/OnboardingContext";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+} from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlaidLink } from "@/components/PlaidLink";
 import { HSAAccountManager } from "@/components/hsa/HSAAccountManager";
+import { logError } from "@/utils/errorHandler";
 
+// ── Schemas ──────────────────────────────────────────────────────────────────
+
+const profileSchema = z.object({
+  displayName: z.string().max(100),
+  hsaOpenedDate: z.string(),
+});
+
+const paymentMethodSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100),
+  type: z.string().min(1, "Card type is required"),
+  rewards_rate: z
+    .number({ invalid_type_error: "Enter a valid rate" })
+    .min(0, "Must be 0 or greater")
+    .max(100),
+});
+
+type ProfileFormValues = z.infer<typeof profileSchema>;
+type PaymentMethodFormValues = z.infer<typeof paymentMethodSchema>;
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface PaymentMethod {
+  id: string;
+  name: string;
+  type: string;
+  rewards_rate: number;
+}
+
+interface BankConnection {
+  id: string;
+  institution_name: string;
+  created_at: string;
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -22,12 +66,19 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [email, setEmail] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [hsaOpenedDate, setHsaOpenedDate] = useState("");
-  const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
-  const [bankConnections, setBankConnections] = useState<any[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [bankConnections, setBankConnections] = useState<BankConnection[]>([]);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [newPaymentMethod, setNewPaymentMethod] = useState({ name: "", type: "", rewards_rate: 0 });
+
+  const profileForm = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: { displayName: "", hsaOpenedDate: "" },
+  });
+
+  const paymentMethodForm = useForm<PaymentMethodFormValues>({
+    resolver: zodResolver(paymentMethodSchema),
+    defaultValues: { name: "", type: "", rewards_rate: 0 },
+  });
 
   useEffect(() => {
     loadUserData();
@@ -43,33 +94,33 @@ const Settings = () => {
         return;
       }
       setEmail(user.email || "");
-      
-      // Fetch profile data
+
       const { data: profile } = await supabase
         .from("profiles")
-        .select("*")
+        .select("full_name, hsa_opened_date")
         .eq("id", user.id)
         .single();
-      
+
       if (profile) {
-        setDisplayName(profile.full_name || "");
-        setHsaOpenedDate(profile.hsa_opened_date || "");
+        profileForm.reset({
+          displayName: profile.full_name || "",
+          hsaOpenedDate: profile.hsa_opened_date || "",
+        });
       }
-      
+
       setLoading(false);
     } catch (error) {
-      console.error("Error loading user data:", error);
+      logError("Error loading user data", error);
       toast.error("Failed to load user data");
     }
   };
 
-  const handleUpdateProfile = async () => {
+  const onSubmitProfile = async (values: ProfileFormValues) => {
     try {
       setSaving(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Get the old HSA date to check if it changed
       const { data: oldProfile } = await supabase
         .from("profiles")
         .select("hsa_opened_date")
@@ -77,39 +128,39 @@ const Settings = () => {
         .single();
 
       const oldHsaDate = oldProfile?.hsa_opened_date;
-      const hsaDateChanged = oldHsaDate !== hsaOpenedDate;
+      const hsaDateChanged = oldHsaDate !== values.hsaOpenedDate;
 
       const { error: upsertError } = await supabase
         .from("profiles")
-        .upsert({ id: user.id, full_name: displayName, hsa_opened_date: hsaOpenedDate || null }, { onConflict: "id" });
-
+        .upsert(
+          { id: user.id, full_name: values.displayName, hsa_opened_date: values.hsaOpenedDate || null },
+          { onConflict: "id" }
+        );
       if (upsertError) throw upsertError;
 
-      // If HSA date changed, update existing invoices
-      if (hsaDateChanged && hsaOpenedDate) {
-        // Set is_hsa_eligible = false for invoices before HSA opened date
-        const { error: updateDateError } = await supabase
+      if (hsaDateChanged && values.hsaOpenedDate) {
+        const { error: e1 } = await supabase
           .from("invoices")
           .update({ is_hsa_eligible: false })
           .eq("user_id", user.id)
-          .lt("date", hsaOpenedDate)
+          .lt("date", values.hsaOpenedDate)
           .eq("is_hsa_eligible", true);
-        if (updateDateError) throw updateDateError;
+        if (e1) throw e1;
 
-        const { error: updateInvoiceDateError } = await supabase
+        const { error: e2 } = await supabase
           .from("invoices")
           .update({ is_hsa_eligible: false })
           .eq("user_id", user.id)
-          .lt("invoice_date", hsaOpenedDate)
+          .lt("invoice_date", values.hsaOpenedDate)
           .eq("is_hsa_eligible", true);
-        if (updateInvoiceDateError) throw updateInvoiceDateError;
-        
+        if (e2) throw e2;
+
         toast.success("Profile updated and expense eligibility recalculated");
       } else {
         toast.success("Profile updated successfully");
       }
     } catch (error) {
-      console.error("Error updating profile:", error);
+      logError("Error updating profile", error);
       toast.error("Failed to update profile");
     } finally {
       setSaving(false);
@@ -120,17 +171,15 @@ const Settings = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-
       const { data, error } = await supabase
         .from("payment_methods")
-        .select("*")
+        .select("id, name, type, rewards_rate")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
-
       if (error) throw error;
       setPaymentMethods(data || []);
     } catch (error) {
-      console.error("Error loading payment methods:", error);
+      logError("Error loading payment methods", error);
     }
   };
 
@@ -138,76 +187,61 @@ const Settings = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-
       const { data, error } = await supabase
         .from("plaid_connections")
-        .select("*")
+        .select("id, institution_name, created_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
-
       if (error) throw error;
       setBankConnections(data || []);
     } catch (error) {
-      console.error("Error loading bank connections:", error);
+      logError("Error loading bank connections", error);
     }
   };
 
-  const handleAddPaymentMethod = async () => {
+  const onSubmitPaymentMethod = async (values: PaymentMethodFormValues) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
-
       const { error } = await supabase.from("payment_methods").insert({
         user_id: user.id,
-        ...newPaymentMethod,
+        name: values.name,
+        type: values.type,
+        rewards_rate: values.rewards_rate,
       });
-
       if (error) throw error;
-
       toast.success("Payment method added successfully");
       setPaymentDialogOpen(false);
-      setNewPaymentMethod({ name: "", type: "", rewards_rate: 0 });
+      paymentMethodForm.reset({ name: "", type: "", rewards_rate: 0 });
       loadPaymentMethods();
     } catch (error) {
-      console.error("Error adding payment method:", error);
+      logError("Error adding payment method", error);
       toast.error("Failed to add payment method");
     }
   };
 
   const handleDeletePaymentMethod = async (id: string) => {
     if (!confirm("Are you sure you want to delete this payment method?")) return;
-
     try {
-      const { error } = await supabase
-        .from("payment_methods")
-        .delete()
-        .eq("id", id);
-
+      const { error } = await supabase.from("payment_methods").delete().eq("id", id);
       if (error) throw error;
-
       toast.success("Payment method deleted");
       loadPaymentMethods();
     } catch (error) {
-      console.error("Error deleting payment method:", error);
+      logError("Error deleting payment method", error);
       toast.error("Failed to delete payment method");
     }
   };
 
   const handleDeleteBankConnection = async (id: string) => {
     if (!confirm("Are you sure you want to disconnect this bank account?")) return;
-
     try {
-      const { error } = await supabase
-        .from("plaid_connections")
-        .delete()
-        .eq("id", id);
-
+      const { error } = await supabase.from("plaid_connections").delete().eq("id", id);
       if (error) throw error;
-
       toast.success("Bank account disconnected");
       loadBankConnections();
     } catch (error) {
-      console.error("Error disconnecting bank:", error);
+      logError("Error disconnecting bank", error);
       toast.error("Failed to disconnect bank account");
     }
   };
@@ -234,23 +268,19 @@ const Settings = () => {
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Account Settings</h1>
-          <p className="text-muted-foreground">
-            Manage your account preferences and security
-          </p>
+          <p className="text-muted-foreground">Manage your account preferences and security</p>
         </div>
 
         <div className="space-y-6">
           <SubscriptionManagement />
-          
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <RotateCcw className="h-5 w-5" />
                 App Preferences
               </CardTitle>
-              <CardDescription>
-                Manage your app experience and feature tours
-              </CardDescription>
+              <CardDescription>Manage your app experience and feature tours</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -258,8 +288,8 @@ const Settings = () => {
                 <p className="text-sm text-muted-foreground">
                   Reset the onboarding tooltips to see feature introductions again
                 </p>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => {
                     onboarding.resetOnboarding();
@@ -272,94 +302,89 @@ const Settings = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Download className="h-5 w-5" />
                 Progressive Web App
               </CardTitle>
-              <CardDescription>
-                Install Wellth.ai for a native app experience
-              </CardDescription>
+              <CardDescription>Install Wellth.ai for a native app experience</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Get instant access, offline support, and push notifications by installing Wellth.ai as an app on your device.
+                Get instant access, offline support, and push notifications by installing Wellth.ai as
+                an app on your device.
               </p>
-              <Button onClick={() => navigate('/install')} variant="outline">
+              <Button onClick={() => navigate("/install")} variant="outline">
                 View Installation Guide
               </Button>
             </CardContent>
           </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Profile Information
-              </CardTitle>
-              <CardDescription>
-                Update your personal information
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  disabled
-                  className="bg-muted"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Email cannot be changed
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="displayName">Display Name</Label>
-                <Input
-                  id="displayName"
-                  placeholder="Your name"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                />
-              </div>
-              <Button onClick={handleUpdateProfile} disabled={saving}>
-                {saving ? "Saving..." : "Save Changes"}
-              </Button>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Heart className="h-5 w-5" />
-                HSA Information (Legacy)
-              </CardTitle>
-              <CardDescription>
-                Single HSA date tracking - use HSA Accounts below for multiple accounts
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="hsa-opened">HSA Opened Date</Label>
-                <Input
-                  id="hsa-opened"
-                  type="date"
-                  value={hsaOpenedDate}
-                  onChange={(e) => setHsaOpenedDate(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Only expenses after this date can be reimbursed from your HSA
-                </p>
-              </div>
-              <Button onClick={handleUpdateProfile} disabled={saving}>
-                {saving ? "Saving..." : "Save Changes"}
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Profile + HSA date share one form */}
+          <form onSubmit={profileForm.handleSubmit(onSubmitProfile)}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Profile Information
+                </CardTitle>
+                <CardDescription>Update your personal information</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" type="email" value={email} disabled className="bg-muted" />
+                  <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="displayName">Display Name</Label>
+                  <Input
+                    id="displayName"
+                    placeholder="Your name"
+                    {...profileForm.register("displayName")}
+                  />
+                  {profileForm.formState.errors.displayName && (
+                    <p className="text-sm text-destructive">
+                      {profileForm.formState.errors.displayName.message}
+                    </p>
+                  )}
+                </div>
+                <Button type="submit" disabled={saving}>
+                  {saving ? "Saving..." : "Save Changes"}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Heart className="h-5 w-5" />
+                  HSA Information (Legacy)
+                </CardTitle>
+                <CardDescription>
+                  Single HSA date tracking — use HSA Accounts below for multiple accounts
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="hsa-opened">HSA Opened Date</Label>
+                  <Input
+                    id="hsa-opened"
+                    type="date"
+                    {...profileForm.register("hsaOpenedDate")}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Only expenses after this date can be reimbursed from your HSA
+                  </p>
+                </div>
+                <Button type="submit" disabled={saving}>
+                  {saving ? "Saving..." : "Save Changes"}
+                </Button>
+              </CardContent>
+            </Card>
+          </form>
 
           <Card>
             <CardHeader>
@@ -382,14 +407,10 @@ const Settings = () => {
                 <Shield className="h-5 w-5" />
                 Security
               </CardTitle>
-              <CardDescription>
-                Manage your password and security settings
-              </CardDescription>
+              <CardDescription>Manage your password and security settings</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline">
-                Change Password
-              </Button>
+              <Button variant="outline">Change Password</Button>
             </CardContent>
           </Card>
 
@@ -400,7 +421,13 @@ const Settings = () => {
                   <Wallet className="h-5 w-5" />
                   <CardTitle>Payment Methods</CardTitle>
                 </div>
-                <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+                <Dialog
+                  open={paymentDialogOpen}
+                  onOpenChange={(open) => {
+                    setPaymentDialogOpen(open);
+                    if (!open) paymentMethodForm.reset({ name: "", type: "", rewards_rate: 0 });
+                  }}
+                >
                   <DialogTrigger asChild>
                     <Button size="sm">
                       <Plus className="h-4 w-4 mr-2" />
@@ -411,29 +438,47 @@ const Settings = () => {
                     <DialogHeader>
                       <DialogTitle>Add Payment Method</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4 py-4">
+                    <form
+                      onSubmit={paymentMethodForm.handleSubmit(onSubmitPaymentMethod)}
+                      className="space-y-4 py-4"
+                    >
                       <div className="space-y-2">
                         <Label htmlFor="method-name">Name</Label>
                         <Input
                           id="method-name"
                           placeholder="Chase Sapphire Reserve"
-                          value={newPaymentMethod.name}
-                          onChange={(e) => setNewPaymentMethod({ ...newPaymentMethod, name: e.target.value })}
+                          {...paymentMethodForm.register("name")}
                         />
+                        {paymentMethodForm.formState.errors.name && (
+                          <p className="text-sm text-destructive">
+                            {paymentMethodForm.formState.errors.name.message}
+                          </p>
+                        )}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="method-type">Type</Label>
-                        <Select value={newPaymentMethod.type} onValueChange={(value) => setNewPaymentMethod({ ...newPaymentMethod, type: value })}>
-                          <SelectTrigger id="method-type">
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Credit Card">Credit Card</SelectItem>
-                            <SelectItem value="Debit Card">Debit Card</SelectItem>
-                            <SelectItem value="HSA Card">HSA Card</SelectItem>
-                            <SelectItem value="FSA Card">FSA Card</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <Label>Type</Label>
+                        <Controller
+                          name="type"
+                          control={paymentMethodForm.control}
+                          render={({ field }) => (
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Credit Card">Credit Card</SelectItem>
+                                <SelectItem value="Debit Card">Debit Card</SelectItem>
+                                <SelectItem value="HSA Card">HSA Card</SelectItem>
+                                <SelectItem value="FSA Card">FSA Card</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                        {paymentMethodForm.formState.errors.type && (
+                          <p className="text-sm text-destructive">
+                            {paymentMethodForm.formState.errors.type.message}
+                          </p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="rewards">Rewards Rate (%)</Label>
@@ -441,20 +486,22 @@ const Settings = () => {
                           id="rewards"
                           type="number"
                           step="0.1"
-                          value={newPaymentMethod.rewards_rate}
-                          onChange={(e) => setNewPaymentMethod({ ...newPaymentMethod, rewards_rate: parseFloat(e.target.value) || 0 })}
+                          {...paymentMethodForm.register("rewards_rate", { valueAsNumber: true })}
                         />
+                        {paymentMethodForm.formState.errors.rewards_rate && (
+                          <p className="text-sm text-destructive">
+                            {paymentMethodForm.formState.errors.rewards_rate.message}
+                          </p>
+                        )}
                       </div>
-                    </div>
-                    <DialogFooter>
-                      <Button onClick={handleAddPaymentMethod}>Add Payment Method</Button>
-                    </DialogFooter>
+                      <DialogFooter>
+                        <Button type="submit">Add Payment Method</Button>
+                      </DialogFooter>
+                    </form>
                   </DialogContent>
                 </Dialog>
               </div>
-              <CardDescription>
-                Manage your credit cards, HSA, and FSA cards
-              </CardDescription>
+              <CardDescription>Manage your credit cards, HSA, and FSA cards</CardDescription>
             </CardHeader>
             <CardContent>
               {paymentMethods.length === 0 ? (
@@ -462,7 +509,10 @@ const Settings = () => {
               ) : (
                 <div className="space-y-3">
                   {paymentMethods.map((method) => (
-                    <div key={method.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={method.id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div className="flex items-center gap-3">
                         <CreditCard className="h-5 w-5 text-muted-foreground" />
                         <div>
@@ -495,9 +545,7 @@ const Settings = () => {
                 </div>
                 <PlaidLink onSuccess={loadBankConnections} />
               </div>
-              <CardDescription>
-                Connect your bank accounts to import transactions
-              </CardDescription>
+              <CardDescription>Connect your bank accounts to import transactions</CardDescription>
             </CardHeader>
             <CardContent>
               {bankConnections.length === 0 ? (
@@ -509,7 +557,10 @@ const Settings = () => {
               ) : (
                 <div className="space-y-3">
                   {bankConnections.map((connection) => (
-                    <div key={connection.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={connection.id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div className="flex items-center gap-3">
                         <Building2 className="h-5 w-5 text-muted-foreground" />
                         <div>
@@ -539,14 +590,10 @@ const Settings = () => {
                 <Mail className="h-5 w-5" />
                 Notifications
               </CardTitle>
-              <CardDescription>
-                Configure how you receive updates
-              </CardDescription>
+              <CardDescription>Configure how you receive updates</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Notification preferences coming soon
-              </p>
+              <p className="text-sm text-muted-foreground">Notification preferences coming soon</p>
             </CardContent>
           </Card>
         </div>

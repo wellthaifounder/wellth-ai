@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { Database } from "@/integrations/supabase/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -87,8 +88,8 @@ export const SettlementNegotiationTracker = ({
         .from('dispute_communications')
         .insert([{
           dispute_id: disputeId,
-          communication_type: (offerType === 'offer' ? 'phone_call' : 'email') as any,
-          direction: (offerType === 'offer' ? 'inbound' : 'outbound') as any,
+          communication_type: (offerType === 'offer' ? 'phone_call' : 'email') as Database["public"]["Enums"]["communication_type"],
+          direction: (offerType === 'offer' ? 'inbound' : 'outbound') as Database["public"]["Enums"]["communication_direction"],
           summary: `${offerType === 'offer' ? 'Settlement Offer' : 'Counter Offer'}: $${newAmount}`,
           outcome: newNotes || null,
         }]);

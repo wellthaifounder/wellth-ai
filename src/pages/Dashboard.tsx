@@ -50,31 +50,36 @@ const Dashboard = () => {
     hsaClaimableAmount: 0,
     disputeSavings: 0,
   });
-  const [recentExpenses, setRecentExpenses] = useState<any[]>([]);
-  const [reimbursementRequests, setReimbursementRequests] = useState<any[]>([]);
+  interface RecentExpense {
+    id: string;
+    vendor: string;
+    amount: number;
+    is_hsa_eligible: boolean;
+    invoice_date: string | null;
+    date: string;
+    reimbursement_strategy?: string;
+  }
+  const [recentExpenses, setRecentExpenses] = useState<RecentExpense[]>([]);
+  const [reimbursementRequests, setReimbursementRequests] = useState<{ id: string }[]>([]);
   const [hasConnectedBank, setHasConnectedBank] = useState(false);
   // Bill review feature archived - removed pendingReviews and disputeStats
 
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        navigate("/auth");
-        return;
+    // Auth is guaranteed by ProtectedRoute — just load the current user and data
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setUser(session.user);
+        setLoading(false);
       }
-      
-      setUser(session.user);
-      setLoading(false);
-    };
+    });
 
-    checkUser();
     fetchStats();
     fetchReimbursementRequests();
     fetchTransactionStats();
     checkBankConnection();
     analytics.pageView('/dashboard');
 
+    // Handle session expiration while on this page
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
         navigate("/auth");
@@ -84,7 +89,8 @@ const Dashboard = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Load calculator data if available (for new users)
   useEffect(() => {
@@ -111,7 +117,7 @@ const Dashboard = () => {
             .eq('id', user.id);
 
           if (error) {
-            console.error('Error updating HSA status:', error);
+            logError('Error updating HSA status', error);
           }
         }
 
@@ -119,7 +125,7 @@ const Dashboard = () => {
         sessionStorage.removeItem('calculatorData');
         sessionStorage.removeItem('estimatedSavings');
       } catch (error) {
-        console.error('Error loading calculator data:', error);
+        logError('Error loading calculator data', error);
       }
     };
 
@@ -177,7 +183,7 @@ const Dashboard = () => {
 
       setRecentExpenses(invoices?.slice(0, 5) || []);
     } catch (error) {
-      console.error("Failed to fetch stats:", error);
+      logError("Failed to fetch stats", error);
     }
   };
 
@@ -191,7 +197,7 @@ const Dashboard = () => {
       if (error) throw error;
       setHasConnectedBank((accounts?.length || 0) > 0);
     } catch (error) {
-      console.error("Failed to check bank connection:", error);
+      logError("Failed to check bank connection", error);
     }
   };
 
@@ -199,14 +205,14 @@ const Dashboard = () => {
     try {
       const { data: requests, error } = await supabase
         .from("reimbursement_requests")
-        .select("*")
+        .select("id")
         .order("created_at", { ascending: false })
         .limit(5);
 
       if (error) throw error;
       setReimbursementRequests(requests || []);
     } catch (error) {
-      console.error("Failed to fetch reimbursement requests:", error);
+      logError("Failed to fetch reimbursement requests", error);
     }
   };
 
@@ -223,7 +229,7 @@ const Dashboard = () => {
         unreviewedTransactions: transactions?.length || 0
       }));
     } catch (error) {
-      console.error("Failed to fetch transaction stats:", error);
+      logError("Failed to fetch transaction stats", error);
     }
   };
 

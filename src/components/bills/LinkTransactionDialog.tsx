@@ -45,6 +45,8 @@ interface Invoice {
   date: string;
 }
 
+type DisplayTransaction = (Transaction | LinkedTransaction) & { isLinked: boolean };
+
 interface LinkTransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -59,7 +61,7 @@ export function LinkTransactionDialog({
   onSuccess,
 }: LinkTransactionDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [allTransactions, setAllTransactions] = useState<(Transaction | LinkedTransaction)[]>([]);
+  const [allTransactions, setAllTransactions] = useState<DisplayTransaction[]>([]);
   const [toggling, setToggling] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [advancedFilters, setAdvancedFilters] = useState<FilterCriteria>({});
@@ -109,7 +111,7 @@ export function LinkTransactionDialog({
       const linked: LinkedTransaction[] = (linkedPayments || [])
         .filter(pt => pt.transactions)
         .map(pt => ({
-          ...(pt.transactions as any),
+          ...(pt.transactions as Transaction),
           payment_transaction_id: pt.id,
           payment_source: pt.payment_source,
         }));
@@ -158,7 +160,7 @@ export function LinkTransactionDialog({
     }
   };
 
-  const handleToggleTransaction = async (transaction: any) => {
+  const handleToggleTransaction = async (transaction: DisplayTransaction) => {
     if (!invoice) return;
     
     setToggling(transaction.id);
@@ -251,7 +253,7 @@ export function LinkTransactionDialog({
     return score;
   };
 
-  const applyFilters = (transactions: any[]): any[] => {
+  const applyFilters = (transactions: DisplayTransaction[]): DisplayTransaction[] => {
     let filtered = [...transactions];
 
     // Filter by search query
