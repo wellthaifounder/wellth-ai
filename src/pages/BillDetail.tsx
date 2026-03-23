@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ArrowLeft, FileText, AlertTriangle, CreditCard, Scale, Upload, Link2, CheckCircle2, Plus } from "lucide-react";
-import { AuthenticatedNav } from "@/components/AuthenticatedNav";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { BillErrorCard } from "@/components/bills/BillErrorCard";
 import { PriceBenchmarking } from "@/components/bills/PriceBenchmarking";
 import { ProviderPerformanceCard } from "@/components/bills/ProviderPerformanceCard";
@@ -267,9 +267,11 @@ export default function BillDetail() {
 
   if (isLoading && !isNewBill) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+      <AuthenticatedLayout>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </AuthenticatedLayout>
     );
   }
 
@@ -277,8 +279,7 @@ export default function BillDetail() {
   // Bill review feature archived - removed review and errorCount
 
   return (
-    <div className="min-h-screen bg-background">
-      <AuthenticatedNav />
+    <AuthenticatedLayout>
 
       <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-6xl">
         <div className="mb-6">
@@ -293,9 +294,9 @@ export default function BillDetail() {
             {isNewBill ? 'Add New Bill' : 'Bill Details'}
           </h1>
           <p className="text-muted-foreground">
-            {isNewBill 
-              ? 'Upload medical bills and documentation with automatic AI error detection' 
-              : 'View bill information, AI analysis, payments, and documentation'}
+            {isNewBill
+              ? 'Upload medical bills and documentation to start tracking this expense'
+              : 'View and manage bill information, payments, and documentation'}
           </p>
         </div>
 
@@ -492,7 +493,7 @@ export default function BillDetail() {
                   <div className="space-y-2">
                     <Label>Upload New Documents</Label>
                     <p className="text-sm text-muted-foreground">
-                      Upload your medical bill or EOB (Explanation of Benefits) to automatically trigger AI analysis.
+                      Upload your medical bill, EOB (Explanation of Benefits), or any supporting documentation.
                     </p>
                     <MultiFileUpload
                       onFilesChange={setNewFiles}
@@ -573,6 +574,6 @@ export default function BillDetail() {
           setShowLinkTransactionDialog(false);
         }}
       />
-    </div>
+    </AuthenticatedLayout>
   );
 }

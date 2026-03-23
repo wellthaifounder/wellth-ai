@@ -209,8 +209,8 @@ export default function CollectionDetail() {
       <AuthenticatedLayout>
         <div className="container mx-auto px-4 py-8 text-center">
           <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Collection Not Found</h2>
-          <Button onClick={() => navigate("/collections")}>Back to Collections</Button>
+          <h2 className="text-xl font-semibold mb-2">Event Not Found</h2>
+          <Button onClick={() => navigate("/collections")}>Back to Events</Button>
         </div>
       </AuthenticatedLayout>
     );
@@ -224,7 +224,7 @@ export default function CollectionDetail() {
           <div>
             <Button variant="ghost" onClick={() => navigate("/collections")} className="mb-2">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Collections
+              Back to Events
             </Button>
             <div className="flex items-center gap-3">
               <div
@@ -375,7 +375,7 @@ export default function CollectionDetail() {
             <Card>
               <CardHeader>
                 <CardTitle>Activity Timeline</CardTitle>
-                <CardDescription>All bills, payments, and documents in this collection</CardDescription>
+                <CardDescription>All bills, payments, and documents in this event</CardDescription>
               </CardHeader>
               <CardContent>
                 <CollectionTimeline
@@ -405,7 +405,7 @@ export default function CollectionDetail() {
                 {invoices?.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Receipt className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No bills linked to this collection yet</p>
+                    <p>No bills linked to this event yet</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -454,7 +454,7 @@ export default function CollectionDetail() {
                 {documents?.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No documents linked to this collection yet</p>
+                    <p>No documents linked to this event yet</p>
                   </div>
                 ) : (
                   <div className="space-y-3">

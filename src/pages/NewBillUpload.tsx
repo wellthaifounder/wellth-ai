@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { AuthenticatedNav } from "@/components/AuthenticatedNav";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { BillUploadWizard } from "@/components/bills/BillUploadWizard";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -16,9 +16,7 @@ export default function NewBillUpload() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <AuthenticatedNav />
-
+    <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-4xl">
         <div className="mb-6">
           <Button variant="ghost" onClick={() => navigate("/bills")}>
@@ -36,6 +34,6 @@ export default function NewBillUpload() {
 
         <BillUploadWizard onComplete={handleComplete} onCancel={handleCancel} />
       </div>
-    </div>
+    </AuthenticatedLayout>
   );
 }

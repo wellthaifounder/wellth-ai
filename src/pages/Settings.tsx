@@ -13,7 +13,7 @@ import {
   Building2, Plus, Trash2, CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";
-import { AuthenticatedNav } from "@/components/AuthenticatedNav";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { SubscriptionManagement } from "@/components/settings/SubscriptionManagement";
 import { useOnboarding } from "@/contexts/OnboardingContext";
 import {
@@ -248,15 +248,16 @@ const Settings = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+      <AuthenticatedLayout>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <AuthenticatedNav />
+    <AuthenticatedLayout>
 
       <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-4xl">
         <div className="mb-6">
@@ -357,33 +358,6 @@ const Settings = () => {
               </CardContent>
             </Card>
 
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Heart className="h-5 w-5" />
-                  HSA Information (Legacy)
-                </CardTitle>
-                <CardDescription>
-                  Single HSA date tracking — use HSA Accounts below for multiple accounts
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="hsa-opened">HSA Opened Date</Label>
-                  <Input
-                    id="hsa-opened"
-                    type="date"
-                    {...profileForm.register("hsaOpenedDate")}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Only expenses after this date can be reimbursed from your HSA
-                  </p>
-                </div>
-                <Button type="submit" disabled={saving}>
-                  {saving ? "Saving..." : "Save Changes"}
-                </Button>
-              </CardContent>
-            </Card>
           </form>
 
           <Card>
@@ -598,7 +572,7 @@ const Settings = () => {
           </Card>
         </div>
       </div>
-    </div>
+    </AuthenticatedLayout>
   );
 };
 

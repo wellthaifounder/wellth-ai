@@ -115,7 +115,7 @@ export function OrganizeWizard({ open, onOpenChange, onComplete }: OrganizeWizar
       setNewCollectionTitle("");
       setNewCollectionDescription("");
       queryClient.invalidateQueries({ queryKey: ["unorganized-invoices"] });
-      toast.success("Collection created and bills linked!");
+      toast.success("Event created and bills linked!");
     },
     onError: (error) => {
       toast.error("Failed to create collection");
@@ -174,8 +174,8 @@ export function OrganizeWizard({ open, onOpenChange, onComplete }: OrganizeWizar
         <DialogHeader>
           <DialogTitle>Organize Your Bills</DialogTitle>
           <DialogDescription>
-            {step === "select" && "Select bills to group into a collection"}
-            {step === "organize" && "Create a new collection and link the selected bills"}
+            {step === "select" && "Select bills to group into an event"}
+            {step === "organize" && "Create a new event and link the selected bills"}
             {step === "complete" && "Great job organizing your bills!"}
           </DialogDescription>
         </DialogHeader>
@@ -280,7 +280,7 @@ export function OrganizeWizard({ open, onOpenChange, onComplete }: OrganizeWizar
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="collection-title">Collection Title *</Label>
+                <Label htmlFor="collection-title">Event Title *</Label>
                 <Input
                   id="collection-title"
                   placeholder='e.g., "Mom - Knee Surgery" or "2026 Dental"'

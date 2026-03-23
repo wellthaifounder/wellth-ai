@@ -50,11 +50,11 @@ export default function NewCollection() {
       return data;
     },
     onSuccess: (data) => {
-      toast.success("Collection created!");
+      toast.success("Event created!");
       navigate(`/collections/${data.id}`);
     },
     onError: (error) => {
-      toast.error("Failed to create collection");
+      toast.error("Failed to create event");
       console.error(error);
     },
   });
@@ -62,7 +62,7 @@ export default function NewCollection() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim()) {
-      toast.error("Please enter a collection title");
+      toast.error("Please enter an event title");
       return;
     }
     createMutation.mutate();
@@ -74,7 +74,7 @@ export default function NewCollection() {
         <div className="mb-6">
           <Button variant="ghost" onClick={() => navigate("/collections")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Collections
+            Back to Events
           </Button>
         </div>
 
@@ -82,10 +82,10 @@ export default function NewCollection() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FolderPlus className="h-5 w-5" />
-              New Collection
+              New Event
             </CardTitle>
             <CardDescription>
-              Create a collection to group related bills, documents, and payments.
+              Create an event to group related bills, documents, and payments.
               Examples: "Mom - Knee Surgery", "2026 Dental Work", "Kids Healthcare"
             </CardDescription>
           </CardHeader>
@@ -105,7 +105,7 @@ export default function NewCollection() {
                   required
                 />
                 <p className="text-xs text-muted-foreground">
-                  Name your collection however makes sense to you
+                  Name your event however makes sense to you
                 </p>
               </div>
 
@@ -138,7 +138,7 @@ export default function NewCollection() {
                 </Label>
                 <Textarea
                   id="description"
-                  placeholder="Add any notes about this collection..."
+                  placeholder="Add any notes about this event..."
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
@@ -158,7 +158,7 @@ export default function NewCollection() {
                   {createMutation.isPending && (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   )}
-                  Create Collection
+                  Create Event
                 </Button>
               </div>
             </form>

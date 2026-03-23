@@ -253,9 +253,9 @@ const Reports = () => {
           <div className="mb-8">
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
               <div>
-                <h1 className="text-3xl font-bold mb-2">Reports</h1>
+                <h1 className="text-3xl font-bold mb-2">Insights</h1>
                 <p className="text-muted-foreground">
-                  Detailed insights, trends, and analytics for your healthcare spending
+                  Detailed trends and analytics for your healthcare spending
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
@@ -288,7 +288,7 @@ const Reports = () => {
             <Tabs defaultValue="overview" className="space-y-6">
               <TabsList className="inline-flex w-full justify-start overflow-x-auto">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="insights">Insights</TabsTrigger>
+                <TabsTrigger value="insights">Spending Analysis</TabsTrigger>
                 <TabsTrigger value="goals">Goals</TabsTrigger>
                 <TabsTrigger value="tax">Tax Tools</TabsTrigger>
                 <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>

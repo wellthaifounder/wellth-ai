@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calculator, Receipt, FileText, BarChart3, Wallet, Building2, BookOpen, Settings, MessageSquare, Shield, DollarSign, Home, TrendingUp, ChevronDown, ChevronRight, FolderOpen } from "lucide-react";
+import { Calculator, Receipt, FileText, TrendingUp, Wallet, Settings, MessageSquare, Shield, Home, ChevronDown, ChevronRight, FolderHeart, ClipboardList } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useHSA } from "@/contexts/HSAContext";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -29,21 +29,21 @@ interface MenuItem {
   hsaOnly?: boolean;
 }
 
-// Consolidated 5-category navigation structure
-const moneyMenuItems: MenuItem[] = [
-  { icon: Home, label: "Dashboard", path: "/dashboard", badgeKey: null },
-  { icon: Wallet, label: "Transactions", path: "/transactions", badgeKey: "unreviewedTransactions" },
-  { icon: Calculator, label: "Savings Tools", path: "/savings-calculator", badgeKey: null },
+const coreMenuItems: MenuItem[] = [
+  { icon: Home,        label: "Home",   path: "/dashboard",   badgeKey: null },
+  { icon: Receipt,     label: "Bills",  path: "/bills",        badgeKey: null },
+  { icon: FolderHeart, label: "Events", path: "/collections",  badgeKey: null },
 ];
 
-const collectionsMenuItems: MenuItem[] = [
-  { icon: FolderOpen, label: "Collections", path: "/collections", badgeKey: null },
-  { icon: Receipt, label: "Bills", path: "/bills", badgeKey: null },
-  { icon: FileText, label: "Documents", path: "/documents", badgeKey: null },
+const hsaMenuItems: MenuItem[] = [
+  { icon: Wallet,         label: "Transactions",   path: "/transactions",           badgeKey: "unreviewedTransactions" },
+  { icon: ClipboardList,  label: "HSA Claims",     path: "/reimbursement-requests", badgeKey: null },
+  { icon: Calculator,     label: "HSA Calculator", path: "/savings-calculator",     badgeKey: null },
 ];
 
 const insightsMenuItems: MenuItem[] = [
-  { icon: BarChart3, label: "Reports", path: "/reports", badgeKey: null },
+  { icon: TrendingUp, label: "Insights",  path: "/reports",    badgeKey: null },
+  { icon: FileText,   label: "Documents", path: "/documents",  badgeKey: null },
 ];
 
 export function AppSidebar({ unreviewedTransactions = 0 }: AppSidebarProps) {
@@ -56,8 +56,8 @@ export function AppSidebar({ unreviewedTransactions = 0 }: AppSidebarProps) {
 
   // State for collapsible sections - default all open
   const [openSections, setOpenSections] = useState({
-    money: true,
-    collections: true,
+    core: true,
+    hsa: true,
     insights: true,
     account: true,
   });
@@ -129,8 +129,8 @@ export function AppSidebar({ unreviewedTransactions = 0 }: AppSidebarProps) {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarContent className="overflow-y-auto">
-        {renderMenuSection(moneyMenuItems, "Money", "money")}
-        {renderMenuSection(collectionsMenuItems, "Organize", "collections")}
+        {renderMenuSection(coreMenuItems, "Core", "core")}
+        {renderMenuSection(hsaMenuItems, "HSA & Money", "hsa")}
         {renderMenuSection(insightsMenuItems, "Insights", "insights")}
 
         <Collapsible open={openSections.account} onOpenChange={() => toggleSection("account")} className="mt-auto">

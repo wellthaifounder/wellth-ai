@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthenticatedNav } from "@/components/AuthenticatedNav";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -97,9 +97,7 @@ export default function HSAEligibility() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <AuthenticatedNav />
-      
+    <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-7xl">
         <div className="mb-6">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
@@ -453,6 +451,6 @@ export default function HSAEligibility() {
         )}
 
       </div>
-    </div>
+    </AuthenticatedLayout>
   );
 }

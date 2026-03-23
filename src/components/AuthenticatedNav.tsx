@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { WellthLogo } from "@/components/WellthLogo";
-import { LogOut, Calculator, Receipt, FileText, BarChart3, Menu, Settings, Home, BookOpen, Wallet, DollarSign, TrendingUp, Upload, FolderHeart } from "lucide-react";
+import { LogOut, Calculator, Receipt, FileText, BarChart3, Menu, Settings, Home, Wallet, TrendingUp, Upload, FolderHeart, ClipboardList } from "lucide-react";
 import { WellbieAvatar } from "@/components/WellbieAvatar";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -39,26 +39,30 @@ export const AuthenticatedNav = ({
     setMobileMenuOpen(false);
   };
 
-  // Consolidated navigation with Medical Events as primary hub
+  // Primary nav — matches sidebar and bottom tabs exactly
   const mainNavItems = [
-    { icon: DollarSign, label: "Money", path: "/dashboard" },
-    { icon: FolderHeart, label: "Medical Events", path: "/medical-events" },
-    { icon: Receipt, label: "Bills", path: "/bills", badge: pendingReviews },
-    { icon: TrendingUp, label: "Insights", path: "/reports" },
+    { icon: Home,        label: "Home",     path: "/dashboard" },
+    { icon: Receipt,     label: "Bills",    path: "/bills",      badge: pendingReviews },
+    { icon: FolderHeart, label: "Events",   path: "/collections" },
+    { icon: TrendingUp,  label: "Insights", path: "/reports" },
   ];
 
-  // Sub-items for Money section
-  const moneySubItems = [
-    { icon: Home, label: "Dashboard", path: "/dashboard" },
-    { icon: Wallet, label: "Transactions", path: "/transactions", badge: unreviewedTransactions },
-    { icon: Calculator, label: "Savings Tools", path: "/savings-calculator" },
+  // Mobile hamburger sections — mirror the sidebar groups
+  const coreItems = [
+    { icon: Home,        label: "Home",    path: "/dashboard" },
+    { icon: Receipt,     label: "Bills",   path: "/bills",      badge: pendingReviews },
+    { icon: FolderHeart, label: "Events",  path: "/collections" },
   ];
 
-  // Sub-items for Bills section
-  const billsSubItems = [
-    { icon: FolderHeart, label: "Medical Events", path: "/medical-events" },
-    { icon: Receipt, label: "Bills", path: "/bills", badge: pendingReviews },
-    { icon: FileText, label: "Documents", path: "/documents" },
+  const hsaItems = [
+    { icon: Wallet,         label: "Transactions",   path: "/transactions",           badge: unreviewedTransactions },
+    { icon: ClipboardList,  label: "HSA Claims",     path: "/reimbursement-requests" },
+    { icon: Calculator,     label: "HSA Calculator", path: "/savings-calculator" },
+  ];
+
+  const insightsItems = [
+    { icon: TrendingUp, label: "Insights",  path: "/reports" },
+    { icon: FileText,   label: "Documents", path: "/documents" },
   ];
 
   const isActivePath = (path: string) => {
@@ -147,60 +151,32 @@ export const AuthenticatedNav = ({
                   <SheetTitle>Menu</SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col gap-4" aria-label="Mobile navigation menu">
-                  <div className="space-y-2">
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">Money</h3>
-                    {moneySubItems.map((item) => (
-                      <Button
-                        key={item.path}
-                        variant="ghost"
-                        className="justify-start w-full"
-                        onClick={() => handleNavigation(item.path)}
-                        aria-label={item.label}
-                      >
-                        <item.icon className="h-5 w-5 mr-3" aria-hidden="true" />
-                        <span className="flex-1 text-left">{item.label}</span>
-                        {item.badge && item.badge > 0 && (
-                          <span className="bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
-                            {item.badge}
-                          </span>
-                        )}
-                      </Button>
-                    ))}
-                  </div>
-
-                  <div className="space-y-2">
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">Bills</h3>
-                    {billsSubItems.map((item) => (
-                      <Button
-                        key={item.path}
-                        variant="ghost"
-                        className="justify-start w-full"
-                        onClick={() => handleNavigation(item.path)}
-                        aria-label={item.label}
-                      >
-                        <item.icon className="h-5 w-5 mr-3" aria-hidden="true" />
-                        <span className="flex-1 text-left">{item.label}</span>
-                        {item.badge && item.badge > 0 && (
-                          <span className="bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
-                            {item.badge}
-                          </span>
-                        )}
-                      </Button>
-                    ))}
-                  </div>
-
-                  <div className="space-y-2">
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">Insights</h3>
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full"
-                      onClick={() => handleNavigation("/reports")}
-                      aria-label="Reports"
-                    >
-                      <BarChart3 className="h-5 w-5 mr-3" aria-hidden="true" />
-                      <span className="flex-1 text-left">Reports</span>
-                    </Button>
-                  </div>
+                  {[
+                    { heading: "Core", items: coreItems },
+                    { heading: "HSA & Money", items: hsaItems },
+                    { heading: "Insights", items: insightsItems },
+                  ].map(({ heading, items }) => (
+                    <div key={heading} className="space-y-2">
+                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">{heading}</h3>
+                      {items.map((item) => (
+                        <Button
+                          key={item.path}
+                          variant="ghost"
+                          className="justify-start w-full"
+                          onClick={() => handleNavigation(item.path)}
+                          aria-label={item.label}
+                        >
+                          <item.icon className="h-5 w-5 mr-3" aria-hidden="true" />
+                          <span className="flex-1 text-left">{item.label}</span>
+                          {"badge" in item && item.badge > 0 && (
+                            <span className="bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                              {item.badge}
+                            </span>
+                          )}
+                        </Button>
+                      ))}
+                    </div>
+                  ))}
 
                   <div className="border-t pt-4 space-y-2">
                     <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">Account</h3>
