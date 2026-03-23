@@ -57,7 +57,7 @@ export function OnboardingProgressBar({ compact = false }: OnboardingProgressBar
       if (!user) return null;
 
       const { data, error } = await supabase
-        .from('bank_accounts')
+        .from('plaid_connections')
         .select('id')
         .eq('user_id', user.id)
         .limit(1);
