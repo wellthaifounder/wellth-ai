@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { AuthenticatedNav } from '@/components/AuthenticatedNav';
+import { AuthenticatedLayout } from '@/components/AuthenticatedLayout';
 import { PlaidLink } from '@/components/PlaidLink';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -97,9 +97,7 @@ export default function BankAccounts() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <AuthenticatedNav />
-      
+    <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-4xl">
         <div className="mb-6">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
@@ -186,6 +184,6 @@ export default function BankAccounts() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AuthenticatedLayout>
   );
 }

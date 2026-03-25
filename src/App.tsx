@@ -29,6 +29,8 @@ const PrePurchaseDecision = lazy(() => import("./pages/PrePurchaseDecision"));
 const HSAEligibility = lazy(() => import("./pages/HSAEligibility"));
 const ReimbursementRequests = lazy(() => import("./pages/ReimbursementRequests"));
 const ReimbursementDetails = lazy(() => import("./pages/ReimbursementDetails"));
+const HSAReimbursement = lazy(() => import("./pages/HSAReimbursement"));
+const BankAccounts = lazy(() => import("./pages/BankAccounts"));
 const Documents = lazy(() => import("./pages/Documents"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Install = lazy(() => import("./pages/Install"));
@@ -116,9 +118,11 @@ const App = () => (
                     <Route path="/hsa-eligibility" element={<ProtectedRoute><ErrorBoundary><HSAEligibility /></ErrorBoundary></ProtectedRoute>} />
                     <Route path="/reimbursement-requests" element={<ProtectedRoute><ErrorBoundary><ReimbursementRequests /></ErrorBoundary></ProtectedRoute>} />
                     <Route path="/reimbursement/:id" element={<ProtectedRoute><ErrorBoundary><ReimbursementDetails /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/hsa-reimbursement" element={<ProtectedRoute><ErrorBoundary><HSAReimbursement /></ErrorBoundary></ProtectedRoute>} />
 
                     {/* Transactions Route */}
                     <Route path="/transactions" element={<ProtectedRoute><ErrorBoundary><Transactions /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/bank-accounts" element={<ProtectedRoute><ErrorBoundary><BankAccounts /></ErrorBoundary></ProtectedRoute>} />
 
                     {/* Collections Routes */}
                     <Route path="/collections" element={<ProtectedRoute><ErrorBoundary><Collections /></ErrorBoundary></ProtectedRoute>} />

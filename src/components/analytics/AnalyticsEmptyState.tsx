@@ -49,13 +49,13 @@ export const AnalyticsEmptyState = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button 
-              onClick={() => navigate("/expense-entry")}
+            <Button
+              onClick={() => navigate("/bills/new")}
               size="lg"
               className="gap-2"
             >
               <DollarSign className="h-4 w-4" />
-              Add Your First Expense
+              Upload Your First Bill
             </Button>
             <Button 
               onClick={() => navigate("/transactions")}

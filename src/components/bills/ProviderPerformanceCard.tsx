@@ -1,9 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
 import { Building2, TrendingUp, AlertTriangle, Star } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 interface ProviderPerformanceCardProps {
   provider: {
@@ -19,7 +17,6 @@ interface ProviderPerformanceCardProps {
 }
 
 export function ProviderPerformanceCard({ provider }: ProviderPerformanceCardProps) {
-  const navigate = useNavigate();
   const accuracyScore = Number(provider.billing_accuracy_score);
   const isHighAccuracy = accuracyScore >= 90;
   const isLowAccuracy = accuracyScore < 70;
@@ -93,13 +90,6 @@ export function ProviderPerformanceCard({ provider }: ProviderPerformanceCardPro
           </Badge>
         )}
 
-        <Button 
-          onClick={() => navigate(`/providers/${provider.id}`)}
-          variant="outline"
-          className="w-full"
-        >
-          View Full Profile
-        </Button>
       </CardContent>
     </Card>
   );
