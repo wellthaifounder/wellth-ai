@@ -9,7 +9,7 @@ interface EmbeddedCheckoutProps {
   onComplete?: () => void;
 }
 
-const stripeKey = "pk_test_51SHqh32Oq7FyVuCtKXpEc9rlEqa7NhrxnfacTjGjZwY01Xfkxny6zpFU4SQqvmeH30qgwDOF6JdtmPoBBKoTssmM00BBOHEBdH";
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 
 const stripePromise = loadStripe(stripeKey || "");
 

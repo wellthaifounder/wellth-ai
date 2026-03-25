@@ -1,9 +1,24 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const allowedOrigins = [
+  'https://wellth-ai.app',
+  'https://www.wellth-ai.app',
+  Deno.env.get('ALLOWED_ORIGIN'),
+].filter(Boolean);
+
+function getCorsHeaders(requestOrigin: string | null) {
+  const origin = requestOrigin && allowedOrigins.includes(requestOrigin)
+    ? requestOrigin
+    : allowedOrigins[1];
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Credentials': 'true',
+  };
+}
+
+const ALLOWED_PRICING_DOMAINS = ['data.cms.gov', 'download.cms.gov', 'www.cms.gov'];
 
 interface CMSHospitalPricing {
   hospital_name: string;
@@ -58,8 +73,24 @@ interface PayerInfo {
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req.headers.get('origin'));
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Require authentication
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  const authClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!);
+  const { data: { user }, error: authError } = await authClient.auth.getUser(authHeader.replace('Bearer ', ''));
+  if (authError || !user) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   try {
@@ -71,6 +102,19 @@ Deno.serve(async (req) => {
 
     if (!hospitalPricingUrl || !cmsId) {
       throw new Error('Missing required parameters: hospitalPricingUrl and cmsId');
+    }
+
+    // Validate URL to prevent SSRF
+    const parsedUrl = new URL(hospitalPricingUrl);
+    if (parsedUrl.protocol !== 'https:') {
+      return new Response(JSON.stringify({ error: 'Only HTTPS URLs are permitted' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    if (!ALLOWED_PRICING_DOMAINS.some(d => parsedUrl.hostname === d || parsedUrl.hostname.endsWith('.' + d))) {
+      return new Response(JSON.stringify({ error: 'URL domain not permitted' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     console.log(`Fetching pricing data for hospital ${cmsId} from ${hospitalPricingUrl}`);

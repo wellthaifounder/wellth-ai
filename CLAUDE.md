@@ -1,37 +1,198 @@
 # CLAUDE.md - Wellth.ai Development Guidelines
 
-> This file is institutional memory for Claude Code. Update it whenever Claude makes a mistake so it learns for next time.
+> This file is institutional memory for Claude Code and all AI coding agents. It serves as the **operationalized information security policy** for this codebase. Every agent working on this project must follow these rules before committing any code.
 
 ## Project Overview
 
-**Wellth.ai** is a HIPAA-compliant healthcare expense management platform that helps users:
+**Wellth.ai** is a HIPAA-relevant healthcare expense management platform that helps users:
 - Track HSA/FSA accounts and transactions
-- Detect medical billing errors using AI (Gemini 2.5 Flash)
-- Manage disputes with healthcare providers
-- Optimize healthcare spending with an AI assistant (Wellbie)
+- Scan and categorize medical receipts via AI OCR
+- Connect bank accounts via Plaid to auto-import medical transactions
+- Manage reimbursement requests and optimize healthcare spending
 
 **Tech Stack:** React 18 + TypeScript + Vite + Tailwind + Supabase + Stripe + Plaid
 
-## Architecture Rules
+---
 
-### Database & Security
-- All database queries MUST use Row Level Security (RLS) - never bypass with service role on frontend
-- NEVER log PHI (Protected Health Information) - use `utils/errorHandler.ts` for sanitization
-- All edge functions require JWT validation via `supabase.auth.getUser()`
-- Use `sessionStorage` NOT `localStorage` for auth tokens (security requirement)
-- Plaid tokens are encrypted with AES-256-GCM - see `supabase/functions/plaid-exchange-token/`
+## Information Security Policy
+
+Wellth.ai handles Protected Health Information (PHI) and Protected Financial Information (PFI). All code contributed to this repository — by humans or AI agents — must comply with the controls below. These are not suggestions; they are requirements.
+
+### Data Classification
+
+| Class | Definition | Examples | Required Controls |
+|-------|-----------|---------|------------------|
+| **PHI** | Protected Health Information | Diagnoses, treatment dates, provider names linked to a person, EOB data | Never log; never return verbatim to client; encrypt at rest |
+| **PFI** | Protected Financial Information | Plaid access tokens, Stripe customer IDs, bank account numbers | AES-256-GCM encryption at rest; edge functions only |
+| **PII** | Personally Identifiable | Name, email, user ID | Auth-gated; RLS enforced on every query |
+| **Public** | No sensitivity | Hospital pricing tables, HSA contribution limits | No special controls required |
+
+---
+
+## Edge Function Security Checklist
+
+**Every new edge function MUST satisfy all of the following before being committed:**
+
+- [ ] **JWT validation** — call `supabase.auth.getUser()` and return 401 if the user is not authenticated. The only exceptions are explicitly documented public endpoints.
+- [ ] **Dynamic CORS** — use `getCorsHeaders(req.headers.get('origin'))` with a whitelist array. Never use `'Access-Control-Allow-Origin': '*'`.
+- [ ] **Input validation** — validate the request body with Zod before using any values.
+- [ ] **URL validation** — if fetching an external URL from user input, validate scheme (`https:` only) and domain against an explicit allowlist.
+- [ ] **Generic error responses** — the catch block returns a generic message to the client and logs details server-side only. Auth errors (401) and input errors (400) may be specific since they are user-actionable.
+- [ ] **Least-privilege key** — use `SUPABASE_ANON_KEY` unless a privileged operation (e.g., admin DB write) requires `SUPABASE_SERVICE_ROLE_KEY`.
+- [ ] **User ownership check** — when accessing user-owned resources, verify `user_id = auth.uid()` in the query or in code.
+
+### Canonical Edge Function Template
+
+```typescript
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://esm.sh/zod@3.22.4";
+
+// ── CORS ──────────────────────────────────────────────────────────────────────
+const allowedOrigins = [
+  'https://wellth-ai.app',
+  'https://www.wellth-ai.app',
+  Deno.env.get('ALLOWED_ORIGIN'),
+].filter(Boolean);
+
+function getCorsHeaders(requestOrigin: string | null) {
+  const origin = requestOrigin && allowedOrigins.includes(requestOrigin)
+    ? requestOrigin
+    : allowedOrigins[1]; // default to www
+  return {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Credentials": "true",
+  };
+}
+
+// ── Input schema ──────────────────────────────────────────────────────────────
+const RequestSchema = z.object({
+  // define your fields here
+});
+
+// ── Handler ───────────────────────────────────────────────────────────────────
+serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req.headers.get("origin"));
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  // 1. Authenticate
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!);
+  const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
+  if (authError || !user) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  try {
+    // 2. Validate input
+    const body = await req.json();
+    const parsed = RequestSchema.safeParse(body);
+    if (!parsed.success) {
+      return new Response(JSON.stringify({ error: "Invalid request." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // 3. Your logic here — always scope queries to user.id
+
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+
+  } catch (error) {
+    // 4. Generic error — never leak internal details to client
+    console.error("[FUNCTION-NAME] Error:", error instanceof Error ? error.message : error);
+    return new Response(JSON.stringify({ error: "An unexpected error occurred. Please try again." }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
+```
+
+---
+
+## Frontend Security Checklist
+
+**Before committing any frontend code:**
+
+- [ ] **No secrets in `src/`** — only `import.meta.env.VITE_*` variables (anon/publishable keys only). Secret keys belong in Supabase Edge Function Secrets, not in Vercel env vars.
+- [ ] **No sensitive data in localStorage** — use `sessionStorage` for auth tokens. Non-sensitive UI state (theme, layout prefs) is acceptable in localStorage.
+- [ ] **PHI-safe logging** — use `safeLog()` from `src/utils/errorHandler.ts` instead of `console.log/error` for any data that might contain user or health information.
+- [ ] **Error boundaries** — all new pages must be wrapped in `<ErrorBoundary>`.
+- [ ] **Protected routes** — all authenticated pages must be wrapped in `<ProtectedRoute>`.
+- [ ] **Authenticated layout** — all authenticated pages must use `<AuthenticatedLayout>` (not standalone `<AuthenticatedNav>`) to ensure sidebar and bottom nav appear on all devices.
+
+---
+
+## Database Security Rules
+
+- **RLS required** — every new table must have Row Level Security enabled before first use. Never query without RLS unless using the service role key in a trusted edge function.
+- **Policy naming** — `"Users can [action] their own [resource]"` (e.g., `"Users can view their own invoices"`).
+- **SECURITY DEFINER functions** — must explicitly set `search_path = public, pg_temp` to prevent schema poisoning.
+- **No SELECT \*** — always enumerate columns. This prevents accidental PHI/PFI exposure when new columns are added.
+- **Plaid tokens** — stored encrypted with AES-256-GCM in `plaid_connections.encrypted_access_token`. Never store or log plaintext access tokens.
+
+---
+
+## Secrets & Key Management
+
+| Secret | Where it lives | Notes |
+|--------|---------------|-------|
+| `VITE_SUPABASE_URL` | Vercel env vars | Public — safe to expose |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Vercel env vars | Anon key — safe to expose |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | Vercel env vars | Publishable key — safe to expose |
+| `STRIPE_SECRET_KEY` | Supabase Edge Function Secrets | Never in frontend or Vercel |
+| `PLAID_CLIENT_ID` | Supabase Edge Function Secrets | Never in frontend |
+| `PLAID_SECRET` | Supabase Edge Function Secrets | Never in frontend |
+| `PLAID_ENCRYPTION_KEY` | Supabase Edge Function Secrets | 32-byte hex key; rotate on compromise |
+| `SUPABASE_SERVICE_ROLE_KEY` | Auto-injected by Supabase | Never commit; never expose to frontend |
+
+**Rotation schedule:** Rotate all API keys every 90 days. Rotate immediately on suspected compromise.
+
+**If a secret is accidentally committed:**
+1. Rotate the key immediately in the provider dashboard
+2. Then remove it from git history: `git filter-branch` or BFG Repo Cleaner
+3. Force-push the cleaned history
+4. Notify wellth.ai.founder@gmail.com
+
+---
+
+## Incident Response
+
+If a security incident is suspected (unauthorized data access, leaked credentials, anomalous API calls):
+
+1. **Identify** — what data class was exposed (PHI/PFI/PII), to whom, and for how long
+2. **Contain** — revoke/rotate all affected credentials immediately
+3. **Assess** — if PHI was involved, HIPAA breach notification rules may apply (45 CFR §164.400)
+4. **Document** — record timeline, actions taken, and resolution
+5. **Contact** — wellth.ai.founder@gmail.com
+
+---
+
+## Architecture Rules
 
 ### Data Fetching
 - Use React Query for ALL data fetching (5-minute stale time default)
-- Never use `SELECT *` - always specify columns explicitly
-- Avoid N+1 queries - use `.in()` filter for batch fetching
-- Pagination limit: 500-1000 items max per query
+- Never use `SELECT *` — always specify columns explicitly
+- Avoid N+1 queries — use `.in()` filter for batch fetching
+- Pagination limit: 500–1000 items max per query
 
 ### Component Structure
 - Components live in `src/components/{domain}/` (bills, dashboard, hsa, etc.)
 - Pages live in `src/pages/`
 - Use existing shadcn/ui components from `src/components/ui/`
-- New pages MUST be wrapped in error boundaries
+- New pages MUST be wrapped in `<ErrorBoundary>` and `<AuthenticatedLayout>` (if authenticated)
+
+---
 
 ## Code Patterns
 
@@ -60,35 +221,20 @@ const { data, isLoading } = useQuery({
 
 ### Error Handling
 ```typescript
-// Use the centralized error handler for PHI-safe errors
-import { handleError } from "@/utils/errorHandler";
+// Frontend: use safeLog for anything that might contain user/health data
+import { safeLog } from "@/utils/errorHandler";
+safeLog('Operation failed', error); // PHI-safe, dev-only logging
 
-try {
-  // operation
+// Edge functions: generic client message, detailed server log
 } catch (error) {
-  handleError(error); // Strips PHI before logging
+  console.error("[FUNCTION] Error:", error instanceof Error ? error.message : error);
+  return new Response(JSON.stringify({ error: "An unexpected error occurred. Please try again." }), {
+    status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
 }
 ```
 
-## Common Mistakes to Avoid
-
-### Security
-- DON'T expose Supabase service role key to frontend code
-- DON'T log user data, medical information, or billing details
-- DON'T store sensitive data in localStorage (use sessionStorage)
-- DON'T skip JWT validation in edge functions
-
-### Performance
-- DON'T use `SELECT *` - specify columns
-- DON'T create N+1 queries in loops - batch with `.in()`
-- DON'T fetch all records - use pagination
-- DON'T skip React Query caching
-
-### Code Quality
-- DON'T add console.log in production code (use proper error handling)
-- DON'T create new abstractions for one-time operations
-- DON'T over-engineer - keep solutions simple and focused
-- DON'T add features beyond what was explicitly requested
+---
 
 ## File Locations
 
@@ -102,60 +248,23 @@ try {
 | Custom Hooks | `src/hooks/` |
 | Contexts | `src/contexts/` |
 | UI Components | `src/components/ui/` (shadcn) |
+| PHI Error Handler | `src/utils/errorHandler.ts` |
+| Plaid Encryption | `supabase/functions/_shared/encryption.ts` |
+
+---
 
 ## Testing & Verification
 
 Before committing any changes:
-1. Run `npm run build` - must pass with zero errors
-2. Check for TypeScript errors in modified files
+1. `npm run build` — must pass with zero errors
+2. Check TypeScript errors in modified files
 3. Verify no PHI in error messages or console output
-4. Test in browser - especially for UI changes
+4. Test in browser — especially for UI changes
 5. For Stripe changes: test with `stripe listen --forward-to localhost:54321/functions/v1/`
-6. For Plaid changes: use sandbox environment
+6. For Plaid changes: use sandbox environment (`PLAID_ENV=sandbox`)
+7. For new edge functions: verify OPTIONS → 200, unauthenticated POST → 401, valid POST → expected response
 
-## Edge Function Patterns
-
-```typescript
-// Standard edge function structure
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": Deno.env.get("ALLOWED_ORIGIN") || "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: req.headers.get("Authorization")! } } }
-    );
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Your logic here - always verify user ownership of resources
-
-  } catch (error) {
-    // Never expose internal errors - sanitize for PHI
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-});
-```
+---
 
 ## Subscription Tiers
 
@@ -167,24 +276,35 @@ serve(async (req) => {
 
 Check subscription with `useSubscription()` hook from `src/contexts/SubscriptionContext.tsx`.
 
-## AI Integration (Gemini)
+---
 
-- Model: `gemini-2.5-flash-preview-04-17`
-- Used for: Bill analysis, PHI redaction, Wellbie chat
-- Always redact PHI before sending to AI
-- Use streaming for chat responses (`wellbieChatStream.ts`)
+## AI Integration (Gemini via Lovable Gateway)
+
+- Model: `gemini-2.5-flash` (via `ai.gateway.lovable.dev`)
+- Used for: Receipt OCR, Wellbie chat
+- Always redact PHI before sending to AI — use `sanitizePHI()` from `src/utils/errorHandler.ts`
+- AI key (`LOVABLE_API_KEY`) lives in Supabase Edge Function Secrets only
 
 ---
 
-## Lessons Learned (Update This Section!)
+## Lessons Learned
 
-<!-- Add entries here when Claude makes mistakes -->
+### 2026-03-24
+**Issue:** `manualChunks` in `vite.config.ts` created a circular dependency between `react-vendor` and `ui-vendor` chunks, causing `React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED` to be undefined at runtime → blank page in production.
+**Fix:** Remove `manualChunks` entirely. Let Vite's default chunking algorithm handle splitting — it avoids circular dependencies automatically.
 
-### Example Entry Format:
-**Date:** YYYY-MM-DD
-**Issue:** What went wrong
-**Fix:** What to do instead
+### 2026-03-24
+**Issue:** PWA service worker cached old broken bundle. After deploying a fix, users (including incognito after OAuth redirect) still got the old crash because the old SW served cached assets.
+**Fix:** After any bundle-breaking deploy, instruct users to: DevTools → Application → Service Workers → Unregister → hard refresh. For prevention, consider adding `skipWaiting: true` to workbox config so new SW activates immediately.
+
+### 2026-03-24
+**Issue:** `react-router-dom` was upgraded from v6 to v7 during a security audit. v7 has breaking changes with the `<BrowserRouter>/<Routes>/<Route>` JSX API, causing a blank page.
+**Fix:** Stay on `react-router-dom@^6.x`. Do not upgrade to v7 without a full migration of `App.tsx` routing patterns.
+
+### 2026-03-24
+**Issue:** All edge functions had `CORS: Deno.env.get('ALLOWED_ORIGIN') || 'https://wellth.ai'` — a static string fallback. The live site is `https://www.wellth-ai.app` (different origin), causing CORS failures on all edge function calls.
+**Fix:** Use `getCorsHeaders(req.headers.get('origin'))` with a whitelist array containing both `https://wellth-ai.app` and `https://www.wellth-ai.app`. See the canonical edge function template above.
 
 ---
 
-*Last updated: 2026-01-08*
+*Last updated: 2026-03-24*

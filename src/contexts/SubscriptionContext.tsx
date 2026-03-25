@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { safeLog } from '@/utils/errorHandler';
 
 type SubscriptionTier = 'free' | 'plus' | 'premium';
 
@@ -45,7 +46,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setIsSubscribed(data.subscribed || false);
       setSubscriptionEnd(data.subscription_end || null);
     } catch (error) {
-      console.error('Error checking subscription:', error);
+      safeLog('Error checking subscription', error);
       setTier('free');
       setIsSubscribed(false);
     } finally {
@@ -69,7 +70,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
         window.open(data.url, '_blank');
       }
     } catch (error) {
-      console.error('Error creating checkout session:', error);
+      safeLog('Error creating checkout session', error);
       toast({
         title: 'Error',
         description: 'Failed to start checkout. Please try again.',
