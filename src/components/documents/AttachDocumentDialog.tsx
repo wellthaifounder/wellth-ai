@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { logError } from "@/utils/errorHandler";
 import { FileText, Calendar } from "lucide-react";
 import { format } from "date-fns";
 
@@ -52,7 +53,7 @@ export const AttachDocumentDialog = ({ invoiceId, open, onOpenChange, onAttached
       if (error) throw error;
       setReceipts(data || []);
     } catch (error) {
-      console.error("Error loading unattached receipts:", error);
+      logError("Error loading unattached receipts", error);
       toast.error("Failed to load documents");
     } finally {
       setLoading(false);
@@ -78,7 +79,7 @@ export const AttachDocumentDialog = ({ invoiceId, open, onOpenChange, onAttached
       onAttached();
       onOpenChange(false);
     } catch (error) {
-      console.error("Error attaching documents:", error);
+      logError("Error attaching documents", error);
       toast.error("Failed to attach documents");
     } finally {
       setAttaching(false);

@@ -12,6 +12,7 @@ import { LinkToCollectionDialog } from "@/components/documents/LinkToCollectionD
 import { MultiFileUpload } from "@/components/expense/MultiFileUpload";
 import { Badge } from "@/components/ui/badge";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
+import { logError } from "@/utils/errorHandler";
 
 interface Receipt {
   id: string;
@@ -72,7 +73,7 @@ const Documents = () => {
       if (error) throw error;
       setReceipts(data || []);
     } catch (error) {
-      console.error("Error loading receipts:", error);
+      logError("Error loading receipts", error);
       toast.error("Failed to load documents");
     } finally {
       setLoading(false);
@@ -141,7 +142,7 @@ const Documents = () => {
       setShowUpload(false);
       loadReceipts();
     } catch (error) {
-      console.error("Error uploading documents:", error);
+      logError("Error uploading documents", error);
       toast.error("Failed to upload documents");
     }
   };
@@ -169,7 +170,7 @@ const Documents = () => {
       toast.success("Document deleted successfully");
       loadReceipts();
     } catch (error) {
-      console.error("Error deleting document:", error);
+      logError("Error deleting document", error);
       toast.error("Failed to delete document");
     }
   };

@@ -9,10 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { WellthLogo } from '@/components/WellthLogo';
+import { AuthenticatedLayout } from '@/components/AuthenticatedLayout';
 import { ArrowLeft, FileText, Download, Send, CheckCircle2 } from 'lucide-react';
 import { generateReimbursementPDF } from '@/lib/pdfGenerator';
 import { celebrateFirstReimbursement } from '@/lib/confettiUtils';
+import { logError } from '@/utils/errorHandler';
 
 interface HSAExpense {
   id: string;
@@ -93,7 +94,7 @@ export default function HSAReimbursement() {
       
       setExpenses(filteredExpenses);
     } catch (error) {
-      console.error('Error fetching HSA expenses:', error);
+      logError('Error fetching HSA expenses', error);
       toast({
         title: 'Error',
         description: 'Failed to load HSA expenses',
@@ -156,7 +157,7 @@ export default function HSAReimbursement() {
         description: 'Your reimbursement package has been downloaded',
       });
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      logError('Error generating PDF', error);
       toast({
         title: 'Error',
         description: 'Failed to generate PDF',
@@ -269,7 +270,7 @@ export default function HSAReimbursement() {
         navigate('/dashboard');
       }, 1500);
     } catch (error) {
-      console.error('Error submitting reimbursement:', error);
+      logError('Error submitting reimbursement', error);
       toast({
         title: 'Error',
         description: 'Failed to submit reimbursement request',
@@ -334,33 +335,17 @@ export default function HSAReimbursement() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
+      <AuthenticatedLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        </div>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-50">
-        <div className="container mx-auto px-4">
-          <div className="flex h-16 items-center gap-4">
-            <button 
-              onClick={() => navigate("/dashboard")}
-              className="hover:opacity-80 transition-opacity"
-            >
-              <WellthLogo size="sm" showTagline />
-            </button>
-          </div>
-        </div>
-      </nav>
+    <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-6">
-          <Button variant="ghost" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
-        </div>
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">HSA Reimbursement Request</h1>
@@ -544,6 +529,6 @@ export default function HSAReimbursement() {
         </>
       )}
       </div>
-    </div>
+    </AuthenticatedLayout>
   );
 }

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { SplitFormData } from "@/lib/transactionSplitUtils";
+import { logError } from "@/utils/errorHandler";
 
 export function useTransactionSplits(transactionId: string | null) {
   const queryClient = useQueryClient();
@@ -62,7 +63,7 @@ export function useTransactionSplits(transactionId: string | null) {
       toast.success("Transaction split successfully");
     },
     onError: (error) => {
-      console.error("Error creating splits:", error);
+      logError("Error creating splits", error);
       toast.error("Failed to split transaction");
     },
   });
@@ -88,7 +89,7 @@ export function useTransactionSplits(transactionId: string | null) {
       toast.success("Split updated");
     },
     onError: (error) => {
-      console.error("Error updating split:", error);
+      logError("Error updating split", error);
       toast.error("Failed to update split");
     },
   });
@@ -118,7 +119,7 @@ export function useTransactionSplits(transactionId: string | null) {
       toast.success("Transaction unsplit");
     },
     onError: (error) => {
-      console.error("Error deleting splits:", error);
+      logError("Error deleting splits", error);
       toast.error("Failed to unsplit transaction");
     },
   });

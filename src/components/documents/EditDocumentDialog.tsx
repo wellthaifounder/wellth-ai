@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { logError } from "@/utils/errorHandler";
 
 interface EditDocumentDialogProps {
   receipt: {
@@ -47,7 +48,7 @@ export const EditDocumentDialog = ({ receipt, open, onOpenChange, onSaved }: Edi
       toast.success("Document updated successfully");
       onSaved();
     } catch (error) {
-      console.error("Error updating document:", error);
+      logError("Error updating document", error);
       toast.error("Failed to update document");
     } finally {
       setSaving(false);

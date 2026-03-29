@@ -6,6 +6,7 @@ import { Receipt, Wallet, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { analytics } from "@/lib/analytics";
+import { logError } from "@/utils/errorHandler";
 
 interface UserIntentDialogProps {
   open: boolean;
@@ -43,7 +44,7 @@ export function UserIntentDialog({ open, onComplete }: UserIntentDialogProps) {
       toast.success("Preferences saved! Let's get started.");
       onComplete(selectedIntent);
     } catch (error) {
-      console.error('Error saving user intent:', error);
+      logError('Error saving user intent', error);
       toast.error("Failed to save preferences. Please try again.");
     } finally {
       setIsSubmitting(false);

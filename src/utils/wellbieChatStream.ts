@@ -1,3 +1,5 @@
+import { logError } from "@/utils/errorHandler";
+
 type Message = { role: "user" | "assistant"; content: string };
 
 interface BillAnalysisContext {
@@ -111,7 +113,7 @@ export async function streamWellbieChat({
 
     onDone();
   } catch (error) {
-    console.error("Stream error:", error);
+    logError("Stream error", error);
     if (onError) {
       onError(error instanceof Error ? error : new Error("Stream failed"));
     }

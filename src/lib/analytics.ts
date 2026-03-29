@@ -2,6 +2,7 @@
 // Can be extended to integrate with Google Analytics, Mixpanel, PostHog, etc.
 
 import { supabase } from "@/integrations/supabase/client";
+import { safeLog, logError } from "@/utils/errorHandler";
 
 type EventType =
   | 'page_view'
@@ -54,7 +55,7 @@ class Analytics {
 
   async track(event: AnalyticsEvent) {
     if (import.meta.env.DEV) {
-      console.log('Analytics (dev):', event);
+      safeLog('Analytics (dev)', event);
     }
 
     // Store event in database for KPI analysis
@@ -75,7 +76,7 @@ class Analytics {
       });
     } catch (error) {
       // Don't throw - analytics failures shouldn't break the app
-      console.error('[Analytics Error]', error);
+      logError('[Analytics Error]', error);
     }
 
     // Future: Send to external analytics service

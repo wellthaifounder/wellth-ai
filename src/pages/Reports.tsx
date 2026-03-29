@@ -15,6 +15,7 @@ import { RewardsOptimizationDashboard } from "@/components/analytics/RewardsOpti
 import { YearOverYearComparison } from "@/components/analytics/YearOverYearComparison";
 import { PaymentStrategyTimeline } from "@/components/analytics/PaymentStrategyTimeline";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
+import { logError } from "@/utils/errorHandler";
 import { AnalyticsEmptyState } from "@/components/analytics/AnalyticsEmptyState";
 import { AnalyticsSettings, AnalyticsAssumptions } from "@/components/analytics/AnalyticsSettings";
 import { TimeRangeFilter, TimeRange } from "@/components/analytics/TimeRangeFilter";
@@ -217,7 +218,7 @@ const Reports = () => {
         setYearlyData(Object.values(yearlyStats).sort((a: any, b: any) => a.year - b.year));
       }
     } catch (error) {
-      console.error("Failed to fetch analytics:", error);
+      logError("Failed to fetch analytics", error);
       toast.error("Failed to load analytics");
     } finally {
       setLoading(false);

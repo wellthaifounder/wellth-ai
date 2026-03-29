@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { logError } from "@/utils/errorHandler";
 
 interface HSAContextType {
   hasHSA: boolean;
@@ -34,7 +35,7 @@ export function HSAProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (error) {
-        console.warn("Error fetching HSA status:", error);
+        logError("Error fetching HSA status", error);
         setHasHSA(false);
         setHsaOpenedDate(null);
         setUserIntent(null);
@@ -46,7 +47,7 @@ export function HSAProvider({ children }: { children: ReactNode }) {
         setUserIntent(intent);
       }
     } catch (error) {
-      console.error("Failed to refresh HSA status:", error);
+      logError("Failed to refresh HSA status", error);
       setHasHSA(false);
       setHsaOpenedDate(null);
       setUserIntent(null);

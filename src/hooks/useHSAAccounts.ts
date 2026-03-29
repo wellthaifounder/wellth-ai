@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { HSAAccount } from "@/lib/hsaAccountUtils";
+import { logError } from "@/utils/errorHandler";
 
 export function useHSAAccounts() {
   const queryClient = useQueryClient();
@@ -47,7 +48,7 @@ export function useHSAAccounts() {
       toast.success("HSA account created successfully");
     },
     onError: (error) => {
-      console.error("Error creating HSA account:", error);
+      logError("Error creating HSA account", error);
       toast.error("Failed to create HSA account");
     },
   });
@@ -70,7 +71,7 @@ export function useHSAAccounts() {
       toast.success("HSA account updated successfully");
     },
     onError: (error) => {
-      console.error("Error updating HSA account:", error);
+      logError("Error updating HSA account", error);
       toast.error("Failed to update HSA account");
     },
   });
@@ -90,7 +91,7 @@ export function useHSAAccounts() {
       toast.success("HSA account deleted successfully");
     },
     onError: (error) => {
-      console.error("Error deleting HSA account:", error);
+      logError("Error deleting HSA account", error);
       toast.error("Failed to delete HSA account");
     },
   });

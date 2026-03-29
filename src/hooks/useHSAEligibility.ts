@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getEligibleHSAAccounts } from "@/lib/hsaAccountUtils";
 import type { HSAAccount } from "@/lib/hsaAccountUtils";
+import { logError } from "@/utils/errorHandler";
 
 type HSAEligibilityResult = {
   isEligible: boolean;
@@ -44,7 +45,7 @@ export function useHSAEligibility(billDate: string | Date | null): HSAEligibilit
         .eq("user_id", user.id);
 
       if (accountsError) {
-        console.error("Error fetching HSA accounts:", accountsError);
+        logError("Error fetching HSA accounts", accountsError);
       }
 
       if (accounts && accounts.length > 0) {
@@ -86,7 +87,7 @@ export function useHSAEligibility(billDate: string | Date | null): HSAEligibilit
         .maybeSingle();
 
       if (profileError) {
-        console.error("Error fetching profile:", profileError);
+        logError("Error fetching profile", profileError);
         return {
           isEligible: false,
           eligibleAccounts: [],

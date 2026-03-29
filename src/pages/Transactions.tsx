@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { Plus, Search, ArrowLeft } from "lucide-react";
+import { Plus, Search, ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { TransactionCard } from "@/components/transactions/TransactionCard";
 import { TransactionDetailDialog } from "@/components/transactions/TransactionDetailDialog";
@@ -20,6 +21,10 @@ import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { MissingHSADateBanner } from "@/components/dashboard/MissingHSADateBanner";
 import { TransactionsSkeleton } from "@/components/skeletons/TransactionsSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { logError } from "@/utils/errorHandler";
+import { LinkTransactionDialog } from "@/components/bills/LinkTransactionDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type Transaction = {
   id: string;
@@ -32,6 +37,7 @@ type Transaction = {
   is_medical: boolean;
   reconciliation_status: "unlinked" | "linked_to_invoice" | "ignored";
   is_hsa_eligible: boolean;
+  needs_review: boolean;
   notes: string | null;
   payment_method_id: string | null;
   invoice_id: string | null;
@@ -61,6 +67,10 @@ export default function Transactions() {
   const [activeTab, setActiveTab] = useState("all");
   const [advancedFilters, setAdvancedFilters] = useState<FilterCriteria>({});
   const [hsaOpenedDate, setHsaOpenedDate] = useState<string | null>(null);
+  const [invoicePickerOpen, setInvoicePickerOpen] = useState(false);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [linkTargetInvoice, setLinkTargetInvoice] = useState<{ id: string; vendor: string; amount: number; total_amount: number; date: string } | null>(null);
+  const [availableInvoices, setAvailableInvoices] = useState<{ id: string; vendor: string; amount: number; total_amount: number; date: string }[]>([]);
 
   useEffect(() => {
     checkAuth();
@@ -78,10 +88,10 @@ export default function Transactions() {
         .eq("id", user.id)
         .maybeSingle();
 
-      if (error) console.warn("No profile found or error fetching profile", error);
+      if (error) logError("No profile found or error fetching profile", error);
       setHsaOpenedDate(profile?.hsa_opened_date || null);
     } catch (e) {
-      console.error("fetchHSADate failed", e);
+      logError("fetchHSADate failed", e);
       setHsaOpenedDate(null);
     }
   };
@@ -125,7 +135,7 @@ export default function Transactions() {
       if (error) throw error;
       setTransactions(data || []);
     } catch (error) {
-      console.error("Error fetching transactions:", error);
+      logError("Error fetching transactions:", error);
       toast.error("Failed to load transactions");
     } finally {
       setLoading(false);
@@ -140,6 +150,8 @@ export default function Transactions() {
       filtered = filtered.filter((t) => t.is_medical);
     } else if (activeTab === "non-medical") {
       filtered = filtered.filter((t) => t.is_medical === false);
+    } else if (activeTab === "needs-review") {
+      filtered = filtered.filter((t) => t.needs_review);
     } else if (activeTab === "all") {
       // Show all transactions including ignored ones
       // No filtering needed
@@ -240,7 +252,7 @@ export default function Transactions() {
       toast.success(newIsMedical ? "Marked as medical expense" : "Marked as non-medical");
       fetchTransactions();
     } catch (error) {
-      console.error("Error toggling medical:", error);
+      logError("Error toggling medical:", error);
       toast.error("Failed to update transaction");
     }
   };
@@ -260,15 +272,92 @@ export default function Transactions() {
       toast.success("Marked as medical expense");
       fetchTransactions();
     } catch (error) {
-      console.error("Error updating transaction:", error);
+      logError("Error updating transaction:", error);
       toast.error("Failed to update transaction");
     }
   };
 
-  const handleLinkToInvoice = (transaction: Transaction) => {
+  const handleLinkToInvoice = async (transaction: Transaction) => {
     setSelectedTransaction(transaction);
-    // TODO: Implement link to bill dialog
-    toast.info("Link to bill feature coming soon");
+    try {
+      const { data, error } = await supabase
+        .from("invoices")
+        .select("id, vendor, amount, total_amount, date")
+        .order("date", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      setAvailableInvoices((data || []).map(inv => ({
+        id: inv.id,
+        vendor: inv.vendor,
+        amount: Number(inv.amount),
+        total_amount: Number(inv.total_amount ?? inv.amount),
+        date: inv.date,
+      })));
+      setInvoicePickerOpen(true);
+    } catch (error) {
+      logError("Error loading invoices for linking:", error);
+      toast.error("Failed to load bills");
+    }
+  };
+
+  const handleInvoiceSelected = (invoice: { id: string; vendor: string; amount: number; total_amount: number; date: string }) => {
+    setLinkTargetInvoice(invoice);
+    setInvoicePickerOpen(false);
+    setLinkDialogOpen(true);
+  };
+
+  const handleConfirmMedical = async (transaction: Transaction) => {
+    try {
+      const { error } = await supabase
+        .from("transactions")
+        .update({ is_medical: true, is_hsa_eligible: true, needs_review: false, category: "medical" })
+        .eq("id", transaction.id);
+      if (error) throw error;
+
+      // Save vendor preference so future syncs don't flag this vendor
+      if (transaction.vendor) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from("user_vendor_preferences").upsert(
+            { user_id: user.id, vendor_pattern: transaction.vendor, is_medical: true },
+            { onConflict: "user_id,vendor_pattern" }
+          );
+        }
+      }
+
+      toast.success("Confirmed as medical expense");
+      fetchTransactions();
+    } catch (error) {
+      logError("Error confirming medical transaction:", error);
+      toast.error("Failed to update transaction");
+    }
+  };
+
+  const handleRejectMedical = async (transaction: Transaction) => {
+    try {
+      const { error } = await supabase
+        .from("transactions")
+        .update({ is_medical: false, is_hsa_eligible: false, needs_review: false, reconciliation_status: "ignored" })
+        .eq("id", transaction.id);
+      if (error) throw error;
+
+      // Save vendor preference so future syncs skip this vendor
+      if (transaction.vendor) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from("user_vendor_preferences").upsert(
+            { user_id: user.id, vendor_pattern: transaction.vendor, is_medical: false },
+            { onConflict: "user_id,vendor_pattern" }
+          );
+        }
+      }
+
+      toast.success("Marked as non-medical");
+      fetchTransactions();
+    } catch (error) {
+      logError("Error rejecting medical categorization:", error);
+      toast.error("Failed to update transaction");
+    }
   };
 
   const handleIgnore = async (transaction: Transaction) => {
@@ -285,7 +374,7 @@ export default function Transactions() {
       toast.success("Transaction ignored");
       fetchTransactions();
     } catch (error) {
-      console.error("Error ignoring transaction:", error);
+      logError("Error ignoring transaction:", error);
       toast.error("Failed to ignore transaction");
     }
   };
@@ -303,7 +392,7 @@ export default function Transactions() {
       toast.success("Transaction moved back to review queue");
       fetchTransactions();
     } catch (error) {
-      console.error("Error unignoring transaction:", error);
+      logError("Error unignoring transaction:", error);
       toast.error("Failed to update transaction");
     }
   };
@@ -322,7 +411,7 @@ export default function Transactions() {
       toast.success("Transaction added back to review queue");
       fetchTransactions();
     } catch (error) {
-      console.error("Error adding to review queue:", error);
+      logError("Error adding to review queue:", error);
       toast.error("Failed to update transaction");
     }
   };
@@ -336,6 +425,7 @@ export default function Transactions() {
     total: transactions.length,
     medical: transactions.filter((t) => t.is_medical).length,
     unlinked: transactions.filter((t) => t.reconciliation_status === "unlinked").length,
+    needsReview: transactions.filter((t) => t.needs_review).length,
     totalAmount: transactions.reduce((sum, t) => sum + Number(t.amount), 0),
     medicalAmount: transactions
       .filter((t) => t.is_medical)
@@ -430,6 +520,14 @@ export default function Transactions() {
               <TabsTrigger value="review">
                 Review Queue {stats.unlinked > 0 && `(${stats.unlinked})`}
               </TabsTrigger>
+              <TabsTrigger value="needs-review" className="relative">
+                Needs Review
+                {stats.needsReview > 0 && (
+                  <Badge variant="destructive" className="ml-1.5 px-1.5 py-0 text-xs">
+                    {stats.needsReview}
+                  </Badge>
+                )}
+              </TabsTrigger>
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="medical">Medical</TabsTrigger>
               <TabsTrigger value="non-medical">Non-Medical</TabsTrigger>
@@ -437,6 +535,53 @@ export default function Transactions() {
 
             <TabsContent value="review" className="space-y-4">
               <ReviewQueue />
+            </TabsContent>
+
+            <TabsContent value="needs-review" className="space-y-3">
+              {filteredTransactions.length === 0 ? (
+                <Card className="p-12 text-center">
+                  <CheckCircle2 className="h-10 w-10 text-green-500 mx-auto mb-3" />
+                  <p className="text-muted-foreground">All transactions have been reviewed</p>
+                </Card>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    These transactions were auto-detected as medical but need your confirmation to become HSA-eligible.
+                  </p>
+                  {filteredTransactions.map((transaction) => (
+                    <Card key={transaction.id} className="p-4 border-yellow-200 dark:border-yellow-800">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{transaction.vendor || transaction.description}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(transaction.transaction_date).toLocaleDateString()} · ${Number(transaction.amount).toFixed(2)}
+                          </p>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-green-600 border-green-300 hover:bg-green-50"
+                            onClick={() => handleConfirmMedical(transaction)}
+                          >
+                            <CheckCircle2 className="h-4 w-4 mr-1" />
+                            Medical
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-red-600 border-red-300 hover:bg-red-50"
+                            onClick={() => handleRejectMedical(transaction)}
+                          >
+                            <XCircle className="h-4 w-4 mr-1" />
+                            Not Medical
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </>
+              )}
             </TabsContent>
 
             <TabsContent value={activeTab} className="space-y-4">
@@ -531,6 +676,49 @@ export default function Transactions() {
             transaction={transactionToSplit}
           />
         )}
+
+        {/* Invoice picker — step 1 of transaction linking */}
+        <Dialog open={invoicePickerOpen} onOpenChange={setInvoicePickerOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Select a Bill to Link</DialogTitle>
+              <DialogDescription>
+                Choose which bill to link this transaction to.
+              </DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="max-h-80">
+              <div className="space-y-2 pr-2">
+                {availableInvoices.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No bills found</p>
+                ) : (
+                  availableInvoices.map((invoice) => (
+                    <button
+                      key={invoice.id}
+                      onClick={() => handleInvoiceSelected(invoice)}
+                      className="w-full text-left p-3 rounded-lg border hover:bg-accent/50 transition-colors"
+                    >
+                      <p className="font-medium text-sm">{invoice.vendor}</p>
+                      <p className="text-xs text-muted-foreground">
+                        ${invoice.total_amount.toFixed(2)} · {new Date(invoice.date).toLocaleDateString()}
+                      </p>
+                    </button>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
+
+        {/* Link transaction dialog — step 2 */}
+        <LinkTransactionDialog
+          open={linkDialogOpen}
+          onOpenChange={(open) => {
+            setLinkDialogOpen(open);
+            if (!open) fetchTransactions();
+          }}
+          invoice={linkTargetInvoice}
+          onSuccess={fetchTransactions}
+        />
       </AuthenticatedLayout>
     </ErrorBoundary>
   );

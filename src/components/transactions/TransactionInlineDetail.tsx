@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { logError } from "@/utils/errorHandler";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -50,7 +51,7 @@ export function TransactionInlineDetail({
       toast.success("Notes saved");
       onUpdate();
     } catch (error) {
-      console.error("Error saving notes:", error);
+      logError("Error saving notes", error);
       toast.error("Failed to save notes");
     } finally {
       setSaving(false);
@@ -76,7 +77,7 @@ export function TransactionInlineDetail({
       );
       onUpdate();
     } catch (error) {
-      console.error("Error toggling medical status:", error);
+      logError("Error toggling medical status", error);
       toast.error("Failed to update status");
     }
   };
@@ -96,7 +97,7 @@ export function TransactionInlineDetail({
       onUpdate();
       onClose();
     } catch (error) {
-      console.error("Error ignoring transaction:", error);
+      logError("Error ignoring transaction", error);
       toast.error("Failed to ignore transaction");
     }
   };

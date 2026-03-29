@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
+import { logError } from "@/utils/errorHandler";
 import {
   Upload,
   FileText,
@@ -305,7 +306,7 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
     },
     onError: (error) => {
       toast.error("Failed to upload documents");
-      console.error(error);
+      logError("Failed to upload documents", error);
     },
     onSettled: () => {
       setIsUploading(false);

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, TrendingDown } from "lucide-react";
+import { logError } from "@/utils/errorHandler";
 import { format } from "date-fns";
 
 interface Settlement {
@@ -106,7 +107,7 @@ export const SettlementNegotiationTracker = ({
             }
           });
         } catch (notifError) {
-          console.error('Notification error:', notifError);
+          logError('Notification error', notifError);
         }
       }
 
@@ -119,7 +120,7 @@ export const SettlementNegotiationTracker = ({
       setNewNotes("");
       loadSettlements();
     } catch (error) {
-      console.error('Error adding settlement:', error);
+      logError('Error adding settlement', error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to record settlement. Please try again.",

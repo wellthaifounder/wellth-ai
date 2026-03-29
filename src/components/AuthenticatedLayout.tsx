@@ -5,6 +5,7 @@ import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 import { BottomTabNavigation } from "@/components/BottomTabNavigation";
 import { WellbieChat } from "@/components/WellbieChat";
 import { useSessionTimeout } from "@/hooks/useSessionTimeout";
+import { useHSA } from "@/contexts/HSAContext";
 
 interface AuthenticatedLayoutProps {
   children: ReactNode;
@@ -19,6 +20,8 @@ export const AuthenticatedLayout = ({
 }: AuthenticatedLayoutProps) => {
   // Enable session timeout for security (15 min inactivity, 2 min warning)
   useSessionTimeout(15, 2);
+  const { hasHSA, userIntent } = useHSA();
+  const showHSAFeatures = userIntent === 'hsa' || userIntent === 'both' || hasHSA;
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -49,7 +52,10 @@ export const AuthenticatedLayout = ({
           </main>
 
           {/* Bottom Tab Navigation - mobile only */}
-          <BottomTabNavigation unreviewedTransactions={unreviewedTransactions} />
+          <BottomTabNavigation
+            unreviewedTransactions={unreviewedTransactions}
+            showHSAFeatures={showHSAFeatures}
+          />
         </div>
       </div>
       

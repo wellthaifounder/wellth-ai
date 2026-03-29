@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Calendar, Building2, FileText } from "lucide-react";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
+import { logError } from "@/utils/errorHandler";
 
 const EVENT_TYPES = [
   { value: "surgery", label: "Surgery", description: "Surgical procedures and related follow-ups" },
@@ -69,7 +70,7 @@ export default function NewMedicalEvent() {
     },
     onError: (error) => {
       toast.error("Failed to create event");
-      console.error(error);
+      logError("Failed to create event", error);
     },
   });
 

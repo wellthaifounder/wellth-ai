@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, CheckCircle2, AlertCircle, Shield, Phone, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { logError } from "@/utils/errorHandler";
 
 interface InsuranceVerificationProps {
   insuranceCompany?: string;
@@ -59,7 +60,7 @@ export function InsuranceVerification({
       onVerificationComplete?.(mockVerification);
       toast.success("Insurance verified successfully");
     } catch (error) {
-      console.error('Verification error:', error);
+      logError('Verification error', error);
       toast.error("Failed to verify insurance");
     } finally {
       setIsVerifying(false);

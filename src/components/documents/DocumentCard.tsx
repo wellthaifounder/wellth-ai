@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Eye, Download, Edit, Trash2, FileText, Link2, FolderOpen, Unlink } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { logError } from "@/utils/errorHandler";
 import { format } from "date-fns";
 
 interface DocumentCardProps {
@@ -45,7 +46,7 @@ export const DocumentCard = ({ receipt, onEdit, onDelete, onLinkToCollection }: 
       setViewUrl(data.signedUrl);
       setShowPreview(true);
     } catch (error) {
-      console.error("Error viewing document:", error);
+      logError("Error viewing document", error);
       toast.error("Failed to load document");
     }
   };
@@ -69,7 +70,7 @@ export const DocumentCard = ({ receipt, onEdit, onDelete, onLinkToCollection }: 
 
       toast.success("Document downloaded");
     } catch (error) {
-      console.error("Error downloading document:", error);
+      logError("Error downloading document", error);
       toast.error("Failed to download document");
     }
   };

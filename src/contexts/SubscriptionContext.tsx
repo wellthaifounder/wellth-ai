@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { safeLog } from '@/utils/errorHandler';
+import { safeLog, logError } from '@/utils/errorHandler';
 
 type SubscriptionTier = 'free' | 'plus' | 'premium';
 
@@ -89,7 +89,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
         window.open(data.url, '_blank');
       }
     } catch (error) {
-      console.error('Error opening customer portal:', error);
+      logError('Error opening customer portal', error);
       toast({
         title: 'Error',
         description: 'Failed to open billing portal. Please try again.',

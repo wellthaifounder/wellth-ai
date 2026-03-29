@@ -5,10 +5,12 @@ import { AuthenticatedLayout } from '@/components/AuthenticatedLayout';
 import { PlaidLink } from '@/components/PlaidLink';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, RefreshCw, Trash2, ArrowLeft } from 'lucide-react';
+import { Building2, RefreshCw, Trash2, ArrowLeft, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Database } from '@/integrations/supabase/types';
+import { logError } from '@/utils/errorHandler';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 type PlaidConnection = Database['public']['Tables']['plaid_connections']['Row'];
 
@@ -17,6 +19,7 @@ export default function BankAccounts() {
   const [connections, setConnections] = useState<PlaidConnection[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState<string | null>(null);
+  const [syncErrors, setSyncErrors] = useState<Record<string, { count: number }>>({});
 
   useEffect(() => {
     checkAuth();
@@ -41,7 +44,7 @@ export default function BankAccounts() {
       if (error) throw error;
       setConnections(data || []);
     } catch (error) {
-      console.error('Error fetching connections:', error);
+      logError('Error fetching connections', error);
       toast.error('Failed to load bank connections');
     } finally {
       setLoading(false);
@@ -49,21 +52,46 @@ export default function BankAccounts() {
   };
 
   const handleSync = async (connectionId: string) => {
-    try {
-      setSyncing(connectionId);
-      const { data, error } = await supabase.functions.invoke('plaid-sync-transactions', {
-        body: { connection_id: connectionId },
-      });
+    const MAX_ATTEMPTS = 3;
+    const RETRY_DELAYS = [0, 2000, 4000];
 
-      if (error) throw error;
+    setSyncing(connectionId);
+    setSyncErrors(prev => {
+      const next = { ...prev };
+      delete next[connectionId];
+      return next;
+    });
 
-      toast.success(`Synced ${data.inserted} new transactions (${data.medical_detected} medical)`);
-      fetchConnections();
-    } catch (error) {
-      console.error('Error syncing transactions:', error);
-      toast.error('Failed to sync transactions');
-    } finally {
-      setSyncing(null);
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      if (attempt > 1) {
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAYS[attempt - 1]));
+        setSyncErrors(prev => ({ ...prev, [connectionId]: { count: attempt - 1 } }));
+      }
+
+      try {
+        const { data, error } = await supabase.functions.invoke('plaid-sync-transactions', {
+          body: { connection_id: connectionId },
+        });
+
+        if (error) throw error;
+
+        setSyncErrors(prev => {
+          const next = { ...prev };
+          delete next[connectionId];
+          return next;
+        });
+        toast.success(`Synced ${data.inserted} new transactions (${data.medical_detected} medical)`);
+        fetchConnections();
+        setSyncing(null);
+        return;
+      } catch (error) {
+        logError('Error syncing transactions (attempt ' + attempt + ')', error);
+        if (attempt === MAX_ATTEMPTS) {
+          setSyncErrors(prev => ({ ...prev, [connectionId]: { count: MAX_ATTEMPTS } }));
+          toast.error('Sync failed after 3 attempts. Try again later or re-link the account.');
+          setSyncing(null);
+        }
+      }
     }
   };
 
@@ -83,7 +111,7 @@ export default function BankAccounts() {
       toast.success('Bank account disconnected');
       fetchConnections();
     } catch (error) {
-      console.error('Error deleting connection:', error);
+      logError('Error deleting connection', error);
       toast.error('Failed to disconnect bank account');
     }
   };
@@ -155,7 +183,7 @@ export default function BankAccounts() {
                         disabled={syncing === connection.id}
                       >
                         <RefreshCw className={`h-4 w-4 mr-2 ${syncing === connection.id ? 'animate-spin' : ''}`} />
-                        Sync
+                        {syncing === connection.id ? 'Syncing...' : 'Sync'}
                       </Button>
                       <Button
                         variant="destructive"
@@ -166,6 +194,16 @@ export default function BankAccounts() {
                       </Button>
                     </div>
                   </div>
+                  {syncErrors[connection.id] && (
+                    <Alert variant="destructive" className="mt-3">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        {syncErrors[connection.id].count >= 3
+                          ? 'Sync failed 3 times. Your connection may need to be re-linked. Try disconnecting and reconnecting.'
+                          : `Sync failed (attempt ${syncErrors[connection.id].count}/3). Retrying...`}
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </CardHeader>
               </Card>
             ))}

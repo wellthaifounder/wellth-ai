@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Star, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { logError } from "@/utils/errorHandler";
 
 const UserReviews = () => {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ const UserReviews = () => {
           setReviewText(data.review_text);
         }
       } catch (error) {
-        console.error("Error fetching review:", error);
+        logError("Error fetching review", error);
       } finally {
         setLoading(false);
       }
@@ -107,7 +108,7 @@ const UserReviews = () => {
         window.location.reload();
       }, 1500);
     } catch (error: any) {
-      console.error("Error submitting review:", error);
+      logError("Error submitting review", error);
       toast.error(error.message || "Failed to submit review");
     } finally {
       setSubmitting(false);

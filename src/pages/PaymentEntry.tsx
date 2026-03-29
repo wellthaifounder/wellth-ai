@@ -14,6 +14,7 @@ import { MultiFileUpload } from "@/components/expense/MultiFileUpload";
 import { Badge } from "@/components/ui/badge";
 import { HSAAccountSelector } from "@/components/hsa/HSAAccountSelector";
 import { useHSAAccounts } from "@/hooks/useHSAAccounts";
+import { logError } from "@/utils/errorHandler";
 
 const paymentSchema = z.object({
   paymentDate: z.string().min(1, "Payment date is required"),
@@ -69,7 +70,7 @@ const PaymentEntry = () => {
       if (error) throw error;
       setInvoices(data || []);
     } catch (error) {
-      console.error("Error loading invoices:", error);
+      logError("Error loading invoices:", error);
       toast.error("Failed to load invoices");
     }
   };
@@ -84,7 +85,7 @@ const PaymentEntry = () => {
       if (error) throw error;
       setPaymentMethods(data || []);
     } catch (error) {
-      console.error("Error loading payment methods:", error);
+      logError("Error loading payment methods:", error);
     }
   };
 
@@ -99,7 +100,7 @@ const PaymentEntry = () => {
       if (error) throw error;
       setPayments(data || []);
     } catch (error) {
-      console.error("Error loading payments:", error);
+      logError("Error loading payments:", error);
     }
   };
 
@@ -190,7 +191,7 @@ const PaymentEntry = () => {
         toast.error(error.errors[0].message);
       } else {
         toast.error("Failed to record payment");
-        console.error(error);
+        logError("Error recording payment:", error);
       }
     } finally {
       setLoading(false);

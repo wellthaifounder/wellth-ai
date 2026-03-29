@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { logError } from "@/utils/errorHandler";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -56,7 +57,7 @@ export function ReceiptGallery({ expenseId, receipts, onReceiptDeleted }: Receip
       setViewUrl(data.signedUrl);
       setSelectedReceipt(receipt);
     } catch (error) {
-      console.error("Error viewing receipt:", error);
+      logError("Error viewing receipt", error);
       toast({
         title: "Error",
         description: "Failed to load receipt for viewing",
@@ -87,7 +88,7 @@ export function ReceiptGallery({ expenseId, receipts, onReceiptDeleted }: Receip
         description: "Receipt downloaded successfully",
       });
     } catch (error) {
-      console.error("Error downloading receipt:", error);
+      logError("Error downloading receipt", error);
       toast({
         title: "Error",
         description: "Failed to download receipt",
@@ -112,7 +113,7 @@ export function ReceiptGallery({ expenseId, receipts, onReceiptDeleted }: Receip
 
       onReceiptDeleted?.();
     } catch (error) {
-      console.error("Error deleting receipt:", error);
+      logError("Error deleting receipt", error);
       toast({
         title: "Error",
         description: "Failed to delete receipt",

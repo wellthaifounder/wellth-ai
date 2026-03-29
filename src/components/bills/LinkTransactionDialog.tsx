@@ -16,6 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Loader2, Search } from "lucide-react";
+import { logError } from "@/utils/errorHandler";
 import { AdvancedFilters, type FilterCriteria } from "@/components/transactions/AdvancedFilters";
 
 interface Transaction {
@@ -153,7 +154,7 @@ export function LinkTransactionDialog({
 
       setAllTransactions(combined);
     } catch (error) {
-      console.error("Error fetching transactions:", error);
+      logError("Error fetching transactions", error);
       toast.error("Failed to load transactions");
     } finally {
       setLoading(false);
@@ -220,7 +221,7 @@ export function LinkTransactionDialog({
       fetchTransactions();
       onSuccess();
     } catch (error) {
-      console.error("Error toggling transaction:", error);
+      logError("Error toggling transaction", error);
       toast.error("Failed to update transaction");
     } finally {
       setToggling(null);

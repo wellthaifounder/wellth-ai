@@ -7,10 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Plus, Loader2, FileText } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Plus, Loader2, FileText, Search } from "lucide-react";
 import { toast } from "sonner";
 import { calculateHSAEligibility, type PaymentTransaction } from "@/lib/hsaCalculations";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
+import { logError } from "@/utils/errorHandler";
 import { BillsHeroMetrics } from "@/components/bills/BillsHeroMetrics";
 // Bill review feature archived
 // import { BillReviewCard } from "@/components/bills/BillReviewCard";
@@ -31,6 +33,7 @@ const Bills = () => {
   const navigate = useNavigate();
   
   // Filter states
+  const [searchTerm, setSearchTerm] = useState("");
   const [hideFullyReimbursed, setHideFullyReimbursed] = useState(true);
   const [hideFullyPaid, setHideFullyPaid] = useState(true);
   const [showOnlyHSAEligible, setShowOnlyHSAEligible] = useState(false);
@@ -79,7 +82,7 @@ const Bills = () => {
       refetchBills();
       toast.success(`HSA eligibility ${!currentStatus ? 'enabled' : 'disabled'}`);
     } catch (error) {
-      console.error("Error toggling HSA eligibility:", error);
+      logError("Error toggling HSA eligibility", error);
       toast.error("Failed to update HSA eligibility");
     }
   };
@@ -87,23 +90,27 @@ const Bills = () => {
   const filteredBills = useMemo(() => {
     if (!bills) return [];
     return bills.filter(bill => {
+      if (searchTerm && !bill.vendor.toLowerCase().includes(searchTerm.toLowerCase())) {
+        return false;
+      }
+
       const breakdown = calculateHSAEligibility(bill, bill.payment_transactions || []);
-      
+
       if (hideFullyReimbursed && breakdown.paidViaHSA === breakdown.totalInvoiced && breakdown.totalInvoiced > 0) {
         return false;
       }
-      
+
       if (hideFullyPaid && breakdown.unpaidBalance === 0 && breakdown.totalInvoiced > 0) {
         return false;
       }
-      
+
       if (showOnlyHSAEligible && !bill.is_hsa_eligible) {
         return false;
       }
-      
+
       return true;
     });
-  }, [bills, hideFullyReimbursed, hideFullyPaid, showOnlyHSAEligible]);
+  }, [bills, searchTerm, hideFullyReimbursed, hideFullyPaid, showOnlyHSAEligible]);
 
   // Bill review feature archived - removed review/dispute aggregations
 
@@ -162,7 +169,16 @@ const Bills = () => {
               <CardTitle>Filters</CardTitle>
               <CardDescription>Customize which bills to display</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by vendor..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="flex items-center space-x-2">
                   <Checkbox

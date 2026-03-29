@@ -13,6 +13,7 @@ import { calculateHSAEligibility } from "@/lib/hsaCalculations";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 import { BillsHeroMetrics } from "@/components/bills/BillsHeroMetrics";
 import { LinkTransactionDialog } from "@/components/bills/LinkTransactionDialog";
+import { logError } from "@/utils/errorHandler";
 
 const InvoicePaymentListEnhanced = () => {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ const InvoicePaymentListEnhanced = () => {
       setExpenses(invoicesData || []);
     } catch (error) {
       toast.error("Failed to load expenses");
-      console.error(error);
+      logError("Failed to load expenses", error);
     } finally {
       setLoading(false);
     }
@@ -78,7 +79,7 @@ const InvoicePaymentListEnhanced = () => {
 
       toast.success(`HSA eligibility ${!currentStatus ? 'enabled' : 'disabled'}`);
     } catch (error) {
-      console.error("Error toggling HSA eligibility:", error);
+      logError("Error toggling HSA eligibility", error);
       toast.error("Failed to update HSA eligibility");
     }
   };

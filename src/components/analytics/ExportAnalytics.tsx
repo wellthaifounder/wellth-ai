@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Download, FileText, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
+import { logError } from "@/utils/errorHandler";
+import { generateAnalyticsReportPDF } from "@/lib/pdfGenerator";
 
 interface ExportData {
   stats: {
@@ -111,7 +113,7 @@ export const ExportAnalytics = ({ data, dateRange = "All Time" }: ExportAnalytic
 
       toast.success("CSV exported successfully");
     } catch (error) {
-      console.error("Export error:", error);
+      logError("Export error", error);
       toast.error("Failed to export CSV");
     } finally {
       setExporting(false);
@@ -142,7 +144,7 @@ export const ExportAnalytics = ({ data, dateRange = "All Time" }: ExportAnalytic
 
       toast.success("JSON exported successfully");
     } catch (error) {
-      console.error("Export error:", error);
+      logError("Export error", error);
       toast.error("Failed to export JSON");
     } finally {
       setExporting(false);
@@ -150,7 +152,23 @@ export const ExportAnalytics = ({ data, dateRange = "All Time" }: ExportAnalytic
   };
 
   const exportToPDF = () => {
-    toast.info("PDF export coming soon! Use CSV for now.");
+    setExporting(true);
+    try {
+      generateAnalyticsReportPDF({
+        dateRange,
+        stats: data.stats,
+        monthlyData: data.monthlyData,
+        categoryData: data.categoryData,
+        paymentMethodsRewards: data.paymentMethodsRewards,
+        yearlyData: data.yearlyData,
+      });
+      toast.success("PDF exported successfully");
+    } catch (error) {
+      logError("PDF export error", error);
+      toast.error("Failed to export PDF");
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
@@ -170,9 +188,9 @@ export const ExportAnalytics = ({ data, dateRange = "All Time" }: ExportAnalytic
           <FileText className="h-4 w-4 mr-2" />
           Export as JSON
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={exportToPDF} disabled>
+        <DropdownMenuItem onClick={exportToPDF}>
           <FileText className="h-4 w-4 mr-2" />
-          Export as PDF (Coming Soon)
+          Export as PDF
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useHSA } from "@/contexts/HSAContext";
 import { HSAUpgradePrompt } from "@/components/HSAUpgradePrompt";
+import { logError } from "@/utils/errorHandler";
 
 const HSA_CATEGORIES = [
   "Doctor Visit",
@@ -124,7 +125,7 @@ const PrePurchaseDecision = () => {
         }
       });
     } catch (error) {
-      console.error('Error saving decision:', error);
+      logError('Error saving decision', error);
       toast.error("Failed to save decision");
     } finally {
       setSaving(false);

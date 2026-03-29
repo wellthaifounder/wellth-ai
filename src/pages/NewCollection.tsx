@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, FolderPlus, FileText } from "lucide-react";
+import { logError } from "@/utils/errorHandler";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 
 const COLOR_PRESETS = [
@@ -55,7 +56,7 @@ export default function NewCollection() {
     },
     onError: (error) => {
       toast.error("Failed to create event");
-      console.error(error);
+      logError("Failed to create event", error);
     },
   });
 

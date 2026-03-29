@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { logError } from '@/utils/errorHandler';
 
 interface PlaidLinkProps {
   onSuccess?: () => void;
@@ -26,7 +27,7 @@ export function PlaidLink({ onSuccess }: PlaidLinkProps) {
       
       setLinkToken(data.link_token);
     } catch (error) {
-      console.error('Error creating link token:', error);
+      logError('Error creating link token', error);
       toast.error('Failed to initialize Plaid Link');
     } finally {
       setLoading(false);
@@ -45,7 +46,7 @@ export function PlaidLink({ onSuccess }: PlaidLinkProps) {
       toast.success('Bank account connected successfully!');
       onSuccess?.();
     } catch (error) {
-      console.error('Error exchanging token:', error);
+      logError('Error exchanging token', error);
       toast.error('Failed to connect bank account');
     } finally {
       setLoading(false);

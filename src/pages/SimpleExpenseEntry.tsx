@@ -6,11 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle2, Upload } from "lucide-react";
 import { z } from "zod";
 import { WellthLogo } from "@/components/WellthLogo";
+import { logError } from "@/utils/errorHandler";
 
 const simpleExpenseSchema = z.object({
   date: z.string().min(1, "Date is required"),
@@ -42,7 +42,6 @@ const SimpleExpenseEntry = () => {
     vendor: "",
     amount: "",
     category: "",
-    linkToPlaidTransaction: false,
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,7 +121,7 @@ const SimpleExpenseEntry = () => {
         toast.error(error.errors[0].message);
       } else {
         toast.error("Failed to add expense");
-        console.error(error);
+        logError("Failed to add expense", error);
       }
     } finally {
       setLoading(false);
@@ -250,22 +249,6 @@ const SimpleExpenseEntry = () => {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div className="flex items-center space-x-2 p-4 bg-muted/50 rounded-lg">
-                <Checkbox 
-                  id="linkToPlaidTransaction"
-                  checked={formData.linkToPlaidTransaction}
-                  onCheckedChange={(checked) => 
-                    setFormData({ ...formData, linkToPlaidTransaction: checked as boolean })
-                  }
-                />
-                <Label 
-                  htmlFor="linkToPlaidTransaction" 
-                  className="text-sm cursor-pointer"
-                >
-                  Link to existing bank transaction (coming soon)
-                </Label>
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>

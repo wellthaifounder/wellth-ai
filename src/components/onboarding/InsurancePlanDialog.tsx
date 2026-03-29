@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Shield, DollarSign } from "lucide-react";
+import { logError } from "@/utils/errorHandler";
 
 interface InsurancePlanDialogProps {
   open: boolean;
@@ -83,7 +84,7 @@ export function InsurancePlanDialog({ open, onOpenChange, onSuccess }: Insurance
       onOpenChange(false);
       onSuccess?.();
     } catch (error: any) {
-      console.error("Error saving insurance plan:", error);
+      logError("Error saving insurance plan", error);
       toast.error(error.message || "Failed to save insurance plan");
     } finally {
       setSaving(false);

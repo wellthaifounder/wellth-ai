@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Star, Loader2 } from "lucide-react";
+import { logError } from "@/utils/errorHandler";
 import { useQuery } from "@tanstack/react-query";
 
 interface ProviderReviewFormProps {
@@ -131,7 +132,7 @@ export function ProviderReviewForm({ providerId }: ProviderReviewFormProps) {
         would_recommend: true
       });
     } catch (error) {
-      console.error('Error submitting review:', error);
+      logError('Error submitting review', error);
       toast.error("Failed to submit review");
     } finally {
       setIsSubmitting(false);

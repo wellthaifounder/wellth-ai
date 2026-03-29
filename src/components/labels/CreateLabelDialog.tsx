@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { logError } from "@/utils/errorHandler";
 
 interface CreateLabelDialogProps {
   open: boolean;
@@ -67,7 +68,7 @@ export const CreateLabelDialog = ({ open, onOpenChange, onCreated }: CreateLabel
       setColor(PRESET_COLORS[0]);
       onOpenChange(false);
     } catch (error) {
-      console.error("Error creating label:", error);
+      logError("Error creating label", error);
       toast.error("Failed to create label");
     } finally {
       setLoading(false);

@@ -5,6 +5,7 @@ import { Sparkles, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { logError } from "@/utils/errorHandler";
 
 interface AIInsightsProps {
   analyticsData: {
@@ -70,7 +71,7 @@ Please provide insights in a numbered list format, focusing on:
       setInsights(parsedInsights);
       toast.success("AI insights generated");
     } catch (error) {
-      console.error("Error generating insights:", error);
+      logError("Error generating insights", error);
       toast.error("Failed to generate insights. Please try again.");
     } finally {
       setLoading(false);

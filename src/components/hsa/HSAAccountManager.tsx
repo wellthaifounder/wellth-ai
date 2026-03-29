@@ -27,6 +27,7 @@ import { useHSAAccounts } from "@/hooks/useHSAAccounts";
 import { formatHSAAccountDateRange, validateHSAAccountDates } from "@/lib/hsaAccountUtils";
 import type { HSAAccount } from "@/lib/hsaAccountUtils";
 import { GenericSkeleton } from "@/components/skeletons/GenericSkeleton";
+import { logError } from "@/utils/errorHandler";
 
 export function HSAAccountManager() {
   const { accounts, isLoading, createAccount, updateAccount, deleteAccount } = useHSAAccounts();
@@ -108,7 +109,7 @@ export function HSAAccountManager() {
       }
       handleCloseDialog();
     } catch (error) {
-      console.error("Error saving HSA account:", error);
+      logError("Error saving HSA account", error);
       setFormError("Failed to save HSA account. Please try again.");
     }
   };
@@ -126,7 +127,7 @@ export function HSAAccountManager() {
       setDeleteDialogOpen(false);
       setDeletingAccountId(null);
     } catch (error) {
-      console.error("Error deleting HSA account:", error);
+      logError("Error deleting HSA account", error);
     }
   };
 

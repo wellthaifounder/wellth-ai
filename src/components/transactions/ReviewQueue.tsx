@@ -6,6 +6,7 @@ import { OnboardingDialog } from "./OnboardingDialog";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { logError } from "@/utils/errorHandler";
 import { getSuggestion, type Transaction as TransactionType, type Invoice } from "@/lib/transactionMatcher";
 import { Loader2, PartyPopper, ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
@@ -90,7 +91,7 @@ export function ReviewQueue() {
       setInvoices(invData || []);
       setUserPreferences(prefData || []);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      logError('Error fetching data', error);
       toast.error('Failed to load review queue');
     } finally {
       setLoading(false);
@@ -126,7 +127,7 @@ export function ReviewQueue() {
         return [...prev, { vendor_pattern: vendorPattern, is_medical: isMedical }];
       });
     } catch (error) {
-      console.error('Error saving preference:', error);
+      logError('Error saving preference', error);
     }
   };
 
@@ -164,7 +165,7 @@ export function ReviewQueue() {
       
       moveToNext();
     } catch (error) {
-      console.error('Error updating transaction:', error);
+      logError('Error updating transaction', error);
       toast.error('Failed to update transaction');
     }
   };
@@ -194,7 +195,7 @@ export function ReviewQueue() {
       
       moveToNext();
     } catch (error) {
-      console.error('Error updating transaction:', error);
+      logError('Error updating transaction', error);
       toast.error('Failed to update transaction');
     }
   };

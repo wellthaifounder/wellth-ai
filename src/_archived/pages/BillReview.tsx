@@ -10,6 +10,7 @@ import { BillErrorCard } from "@/components/bills/BillErrorCard";
 import { PriceBenchmarking } from "@/components/bills/PriceBenchmarking";
 import { ProviderPerformanceCard } from "@/components/bills/ProviderPerformanceCard";
 import { toast } from "sonner";
+import { logError } from "@/utils/errorHandler";
 
 export default function BillReview() {
   const { id } = useParams<{ id: string }>();
@@ -91,7 +92,7 @@ export default function BillReview() {
       toast.success("Bill marked as correct");
       navigate('/expenses');
     } catch (error) {
-      console.error('Error updating bill review:', error);
+      logError('Error updating bill review', error);
       toast.error("Failed to update bill status");
     }
   };

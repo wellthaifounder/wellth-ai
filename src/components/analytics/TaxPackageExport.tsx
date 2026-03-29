@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Download, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { logError } from "@/utils/errorHandler";
 import { generateTaxPackageReport } from "@/lib/taxReportGenerator";
 import { useState } from "react";
 import {
@@ -72,7 +73,7 @@ export const TaxPackageExport = () => {
       toast.dismiss();
       toast.success(`Tax package for ${selectedYear} downloaded successfully!`);
     } catch (error) {
-      console.error("Error generating tax package:", error);
+      logError("Error generating tax package", error);
       toast.dismiss();
       toast.error("Failed to generate tax package. Please try again.");
     } finally {

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { FileText, CreditCard, DollarSign, Upload } from "lucide-react";
+import { CreditCard, DollarSign, Upload, PlusCircle } from "lucide-react";
 
 interface QuickActionBarProps {
   hasHSA: boolean;
@@ -55,13 +55,13 @@ export function QuickActionBar({ hasHSA, hsaClaimable, unreviewedTransactions }:
           </Button>
         )}
 
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="h-auto min-h-[44px] py-3 flex-col gap-1"
-          onClick={() => navigate("/bills/new")}
+          onClick={() => navigate("/payments/new")}
         >
-          <FileText className="h-5 w-5" />
-          <span className="text-xs">Add Expense</span>
+          <PlusCircle className="h-5 w-5" />
+          <span className="text-xs">Log Payment</span>
         </Button>
       </div>
     </Card>

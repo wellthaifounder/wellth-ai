@@ -2,6 +2,12 @@
 
 > This file is institutional memory for Claude Code and all AI coding agents. It serves as the **operationalized information security policy** for this codebase. Every agent working on this project must follow these rules before committing any code.
 
+## External Security Documentation
+
+For third-party security questionnaires (e.g., Plaid, Stripe partner reviews), use the formal policy document at `docs/ACCESS_CONTROL_POLICY.md`. That document is written for external audiences and safe to upload. **Do not upload this CLAUDE.md file** — it contains internal implementation details and code.
+
+---
+
 ## Project Overview
 
 **Wellth.ai** is a HIPAA-relevant healthcare expense management platform that helps users:

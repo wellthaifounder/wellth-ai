@@ -85,16 +85,17 @@ export function HSAHealthCheck({
   }
 
   // For HSA users, calculate health metrics
+  const hasBalanceData = hsaBalance > 0 || ytdContributions > 0;
   const contributionProgress = (ytdContributions / maxContribution) * 100;
   const contributionRemaining = maxContribution - ytdContributions;
   const cashPercentage = hsaBalance > 0 ? ((hsaBalance - investedAmount) / hsaBalance) * 100 : 0;
 
-  // Determine health status
+  // Determine health status — only flag contribution/investment issues when we have real data
   const issues: string[] = [];
-  if (contributionProgress < 80) {
+  if (hasBalanceData && contributionProgress < 80) {
     issues.push(`You're $${contributionRemaining.toFixed(0)} short of maxing out your HSA contribution`);
   }
-  if (investedPercentage < 50 && hsaBalance > 1000) {
+  if (hasBalanceData && investedPercentage < 50 && hsaBalance > 1000) {
     issues.push(`${cashPercentage.toFixed(0)}% of your HSA is uninvested (missing growth potential)`);
   }
   if (unreimbursedExpenses > 500) {
@@ -130,30 +131,38 @@ export function HSAHealthCheck({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* HSA Balance */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Balance</span>
-            <span className="text-lg font-bold">${hsaBalance.toLocaleString()}</span>
-          </div>
-          {investedAmount > 0 && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <TrendingUp className="h-3 w-3" />
-              <span>${investedAmount.toLocaleString()} invested ({investedPercentage}% of balance)</span>
+        {hasBalanceData ? (
+          <>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Balance</span>
+                <span className="text-lg font-bold">${hsaBalance.toLocaleString()}</span>
+              </div>
+              {investedAmount > 0 && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <TrendingUp className="h-3 w-3" />
+                  <span>${investedAmount.toLocaleString()} invested ({investedPercentage}% of balance)</span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Contribution Progress */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">YTD Contributions</span>
-            <span className="text-sm font-bold">${ytdContributions.toFixed(0)} / ${maxContribution.toFixed(0)}</span>
+            {/* Contribution Progress */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">YTD Contributions</span>
+                <span className="text-sm font-bold">${ytdContributions.toFixed(0)} / ${maxContribution.toFixed(0)}</span>
+              </div>
+              <Progress value={contributionProgress} className="h-2" />
+              <p className="text-xs text-muted-foreground mt-1">
+                {contributionProgress.toFixed(0)}% of 2024 max
+              </p>
+            </div>
+          </>
+        ) : (
+          <div className="p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground">
+            Connect your HSA provider in <button className="underline underline-offset-2 font-medium text-foreground" onClick={() => navigate("/settings")}>Settings</button> to see your balance and contribution data here.
           </div>
-          <Progress value={contributionProgress} className="h-2" />
-          <p className="text-xs text-muted-foreground mt-1">
-            {contributionProgress.toFixed(0)}% of 2024 max
-          </p>
-        </div>
+        )}
 
         {/* Unreimbursed Expenses */}
         {unreimbursedExpenses > 0 && (

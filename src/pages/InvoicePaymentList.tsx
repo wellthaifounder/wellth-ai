@@ -12,6 +12,7 @@ import { ArrowLeft, Plus, DollarSign, CreditCard, AlertCircle, ChevronDown, Chev
 import { toast } from "sonner";
 import { calculateHSAEligibility, getPaymentStatusBadge } from "@/lib/hsaCalculations";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { logError } from "@/utils/errorHandler";
 
 const InvoicePaymentList = () => {
   const navigate = useNavigate();
@@ -38,10 +39,10 @@ const InvoicePaymentList = () => {
         .eq("id", user.id)
         .maybeSingle();
 
-      if (error) console.warn("No profile found or error fetching profile", error);
+      if (error) logError("No profile found or error fetching profile", error);
       setHsaOpenedDate(profile?.hsa_opened_date || null);
     } catch (e) {
-      console.error("fetchHSADate failed", e);
+      logError("fetchHSADate failed", e);
       setHsaOpenedDate(null);
     }
   };
@@ -68,7 +69,7 @@ const InvoicePaymentList = () => {
       setInvoices(invoiceData || []);
     } catch (error) {
       toast.error("Failed to load invoices");
-      console.error(error);
+      logError("Error fetching invoices:", error);
     } finally {
       setLoading(false);
     }
@@ -132,7 +133,7 @@ const InvoicePaymentList = () => {
         setNormalized(true);
         fetchInvoices();
       } catch (e) {
-        console.error("normalizeEligibility failed", e);
+        logError("normalizeEligibility failed", e);
       }
     };
     run();

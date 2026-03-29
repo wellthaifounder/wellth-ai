@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { logError } from "@/utils/errorHandler";
 import { Plus, Phone, Mail, FileText, Building2, ArrowRight, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 
@@ -83,7 +84,7 @@ export function DisputeCommunicationLog({ disputeId, communications, onRefresh }
       });
       onRefresh();
     } catch (error) {
-      console.error('Error logging communication:', error);
+      logError('Error logging communication', error);
       toast.error("Failed to log communication");
     }
   };

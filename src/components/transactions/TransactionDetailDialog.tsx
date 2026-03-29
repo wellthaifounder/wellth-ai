@@ -8,6 +8,7 @@ import { Link2, FileText, CreditCard } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { logError } from "@/utils/errorHandler";
 
 interface TransactionDetailDialogProps {
   open: boolean;
@@ -57,7 +58,7 @@ export function TransactionDetailDialog({
       toast.success("Notes saved");
       onUpdate();
     } catch (error) {
-      console.error("Error saving notes:", error);
+      logError("Error saving notes", error);
       toast.error("Failed to save notes");
     } finally {
       setSaving(false);
@@ -78,7 +79,7 @@ export function TransactionDetailDialog({
       toast.success(transaction.is_medical ? "Unmarked as medical" : "Marked as medical");
       onUpdate();
     } catch (error) {
-      console.error("Error updating transaction:", error);
+      logError("Error updating transaction", error);
       toast.error("Failed to update transaction");
     }
   };
@@ -95,7 +96,7 @@ export function TransactionDetailDialog({
       onUpdate();
       onOpenChange(false);
     } catch (error) {
-      console.error("Error ignoring transaction:", error);
+      logError("Error ignoring transaction", error);
       toast.error("Failed to ignore transaction");
     }
   };

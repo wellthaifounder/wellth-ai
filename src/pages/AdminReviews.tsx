@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Star, Check, X, Eye, EyeOff, Loader2 } from "lucide-react";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
+import { logError } from "@/utils/errorHandler";
 
 interface Review {
   id: string;
@@ -54,7 +55,7 @@ export default function AdminReviews() {
       if (error) throw error;
       setReviews(data || []);
     } catch (error) {
-      console.error('Error fetching reviews:', error);
+      logError('Error fetching reviews', error);
       toast.error("Failed to load reviews");
     } finally {
       setLoading(false);
@@ -98,7 +99,7 @@ export default function AdminReviews() {
       toast.success(`Review ${action}`);
       fetchReviews();
     } catch (error) {
-      console.error('Error moderating review:', error);
+      logError('Error moderating review', error);
       toast.error("Failed to moderate review");
     }
   };
@@ -125,7 +126,7 @@ export default function AdminReviews() {
       toast.success(currentlyFeatured ? "Review unfeatured" : "Review featured");
       fetchReviews();
     } catch (error) {
-      console.error('Error toggling feature:', error);
+      logError('Error toggling feature', error);
       toast.error("Failed to update feature status");
     }
   };

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CreateLabelDialog } from "./CreateLabelDialog";
 import { LabelBadge } from "./LabelBadge";
 import { toast } from "sonner";
+import { logError } from "@/utils/errorHandler";
 
 interface LabelSelectorProps {
   resourceId: string;
@@ -41,7 +42,7 @@ export const LabelSelector = ({
       if (error) throw error;
       setAvailableLabels(data || []);
     } catch (error) {
-      console.error("Error fetching labels:", error);
+      logError("Error fetching labels", error);
     }
   };
 
@@ -67,7 +68,7 @@ export const LabelSelector = ({
       const labels = data?.map((item: any) => item.labels).filter(Boolean) || [];
       onLabelsChange(labels);
     } catch (error) {
-      console.error("Error fetching resource labels:", error);
+      logError("Error fetching resource labels", error);
     }
   };
 
@@ -111,7 +112,7 @@ export const LabelSelector = ({
         toast.success(`Added label "${label.name}"`);
       }
     } catch (error) {
-      console.error("Error toggling label:", error);
+      logError("Error toggling label", error);
       toast.error("Failed to update label");
     } finally {
       setLoading(false);

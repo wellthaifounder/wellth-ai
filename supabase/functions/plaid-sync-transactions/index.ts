@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { decryptPlaidToken } from '../_shared/encryption.ts';
+import Resend from "https://esm.sh/resend@2.0.0";
 
 const allowedOrigins = [
   'https://wellth-ai.app',
@@ -88,6 +89,9 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Track enough context to send a failure notification if the sync errors out
+  const syncCtx: { userEmail?: string; institutionName?: string } = {};
+
   try {
     const requestId = crypto.randomUUID();
     const { connection_id, start_date, end_date } = await req.json();
@@ -108,6 +112,7 @@ serve(async (req) => {
       console.error('Auth error:', userError);
       throw new Error('Unauthorized');
     }
+    syncCtx.userEmail = user.email;
 
     console.log(`[${requestId}] Syncing transactions`);
 
@@ -123,6 +128,7 @@ serve(async (req) => {
       console.error('Connection error:', connectionError);
       throw new Error('Connection not found');
     }
+    syncCtx.institutionName = connection.institution_name;
 
     // Decrypt the access token
     console.log(`[${requestId}] Decrypting Plaid access token`);
@@ -172,20 +178,26 @@ serve(async (req) => {
       
       // Check user's learned preferences first
       let isMedical = false;
+      let needsReview = false;
       if (userPreferences) {
-        const preference = userPreferences.find(p => 
+        const preference = userPreferences.find(p =>
           vendorName.toLowerCase().includes(p.vendor_pattern.toLowerCase())
         );
         if (preference) {
           isMedical = preference.is_medical;
+          // Confirmed by user preference — no review needed
         }
       }
-      
-      // Fall back to keyword detection
+
+      // Fall back to keyword detection — flag for user review since it's not user-confirmed
       if (!isMedical) {
-        isMedical = isMedicalTransaction(txn.name, txn.category || []);
+        const keywordMatch = isMedicalTransaction(txn.name, txn.category || []);
+        if (keywordMatch) {
+          isMedical = true;
+          needsReview = true; // Requires user confirmation to prevent false positives
+        }
       }
-      
+
       return {
         user_id: user.id,
         plaid_transaction_id: txn.transaction_id,
@@ -195,7 +207,8 @@ serve(async (req) => {
         amount: Math.abs(txn.amount),
         category: isMedical ? 'medical' : (txn.category?.[0] || 'Other'),
         is_medical: isMedical,
-        is_hsa_eligible: isMedical,
+        is_hsa_eligible: isMedical && !needsReview, // Only auto-eligible if confirmed via preference
+        needs_review: needsReview,
         reconciliation_status: isMedical ? 'linked' : 'unlinked',
         source: 'plaid',
       };
@@ -243,7 +256,33 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error in plaid-sync-transactions:', error);
+    console.error('[plaid-sync-transactions] Error:', error instanceof Error ? error.message : error);
+
+    // Send sync failure notification if we know who the user is
+    if (syncCtx.userEmail) {
+      try {
+        const resendKey = Deno.env.get('RESEND_API_KEY');
+        if (resendKey) {
+          const resend = new Resend.Resend(resendKey);
+          const institution = syncCtx.institutionName || 'your bank';
+          await resend.emails.send({
+            from: 'Wellth <notifications@wellth-ai.app>',
+            to: [syncCtx.userEmail],
+            subject: `Action needed: ${institution} sync failed`,
+            html: `
+              <h2>Bank sync failed</h2>
+              <p>We were unable to sync transactions from <strong>${institution}</strong>.</p>
+              <p>This can happen when your bank connection needs to be refreshed. Please log in to Wellth and reconnect your bank account to restore automatic syncing.</p>
+              <p>Best regards,<br>The Wellth Team</p>
+            `,
+          });
+        }
+      } catch (emailErr) {
+        // Email failure should not affect the main error response
+        console.error('[plaid-sync-transactions] Failed to send failure notification:', emailErr instanceof Error ? emailErr.message : emailErr);
+      }
+    }
+
     return new Response(JSON.stringify({ error: "Failed to sync transactions. Please try again." }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

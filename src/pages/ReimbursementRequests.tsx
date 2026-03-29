@@ -6,10 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { WellthLogo } from "@/components/WellthLogo";
-import { ArrowLeft, FileText, Eye } from "lucide-react";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
+import { FileText, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { TableColumnHeader } from "@/components/ui/table-column-header";
+import { logError } from "@/utils/errorHandler";
 
 type ReimbursementRequest = {
   id: string;
@@ -50,7 +51,7 @@ const ReimbursementRequests = () => {
       setRequests(data || []);
     } catch (error) {
       toast.error("Failed to load reimbursement requests");
-      console.error(error);
+      logError("Failed to load reimbursement requests", error);
     } finally {
       setLoading(false);
     }
@@ -122,33 +123,17 @@ const ReimbursementRequests = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+      <AuthenticatedLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-50">
-        <div className="container mx-auto px-4">
-          <div className="flex h-16 items-center gap-4">
-            <button 
-              onClick={() => navigate("/dashboard")}
-              className="hover:opacity-80 transition-opacity"
-            >
-              <WellthLogo size="sm" showTagline />
-            </button>
-          </div>
-        </div>
-      </nav>
+    <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
-        <div className="mb-6">
-          <Button variant="ghost" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
-        </div>
 
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -291,7 +276,7 @@ const ReimbursementRequests = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AuthenticatedLayout>
   );
 };
 

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { generateReimbursementPDF } from "@/lib/pdfGenerator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ReceiptGallery } from "@/components/expense/ReceiptGallery";
+import { logError } from "@/utils/errorHandler";
 
 const ReimbursementDetails = () => {
   const { id } = useParams();
@@ -59,7 +60,7 @@ const ReimbursementDetails = () => {
         }
       }
     } catch (error) {
-      console.error("Failed to fetch request details:", error);
+      logError("Failed to fetch request details", error);
       toast.error("Failed to load reimbursement details");
     } finally {
       setLoading(false);
@@ -121,12 +122,13 @@ const ReimbursementDetails = () => {
 
       toast.success("PDF generated successfully");
     } catch (error) {
-      console.error("PDF generation failed:", error);
+      logError("PDF generation failed", error);
       toast.error("Failed to generate PDF");
     }
   };
 
   const handleStatusUpdate = async (newStatus: string) => {
+    const previousStatus = request?.status;
     try {
       const { error } = await supabase
         .from("reimbursement_requests")
@@ -136,8 +138,21 @@ const ReimbursementDetails = () => {
       if (error) throw error;
       setRequest({ ...request, status: newStatus });
       toast.success(`Status updated to ${newStatus}`);
+
+      // Send notification email on meaningful status transitions (not same-status no-ops)
+      if (previousStatus !== newStatus) {
+        supabase.functions.invoke("send-notification", {
+          body: {
+            type: "reimbursement_update",
+            request_id: id,
+            new_status: newStatus,
+            total_amount: Number(request?.total_amount ?? 0),
+            hsa_provider: request?.hsa_provider ?? undefined,
+          },
+        }).catch((err) => logError("Failed to send reimbursement notification", err));
+      }
     } catch (error) {
-      console.error("Failed to update status:", error);
+      logError("Failed to update status", error);
       toast.error("Failed to update status");
     }
   };

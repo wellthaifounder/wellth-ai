@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logError } from '@/utils/errorHandler';
 
 /**
  * Session timeout hook for healthcare application security
@@ -34,7 +35,7 @@ export const useSessionTimeout = (
         duration: 5000,
       });
     } catch (error) {
-      console.error('Error during automatic logout:', error);
+      logError('Error during automatic logout', error);
     }
   };
 

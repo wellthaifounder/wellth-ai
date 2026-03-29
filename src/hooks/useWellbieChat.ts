@@ -3,6 +3,7 @@ import { streamWellbieChat } from "@/utils/wellbieChatStream";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { logError } from "@/utils/errorHandler";
 
 type Message = { role: "user" | "assistant"; content: string };
 type Conversation = {
@@ -45,7 +46,7 @@ export const useWellbieChat = () => {
       .order("updated_at", { ascending: false });
 
     if (error) {
-      console.error("Error loading conversations:", error);
+      logError("Error loading conversations:", error);
     } else {
       setConversations(data || []);
     }
@@ -59,7 +60,7 @@ export const useWellbieChat = () => {
       .order("created_at", { ascending: true });
 
     if (error) {
-      console.error("Error loading messages:", error);
+      logError("Error loading messages:", error);
     } else {
       setMessages(data?.map(m => ({ role: m.role as "user" | "assistant", content: m.content })) || []);
     }
@@ -94,7 +95,7 @@ export const useWellbieChat = () => {
       .single();
 
     if (error) {
-      console.error("Error creating conversation:", error);
+      logError("Error creating conversation:", error);
       return null;
     }
 
@@ -134,7 +135,7 @@ export const useWellbieChat = () => {
         .single();
 
       if (invoiceError) {
-        console.error('Error creating invoice:', invoiceError);
+        logError('Error creating invoice:', invoiceError);
         return null;
       }
 
@@ -151,7 +152,7 @@ export const useWellbieChat = () => {
         });
 
       if (uploadError) {
-        console.error('Error uploading file:', uploadError);
+        logError('Error uploading file:', uploadError);
         // Clean up invoice
         await supabase.from('invoices').delete().eq('id', invoice.id);
         return null;
@@ -171,13 +172,13 @@ export const useWellbieChat = () => {
         .single();
 
       if (receiptError) {
-        console.error('Error creating receipt:', receiptError);
+        logError('Error creating receipt:', receiptError);
         return null;
       }
 
       return { receiptId: receipt.id, invoiceId: invoice.id };
     } catch (err) {
-      console.error('Error in uploadFileForAnalysis:', err);
+      logError('Error in uploadFileForAnalysis:', err);
       return null;
     }
   };
@@ -190,13 +191,13 @@ export const useWellbieChat = () => {
       });
 
       if (error) {
-        console.error('Error analyzing bill:', error);
+        logError('Error analyzing bill:', error);
         return null;
       }
 
       return data as BillAnalysisResult;
     } catch (err) {
-      console.error('Error in analyzeBill:', err);
+      logError('Error in analyzeBill:', err);
       return null;
     }
   };

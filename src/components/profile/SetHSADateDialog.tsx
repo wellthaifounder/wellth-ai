@@ -8,6 +8,7 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { logError } from "@/utils/errorHandler";
 
 interface SetHSADateDialogProps {
   open: boolean;
@@ -68,7 +69,7 @@ export function SetHSADateDialog({ open, onOpenChange, onSuccess }: SetHSADateDi
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
-      console.error("Error saving HSA date:", error);
+      logError("Error saving HSA date", error);
       toast.error("Failed to save HSA date");
     } finally {
       setSaving(false);

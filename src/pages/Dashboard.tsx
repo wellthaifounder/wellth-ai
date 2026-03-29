@@ -220,8 +220,8 @@ const Dashboard = () => {
     try {
       const { data: transactions, error } = await supabase
         .from("transactions")
-        .select("reconciliation_status")
-        .eq("reconciliation_status", "unlinked");
+        .select("needs_review")
+        .eq("needs_review", true);
 
       if (error) throw error;
       setStats(prev => ({
@@ -367,12 +367,7 @@ const Dashboard = () => {
               {showHSAFeatures && (
                 <HSAHealthCheck
                   hasHSA={hasHSA}
-                  hsaBalance={stats.totalExpenses * 0.5} // Mock data - replace with actual HSA balance
-                  ytdContributions={stats.totalExpenses * 0.3} // Mock data
-                  maxContribution={4150}
                   unreimbursedExpenses={stats.hsaClaimableAmount}
-                  investedAmount={stats.totalExpenses * 0.25} // Mock data
-                  investedPercentage={50} // Mock data
                 />
               )}
 

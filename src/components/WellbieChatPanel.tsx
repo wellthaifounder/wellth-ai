@@ -14,6 +14,7 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 import { Badge } from "./ui/badge";
+import { logError } from "@/utils/errorHandler";
 
 type Message = { role: "user" | "assistant"; content: string };
 type Conversation = {
@@ -98,11 +99,11 @@ export const WellbieChatPanel = ({
 
     const validFiles = files.filter(file => {
       if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-        console.warn(`File type ${file.type} not allowed`);
+        logError(`File type ${file.type} not allowed`, null);
         return false;
       }
       if (file.size > MAX_FILE_SIZE) {
-        console.warn(`File ${file.name} exceeds 10MB limit`);
+        logError(`File ${file.name} exceeds 10MB limit`, null);
         return false;
       }
       return true;

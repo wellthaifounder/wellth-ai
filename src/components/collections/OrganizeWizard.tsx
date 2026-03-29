@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { logError } from "@/utils/errorHandler";
 import {
   Loader2,
   Plus,
@@ -119,7 +120,7 @@ export function OrganizeWizard({ open, onOpenChange, onComplete }: OrganizeWizar
     },
     onError: (error) => {
       toast.error("Failed to create collection");
-      console.error(error);
+      logError("Failed to create collection", error);
     },
   });
 

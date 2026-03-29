@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { logError } from "@/utils/errorHandler";
 import {
   Loader2,
   Plus,
@@ -145,7 +146,7 @@ export function MigrationWizard({ open, onOpenChange, onComplete }: MigrationWiz
     },
     onError: (error) => {
       toast.error("Failed to create event");
-      console.error(error);
+      logError("Failed to create event", error);
     },
   });
 

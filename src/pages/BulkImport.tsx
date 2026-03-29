@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Upload, Download, CheckCircle2, AlertCircle } from "lucide-react";
 import { WellthLogo } from "@/components/WellthLogo";
 import { z } from "zod";
+import { logError } from "@/utils/errorHandler";
 
 const HSA_ELIGIBLE_CATEGORIES = [
   "Doctor Visit",
@@ -175,7 +176,7 @@ const BulkImport = () => {
         navigate("/expenses");
       }, 2000);
     } catch (error) {
-      console.error("Import error:", error);
+      logError("Import error", error);
       toast.error("Failed to import expenses");
     } finally {
       setImporting(false);

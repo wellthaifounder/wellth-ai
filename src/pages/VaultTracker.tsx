@@ -10,6 +10,7 @@ import { HSAAccountFilter } from "@/components/analytics/HSAAccountFilter";
 import { calculateVaultSummary, calculateExpenseProjectedValue, type VaultExpense } from "@/lib/vaultCalculations";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { logError } from "@/utils/errorHandler";
 
 const VaultTracker = () => {
   const navigate = useNavigate();
@@ -63,7 +64,7 @@ const VaultTracker = () => {
       
       setExpenses(vaultExpenses);
     } catch (error) {
-      console.error("Error loading vault expenses:", error);
+      logError("Error loading vault expenses", error);
       toast.error("Failed to load vault expenses");
     } finally {
       setLoading(false);
@@ -81,7 +82,7 @@ const VaultTracker = () => {
       toast.success("Expense marked as ready to reimburse");
       loadVaultExpenses();
     } catch (error) {
-      console.error("Error marking expense:", error);
+      logError("Error marking expense", error);
       toast.error("Failed to update expense");
     }
   };
@@ -103,7 +104,7 @@ const VaultTracker = () => {
       setSelectedExpenses(new Set());
       loadVaultExpenses();
     } catch (error) {
-      console.error("Error marking expenses:", error);
+      logError("Error marking expenses", error);
       toast.error("Failed to update expenses");
     }
   };

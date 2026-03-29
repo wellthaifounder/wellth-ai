@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Star } from "lucide-react";
+import { logError } from "@/utils/errorHandler";
 import { Card, CardContent } from "@/components/ui/card";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
@@ -31,7 +32,7 @@ export const Testimonials = () => {
         if (error) throw error;
         setReviews(data || []);
       } catch (error) {
-        console.error("Error fetching reviews:", error);
+        logError("Error fetching reviews", error);
       } finally {
         setLoading(false);
       }

@@ -21,6 +21,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { logError } from "@/utils/errorHandler";
 
 interface BulkDisputeActionsProps {
   disputes: any[];
@@ -91,7 +92,7 @@ export const BulkDisputeActions = ({
               body: { disputeId, notificationType }
             });
           } catch (notifError) {
-            console.error('Notification error for dispute:', disputeId, notifError);
+            logError('Notification error for dispute', notifError, { disputeId });
           }
         }
       }
@@ -106,7 +107,7 @@ export const BulkDisputeActions = ({
       setBulkAction('');
       setShowConfirmDialog(false);
     } catch (error) {
-      console.error('Bulk action error:', error);
+      logError('Bulk action error', error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to complete bulk action. Please try again.",

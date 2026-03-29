@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ArrowLeft, FileText, AlertTriangle, CreditCard, Scale, Upload, Link2, CheckCircle2, Plus } from "lucide-react";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
+import { logError } from "@/utils/errorHandler";
 import { BillErrorCard } from "@/components/bills/BillErrorCard";
 import { PriceBenchmarking } from "@/components/bills/PriceBenchmarking";
 import { ProviderPerformanceCard } from "@/components/bills/ProviderPerformanceCard";
@@ -258,7 +259,7 @@ export default function BillDetail() {
         // Bill review feature archived - removed AI analysis trigger
       }
     } catch (error) {
-      console.error("Error saving bill:", error);
+      logError("Error saving bill", error);
       toast.error("Failed to save bill");
     }
   };

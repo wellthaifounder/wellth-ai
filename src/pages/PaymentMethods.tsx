@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { logError } from "@/utils/errorHandler";
 
 const PaymentMethods = () => {
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ const PaymentMethods = () => {
       if (error) throw error;
       setPaymentMethods(data || []);
     } catch (error) {
-      console.error("Failed to fetch payment methods:", error);
+      logError("Failed to fetch payment methods:", error);
       toast.error("Failed to load payment methods");
     } finally {
       setLoading(false);
@@ -96,7 +97,7 @@ const PaymentMethods = () => {
 
       setRecommendations(recs);
     } catch (error) {
-      console.error("Failed to fetch recommendations:", error);
+      logError("Failed to fetch recommendations:", error);
     }
   };
 
@@ -122,7 +123,7 @@ const PaymentMethods = () => {
       setFormData({ name: "", type: "credit_card", rewards_rate: "0.02" });
       fetchPaymentMethods();
     } catch (error) {
-      console.error("Failed to add payment method:", error);
+      logError("Failed to add payment method:", error);
       toast.error("Failed to add payment method");
     }
   };
@@ -138,7 +139,7 @@ const PaymentMethods = () => {
       toast.success("Payment method deleted");
       fetchPaymentMethods();
     } catch (error) {
-      console.error("Failed to delete payment method:", error);
+      logError("Failed to delete payment method:", error);
       toast.error("Failed to delete payment method");
     }
   };

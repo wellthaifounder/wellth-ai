@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { logError } from "@/utils/errorHandler";
 import { 
   CheckCircle2, 
   Circle, 
@@ -137,7 +138,7 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
       toast.success("Dispute created successfully!");
       navigate(`/disputes/${dispute.id}`);
     } catch (error) {
-      console.error('Error creating dispute:', error);
+      logError('Error creating dispute', error);
       toast.error("Failed to create dispute");
     } finally {
       setIsSubmitting(false);
