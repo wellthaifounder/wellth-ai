@@ -606,7 +606,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor={`date-${currentIndex}`}>Service Date</Label>
+                  <Label htmlFor={`date-${currentIndex}`}>Date</Label>
                   <Input
                     id={`date-${currentIndex}`}
                     type="date"
