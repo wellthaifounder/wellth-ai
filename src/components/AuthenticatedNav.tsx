@@ -43,7 +43,7 @@ export const AuthenticatedNav = ({
   const mainNavItems = [
     { icon: Home,        label: "Home",     path: "/dashboard" },
     { icon: Receipt,     label: "Bills",    path: "/bills",      badge: pendingReviews },
-    { icon: FolderHeart, label: "Events",   path: "/collections" },
+    { icon: FolderHeart, label: "Collections", path: "/collections" },
     { icon: TrendingUp,  label: "Insights", path: "/reports" },
   ];
 
@@ -51,7 +51,7 @@ export const AuthenticatedNav = ({
   const coreItems = [
     { icon: Home,        label: "Home",    path: "/dashboard" },
     { icon: Receipt,     label: "Bills",   path: "/bills",      badge: pendingReviews },
-    { icon: FolderHeart, label: "Events",  path: "/collections" },
+    { icon: FolderHeart, label: "Collections",  path: "/collections" },
   ];
 
   const hsaItems = [
@@ -72,7 +72,7 @@ export const AuthenticatedNav = ({
 
   return (
     <>
-      <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-[60] shadow-sm" aria-label="Main navigation">
+      <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-40 shadow-sm" aria-label="Main navigation">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-1">

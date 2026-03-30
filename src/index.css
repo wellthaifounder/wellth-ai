@@ -114,13 +114,15 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
     
-    /* Z-Index Hierarchy */
+    /* Z-Index Hierarchy — all sticky/fixed elements must respect this order:
+       nav/sidebar (40) < modal overlay+content (50) < tooltips (60) < toasts (70)
+       Rule: never set a nav or sidebar element above --z-modal (50). */
     --z-base: 0;
-    --z-sidebar: 40;
-    --z-drag: 45;
-    --z-modal: 50;
-    --z-tooltip: 60;
-    --z-toast: 70;
+    --z-sidebar: 40;   /* sticky nav, sidebars */
+    --z-drag: 45;      /* drag-and-drop handles */
+    --z-modal: 50;     /* Dialog overlay + content (shadcn default) */
+    --z-tooltip: 60;   /* Tooltip popovers */
+    --z-toast: 70;     /* Toast notifications */
   }
 
   .dark {

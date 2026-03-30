@@ -100,14 +100,16 @@ export function HSAAccountManager() {
     }
 
     try {
+      // Only include optional edge-case fields when they have values.
+      // This keeps the insert compatible with DBs where the migration hasn't run yet.
       const sharedFields = {
         account_name: formData.account_name,
         opened_date: formData.opened_date,
         closed_date: formData.closed_date || null,
         is_active: formData.is_active,
-        eligibility_start_date: formData.eligibility_start_date || null,
-        qle_type: formData.qle_type || null,
-        notes: formData.notes.trim() || null,
+        ...(formData.eligibility_start_date ? { eligibility_start_date: formData.eligibility_start_date } : {}),
+        ...(formData.qle_type ? { qle_type: formData.qle_type } : {}),
+        ...(formData.notes.trim() ? { notes: formData.notes.trim() } : {}),
       };
 
       if (editingAccount) {
