@@ -380,7 +380,6 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
             collection_id: collectionId || null,
             notes: d.notes.trim() || null,
             is_hsa_eligible: isHsaEligible,
-            status: "pending",
           })
           .select()
           .single();
