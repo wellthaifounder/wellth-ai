@@ -169,7 +169,7 @@ const Dashboard = () => {
         .reduce((sum, inv) => sum + Number(inv.amount), 0) || 0;
       
       const taxSavings = hsaEligible * 0.3;
-      const rewardsEarned = totalInvoiced * 0.02;
+      const rewardsEarned = hsaEligible * 0.02; // Est. rewards on HSA-eligible spend only
 
       setStats(prev => ({
         ...prev,

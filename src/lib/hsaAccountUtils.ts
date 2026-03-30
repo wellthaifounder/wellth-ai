@@ -9,6 +9,10 @@ export type HSAAccount = {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  // Edge case fields
+  eligibility_start_date: string | null;
+  qle_type: string | null;
+  notes: string | null;
 };
 
 /**
@@ -44,9 +48,11 @@ export function getEligibleHSAAccounts(
  * The date must be on or after the opened_date and before or on the closed_date (if set)
  */
 export function isDateInHSAPeriod(date: Date, account: HSAAccount): boolean {
-  const openedDate = parseISO(account.opened_date);
-  
-  // Date must be on or after opened date
+  // Use eligibility_start_date if set (retroactive elections), otherwise fall back to opened_date
+  const coverageStart = account.eligibility_start_date ?? account.opened_date;
+  const openedDate = parseISO(coverageStart);
+
+  // Date must be on or after the effective coverage start
   const isAfterOrSameAsOpened = isAfter(date, openedDate) || isSameDay(date, openedDate);
   
   if (!isAfterOrSameAsOpened) return false;

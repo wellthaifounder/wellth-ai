@@ -23,6 +23,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Edit, Trash2, Calendar } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useHSAAccounts } from "@/hooks/useHSAAccounts";
 import { formatHSAAccountDateRange, validateHSAAccountDates } from "@/lib/hsaAccountUtils";
 import type { HSAAccount } from "@/lib/hsaAccountUtils";
@@ -41,6 +43,9 @@ export function HSAAccountManager() {
     opened_date: "",
     closed_date: "",
     is_active: true,
+    eligibility_start_date: "",
+    qle_type: "",
+    notes: "",
   });
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -50,6 +55,9 @@ export function HSAAccountManager() {
       opened_date: "",
       closed_date: "",
       is_active: true,
+      eligibility_start_date: "",
+      qle_type: "",
+      notes: "",
     });
     setFormError(null);
     setEditingAccount(null);
@@ -63,6 +71,9 @@ export function HSAAccountManager() {
         opened_date: account.opened_date,
         closed_date: account.closed_date || "",
         is_active: account.is_active,
+        eligibility_start_date: account.eligibility_start_date || "",
+        qle_type: account.qle_type || "",
+        notes: account.notes || "",
       });
     } else {
       resetForm();
@@ -89,23 +100,20 @@ export function HSAAccountManager() {
     }
 
     try {
+      const sharedFields = {
+        account_name: formData.account_name,
+        opened_date: formData.opened_date,
+        closed_date: formData.closed_date || null,
+        is_active: formData.is_active,
+        eligibility_start_date: formData.eligibility_start_date || null,
+        qle_type: formData.qle_type || null,
+        notes: formData.notes.trim() || null,
+      };
+
       if (editingAccount) {
-        await updateAccount({
-          id: editingAccount.id,
-          updates: {
-            account_name: formData.account_name,
-            opened_date: formData.opened_date,
-            closed_date: formData.closed_date || null,
-            is_active: formData.is_active,
-          },
-        });
+        await updateAccount({ id: editingAccount.id, updates: sharedFields });
       } else {
-        await createAccount({
-          account_name: formData.account_name,
-          opened_date: formData.opened_date,
-          closed_date: formData.closed_date || null,
-          is_active: formData.is_active,
-        });
+        await createAccount(sharedFields);
       }
       handleCloseDialog();
     } catch (error) {
@@ -246,7 +254,54 @@ export function HSAAccountManager() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="closed_date">Closed Date (Optional)</Label>
+                <Label htmlFor="eligibility_start_date">
+                  Eligibility Start Date{" "}
+                  <span className="text-muted-foreground font-normal text-xs">(optional)</span>
+                </Label>
+                <Input
+                  id="eligibility_start_date"
+                  type="date"
+                  value={formData.eligibility_start_date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, eligibility_start_date: e.target.value })
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  If your HSA eligibility began before you opened the account (e.g. retroactive election after a qualifying life event), enter that earlier date here.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="qle_type">
+                  What triggered this account?{" "}
+                  <span className="text-muted-foreground font-normal text-xs">(optional)</span>
+                </Label>
+                <Select
+                  value={formData.qle_type}
+                  onValueChange={(v) => setFormData({ ...formData, qle_type: v })}
+                >
+                  <SelectTrigger id="qle_type">
+                    <SelectValue placeholder="Select a qualifying life event…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new_employment">New employment / employer plan</SelectItem>
+                    <SelectItem value="loss_of_coverage">Loss of prior coverage</SelectItem>
+                    <SelectItem value="marriage">Marriage</SelectItem>
+                    <SelectItem value="divorce">Divorce / separation</SelectItem>
+                    <SelectItem value="birth_adoption">Birth or adoption</SelectItem>
+                    <SelectItem value="plan_change">Mid-year plan change to HDHP</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Helps accurately track which expenses are reimbursable when eligibility started mid-year.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="closed_date">Closed Date{" "}
+                  <span className="text-muted-foreground font-normal text-xs">(optional)</span>
+                </Label>
                 <Input
                   id="closed_date"
                   type="date"
@@ -255,10 +310,23 @@ export function HSAAccountManager() {
                     setFormData({ ...formData, closed_date: e.target.value })
                   }
                 />
-                <p className="text-xs text-muted-foreground">
-                  Leave empty if account is still active
-                </p>
+                <p className="text-xs text-muted-foreground">Leave empty if account is still active</p>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="notes">
+                  Notes{" "}
+                  <span className="text-muted-foreground font-normal text-xs">(optional)</span>
+                </Label>
+                <Textarea
+                  id="notes"
+                  placeholder="e.g. Switched to Fidelity HDHP Gold on July 1, covers spouse and dependents"
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  rows={2}
+                />
+              </div>
+
               <div className="flex items-center space-x-2">
                 <Switch
                   id="is_active"
