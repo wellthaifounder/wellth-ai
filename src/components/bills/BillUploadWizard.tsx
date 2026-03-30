@@ -25,6 +25,7 @@ import {
   FolderHeart,
   Plus,
   ZoomIn,
+  Sparkles,
 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
@@ -123,6 +124,10 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
   const [errorMessage, setErrorMessage] = useState("");
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
+  // OCR state — tracks scanning progress and which fields were AI-filled per draft
+  const [ocrStatus, setOcrStatus] = useState<Record<number, "loading" | "done" | "error" | "skipped">>({});
+  const [ocrFields, setOcrFields] = useState<Record<number, Array<"vendor" | "amount" | "date" | "category">>>({});
+
   // Sync collection section visibility when navigating between drafts
   const prevIndexRef = useRef(-1);
   useEffect(() => {
@@ -180,6 +185,70 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
     setFileEntries((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // ── OCR ─────────────────────────────────────────────────────────────────────
+
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const runOCR = async (index: number, file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setOcrStatus((prev) => ({ ...prev, [index]: "skipped" }));
+      return;
+    }
+    setOcrStatus((prev) => ({ ...prev, [index]: "loading" }));
+    try {
+      const imageBase64 = await fileToBase64(file);
+      const { data, error } = await supabase.functions.invoke("process-receipt-ocr", {
+        body: { imageBase64 },
+      });
+      if (error || !data?.success) {
+        setOcrStatus((prev) => ({ ...prev, [index]: "error" }));
+        return;
+      }
+      const extracted = data.data as {
+        amount: number | null;
+        vendor: string | null;
+        date: string | null;
+        category: string | null;
+        confidence: number;
+      };
+      const today = new Date().toISOString().split("T")[0];
+      const filled: Array<"vendor" | "amount" | "date" | "category"> = [];
+      setDrafts((prev) =>
+        prev.map((d, i) => {
+          if (i !== index) return d;
+          const updates: Partial<BillDraft> = {};
+          if (extracted.vendor && !d.vendor) {
+            updates.vendor = extracted.vendor;
+            filled.push("vendor");
+          }
+          if (extracted.amount != null && !d.amount) {
+            updates.amount = extracted.amount.toFixed(2);
+            filled.push("amount");
+          }
+          if (extracted.date && d.date === today) {
+            updates.date = extracted.date;
+            filled.push("date");
+          }
+          if (extracted.category && CATEGORIES.includes(extracted.category) && d.category === "Medical") {
+            updates.category = extracted.category;
+            filled.push("category");
+          }
+          return { ...d, ...updates };
+        })
+      );
+      setOcrFields((prev) => ({ ...prev, [index]: filled }));
+      setOcrStatus((prev) => ({ ...prev, [index]: "done" }));
+    } catch {
+      setOcrStatus((prev) => ({ ...prev, [index]: "error" }));
+    }
+  };
+
   // ── Transition: upload → details ────────────────────────────────────────────
 
   const handleContinue = () => {
@@ -202,7 +271,11 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
     setCurrentIndex(0);
     prevIndexRef.current = -1;
     setShowCollectionSection(false);
+    setOcrStatus({});
+    setOcrFields({});
     setStep("details");
+    // Kick off OCR for all image files immediately — results pre-populate fields
+    newDrafts.forEach((d, i) => runOCR(i, d.file));
   };
 
   // ── Draft helpers ────────────────────────────────────────────────────────────
@@ -338,7 +411,11 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
       if (onComplete && results.length > 0) onComplete(results[0].id);
       setStep("complete");
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Upload failed");
+      const msg =
+        error instanceof Error
+          ? error.message
+          : (error as { message?: string })?.message ?? "Upload failed";
+      setErrorMessage(msg);
       setStep("error");
     }
   };
@@ -358,6 +435,8 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
     setSavingIndex(0);
     setSavedInvoices([]);
     setErrorMessage("");
+    setOcrStatus({});
+    setOcrFields({});
   };
 
   const isImageFile = (file: File) => file.type.startsWith("image/");
@@ -554,6 +633,20 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
 
             {/* Right: Intake form */}
             <div className="md:w-[58%] p-6 space-y-4 overflow-y-auto max-h-[580px]">
+              {/* OCR status banner */}
+              {ocrStatus[currentIndex] === "loading" && (
+                <div className="flex items-center gap-2 text-sm text-violet-700 bg-violet-50 border border-violet-200 rounded-lg px-3 py-2">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+                  Scanning with AI — fields will fill automatically…
+                </div>
+              )}
+              {ocrStatus[currentIndex] === "done" && (ocrFields[currentIndex]?.length ?? 0) > 0 && (
+                <div className="flex items-center gap-2 text-sm text-violet-700 bg-violet-50 border border-violet-200 rounded-lg px-3 py-2">
+                  <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                  AI extracted {ocrFields[currentIndex].length} field{ocrFields[currentIndex].length > 1 ? "s" : ""} — review and correct as needed.
+                </div>
+              )}
+
               {/* Document Type */}
               <div className="space-y-1.5">
                 <Label>Document Type</Label>
@@ -576,7 +669,14 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
 
               {/* Provider */}
               <div className="space-y-1.5">
-                <Label htmlFor={`vendor-${currentIndex}`}>Provider / Vendor</Label>
+                <Label htmlFor={`vendor-${currentIndex}`} className="flex items-center gap-1.5">
+                  Provider / Vendor
+                  {ocrFields[currentIndex]?.includes("vendor") && (
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-normal text-violet-600">
+                      <Sparkles className="h-2.5 w-2.5" />AI
+                    </span>
+                  )}
+                </Label>
                 <Input
                   id={`vendor-${currentIndex}`}
                   placeholder="e.g. City Medical Center"
@@ -588,7 +688,14 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
               {/* Amount + Date */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor={`amount-${currentIndex}`}>Amount</Label>
+                  <Label htmlFor={`amount-${currentIndex}`} className="flex items-center gap-1.5">
+                    Amount
+                    {ocrFields[currentIndex]?.includes("amount") && (
+                      <span className="inline-flex items-center gap-0.5 text-[10px] font-normal text-violet-600">
+                        <Sparkles className="h-2.5 w-2.5" />AI
+                      </span>
+                    )}
+                  </Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
                       $
@@ -606,7 +713,14 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor={`date-${currentIndex}`}>Date</Label>
+                  <Label htmlFor={`date-${currentIndex}`} className="flex items-center gap-1.5">
+                    Date
+                    {ocrFields[currentIndex]?.includes("date") && (
+                      <span className="inline-flex items-center gap-0.5 text-[10px] font-normal text-violet-600">
+                        <Sparkles className="h-2.5 w-2.5" />AI
+                      </span>
+                    )}
+                  </Label>
                   <Input
                     id={`date-${currentIndex}`}
                     type="date"
@@ -619,7 +733,14 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
               {/* Category */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <Label>Category</Label>
+                  <Label className="flex items-center gap-1.5">
+                    Category
+                    {ocrFields[currentIndex]?.includes("category") && (
+                      <span className="inline-flex items-center gap-0.5 text-[10px] font-normal text-violet-600">
+                        <Sparkles className="h-2.5 w-2.5" />AI
+                      </span>
+                    )}
+                  </Label>
                   {HSA_ELIGIBLE_CATEGORIES.includes(draft.category) && (
                     <Badge className="text-xs bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-50">
                       HSA Eligible
