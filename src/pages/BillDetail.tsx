@@ -483,10 +483,11 @@ export default function BillDetail() {
                   {!isNewBill && receipts && receipts.length > 0 && (
                     <div className="space-y-2">
                       <Label>Existing Documents</Label>
-                      <ReceiptGallery 
-                        expenseId={id!} 
+                      <ReceiptGallery
+                        expenseId={id!}
                         receipts={receipts}
                         onReceiptDeleted={refetchReceipts}
+                        onReceiptUpdated={refetchReceipts}
                       />
                     </div>
                   )}

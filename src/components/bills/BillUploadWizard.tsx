@@ -85,6 +85,7 @@ interface BillDraft {
   file: File;
   objectUrl: string;
   documentType: string;
+  documentName: string;
   vendor: string;
   amount: string;
   date: string;
@@ -257,6 +258,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
       file: entry.file,
       objectUrl: entry.objectUrl,
       documentType: "bill",
+      documentName: "",
       vendor: "",
       amount: "",
       date: today,
@@ -400,6 +402,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
           file_path: filePath,
           file_type: d.file.type,
           document_type: d.documentType,
+          description: d.documentName.trim() || null,
         });
         if (receiptErr) throw receiptErr;
 
@@ -664,6 +667,20 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Document Name */}
+              <div className="space-y-1.5">
+                <Label htmlFor={`documentName-${currentIndex}`}>
+                  Document Name{" "}
+                  <span className="text-muted-foreground font-normal text-xs">(optional)</span>
+                </Label>
+                <Input
+                  id={`documentName-${currentIndex}`}
+                  placeholder={`e.g. ER Visit Bill, EOB March 2026`}
+                  value={draft.documentName}
+                  onChange={(e) => updateDraft(currentIndex, { documentName: e.target.value })}
+                />
               </div>
 
               {/* Provider */}
