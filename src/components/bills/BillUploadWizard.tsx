@@ -24,7 +24,9 @@ import {
   ExternalLink,
   FolderHeart,
   Plus,
+  ZoomIn,
 } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useDropzone } from "react-dropzone";
 import { supabase } from "@/integrations/supabase/client";
@@ -119,6 +121,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
     { id: string; vendor: string; amount: string }[]
   >([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   // Sync collection section visibility when navigating between drafts
   const prevIndexRef = useRef(-1);
@@ -210,13 +213,8 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
 
   const draft = drafts[currentIndex];
   const isLastFile = currentIndex === drafts.length - 1;
-  const isDraftValid =
-    draft &&
-    draft.vendor.trim() !== "" &&
-    draft.amount !== "" &&
-    parseFloat(draft.amount) > 0 &&
-    draft.date !== "" &&
-    draft.category !== "";
+  // All fields are optional — always allow proceeding
+  const isDraftValid = !!draft;
 
   // ── Collections ─────────────────────────────────────────────────────────────
 
@@ -292,16 +290,19 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
           collectionId = col.id;
         }
 
-        // 2. Insert invoice
+        // 2. Insert invoice — all metadata fields are optional
+        const vendor = d.vendor.trim() || d.file.name.replace(/\.[^.]+$/, "");
+        const amount = d.amount !== "" ? parseFloat(d.amount) : 0;
+        const date = d.date || new Date().toISOString().split("T")[0];
         const isHsaEligible = HSA_ELIGIBLE_CATEGORIES.includes(d.category);
         const { data: invoice, error: invoiceErr } = await supabase
           .from("invoices")
           .insert({
             user_id: user.id,
-            vendor: d.vendor.trim(),
-            amount: parseFloat(d.amount),
-            date: d.date,
-            category: d.category,
+            vendor,
+            amount,
+            date,
+            category: d.category || "Other",
             invoice_number: d.invoiceNumber.trim() || null,
             collection_id: collectionId || null,
             notes: d.notes.trim() || null,
@@ -330,7 +331,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
         });
         if (receiptErr) throw receiptErr;
 
-        results.push({ id: invoice.id, vendor: d.vendor.trim(), amount: d.amount });
+        results.push({ id: invoice.id, vendor, amount: d.amount || "0" });
       }
 
       setSavedInvoices(results);
@@ -496,14 +497,38 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
 
           {/* Side-by-side body */}
           <div className="flex flex-col md:flex-row">
+            {/* Lightbox */}
+            <Dialog open={!!lightboxUrl} onOpenChange={(open) => !open && setLightboxUrl(null)}>
+              <DialogContent className="max-w-5xl w-full p-2 bg-black/90 border-0">
+                {lightboxUrl && (
+                  <img
+                    src={lightboxUrl}
+                    alt="Full size preview"
+                    className="w-full max-h-[90vh] object-contain rounded"
+                  />
+                )}
+              </DialogContent>
+            </Dialog>
+
             {/* Left: Document preview */}
             <div className="md:w-[42%] border-b md:border-b-0 md:border-r bg-muted/20 flex flex-col items-center justify-center p-6 min-h-[220px]">
               {isImageFile(draft.file) ? (
-                <img
-                  src={draft.objectUrl}
-                  alt={draft.file.name}
-                  className="w-full max-h-[380px] object-contain rounded shadow-sm"
-                />
+                <div className="relative w-full group">
+                  <img
+                    src={draft.objectUrl}
+                    alt={draft.file.name}
+                    className="w-full max-h-[380px] object-contain rounded shadow-sm cursor-zoom-in"
+                    onClick={() => setLightboxUrl(draft.objectUrl)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setLightboxUrl(draft.objectUrl)}
+                    className="absolute top-2 right-2 h-8 w-8 rounded-full bg-background/80 border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                    title="Expand image"
+                  >
+                    <ZoomIn className="h-4 w-4" />
+                  </button>
+                </div>
               ) : (
                 <div className="flex flex-col items-center gap-4 text-center">
                   <div className="h-20 w-20 rounded-xl bg-muted flex items-center justify-center">
@@ -551,9 +576,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
 
               {/* Provider */}
               <div className="space-y-1.5">
-                <Label htmlFor={`vendor-${currentIndex}`}>
-                  Provider / Vendor <span className="text-destructive">*</span>
-                </Label>
+                <Label htmlFor={`vendor-${currentIndex}`}>Provider / Vendor</Label>
                 <Input
                   id={`vendor-${currentIndex}`}
                   placeholder="e.g. City Medical Center"
@@ -565,9 +588,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
               {/* Amount + Date */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor={`amount-${currentIndex}`}>
-                    Amount <span className="text-destructive">*</span>
-                  </Label>
+                  <Label htmlFor={`amount-${currentIndex}`}>Amount</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
                       $
@@ -585,9 +606,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor={`date-${currentIndex}`}>
-                    Service Date <span className="text-destructive">*</span>
-                  </Label>
+                  <Label htmlFor={`date-${currentIndex}`}>Service Date</Label>
                   <Input
                     id={`date-${currentIndex}`}
                     type="date"
@@ -600,9 +619,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
               {/* Category */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <Label>
-                    Category <span className="text-destructive">*</span>
-                  </Label>
+                  <Label>Category</Label>
                   {HSA_ELIGIBLE_CATEGORIES.includes(draft.category) && (
                     <Badge className="text-xs bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-50">
                       HSA Eligible
@@ -679,7 +696,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                     <Select
                       value={
                         draft.collectionId ??
-                        (draft.isCreatingNewCollection ? "__new__" : "")
+                        (draft.isCreatingNewCollection ? "__new__" : "__none__")
                       }
                       onValueChange={(v) => {
                         if (v === "__new__") {
@@ -687,7 +704,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                             collectionId: null,
                             isCreatingNewCollection: true,
                           });
-                        } else if (v === "") {
+                        } else if (v === "__none__") {
                           updateDraft(currentIndex, {
                             collectionId: null,
                             newCollectionTitle: "",
@@ -706,7 +723,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                         <SelectValue placeholder="Select or create a collection…" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="__none__">None</SelectItem>
                         {collections.map((c) => (
                           <SelectItem key={c.id} value={c.id}>
                             {c.title}
@@ -807,10 +824,10 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="font-semibold truncate">{d.vendor}</p>
+                        <p className="font-semibold truncate">{d.vendor || d.file.name.replace(/\.[^.]+$/, "")}</p>
                         <p className="text-sm text-muted-foreground">
-                          ${parseFloat(d.amount).toFixed(2)} ·{" "}
-                          {new Date(d.date + "T00:00:00").toLocaleDateString()} · {d.category}
+                          {d.amount ? `$${parseFloat(d.amount).toFixed(2)}` : "No amount"} ·{" "}
+                          {d.date ? new Date(d.date + "T00:00:00").toLocaleDateString() : "No date"} · {d.category}
                         </p>
                       </div>
                       <button
