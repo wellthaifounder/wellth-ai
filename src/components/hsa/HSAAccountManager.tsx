@@ -100,23 +100,40 @@ export function HSAAccountManager() {
     }
 
     try {
-      // Only include optional edge-case fields when they have values.
-      // This keeps the insert compatible with DBs where the migration hasn't run yet.
-      const sharedFields = {
+      const baseFields = {
         account_name: formData.account_name,
         opened_date: formData.opened_date,
         closed_date: formData.closed_date || null,
         is_active: formData.is_active,
+      };
+
+      const extendedFields = {
+        ...baseFields,
         ...(formData.eligibility_start_date ? { eligibility_start_date: formData.eligibility_start_date } : {}),
         ...(formData.qle_type ? { qle_type: formData.qle_type } : {}),
         ...(formData.notes.trim() ? { notes: formData.notes.trim() } : {}),
       };
 
-      if (editingAccount) {
-        await updateAccount({ id: editingAccount.id, updates: sharedFields });
-      } else {
-        await createAccount(sharedFields);
+      const save = async (fields: typeof extendedFields) => {
+        if (editingAccount) {
+          await updateAccount({ id: editingAccount.id, updates: fields });
+        } else {
+          await createAccount(fields);
+        }
+      };
+
+      try {
+        await save(extendedFields);
+      } catch (extendedError) {
+        // If the extended columns don't exist yet (migration pending), fall back to base fields
+        const msg = extendedError instanceof Error ? extendedError.message : String(extendedError);
+        if (msg.includes("column") && (msg.includes("eligibility_start_date") || msg.includes("qle_type") || msg.includes("notes"))) {
+          await save(baseFields);
+        } else {
+          throw extendedError;
+        }
       }
+
       handleCloseDialog();
     } catch (error) {
       logError("Error saving HSA account", error);
