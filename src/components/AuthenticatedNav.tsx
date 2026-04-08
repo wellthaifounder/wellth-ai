@@ -56,7 +56,7 @@ export const AuthenticatedNav = ({
 
   const hsaItems = [
     { icon: Wallet,         label: "Transactions",   path: "/transactions",           badge: unreviewedTransactions },
-    { icon: ClipboardList,  label: "HSA Claims",     path: "/reimbursement-requests" },
+    { icon: ClipboardList,  label: "Reimbursement Requests", path: "/reimbursement-requests" },
     { icon: Calculator,     label: "HSA Calculator", path: "/savings-calculator" },
   ];
 

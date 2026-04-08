@@ -209,8 +209,8 @@ export default function CollectionDetail() {
       <AuthenticatedLayout>
         <div className="container mx-auto px-4 py-8 text-center">
           <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Event Not Found</h2>
-          <Button onClick={() => navigate("/collections")}>Back to Events</Button>
+          <h2 className="text-xl font-semibold mb-2">Collection Not Found</h2>
+          <Button onClick={() => navigate("/collections")}>Back to Collections</Button>
         </div>
       </AuthenticatedLayout>
     );
@@ -224,7 +224,7 @@ export default function CollectionDetail() {
           <div>
             <Button variant="ghost" onClick={() => navigate("/collections")} className="mb-2">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Events
+              Back to Collections
             </Button>
             <div className="flex items-center gap-3">
               <div

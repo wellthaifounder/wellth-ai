@@ -47,6 +47,7 @@ const NewBillUpload = lazy(() => import("./pages/NewBillUpload"));
 // const DisputeDetail = lazy(() => import("./pages/DisputeDetail"));
 
 // Collections pages
+const PaymentEntry = lazy(() => import("./pages/PaymentEntry"));
 const Collections = lazy(() => import("./pages/Collections"));
 const CollectionDetail = lazy(() => import("./pages/CollectionDetail"));
 const NewCollection = lazy(() => import("./pages/NewCollection"));
@@ -119,6 +120,10 @@ const App = () => (
                     <Route path="/reimbursement-requests" element={<ProtectedRoute><ErrorBoundary><ReimbursementRequests /></ErrorBoundary></ProtectedRoute>} />
                     <Route path="/reimbursement/:id" element={<ProtectedRoute><ErrorBoundary><ReimbursementDetails /></ErrorBoundary></ProtectedRoute>} />
                     <Route path="/hsa-reimbursement" element={<ProtectedRoute><ErrorBoundary><HSAReimbursement /></ErrorBoundary></ProtectedRoute>} />
+
+                    {/* Payment Routes */}
+                    <Route path="/payments/new" element={<ProtectedRoute><ErrorBoundary><PaymentEntry /></ErrorBoundary></ProtectedRoute>} />
+                    <Route path="/payment/new" element={<ProtectedRoute><ErrorBoundary><PaymentEntry /></ErrorBoundary></ProtectedRoute>} />
 
                     {/* Transactions Route */}
                     <Route path="/transactions" element={<ProtectedRoute><ErrorBoundary><Transactions /></ErrorBoundary></ProtectedRoute>} />

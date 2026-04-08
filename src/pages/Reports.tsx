@@ -505,13 +505,18 @@ const Reports = () => {
               </TabsContent>
 
               <TabsContent value="goals" className="space-y-6">
-                <GoalSetting currentStats={{
-                  totalExpenses: stats.totalExpenses,
-                  hsaEligible: stats.hsaEligible,
-                  unreimbursedHsaTotal: stats.unreimbursedHsaTotal,
-                  actualSavings: stats.actualSavings
-                }} />
-                <YearOverYearComparison yearlyData={yearlyData} />
+                <ErrorBoundary
+                  fallbackTitle="Goals Unavailable"
+                  fallbackDescription="We couldn't load your savings goals. Your other analytics are unaffected."
+                >
+                  <GoalSetting currentStats={{
+                    totalExpenses: stats.totalExpenses,
+                    hsaEligible: stats.hsaEligible,
+                    unreimbursedHsaTotal: stats.unreimbursedHsaTotal,
+                    actualSavings: stats.actualSavings
+                  }} />
+                  <YearOverYearComparison yearlyData={yearlyData} />
+                </ErrorBoundary>
               </TabsContent>
 
               <TabsContent value="tax" className="space-y-6">

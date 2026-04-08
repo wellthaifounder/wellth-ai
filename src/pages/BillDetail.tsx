@@ -310,7 +310,7 @@ export default function BillDetail() {
                     {isNewBill ? "Add New Bill" : bill?.vendor || "Bill Details"}
                   </CardTitle>
                   <CardDescription>
-                    {isNewBill ? "Track your medical bill and manage payments" : `Bill #${bill?.invoice_number || 'N/A'}`}
+                    {isNewBill ? "Track your medical bill and manage payments" : (bill?.invoice_number ? `Bill #${bill.invoice_number}` : "No bill number")}
                   </CardDescription>
                 </div>
                 {/* Bill review feature archived - removed review badge */}
@@ -526,7 +526,7 @@ export default function BillDetail() {
                             <Link2 className="h-4 w-4 mr-2" />
                             Link Transaction
                           </Button>
-                          <Button size="sm" onClick={() => navigate(`/payment/new?invoiceId=${id}`)}>
+                          <Button size="sm" onClick={() => navigate(`/payment/new?invoice=${id}`)}>
                             <Plus className="h-4 w-4 mr-2" />
                             Add Payment
                           </Button>

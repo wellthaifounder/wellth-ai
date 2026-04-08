@@ -1,6 +1,7 @@
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, Upload, Sparkles, Link2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useHSA } from "@/contexts/HSAContext";
 
@@ -8,8 +9,15 @@ interface OnboardingProgressBarProps {
   compact?: boolean;
 }
 
+const STEP_ROUTES: Record<string, string> = {
+  bill: '/bills/new',
+  review: '/reports',
+  setup: '/settings',
+};
+
 export function OnboardingProgressBar({ compact = false }: OnboardingProgressBarProps) {
   const { hasHSA } = useHSA();
+  const navigate = useNavigate();
 
   // Check if user has uploaded any bills
   const { data: billsData } = useQuery({
@@ -112,11 +120,15 @@ export function OnboardingProgressBar({ compact = false }: OnboardingProgressBar
             <div className="hidden md:flex items-center gap-2">
               {steps.map((step, index) => (
                 <div key={step.key} className="flex items-center gap-2">
-                  <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md ${
-                    step.complete
-                      ? 'bg-accent/20 text-accent'
-                      : 'bg-muted text-muted-foreground'
-                  }`}>
+                  <div
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded-md ${
+                      step.complete
+                        ? 'bg-accent/20 text-accent'
+                        : 'bg-muted text-muted-foreground cursor-pointer hover:bg-muted/80'
+                    }`}
+                    onClick={!step.complete ? () => navigate(STEP_ROUTES[step.key]) : undefined}
+                    role={!step.complete ? 'button' : undefined}
+                  >
                     {step.complete ? (
                       <CheckCircle2 className="h-3.5 w-3.5" />
                     ) : (

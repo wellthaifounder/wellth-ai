@@ -123,14 +123,14 @@ export default function Collections() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Events</h1>
+            <h1 className="text-3xl font-bold">Collections</h1>
             <p className="text-muted-foreground">
               Group related bills, documents, and payments together
             </p>
           </div>
           <Button onClick={() => navigate("/collections/new")} className="gap-2">
             <Plus className="h-4 w-4" />
-            New Event
+            New Collection
           </Button>
         </div>
 
@@ -145,7 +145,7 @@ export default function Collections() {
                 <div className="flex-1">
                   <h3 className="font-semibold">Organize Your Existing Bills</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    You have {unorganizedCount} bill{unorganizedCount > 1 ? "s" : ""} not in any event.
+                    You have {unorganizedCount} bill{unorganizedCount > 1 ? "s" : ""} not in any collection.
                     Organizing them helps you track expenses by group.
                   </p>
                   <div className="flex gap-2 mt-3">
@@ -168,7 +168,7 @@ export default function Collections() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-2">
                 <FolderOpen className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Total Events</span>
+                <span className="text-sm text-muted-foreground">Total Collections</span>
               </div>
               <p className="text-2xl font-bold">{collections?.length || 0}</p>
             </CardContent>
@@ -213,7 +213,7 @@ export default function Collections() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search events..."
+            placeholder="Search collections..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -224,13 +224,13 @@ export default function Collections() {
         {filteredCollections.length === 0 ? (
           <Card className="p-8 text-center">
             <FolderOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Events Yet</h3>
+            <h3 className="text-lg font-semibold mb-2">No Collections Yet</h3>
             <p className="text-muted-foreground mb-4">
-              Create an event to start grouping your medical expenses
+              Create a collection to start grouping your medical expenses
             </p>
             <Button onClick={() => navigate("/collections/new")}>
               <Plus className="h-4 w-4 mr-2" />
-              Create Event
+              Create Collection
             </Button>
           </Card>
         ) : (

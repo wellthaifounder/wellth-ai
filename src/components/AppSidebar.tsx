@@ -32,7 +32,7 @@ interface MenuItem {
 const coreMenuItems: MenuItem[] = [
   { icon: Home,        label: "Home",   path: "/dashboard",   badgeKey: null },
   { icon: Receipt,     label: "Bills",  path: "/bills",        badgeKey: null },
-  { icon: FolderHeart, label: "Events", path: "/collections",  badgeKey: null },
+  { icon: FolderHeart, label: "Collections", path: "/collections",  badgeKey: null },
 ];
 
 const hsaMenuItems: MenuItem[] = [

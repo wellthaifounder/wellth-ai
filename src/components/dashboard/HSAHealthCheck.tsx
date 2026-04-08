@@ -201,7 +201,7 @@ export function HSAHealthCheck({
           className="w-full"
           size="sm"
         >
-          {isHealthy ? "View HSA Dashboard" : "Optimize My HSA →"}
+          {isHealthy ? "Open HSA Calculator" : "Optimize My HSA →"}
         </Button>
       </CardContent>
     </Card>

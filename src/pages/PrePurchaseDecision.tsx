@@ -9,7 +9,7 @@ import { getPaymentRecommendation } from "@/lib/paymentRecommendation";
 import { PaymentRecommendation } from "@/components/expense/PaymentRecommendation";
 import { ArrowLeft, CreditCard, Receipt, TrendingUp, ChevronDown, AlertCircle, Calculator, Save, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { WellthLogo } from "@/components/WellthLogo";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useHSA } from "@/contexts/HSAContext";
@@ -133,20 +133,7 @@ const PrePurchaseDecision = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-50">
-        <div className="container mx-auto px-4">
-          <div className="flex h-16 items-center gap-4">
-            <button 
-              onClick={() => navigate("/dashboard")}
-              className="hover:opacity-80 transition-opacity"
-            >
-              <WellthLogo size="sm" showTagline />
-            </button>
-          </div>
-        </div>
-      </nav>
-
+    <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <Button variant="ghost" onClick={() => navigate("/dashboard")}>
@@ -467,7 +454,7 @@ const PrePurchaseDecision = () => {
           )}
         </div>
       </div>
-    </div>
+    </AuthenticatedLayout>
   );
 };
 

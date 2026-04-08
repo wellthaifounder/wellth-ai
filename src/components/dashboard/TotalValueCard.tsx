@@ -44,7 +44,7 @@ export function TotalValueCard({
                   Projected Value
                 </CardTitle>
                 <div className="text-4xl font-black text-foreground mt-1">
-                  ${totalValue.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                  ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
               </div>
             </div>
@@ -77,7 +77,7 @@ export function TotalValueCard({
                       </div>
                     </div>
                     <div className="text-lg font-bold text-green-600 dark:text-green-400">
-                      ${disputeSavings.toLocaleString()}
+                      ${disputeSavings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
                   </div>
                 )}
@@ -104,7 +104,7 @@ export function TotalValueCard({
                       </div>
                     </div>
                     <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                      ${rewardsEarned.toLocaleString()}
+                      ${rewardsEarned.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
                   </div>
                 )}
@@ -121,7 +121,7 @@ export function TotalValueCard({
                       </div>
                     </div>
                     <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                      ${paymentOptimizations.toLocaleString()}
+                      ${paymentOptimizations.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
                   </div>
                 )}
@@ -148,7 +148,7 @@ export function TotalValueCard({
                       </div>
                     </div>
                     <div className="text-lg font-bold text-amber-600 dark:text-amber-400">
-                      ${taxSavings.toLocaleString()}
+                      ${taxSavings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
                   </div>
                 )}

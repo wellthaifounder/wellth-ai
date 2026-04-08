@@ -21,7 +21,7 @@ export const BottomTabNavigation = ({
     : [
         { icon: Home,        label: "Home",     path: "/dashboard",   badge: 0 },
         { icon: Receipt,     label: "Bills",    path: "/bills",       badge: 0 },
-        { icon: FolderHeart, label: "Events",   path: "/collections", badge: 0 },
+        { icon: FolderHeart, label: "Collections", path: "/collections", badge: 0 },
         { icon: TrendingUp,  label: "Insights", path: "/reports",     badge: 0 },
         { icon: Settings,    label: "Account",  path: "/settings",    badge: 0 },
       ];
