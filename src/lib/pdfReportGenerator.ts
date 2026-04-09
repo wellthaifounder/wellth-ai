@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import { CalculatorData } from "@/pages/Calculator";
 import { calculateSavings } from "./savingsCalculator";
+import { HSA_LIMITS_2025, CURRENT_TAX_YEAR } from "./regulatoryLimits";
 
 export const generateHSAMaximizerReport = async (
   data: CalculatorData,
@@ -36,7 +37,7 @@ export const generateHSAMaximizerReport = async (
   };
   
   // Calculate HSA investment growth projection (7% annual return over 10 years)
-  const projectedContribution = Math.min(annualSpending, data.householdSize === 1 ? 4150 : 8300);
+  const projectedContribution = Math.min(annualSpending, data.householdSize === 1 ? HSA_LIMITS_2025.selfOnly : HSA_LIMITS_2025.family);
   const years = 10;
   const growthRate = 0.07;
   let futureValue = 0;
@@ -389,13 +390,13 @@ export const generateHSAMaximizerReport = async (
   pdf.setFontSize(10);
   yPos += 12;
   
-  const hsaMaxContribution = data.householdSize === 1 ? 4150 : 8300;
+  const hsaMaxContribution = data.householdSize === 1 ? HSA_LIMITS_2025.selfOnly : HSA_LIMITS_2025.family;
   const taxBracket = data.householdSize === 1 ? "22%" : "24%";
   const potentialContribution = Math.min(annualSpending, hsaMaxContribution);
   
   pdf.text(`• Your healthcare spending: $${annualSpending.toLocaleString()}/year`, 25, yPos);
   yPos += 7;
-  pdf.text(`• 2024 HSA max: $${hsaMaxContribution.toLocaleString()} (${data.householdSize === 1 ? "individual" : "family"})`, 25, yPos);
+  pdf.text(`• ${CURRENT_TAX_YEAR} HSA max: $${hsaMaxContribution.toLocaleString()} (${data.householdSize === 1 ? "individual" : "family"})`, 25, yPos);
   yPos += 7;
   pdf.text(`• Recommended contribution: $${potentialContribution.toLocaleString()}`, 25, yPos);
   yPos += 7;

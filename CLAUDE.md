@@ -200,6 +200,44 @@ If a security incident is suspected (unauthorized data access, leaked credential
 
 ---
 
+## Regulatory Limits (IRS)
+
+All IRS dollar limits (HSA contributions, HDHP thresholds, FSA limits) are centralized in **`src/lib/regulatoryLimits.ts`**.
+
+**Rule: Never hardcode IRS limit values elsewhere in the codebase.** Always import from `regulatoryLimits.ts`.
+
+```typescript
+import { HSA_LIMITS_2025, FSA_LIMITS_2025, CURRENT_TAX_YEAR } from "@/lib/regulatoryLimits";
+```
+
+### Current 2025 IRS Limits (tax year 2025)
+
+| Limit | Self-only | Family |
+|-------|-----------|--------|
+| HSA contribution | $4,300 | $8,550 |
+| HSA catch-up (age 55+) | +$1,000 | +$1,000 |
+| HDHP min deductible | $1,650 | $3,300 |
+| HDHP max out-of-pocket | $8,300 | $16,600 |
+| FSA contribution | $3,300 | — |
+| FSA carryover (if allowed) | $660 | — |
+
+### 2025 Regulatory Rulings (from IRS Publication 969)
+
+- **Telehealth disregarded coverage** (P.L. 119-21): Plans may cover telehealth/remote care with no deductible without losing HDHP status. Telehealth coverage no longer disqualifies HSA eligibility for plan years beginning after 2024.
+- **OTC contraceptives** (Notice 2024-75): Over-the-counter oral and emergency contraceptives are preventive care — no prescription required for HSA eligibility.
+- **Male condoms** (Notice 2024-75 / Notice 2024-71): Qualify as both preventive care and §213(d) qualified medical expenses.
+- **CGMs for diabetics** (Notice 2024-75): Continuous glucose monitors for diagnosed diabetics are preventive care — HDHP may cover before deductible.
+
+### Annual Update Checklist (every January)
+
+When the IRS publishes new limits (typically November/December):
+1. Update `src/lib/regulatoryLimits.ts` — add a new year constant object and update the `_CURRENT` aliases
+2. Update `CURRENT_TAX_YEAR` in the same file
+3. Review `supabase/functions/wellbie-chat/index.ts` system prompt for stale limit references
+4. Run `npm run build` to confirm no TypeScript errors
+
+---
+
 ## Code Patterns
 
 ### Forms

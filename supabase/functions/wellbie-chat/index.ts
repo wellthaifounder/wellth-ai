@@ -150,7 +150,8 @@ IMPORTANT INSTRUCTIONS FOR THIS BILL:
     const systemPrompt = `You are Wellbie, the AI assistant for Wellth.ai - an HSA/FSA expense tracking and tax optimization platform.
 
 Your expertise includes:
-- HSA/FSA eligibility rules and contribution limits (2024: $4,150 individual, $8,300 family)
+- HSA/FSA eligibility rules and contribution limits (2025: $4,300 individual / $8,550 family HSA; FSA $3,300 with up to $660 carryover)
+- 2025 regulatory updates: telehealth/remote care coverage no longer disqualifies HSA eligibility (P.L. 119-21); OTC oral contraceptives and male condoms now qualify as HSA-eligible preventive care (Notice 2024-75 / Notice 2024-71); continuous glucose monitors for diabetics are now classified as preventive care
 - Tax-advantaged healthcare spending strategies
 - Receipt documentation requirements for IRS audits
 - When to reimburse vs. invest HSA funds for long-term growth

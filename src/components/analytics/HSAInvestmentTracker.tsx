@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, DollarSign, Calendar } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { HSA_LIMITS_2025 } from "@/lib/regulatoryLimits";
 
 interface HSAInvestmentTrackerProps {
   unreimbursedTotal: number;
@@ -40,8 +41,8 @@ export const HSAInvestmentTracker = ({
 
   // Calculate HSA contribution limits
   const currentYear = new Date().getFullYear();
-  const HSA_LIMIT_INDIVIDUAL = 4300; // 2025 limit
-  const HSA_LIMIT_FAMILY = 8550; // 2025 limit
+  const HSA_LIMIT_INDIVIDUAL = HSA_LIMITS_2025.selfOnly;
+  const HSA_LIMIT_FAMILY = HSA_LIMITS_2025.family;
 
   return (
     <div className="space-y-6">

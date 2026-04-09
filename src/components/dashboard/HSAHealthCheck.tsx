@@ -3,6 +3,7 @@ import { AlertCircle, CheckCircle2, PiggyBank, TrendingUp, Lightbulb } from "luc
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
+import { HSA_LIMITS_2025 } from "@/lib/regulatoryLimits";
 
 interface HSAHealthCheckProps {
   hasHSA: boolean;
@@ -18,7 +19,7 @@ export function HSAHealthCheck({
   hasHSA,
   hsaBalance = 0,
   ytdContributions = 0,
-  maxContribution = 4150, // 2024 individual limit
+  maxContribution = HSA_LIMITS_2025.selfOnly, // 2025 individual limit
   unreimbursedExpenses = 0,
   investedAmount = 0,
   investedPercentage = 0
