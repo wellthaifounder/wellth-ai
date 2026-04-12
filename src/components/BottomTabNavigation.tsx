@@ -1,5 +1,12 @@
 import { NavLink } from "@/components/NavLink";
-import { Home, Receipt, FolderHeart, TrendingUp, Settings, CreditCard } from "lucide-react";
+import {
+  Home,
+  Receipt,
+  FolderHeart,
+  Settings,
+  DollarSign,
+  MessageCircle,
+} from "lucide-react";
 
 interface BottomTabNavigationProps {
   unreviewedTransactions?: number;
@@ -7,24 +14,35 @@ interface BottomTabNavigationProps {
 }
 
 export const BottomTabNavigation = ({
-  unreviewedTransactions = 0,
   showHSAFeatures = false,
 }: BottomTabNavigationProps) => {
   const tabs = showHSAFeatures
     ? [
-        { icon: Home,        label: "Home",         path: "/dashboard",    badge: 0 },
-        { icon: Receipt,     label: "Bills",        path: "/bills",        badge: 0 },
-        { icon: CreditCard,  label: "Transactions", path: "/transactions", badge: unreviewedTransactions },
-        { icon: TrendingUp,  label: "Insights",     path: "/reports",      badge: 0 },
-        { icon: Settings,    label: "Account",      path: "/settings",     badge: 0 },
+        { icon: Home, label: "Home", path: "/dashboard", badge: 0 },
+        { icon: Receipt, label: "Bills", path: "/bills", badge: 0 },
+        {
+          icon: DollarSign,
+          label: "HSA",
+          path: "/reimbursement-requests",
+          badge: 0,
+        },
+        { icon: Settings, label: "Account", path: "/settings", badge: 0 },
       ]
     : [
-        { icon: Home,        label: "Home",     path: "/dashboard",   badge: 0 },
-        { icon: Receipt,     label: "Bills",    path: "/bills",       badge: 0 },
-        { icon: FolderHeart, label: "Collections", path: "/collections", badge: 0 },
-        { icon: TrendingUp,  label: "Insights", path: "/reports",     badge: 0 },
-        { icon: Settings,    label: "Account",  path: "/settings",    badge: 0 },
+        { icon: Home, label: "Home", path: "/dashboard", badge: 0 },
+        { icon: Receipt, label: "Bills", path: "/bills", badge: 0 },
+        {
+          icon: FolderHeart,
+          label: "Care Events",
+          path: "/collections",
+          badge: 0,
+        },
+        { icon: Settings, label: "Account", path: "/settings", badge: 0 },
       ];
+
+  const handleOpenWellbie = () => {
+    window.dispatchEvent(new Event("openWellbieChat"));
+  };
 
   return (
     <nav
@@ -51,6 +69,14 @@ export const BottomTabNavigation = ({
             <span className="text-xs">{tab.label}</span>
           </NavLink>
         ))}
+        <button
+          onClick={handleOpenWellbie}
+          className="flex flex-col items-center justify-center flex-1 h-full gap-1 rounded-lg transition-colors hover:bg-accent/50 text-muted-foreground"
+          aria-label="Ask Wellbie AI assistant"
+        >
+          <MessageCircle className="h-5 w-5" aria-hidden="true" />
+          <span className="text-xs">Wellbie</span>
+        </button>
       </div>
     </nav>
   );

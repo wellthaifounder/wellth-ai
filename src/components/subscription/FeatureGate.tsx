@@ -1,46 +1,61 @@
-import React, { useEffect, useRef } from 'react';
-import { useSubscription } from '@/contexts/SubscriptionContext';
-import { UpgradePrompt } from './UpgradePrompt';
+import React from "react";
+import { useSubscription } from "@/contexts/SubscriptionContext";
+import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
 
 interface FeatureGateProps {
-  requiredTier: 'plus' | 'premium';
+  requiredTier: "plus" | "premium";
   feature: string;
   description?: string;
   children: React.ReactNode;
   blur?: boolean;
 }
 
+const TIER_LABELS: Record<string, string> = {
+  plus: "Plus",
+  premium: "Premium",
+};
+
 export const FeatureGate: React.FC<FeatureGateProps> = ({
   requiredTier,
   feature,
   description,
   children,
-  blur = true,
 }) => {
-  const { checkFeatureAccess, loading } = useSubscription();
-  const promptRef = useRef<HTMLDivElement>(null);
+  const { checkFeatureAccess, createCheckoutSession, loading } =
+    useSubscription();
 
   const hasAccess = checkFeatureAccess(requiredTier);
-
-  useEffect(() => {
-    if (!loading && !hasAccess && promptRef.current) {
-      promptRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, [loading, hasAccess]);
 
   if (loading) {
     return <div className="animate-pulse bg-muted h-32 rounded-lg" />;
   }
 
   if (!hasAccess) {
+    const tierLabel = TIER_LABELS[requiredTier] || requiredTier;
     return (
-      <div ref={promptRef} className="space-y-4">
-        <UpgradePrompt feature={feature} requiredTier={requiredTier} description={description} />
-        {blur && (
-          <div className="blur-sm pointer-events-none select-none opacity-50">
-            {children}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <Sparkles className="h-5 w-5 text-primary shrink-0" />
+            <div className="min-w-0">
+              <p className="text-sm font-medium truncate">{feature}</p>
+              <p className="text-xs text-muted-foreground">
+                {description || `Upgrade to ${tierLabel} to unlock full access`}
+              </p>
+            </div>
           </div>
-        )}
+          <Button
+            size="sm"
+            onClick={() => createCheckoutSession(requiredTier)}
+            className="shrink-0"
+          >
+            Upgrade
+          </Button>
+        </div>
+        <div className="pointer-events-none select-none opacity-60">
+          {children}
+        </div>
       </div>
     );
   }

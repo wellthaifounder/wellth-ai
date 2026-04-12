@@ -3,13 +3,26 @@ import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { Check, FolderOpen, Tag, X } from "lucide-react";
 
 interface GlobalFilterBarProps {
-  onFilterChange: (filters: { collectionId: string | null; labelIds: string[] }) => void;
+  onFilterChange: (filters: {
+    collectionId: string | null;
+    labelIds: string[];
+  }) => void;
 }
 
 export function GlobalFilterBar({ onFilterChange }: GlobalFilterBarProps) {
@@ -18,13 +31,16 @@ export function GlobalFilterBar({ onFilterChange }: GlobalFilterBarProps) {
   const [labelOpen, setLabelOpen] = useState(false);
 
   const selectedCollectionId = searchParams.get("collection") || null;
-  const selectedLabelIds = searchParams.get("labels")?.split(",").filter(Boolean) || [];
+  const selectedLabelIds =
+    searchParams.get("labels")?.split(",").filter(Boolean) || [];
 
   // Fetch collections
   const { data: collections } = useQuery({
     queryKey: ["collections-for-filter"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return [];
 
       const { data, error } = await supabase
@@ -95,7 +111,9 @@ export function GlobalFilterBar({ onFilterChange }: GlobalFilterBarProps) {
   };
 
   const hasActiveFilters = selectedCollectionId || selectedLabelIds.length > 0;
-  const selectedCollection = collections?.find((c) => c.id === selectedCollectionId);
+  const selectedCollection = collections?.find(
+    (c) => c.id === selectedCollectionId,
+  );
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
@@ -115,21 +133,23 @@ export function GlobalFilterBar({ onFilterChange }: GlobalFilterBarProps) {
                 {selectedCollection.title}
               </span>
             ) : (
-              "Collection"
+              "Care Event"
             )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[250px] p-0" align="start">
           <Command>
-            <CommandInput placeholder="Search collections..." />
-            <CommandEmpty>No collections found</CommandEmpty>
+            <CommandInput placeholder="Search care events..." />
+            <CommandEmpty>No care events found</CommandEmpty>
             <CommandGroup>
               {collections?.map((collection) => (
                 <CommandItem
                   key={collection.id}
                   onSelect={() =>
                     setCollectionFilter(
-                      collection.id === selectedCollectionId ? null : collection.id
+                      collection.id === selectedCollectionId
+                        ? null
+                        : collection.id,
                     )
                   }
                 >

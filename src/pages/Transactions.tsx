@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { Plus, Search, ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
+import { Plus, Search, CheckCircle2, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { TransactionCard } from "@/components/transactions/TransactionCard";
@@ -13,7 +13,10 @@ import { TransactionDetailDialog } from "@/components/transactions/TransactionDe
 import { TransactionInlineDetail } from "@/components/transactions/TransactionInlineDetail";
 import { QuickAddTransactionDialog } from "@/components/transactions/QuickAddTransactionDialog";
 import { ReviewQueue } from "@/components/transactions/ReviewQueue";
-import { AdvancedFilters, type FilterCriteria } from "@/components/transactions/AdvancedFilters";
+import {
+  AdvancedFilters,
+  type FilterCriteria,
+} from "@/components/transactions/AdvancedFilters";
 import { TransactionSplitDialog } from "@/components/transactions/TransactionSplitDialog";
 import { SplitTransactionCard } from "@/components/transactions/SplitTransactionCard";
 import { useTransactionSplits } from "@/hooks/useTransactionSplits";
@@ -23,7 +26,13 @@ import { TransactionsSkeleton } from "@/components/skeletons/TransactionsSkeleto
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { logError } from "@/utils/errorHandler";
 import { LinkTransactionDialog } from "@/components/bills/LinkTransactionDialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 type Transaction = {
@@ -55,22 +64,42 @@ type Transaction = {
 export default function Transactions() {
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<
+    Transaction[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-  const [expandedTransactionId, setExpandedTransactionId] = useState<string | null>(null);
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
+  const [expandedTransactionId, setExpandedTransactionId] = useState<
+    string | null
+  >(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [splitDialogOpen, setSplitDialogOpen] = useState(false);
-  const [transactionToSplit, setTransactionToSplit] = useState<Transaction | null>(null);
+  const [transactionToSplit, setTransactionToSplit] =
+    useState<Transaction | null>(null);
   const [activeTab, setActiveTab] = useState("all");
   const [advancedFilters, setAdvancedFilters] = useState<FilterCriteria>({});
   const [hsaOpenedDate, setHsaOpenedDate] = useState<string | null>(null);
   const [invoicePickerOpen, setInvoicePickerOpen] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
-  const [linkTargetInvoice, setLinkTargetInvoice] = useState<{ id: string; vendor: string; amount: number; total_amount: number; date: string } | null>(null);
-  const [availableInvoices, setAvailableInvoices] = useState<{ id: string; vendor: string; amount: number; total_amount: number; date: string }[]>([]);
+  const [linkTargetInvoice, setLinkTargetInvoice] = useState<{
+    id: string;
+    vendor: string;
+    amount: number;
+    total_amount: number;
+    date: string;
+  } | null>(null);
+  const [availableInvoices, setAvailableInvoices] = useState<
+    {
+      id: string;
+      vendor: string;
+      amount: number;
+      total_amount: number;
+      date: string;
+    }[]
+  >([]);
 
   useEffect(() => {
     checkAuth();
@@ -79,7 +108,9 @@ export default function Transactions() {
 
   const fetchHSADate = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       const { data: profile, error } = await supabase
@@ -103,7 +134,9 @@ export default function Transactions() {
   useEffect(() => {
     // Default to review queue if there are unlinked transactions (runs once on load)
     if (transactions.length > 0 && activeTab === "all") {
-      const unlinkedCount = transactions.filter(t => t.reconciliation_status === "unlinked").length;
+      const unlinkedCount = transactions.filter(
+        (t) => t.reconciliation_status === "unlinked",
+      ).length;
       if (unlinkedCount > 0) {
         setActiveTab("review");
       }
@@ -111,7 +144,9 @@ export default function Transactions() {
   }, [transactions, activeTab]);
 
   const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       navigate("/auth");
       return;
@@ -124,12 +159,14 @@ export default function Transactions() {
     try {
       const { data, error } = await supabase
         .from("transactions")
-        .select(`
+        .select(
+          `
           *,
           payment_methods (
             is_hsa_account
           )
-        `)
+        `,
+        )
         .order("transaction_date", { ascending: false });
 
       if (error) throw error;
@@ -164,7 +201,7 @@ export default function Transactions() {
         (t) =>
           t.vendor?.toLowerCase().includes(query) ||
           t.description.toLowerCase().includes(query) ||
-          t.amount.toString().includes(query)
+          t.amount.toString().includes(query),
       );
     }
 
@@ -182,7 +219,11 @@ export default function Transactions() {
         if (amountOperator === "equal" && amountMin !== undefined) {
           return Math.abs(amount - amountMin) < 0.01;
         }
-        if (amountOperator === "between" && amountMin !== undefined && amountMax !== undefined) {
+        if (
+          amountOperator === "between" &&
+          amountMin !== undefined &&
+          amountMax !== undefined
+        ) {
           return amount >= amountMin && amount <= amountMax;
         }
         return true;
@@ -194,7 +235,7 @@ export default function Transactions() {
       filtered = filtered.filter((t) => {
         const transactionDate = new Date(t.transaction_date);
         const startDate = new Date(dateStart);
-        
+
         if (dateOperator === "after") {
           return transactionDate > startDate;
         }
@@ -226,7 +267,7 @@ export default function Transactions() {
   const handleToggleMedical = async (transaction: Transaction) => {
     try {
       const newIsMedical = !transaction.is_medical;
-      
+
       // Check if transaction is before HSA opened date
       let isHsaEligible = newIsMedical;
       if (newIsMedical && hsaOpenedDate) {
@@ -234,22 +275,26 @@ export default function Transactions() {
         const hsaDate = new Date(hsaOpenedDate);
         if (transactionDate < hsaDate) {
           isHsaEligible = false;
-          toast.warning(`This transaction occurred before your HSA was opened (${new Date(hsaOpenedDate).toLocaleDateString()}). It's marked as medical but not HSA-eligible.`);
+          toast.warning(
+            `This transaction occurred before your HSA was opened (${new Date(hsaOpenedDate).toLocaleDateString()}). It's marked as medical but not HSA-eligible.`,
+          );
         }
       }
-      
+
       const { error } = await supabase
         .from("transactions")
-        .update({ 
+        .update({
           is_medical: newIsMedical,
           is_hsa_eligible: isHsaEligible,
           category: newIsMedical ? "medical" : transaction.category,
-          reconciliation_status: newIsMedical ? "unlinked" : "ignored"
+          reconciliation_status: newIsMedical ? "unlinked" : "ignored",
         })
         .eq("id", transaction.id);
 
       if (error) throw error;
-      toast.success(newIsMedical ? "Marked as medical expense" : "Marked as non-medical");
+      toast.success(
+        newIsMedical ? "Marked as medical expense" : "Marked as non-medical",
+      );
       fetchTransactions();
     } catch (error) {
       logError("Error toggling medical:", error);
@@ -261,10 +306,10 @@ export default function Transactions() {
     try {
       const { error } = await supabase
         .from("transactions")
-        .update({ 
+        .update({
           is_medical: true,
           is_hsa_eligible: true,
-          category: "medical"
+          category: "medical",
         })
         .eq("id", transaction.id);
 
@@ -286,13 +331,15 @@ export default function Transactions() {
         .order("date", { ascending: false })
         .limit(200);
       if (error) throw error;
-      setAvailableInvoices((data || []).map(inv => ({
-        id: inv.id,
-        vendor: inv.vendor,
-        amount: Number(inv.amount),
-        total_amount: Number(inv.total_amount ?? inv.amount),
-        date: inv.date,
-      })));
+      setAvailableInvoices(
+        (data || []).map((inv) => ({
+          id: inv.id,
+          vendor: inv.vendor,
+          amount: Number(inv.amount),
+          total_amount: Number(inv.total_amount ?? inv.amount),
+          date: inv.date,
+        })),
+      );
       setInvoicePickerOpen(true);
     } catch (error) {
       logError("Error loading invoices for linking:", error);
@@ -300,7 +347,13 @@ export default function Transactions() {
     }
   };
 
-  const handleInvoiceSelected = (invoice: { id: string; vendor: string; amount: number; total_amount: number; date: string }) => {
+  const handleInvoiceSelected = (invoice: {
+    id: string;
+    vendor: string;
+    amount: number;
+    total_amount: number;
+    date: string;
+  }) => {
     setLinkTargetInvoice(invoice);
     setInvoicePickerOpen(false);
     setLinkDialogOpen(true);
@@ -310,17 +363,28 @@ export default function Transactions() {
     try {
       const { error } = await supabase
         .from("transactions")
-        .update({ is_medical: true, is_hsa_eligible: true, needs_review: false, category: "medical" })
+        .update({
+          is_medical: true,
+          is_hsa_eligible: true,
+          needs_review: false,
+          category: "medical",
+        })
         .eq("id", transaction.id);
       if (error) throw error;
 
       // Save vendor preference so future syncs don't flag this vendor
       if (transaction.vendor) {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (user) {
           await supabase.from("user_vendor_preferences").upsert(
-            { user_id: user.id, vendor_pattern: transaction.vendor, is_medical: true },
-            { onConflict: "user_id,vendor_pattern" }
+            {
+              user_id: user.id,
+              vendor_pattern: transaction.vendor,
+              is_medical: true,
+            },
+            { onConflict: "user_id,vendor_pattern" },
           );
         }
       }
@@ -337,17 +401,28 @@ export default function Transactions() {
     try {
       const { error } = await supabase
         .from("transactions")
-        .update({ is_medical: false, is_hsa_eligible: false, needs_review: false, reconciliation_status: "ignored" })
+        .update({
+          is_medical: false,
+          is_hsa_eligible: false,
+          needs_review: false,
+          reconciliation_status: "ignored",
+        })
         .eq("id", transaction.id);
       if (error) throw error;
 
       // Save vendor preference so future syncs skip this vendor
       if (transaction.vendor) {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (user) {
           await supabase.from("user_vendor_preferences").upsert(
-            { user_id: user.id, vendor_pattern: transaction.vendor, is_medical: false },
-            { onConflict: "user_id,vendor_pattern" }
+            {
+              user_id: user.id,
+              vendor_pattern: transaction.vendor,
+              is_medical: false,
+            },
+            { onConflict: "user_id,vendor_pattern" },
           );
         }
       }
@@ -366,7 +441,7 @@ export default function Transactions() {
         .from("transactions")
         .update({
           reconciliation_status: "ignored",
-          is_medical: false
+          is_medical: false,
         })
         .eq("id", transaction.id);
 
@@ -384,7 +459,7 @@ export default function Transactions() {
       const { error } = await supabase
         .from("transactions")
         .update({
-          reconciliation_status: "unlinked"
+          reconciliation_status: "unlinked",
         })
         .eq("id", transaction.id);
 
@@ -403,7 +478,7 @@ export default function Transactions() {
         .from("transactions")
         .update({
           reconciliation_status: "unlinked",
-          is_medical: false
+          is_medical: false,
         })
         .eq("id", transaction.id);
 
@@ -424,7 +499,8 @@ export default function Transactions() {
   const stats = {
     total: transactions.length,
     medical: transactions.filter((t) => t.is_medical).length,
-    unlinked: transactions.filter((t) => t.reconciliation_status === "unlinked").length,
+    unlinked: transactions.filter((t) => t.reconciliation_status === "unlinked")
+      .length,
     needsReview: transactions.filter((t) => t.needs_review).length,
     totalAmount: transactions.reduce((sum, t) => sum + Number(t.amount), 0),
     medicalAmount: transactions
@@ -452,34 +528,31 @@ export default function Transactions() {
       <AuthenticatedLayout unreviewedTransactions={stats.unlinked}>
         <div className="container mx-auto px-4 py-8 max-w-6xl">
           {!hsaOpenedDate && <MissingHSADateBanner onDateSet={fetchHSADate} />}
-          
-          <div className="mb-6">
-            <Button variant="ghost" onClick={() => navigate("/dashboard")}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </div>
 
-          <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-foreground">Transactions</h1>
-                <p className="text-muted-foreground mt-1">
-                  Track and categorize all your financial transactions
-                </p>
-              </div>
-              <Button onClick={() => setAddDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Transaction
-              </Button>
+          <div className="flex items-center justify-between sticky top-0 z-10 bg-background py-2 mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">
+                Transactions
+              </h1>
+              <p className="text-muted-foreground text-sm mt-1">
+                Track and categorize all your financial transactions
+              </p>
             </div>
+            <Button onClick={() => setAddDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Transaction
+            </Button>
           </div>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <Card className="p-4">
-              <p className="text-sm text-muted-foreground">Total Transactions</p>
-              <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+              <p className="text-sm text-muted-foreground">
+                Total Transactions
+              </p>
+              <p className="text-2xl font-bold text-foreground">
+                {stats.total}
+              </p>
             </Card>
             <Card className="p-4">
               <p className="text-sm text-muted-foreground">Medical</p>
@@ -487,7 +560,9 @@ export default function Transactions() {
             </Card>
             <Card className="p-4">
               <p className="text-sm text-muted-foreground">Needs Review</p>
-              <p className="text-2xl font-bold text-yellow-600">{stats.unlinked}</p>
+              <p className="text-2xl font-bold text-yellow-600">
+                {stats.unlinked}
+              </p>
             </Card>
             <Card className="p-4">
               <p className="text-sm text-muted-foreground">Medical Total</p>
@@ -508,7 +583,7 @@ export default function Transactions() {
                 className="pl-10"
               />
             </div>
-            <AdvancedFilters 
+            <AdvancedFilters
               onFilterChange={setAdvancedFilters}
               activeFilters={advancedFilters}
             />
@@ -523,7 +598,10 @@ export default function Transactions() {
               <TabsTrigger value="needs-review" className="relative">
                 Needs Review
                 {stats.needsReview > 0 && (
-                  <Badge variant="destructive" className="ml-1.5 px-1.5 py-0 text-xs">
+                  <Badge
+                    variant="destructive"
+                    className="ml-1.5 px-1.5 py-0 text-xs"
+                  >
                     {stats.needsReview}
                   </Badge>
                 )}
@@ -541,20 +619,31 @@ export default function Transactions() {
               {filteredTransactions.length === 0 ? (
                 <Card className="p-12 text-center">
                   <CheckCircle2 className="h-10 w-10 text-green-500 mx-auto mb-3" />
-                  <p className="text-muted-foreground">All transactions have been reviewed</p>
+                  <p className="text-muted-foreground">
+                    All transactions have been reviewed
+                  </p>
                 </Card>
               ) : (
                 <>
                   <p className="text-sm text-muted-foreground">
-                    These transactions were auto-detected as medical but need your confirmation to become HSA-eligible.
+                    These transactions were auto-detected as medical but need
+                    your confirmation to become HSA-eligible.
                   </p>
                   {filteredTransactions.map((transaction) => (
-                    <Card key={transaction.id} className="p-4 border-yellow-200 dark:border-yellow-800">
+                    <Card
+                      key={transaction.id}
+                      className="p-4 border-yellow-200 dark:border-yellow-800"
+                    >
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{transaction.vendor || transaction.description}</p>
+                          <p className="font-medium truncate">
+                            {transaction.vendor || transaction.description}
+                          </p>
                           <p className="text-sm text-muted-foreground">
-                            {new Date(transaction.transaction_date).toLocaleDateString()} · ${Number(transaction.amount).toFixed(2)}
+                            {new Date(
+                              transaction.transaction_date,
+                            ).toLocaleDateString()}{" "}
+                            · ${Number(transaction.amount).toFixed(2)}
                           </p>
                         </div>
                         <div className="flex gap-2 shrink-0">
@@ -602,7 +691,12 @@ export default function Transactions() {
                   {filteredTransactions.map((transaction) => {
                     // Show split transaction card for split transactions
                     if (transaction.is_split) {
-                      return <SplitTransactionCard key={transaction.id} transaction={transaction} />;
+                      return (
+                        <SplitTransactionCard
+                          key={transaction.id}
+                          transaction={transaction}
+                        />
+                      );
                     }
 
                     return (
@@ -614,20 +708,32 @@ export default function Transactions() {
                           amount={transaction.amount}
                           description={transaction.description}
                           isMedical={transaction.is_medical}
-                          reconciliationStatus={transaction.reconciliation_status}
+                          reconciliationStatus={
+                            transaction.reconciliation_status
+                          }
                           isHsaEligible={transaction.is_hsa_eligible}
-                          isFromHsaAccount={transaction.payment_methods?.is_hsa_account || false}
+                          isFromHsaAccount={
+                            transaction.payment_methods?.is_hsa_account || false
+                          }
                           isSplit={transaction.is_split}
                           invoiceId={transaction.invoice_id}
                           splitParentId={transaction.split_parent_id}
                           onViewDetails={() => handleViewDetails(transaction)}
                           onMarkMedical={() => handleMarkMedical(transaction)}
-                          onLinkToInvoice={() => handleLinkToInvoice(transaction)}
-                          onToggleMedical={() => handleToggleMedical(transaction)}
+                          onLinkToInvoice={() =>
+                            handleLinkToInvoice(transaction)
+                          }
+                          onToggleMedical={() =>
+                            handleToggleMedical(transaction)
+                          }
                           onIgnore={() => handleIgnore(transaction)}
                           onUnignore={() => handleUnignore(transaction)}
-                          onAddToReviewQueue={() => handleAddToReviewQueue(transaction)}
-                          onSplitTransaction={() => handleSplitTransaction(transaction)}
+                          onAddToReviewQueue={() =>
+                            handleAddToReviewQueue(transaction)
+                          }
+                          onSplitTransaction={() =>
+                            handleSplitTransaction(transaction)
+                          }
                         />
                         {expandedTransactionId === transaction.id && (
                           <TransactionInlineDetail
@@ -689,7 +795,9 @@ export default function Transactions() {
             <ScrollArea className="max-h-80">
               <div className="space-y-2 pr-2">
                 {availableInvoices.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">No bills found</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No bills found
+                  </p>
                 ) : (
                   availableInvoices.map((invoice) => (
                     <button
@@ -699,7 +807,8 @@ export default function Transactions() {
                     >
                       <p className="font-medium text-sm">{invoice.vendor}</p>
                       <p className="text-xs text-muted-foreground">
-                        ${invoice.total_amount.toFixed(2)} · {new Date(invoice.date).toLocaleDateString()}
+                        ${invoice.total_amount.toFixed(2)} ·{" "}
+                        {new Date(invoice.date).toLocaleDateString()}
                       </p>
                     </button>
                   ))

@@ -3,7 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,7 +39,9 @@ export default function NewCollection() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
@@ -51,19 +59,19 @@ export default function NewCollection() {
       return data;
     },
     onSuccess: (data) => {
-      toast.success("Collection created!");
+      toast.success("Care event created!");
       navigate(`/collections/${data.id}`);
     },
     onError: (error) => {
-      toast.error("Failed to create collection");
-      logError("Failed to create collection", error);
+      toast.error("Failed to create care event");
+      logError("Failed to create care event", error);
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim()) {
-      toast.error("Please enter a collection title");
+      toast.error("Please enter a title");
       return;
     }
     createMutation.mutate();
@@ -75,7 +83,7 @@ export default function NewCollection() {
         <div className="mb-6">
           <Button variant="ghost" onClick={() => navigate("/collections")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Collections
+            Back to Care Events
           </Button>
         </div>
 
@@ -83,11 +91,12 @@ export default function NewCollection() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FolderPlus className="h-5 w-5" />
-              New Collection
+              New Care Event
             </CardTitle>
             <CardDescription>
-              Create a collection to group related bills, documents, and payments.
-              Examples: "Mom - Knee Surgery", "2026 Dental Work", "Kids Healthcare"
+              Create a care event to group related bills, documents, and
+              payments. Examples: "Mom - Knee Surgery", "2026 Dental Work",
+              "Kids Healthcare"
             </CardDescription>
           </CardHeader>
 
@@ -102,11 +111,13 @@ export default function NewCollection() {
                   id="title"
                   placeholder='e.g., "Mom - Knee Surgery" or "2026 Dental"'
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
                   required
                 />
                 <p className="text-xs text-muted-foreground">
-                  Name your collection however makes sense to you
+                  Name your care event however makes sense to you
                 </p>
               </div>
 
@@ -124,7 +135,9 @@ export default function NewCollection() {
                           : "border-transparent hover:scale-105"
                       }`}
                       style={{ backgroundColor: color.value }}
-                      onClick={() => setFormData({ ...formData, color: color.value })}
+                      onClick={() =>
+                        setFormData({ ...formData, color: color.value })
+                      }
                       title={color.label}
                     />
                   ))}
@@ -139,9 +152,11 @@ export default function NewCollection() {
                 </Label>
                 <Textarea
                   id="description"
-                  placeholder="Add any notes about this collection..."
+                  placeholder="Add any notes about this care event..."
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   rows={3}
                 />
               </div>
@@ -159,7 +174,7 @@ export default function NewCollection() {
                   {createMutation.isPending && (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   )}
-                  Create Collection
+                  Create Care Event
                 </Button>
               </div>
             </form>

@@ -43,7 +43,9 @@ export default function Collections() {
   const { data: unorganizedCount } = useQuery({
     queryKey: ["unorganized-invoices-count"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return 0;
 
       const { count, error } = await supabase
@@ -58,21 +60,29 @@ export default function Collections() {
   });
 
   // Fetch collections with counts
-  const { data: collections, isLoading, refetch } = useQuery({
+  const {
+    data: collections,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["collections"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
         .from("collections")
-        .select(`
+        .select(
+          `
           id, title, description, total_billed, total_paid,
           user_responsibility_override, hsa_eligible_amount,
           icon, color, created_at,
           invoices:invoices(count),
           receipts:receipts(count)
-        `)
+        `,
+        )
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
@@ -87,24 +97,27 @@ export default function Collections() {
   });
 
   // Filter by search query
-  const filteredCollections = collections?.filter((c) => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      c.title.toLowerCase().includes(query) ||
-      c.description?.toLowerCase().includes(query)
-    );
-  }) || [];
+  const filteredCollections =
+    collections?.filter((c) => {
+      if (!searchQuery) return true;
+      const query = searchQuery.toLowerCase();
+      return (
+        c.title.toLowerCase().includes(query) ||
+        c.description?.toLowerCase().includes(query)
+      );
+    }) || [];
 
   // Calculate totals
   const totals = collections?.reduce(
     (acc, c) => ({
       totalBilled: acc.totalBilled + c.total_billed,
       totalPaid: acc.totalPaid + c.total_paid,
-      totalOutstanding: acc.totalOutstanding + (c.user_responsibility_override ?? (c.total_billed - c.total_paid)),
+      totalOutstanding:
+        acc.totalOutstanding +
+        (c.user_responsibility_override ?? c.total_billed - c.total_paid),
       hsaEligible: acc.hsaEligible + c.hsa_eligible_amount,
     }),
-    { totalBilled: 0, totalPaid: 0, totalOutstanding: 0, hsaEligible: 0 }
+    { totalBilled: 0, totalPaid: 0, totalOutstanding: 0, hsaEligible: 0 },
   ) || { totalBilled: 0, totalPaid: 0, totalOutstanding: 0, hsaEligible: 0 };
 
   if (isLoading) {
@@ -123,14 +136,17 @@ export default function Collections() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Collections</h1>
+            <h1 className="text-3xl font-bold">Care Events</h1>
             <p className="text-muted-foreground">
-              Group related bills, documents, and payments together
+              Group related bills, documents, and payments by episode of care
             </p>
           </div>
-          <Button onClick={() => navigate("/collections/new")} className="gap-2">
+          <Button
+            onClick={() => navigate("/collections/new")}
+            className="gap-2"
+          >
             <Plus className="h-4 w-4" />
-            New Collection
+            New Care Event
           </Button>
         </div>
 
@@ -143,13 +159,19 @@ export default function Collections() {
                   <Sparkles className="h-6 w-6 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold">Organize Your Existing Bills</h3>
+                  <h3 className="font-semibold">
+                    Organize Your Existing Bills
+                  </h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    You have {unorganizedCount} bill{unorganizedCount > 1 ? "s" : ""} not in any collection.
-                    Organizing them helps you track expenses by group.
+                    You have {unorganizedCount} bill
+                    {unorganizedCount > 1 ? "s" : ""} not in any care event.
+                    Organizing them helps you track expenses by episode of care.
                   </p>
                   <div className="flex gap-2 mt-3">
-                    <Button size="sm" onClick={() => setShowOrganizeWizard(true)}>
+                    <Button
+                      size="sm"
+                      onClick={() => setShowOrganizeWizard(true)}
+                    >
                       Organize Now
                     </Button>
                     <Button size="sm" variant="ghost">
@@ -168,7 +190,9 @@ export default function Collections() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-2">
                 <FolderOpen className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Total Collections</span>
+                <span className="text-sm text-muted-foreground">
+                  Total Care Events
+                </span>
               </div>
               <p className="text-2xl font-bold">{collections?.length || 0}</p>
             </CardContent>
@@ -178,9 +202,13 @@ export default function Collections() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Total Billed</span>
+                <span className="text-sm text-muted-foreground">
+                  Total Billed
+                </span>
               </div>
-              <p className="text-2xl font-bold">${totals.totalBilled.toFixed(2)}</p>
+              <p className="text-2xl font-bold">
+                ${totals.totalBilled.toFixed(2)}
+              </p>
             </CardContent>
           </Card>
 
@@ -188,7 +216,9 @@ export default function Collections() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-2">
                 <AlertCircle className="h-4 w-4 text-destructive" />
-                <span className="text-sm text-muted-foreground">Outstanding</span>
+                <span className="text-sm text-muted-foreground">
+                  Outstanding
+                </span>
               </div>
               <p className="text-2xl font-bold text-destructive">
                 ${totals.totalOutstanding.toFixed(2)}
@@ -200,7 +230,9 @@ export default function Collections() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle2 className="h-4 w-4 text-green-600" />
-                <span className="text-sm text-muted-foreground">HSA Eligible</span>
+                <span className="text-sm text-muted-foreground">
+                  HSA Eligible
+                </span>
               </div>
               <p className="text-2xl font-bold text-green-600">
                 ${totals.hsaEligible.toFixed(2)}
@@ -213,7 +245,7 @@ export default function Collections() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search collections..."
+            placeholder="Search care events..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -224,13 +256,14 @@ export default function Collections() {
         {filteredCollections.length === 0 ? (
           <Card className="p-8 text-center">
             <FolderOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Collections Yet</h3>
+            <h3 className="text-lg font-semibold mb-2">No Care Events Yet</h3>
             <p className="text-muted-foreground mb-4">
-              Create a collection to start grouping your medical expenses
+              Create a care event to start grouping your medical expenses by
+              episode of care
             </p>
             <Button onClick={() => navigate("/collections/new")}>
               <Plus className="h-4 w-4 mr-2" />
-              Create Collection
+              Create Care Event
             </Button>
           </Card>
         ) : (

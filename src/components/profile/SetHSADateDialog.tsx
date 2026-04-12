@@ -1,9 +1,20 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  ResponsiveDialog,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogBody,
+} from "@/components/ui/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -16,7 +27,11 @@ interface SetHSADateDialogProps {
   onSuccess?: () => void;
 }
 
-export function SetHSADateDialog({ open, onOpenChange, onSuccess }: SetHSADateDialogProps) {
+export function SetHSADateDialog({
+  open,
+  onOpenChange,
+  onSuccess,
+}: SetHSADateDialogProps) {
   const [date, setDate] = useState<Date>();
   const [saving, setSaving] = useState(false);
 
@@ -34,7 +49,9 @@ export function SetHSADateDialog({ open, onOpenChange, onSuccess }: SetHSADateDi
 
     try {
       setSaving(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const hsaDateString = format(date, "yyyy-MM-dd");
@@ -42,7 +59,10 @@ export function SetHSADateDialog({ open, onOpenChange, onSuccess }: SetHSADateDi
       // Update or create profile with HSA opened date
       const { error: profileError } = await supabase
         .from("profiles")
-        .upsert({ id: user.id, hsa_opened_date: hsaDateString }, { onConflict: "id" });
+        .upsert(
+          { id: user.id, hsa_opened_date: hsaDateString },
+          { onConflict: "id" },
+        );
 
       if (profileError) throw profileError;
 
@@ -65,7 +85,9 @@ export function SetHSADateDialog({ open, onOpenChange, onSuccess }: SetHSADateDi
         .eq("is_hsa_eligible", true);
       if (updateInvoiceDateError) throw updateInvoiceDateError;
 
-      toast.success("HSA opened date saved! We've updated your expense eligibility.");
+      toast.success(
+        "HSA opened date saved! We've updated your expense eligibility.",
+      );
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
@@ -77,51 +99,56 @@ export function SetHSADateDialog({ open, onOpenChange, onSuccess }: SetHSADateDi
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>When did you open your HSA?</DialogTitle>
-          <DialogDescription>
-            We'll use this to determine which expenses you can reimburse. You can only claim expenses that occurred after your HSA was opened.
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="py-4">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !date && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? format(date, "PPP") : <span>Pick a date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={setDate}
-                initialFocus
-                className="pointer-events-auto"
-                disabled={(date) => date > new Date()}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogHeader>
+        <ResponsiveDialogTitle>
+          When did you open your HSA?
+        </ResponsiveDialogTitle>
+        <ResponsiveDialogDescription>
+          We'll use this to determine which expenses you can reimburse. You can
+          only claim expenses that occurred after your HSA was opened.
+        </ResponsiveDialogDescription>
+      </ResponsiveDialogHeader>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={!date || saving}>
-            {saving ? "Saving..." : "Save"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <ResponsiveDialogBody className="px-4 py-4">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full justify-start text-left font-normal",
+                !date && "text-muted-foreground",
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {date ? format(date, "PPP") : <span>Pick a date</span>}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              initialFocus
+              className="pointer-events-auto"
+              disabled={(date) => date > new Date()}
+            />
+          </PopoverContent>
+        </Popover>
+      </ResponsiveDialogBody>
+
+      <ResponsiveDialogFooter>
+        <Button
+          variant="outline"
+          onClick={() => onOpenChange(false)}
+          disabled={saving}
+        >
+          Cancel
+        </Button>
+        <Button onClick={handleSave} disabled={!date || saving}>
+          {saving ? "Saving..." : "Save"}
+        </Button>
+      </ResponsiveDialogFooter>
+    </ResponsiveDialog>
   );
 }

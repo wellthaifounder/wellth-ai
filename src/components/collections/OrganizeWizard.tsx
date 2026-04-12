@@ -2,12 +2,12 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogDescription,
+  ResponsiveDialogBody,
+} from "@/components/ui/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,7 +44,11 @@ interface Invoice {
 
 type Step = "select" | "organize" | "complete";
 
-export function OrganizeWizard({ open, onOpenChange, onComplete }: OrganizeWizardProps) {
+export function OrganizeWizard({
+  open,
+  onOpenChange,
+  onComplete,
+}: OrganizeWizardProps) {
   const queryClient = useQueryClient();
   const [step, setStep] = useState<Step>("select");
   const [selectedInvoices, setSelectedInvoices] = useState<string[]>([]);
@@ -56,7 +60,9 @@ export function OrganizeWizard({ open, onOpenChange, onComplete }: OrganizeWizar
   const { data: invoices, isLoading } = useQuery({
     queryKey: ["unorganized-invoices"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
@@ -73,16 +79,22 @@ export function OrganizeWizard({ open, onOpenChange, onComplete }: OrganizeWizar
   });
 
   // Group invoices by vendor for easier selection
-  const invoicesByVendor = invoices?.reduce((acc, inv) => {
-    if (!acc[inv.vendor]) acc[inv.vendor] = [];
-    acc[inv.vendor].push(inv);
-    return acc;
-  }, {} as Record<string, Invoice[]>) || {};
+  const invoicesByVendor =
+    invoices?.reduce(
+      (acc, inv) => {
+        if (!acc[inv.vendor]) acc[inv.vendor] = [];
+        acc[inv.vendor].push(inv);
+        return acc;
+      },
+      {} as Record<string, Invoice[]>,
+    ) || {};
 
   // Create collection mutation
   const createMutation = useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       // Create the collection
@@ -119,19 +131,25 @@ export function OrganizeWizard({ open, onOpenChange, onComplete }: OrganizeWizar
       toast.success("Event created and bills linked!");
     },
     onError: (error) => {
-      toast.error("Failed to create collection");
-      logError("Failed to create collection", error);
+      toast.error("Failed to create care event");
+      logError("Failed to create care event", error);
     },
   });
 
   const handleSelectAll = (vendor: string) => {
     const vendorInvoiceIds = invoicesByVendor[vendor].map((i) => i.id);
-    const allSelected = vendorInvoiceIds.every((id) => selectedInvoices.includes(id));
+    const allSelected = vendorInvoiceIds.every((id) =>
+      selectedInvoices.includes(id),
+    );
 
     if (allSelected) {
-      setSelectedInvoices(selectedInvoices.filter((id) => !vendorInvoiceIds.includes(id)));
+      setSelectedInvoices(
+        selectedInvoices.filter((id) => !vendorInvoiceIds.includes(id)),
+      );
     } else {
-      setSelectedInvoices([...new Set([...selectedInvoices, ...vendorInvoiceIds])]);
+      setSelectedInvoices([
+        ...new Set([...selectedInvoices, ...vendorInvoiceIds]),
+      ]);
     }
   };
 
@@ -145,7 +163,7 @@ export function OrganizeWizard({ open, onOpenChange, onComplete }: OrganizeWizar
 
   const handleCreate = () => {
     if (!newCollectionTitle.trim()) {
-      toast.error("Please enter a collection title");
+      toast.error("Please enter a care event title");
       return;
     }
     createMutation.mutate();
@@ -161,7 +179,9 @@ export function OrganizeWizard({ open, onOpenChange, onComplete }: OrganizeWizar
   // Auto-fill title from selection
   const autoFillFromSelection = () => {
     if (selectedInvoices.length > 0 && !newCollectionTitle) {
-      const firstInvoice = invoices?.find((i) => selectedInvoices.includes(i.id));
+      const firstInvoice = invoices?.find((i) =>
+        selectedInvoices.includes(i.id),
+      );
       if (firstInvoice) {
         const date = format(new Date(firstInvoice.date), "MMM yyyy");
         setNewCollectionTitle(`${firstInvoice.vendor} - ${date}`);
@@ -170,39 +190,41 @@ export function OrganizeWizard({ open, onOpenChange, onComplete }: OrganizeWizar
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle>Organize Your Bills</DialogTitle>
-          <DialogDescription>
-            {step === "select" && "Select bills to group into an event"}
-            {step === "organize" && "Create a new event and link the selected bills"}
-            {step === "complete" && "Great job organizing your bills!"}
-          </DialogDescription>
-        </DialogHeader>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogHeader>
+        <ResponsiveDialogTitle>Organize Your Bills</ResponsiveDialogTitle>
+        <ResponsiveDialogDescription>
+          {step === "select" && "Select bills to group into an event"}
+          {step === "organize" &&
+            "Create a new event and link the selected bills"}
+          {step === "complete" && "Great job organizing your bills!"}
+        </ResponsiveDialogDescription>
+      </ResponsiveDialogHeader>
 
-        {step === "select" && (
-          <>
-            <ScrollArea className="flex-1 max-h-[400px] pr-4">
-              {isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                </div>
-              ) : Object.keys(invoicesByVendor).length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <CheckCircle2 className="h-12 w-12 mx-auto mb-4" />
-                  <p>All your bills are organized!</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {Object.entries(invoicesByVendor).map(([vendor, vendorInvoices]) => (
+      {step === "select" && (
+        <>
+          <ScrollArea className="flex-1 max-h-[400px] pr-4">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+            ) : Object.keys(invoicesByVendor).length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <CheckCircle2 className="h-12 w-12 mx-auto mb-4" />
+                <p>All your bills are organized!</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {Object.entries(invoicesByVendor).map(
+                  ([vendor, vendorInvoices]) => (
                     <div key={vendor} className="border rounded-lg p-3">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <Building2 className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">{vendor}</span>
                           <Badge variant="secondary" className="text-xs">
-                            {vendorInvoices.length} bill{vendorInvoices.length > 1 ? "s" : ""}
+                            {vendorInvoices.length} bill
+                            {vendorInvoices.length > 1 ? "s" : ""}
                           </Badge>
                         </div>
                         <Button
@@ -210,7 +232,9 @@ export function OrganizeWizard({ open, onOpenChange, onComplete }: OrganizeWizar
                           size="sm"
                           onClick={() => handleSelectAll(vendor)}
                         >
-                          {vendorInvoices.every((i) => selectedInvoices.includes(i.id))
+                          {vendorInvoices.every((i) =>
+                            selectedInvoices.includes(i.id),
+                          )
                             ? "Deselect All"
                             : "Select All"}
                         </Button>
@@ -242,107 +266,115 @@ export function OrganizeWizard({ open, onOpenChange, onComplete }: OrganizeWizar
                         ))}
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
-
-            <div className="flex items-center justify-between pt-4 border-t">
-              <p className="text-sm text-muted-foreground">
-                {selectedInvoices.length} bill{selectedInvoices.length !== 1 ? "s" : ""} selected
-              </p>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => onOpenChange(false)}>
-                  Skip for Now
-                </Button>
-                <Button
-                  onClick={() => {
-                    autoFillFromSelection();
-                    setStep("organize");
-                  }}
-                  disabled={selectedInvoices.length === 0}
-                >
-                  Continue
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
+                  ),
+                )}
               </div>
-            </div>
-          </>
-        )}
+            )}
+          </ScrollArea>
 
-        {step === "organize" && (
-          <>
-            <div className="space-y-4">
-              <div className="p-3 bg-muted rounded-lg">
-                <p className="text-sm">
-                  Creating collection with{" "}
-                  <span className="font-semibold">{selectedInvoices.length} bill{selectedInvoices.length > 1 ? "s" : ""}</span>
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="collection-title">Event Title *</Label>
-                <Input
-                  id="collection-title"
-                  placeholder='e.g., "Mom - Knee Surgery" or "2026 Dental"'
-                  value={newCollectionTitle}
-                  onChange={(e) => setNewCollectionTitle(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="collection-description">Description (Optional)</Label>
-                <Textarea
-                  id="collection-description"
-                  placeholder="Add any notes about this collection..."
-                  value={newCollectionDescription}
-                  onChange={(e) => setNewCollectionDescription(e.target.value)}
-                  rows={2}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-4 border-t">
-              <Button variant="ghost" onClick={() => setStep("select")}>
-                Back
+          <div className="flex items-center justify-between pt-4 border-t">
+            <p className="text-sm text-muted-foreground">
+              {selectedInvoices.length} bill
+              {selectedInvoices.length !== 1 ? "s" : ""} selected
+            </p>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Skip for Now
               </Button>
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleCreate}
-                  disabled={createMutation.isPending || !newCollectionTitle.trim()}
-                >
-                  {createMutation.isPending && (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  )}
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Collection
-                </Button>
-              </div>
+              <Button
+                onClick={() => {
+                  autoFillFromSelection();
+                  setStep("organize");
+                }}
+                disabled={selectedInvoices.length === 0}
+              >
+                Continue
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
             </div>
-          </>
-        )}
+          </div>
+        </>
+      )}
 
-        {step === "complete" && (
-          <>
-            <div className="text-center py-8">
-              <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">
-                {createdCount} Collection{createdCount > 1 ? "s" : ""} Created!
-              </h3>
-              <p className="text-muted-foreground">
-                Your bills are now organized into collections for easier tracking.
+      {step === "organize" && (
+        <>
+          <div className="space-y-4">
+            <div className="p-3 bg-muted rounded-lg">
+              <p className="text-sm">
+                Creating care event with{" "}
+                <span className="font-semibold">
+                  {selectedInvoices.length} bill
+                  {selectedInvoices.length > 1 ? "s" : ""}
+                </span>
               </p>
             </div>
 
-            <div className="flex justify-center gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setStep("select")}>
-                Organize More
-              </Button>
-              <Button onClick={handleComplete}>Done</Button>
+            <div className="space-y-2">
+              <Label htmlFor="collection-title">Event Title *</Label>
+              <Input
+                id="collection-title"
+                placeholder='e.g., "Mom - Knee Surgery" or "2026 Dental"'
+                value={newCollectionTitle}
+                onChange={(e) => setNewCollectionTitle(e.target.value)}
+              />
             </div>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+
+            <div className="space-y-2">
+              <Label htmlFor="collection-description">
+                Description (Optional)
+              </Label>
+              <Textarea
+                id="collection-description"
+                placeholder="Add any notes about this care event..."
+                value={newCollectionDescription}
+                onChange={(e) => setNewCollectionDescription(e.target.value)}
+                rows={2}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-4 border-t">
+            <Button variant="ghost" onClick={() => setStep("select")}>
+              Back
+            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleCreate}
+                disabled={
+                  createMutation.isPending || !newCollectionTitle.trim()
+                }
+              >
+                {createMutation.isPending && (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                )}
+                <Plus className="h-4 w-4 mr-2" />
+                Create Care Event
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {step === "complete" && (
+        <>
+          <div className="text-center py-8">
+            <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">
+              {createdCount} Care Event{createdCount > 1 ? "s" : ""} Created!
+            </h3>
+            <p className="text-muted-foreground">
+              Your bills are now organized into care events for easier tracking.
+            </p>
+          </div>
+
+          <div className="flex justify-center gap-2 pt-4 border-t">
+            <Button variant="outline" onClick={() => setStep("select")}>
+              Organize More
+            </Button>
+            <Button onClick={handleComplete}>Done</Button>
+          </div>
+        </>
+      )}
+    </ResponsiveDialog>
   );
 }

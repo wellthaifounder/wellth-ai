@@ -6,36 +6,29 @@ import { supabase } from "@/integrations/supabase/client";
 import { analytics } from "@/lib/analytics";
 import { logError } from "@/utils/errorHandler";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { BarChart3 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
-import { ProgressTracker } from "@/components/dashboard/ProgressTracker";
 import { ActionCard } from "@/components/dashboard/ActionCard";
 import { WellbieTip } from "@/components/dashboard/WellbieTip";
 import { EmptyStateOnboarding } from "@/components/dashboard/EmptyStateOnboarding";
 import { MissingHSADateBanner } from "@/components/dashboard/MissingHSADateBanner";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { getNextAction } from "@/lib/dashboardActions";
-import { calculateProgress, getProgressSteps } from "@/lib/userProgress";
-
 import { useHSA } from "@/contexts/HSAContext";
 import { useOnboarding } from "@/contexts/OnboardingContext";
-import { FeatureTooltip } from "@/components/onboarding/FeatureTooltip";
 import { WelcomeDialog } from "@/components/onboarding/WelcomeDialog";
 import { QuickActionBar } from "@/components/dashboard/QuickActionBar";
-import { HSAAccountPerformance } from "@/components/dashboard/HSAAccountPerformance";
 import { TotalValueCard } from "@/components/dashboard/TotalValueCard";
 import { HSAHealthCheck } from "@/components/dashboard/HSAHealthCheck";
-import { InsurancePlanPrompt } from "@/components/dashboard/InsurancePlanPrompt";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { hasHSA, hsaOpenedDate, userIntent } = useHSA();
 
   // Show HSA features if user selected HSA intent or actually has an HSA
-  const showHSAFeatures = userIntent === 'hsa' || userIntent === 'both' || hasHSA;
+  const showHSAFeatures =
+    userIntent === "hsa" || userIntent === "both" || hasHSA;
   const onboarding = useOnboarding();
   const [user, setUser] = useState<User | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
@@ -60,7 +53,6 @@ const Dashboard = () => {
     reimbursement_strategy?: string;
   }
   const [recentExpenses, setRecentExpenses] = useState<RecentExpense[]>([]);
-  const [reimbursementRequests, setReimbursementRequests] = useState<{ id: string }[]>([]);
   const [hasConnectedBank, setHasConnectedBank] = useState(false);
   // Bill review feature archived - removed pendingReviews and disputeStats
 
@@ -74,13 +66,14 @@ const Dashboard = () => {
     });
 
     fetchStats();
-    fetchReimbursementRequests();
     fetchTransactionStats();
     checkBankConnection();
-    analytics.pageView('/dashboard');
+    analytics.pageView("/dashboard");
 
     // Handle session expiration while on this page
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
         navigate("/auth");
       } else {
@@ -89,7 +82,7 @@ const Dashboard = () => {
     });
 
     return () => subscription.unsubscribe();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Load calculator data if available (for new users)
@@ -98,7 +91,7 @@ const Dashboard = () => {
       // Only load if user has 0 expenses
       if (stats.expenseCount > 0) return;
 
-      const calculatorDataRaw = sessionStorage.getItem('calculatorData');
+      const calculatorDataRaw = sessionStorage.getItem("calculatorData");
       if (!calculatorDataRaw) return;
 
       try {
@@ -112,20 +105,20 @@ const Dashboard = () => {
         // Pre-fill HSA status from calculator if user indicated they have HSA
         if (calculatorData.hasHSA && user) {
           const { error } = await supabase
-            .from('profiles')
+            .from("profiles")
             .update({ has_hsa: true })
-            .eq('id', user.id);
+            .eq("id", user.id);
 
           if (error) {
-            logError('Error updating HSA status', error);
+            logError("Error updating HSA status", error);
           }
         }
 
         // Clear calculator data after using it
-        sessionStorage.removeItem('calculatorData');
-        sessionStorage.removeItem('estimatedSavings');
+        sessionStorage.removeItem("calculatorData");
+        sessionStorage.removeItem("estimatedSavings");
       } catch (error) {
-        logError('Error loading calculator data', error);
+        logError("Error loading calculator data", error);
       }
     };
 
@@ -134,7 +127,9 @@ const Dashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       const { data: invoices, error } = await supabase
@@ -144,34 +139,40 @@ const Dashboard = () => {
 
       if (error) throw error;
 
-      const totalInvoiced = invoices?.reduce((sum, inv) => sum + Number(inv.amount), 0) || 0;
-      const hsaEligible = invoices?.filter(inv => inv.is_hsa_eligible)
-        .reduce((sum, inv) => sum + Number(inv.amount), 0) || 0;
-      
+      const totalInvoiced =
+        invoices?.reduce((sum, inv) => sum + Number(inv.amount), 0) || 0;
+      const hsaEligible =
+        invoices
+          ?.filter((inv) => inv.is_hsa_eligible)
+          .reduce((sum, inv) => sum + Number(inv.amount), 0) || 0;
+
       // Calculate HSA claimable amount (HSA-eligible expenses that haven't been reimbursed)
       const { data: reimbursedInvoices } = await supabase
         .from("reimbursement_items")
         .select("invoice_id");
-      
-      const reimbursedIds = new Set(reimbursedInvoices?.map(r => r.invoice_id) || []);
-      const hsaClaimable = invoices
-        ?.filter(inv => {
-          if (!inv.is_hsa_eligible || reimbursedIds.has(inv.id)) return false;
-          if (hsaOpenedDate) {
-            const rawDate = inv.invoice_date || inv.date;
-            if (!rawDate) return false;
-            const invoiceDate = new Date(rawDate);
-            const hsaDate = new Date(hsaOpenedDate);
-            return !isNaN(invoiceDate.getTime()) && invoiceDate >= hsaDate;
-          }
-          return true;
-        })
-        .reduce((sum, inv) => sum + Number(inv.amount), 0) || 0;
-      
+
+      const reimbursedIds = new Set(
+        reimbursedInvoices?.map((r) => r.invoice_id) || [],
+      );
+      const hsaClaimable =
+        invoices
+          ?.filter((inv) => {
+            if (!inv.is_hsa_eligible || reimbursedIds.has(inv.id)) return false;
+            if (hsaOpenedDate) {
+              const rawDate = inv.invoice_date || inv.date;
+              if (!rawDate) return false;
+              const invoiceDate = new Date(rawDate);
+              const hsaDate = new Date(hsaOpenedDate);
+              return !isNaN(invoiceDate.getTime()) && invoiceDate >= hsaDate;
+            }
+            return true;
+          })
+          .reduce((sum, inv) => sum + Number(inv.amount), 0) || 0;
+
       const taxSavings = hsaEligible * 0.3;
       const rewardsEarned = hsaEligible * 0.02; // Est. rewards on HSA-eligible spend only
 
-      setStats(prev => ({
+      setStats((prev) => ({
         ...prev,
         totalExpenses: totalInvoiced,
         taxSavings,
@@ -201,21 +202,6 @@ const Dashboard = () => {
     }
   };
 
-  const fetchReimbursementRequests = async () => {
-    try {
-      const { data: requests, error } = await supabase
-        .from("reimbursement_requests")
-        .select("id")
-        .order("created_at", { ascending: false })
-        .limit(5);
-
-      if (error) throw error;
-      setReimbursementRequests(requests || []);
-    } catch (error) {
-      logError("Failed to fetch reimbursement requests", error);
-    }
-  };
-
   const fetchTransactionStats = async () => {
     try {
       const { data: transactions, error } = await supabase
@@ -224,9 +210,9 @@ const Dashboard = () => {
         .eq("needs_review", true);
 
       if (error) throw error;
-      setStats(prev => ({
+      setStats((prev) => ({
         ...prev,
-        unreviewedTransactions: transactions?.length || 0
+        unreviewedTransactions: transactions?.length || 0,
       }));
     } catch (error) {
       logError("Failed to fetch transaction stats", error);
@@ -235,32 +221,32 @@ const Dashboard = () => {
 
   // Bill review feature archived - removed fetchBillReviews and fetchDisputeStats
 
-  // Calculate derived values before early returns
-  const userProgress = calculateProgress(
-    hasConnectedBank,
-    stats.expenseCount,
-    stats.unreviewedTransactions,
-    reimbursementRequests.length
-  );
-  const progressSteps = getProgressSteps(userProgress);
-
-  const nextAction = getNextAction({
-    unreviewedTransactions: stats.unreviewedTransactions,
-    expenseCount: stats.expenseCount,
-    hsaClaimableAmount: stats.hsaClaimableAmount,
-    hasConnectedBank
-  });
-
-  const isNewUser = stats.expenseCount === 0 && recentExpenses.length === 0 && !hasConnectedBank;
-  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
+  const isNewUser =
+    stats.expenseCount === 0 &&
+    recentExpenses.length === 0 &&
+    !hasConnectedBank;
+  const firstName =
+    user?.user_metadata?.full_name?.split(" ")[0] ||
+    user?.email?.split("@")[0] ||
+    "there";
 
   // Show welcome dialog for first-time users - MUST be before early returns
   useEffect(() => {
-    if (!loading && !isNewUser && stats.expenseCount <= 3 && !onboarding.hasCompletedOnboarding) {
+    if (
+      !loading &&
+      !isNewUser &&
+      stats.expenseCount <= 3 &&
+      !onboarding.hasCompletedOnboarding
+    ) {
       const timer = setTimeout(() => setShowWelcome(true), 1000);
       return () => clearTimeout(timer);
     }
-  }, [loading, isNewUser, stats.expenseCount, onboarding.hasCompletedOnboarding]);
+  }, [
+    loading,
+    isNewUser,
+    stats.expenseCount,
+    onboarding.hasCompletedOnboarding,
+  ]);
 
   if (loading) {
     return (
@@ -270,31 +256,23 @@ const Dashboard = () => {
     );
   }
 
-  // Prepare compact header stats
-  const headerStats = (showHSAFeatures && hasHSA)
-    ? [
-        { icon: "💰", value: `$${stats.hsaClaimableAmount.toFixed(0)}`, label: "Claimable", variant: "success" as const },
-        { icon: "💸", value: `$${stats.taxSavings.toFixed(0)}`, label: "Tax Savings", variant: "accent" as const },
-        { icon: "🏆", value: `$${stats.rewardsEarned.toFixed(0)}`, label: "Rewards", variant: "info" as const },
-      ]
-    : [
-        { icon: "📊", value: `$${stats.totalExpenses.toFixed(0)}`, label: "Tracked", variant: "default" as const },
-        { icon: "📋", value: `${stats.expenseCount}`, label: "Bills", variant: "info" as const },
-        { icon: "🏆", value: `$${stats.rewardsEarned.toFixed(0)}`, label: "Rewards", variant: "info" as const },
-      ];
-
-  const vaultedExpenses = recentExpenses.filter(e => e.reimbursement_strategy === 'vault' || e.reimbursement_strategy === 'medium').length;
-
   return (
     <ErrorBoundary
       fallbackTitle="Dashboard Error"
       fallbackDescription="We encountered an error loading your dashboard. Your data is safe. Please try again."
       onReset={() => window.location.reload()}
     >
-      <AuthenticatedLayout unreviewedTransactions={stats.unreviewedTransactions}>
-        <div id="main-content" className="container mx-auto max-w-7xl px-4 py-4 md:py-6 pb-8 md:pb-12 space-y-6">
-          {!hsaOpenedDate && stats.expenseCount > 0 && <MissingHSADateBanner onDateSet={fetchStats} />}
-          
+      <AuthenticatedLayout
+        unreviewedTransactions={stats.unreviewedTransactions}
+      >
+        <div
+          id="main-content"
+          className="container mx-auto max-w-7xl px-4 py-4 md:py-6 pb-8 md:pb-12 space-y-6"
+        >
+          {!hsaOpenedDate && stats.expenseCount > 0 && (
+            <MissingHSADateBanner onDateSet={fetchStats} />
+          )}
+
           {isNewUser ? (
             <EmptyStateOnboarding projectedSavings={projectedSavings} />
           ) : (
@@ -311,134 +289,125 @@ const Dashboard = () => {
 
               {/* Simplified Single-Page Dashboard */}
               <div className="space-y-4">
-              {/* Welcome Header */}
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <h1 className="text-3xl font-bold">Welcome back, {firstName}! 👋</h1>
-                  <p className="text-muted-foreground mt-1">Here's what needs your attention</p>
+                {/* Welcome Header */}
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div>
+                    <h1 className="text-3xl font-bold">
+                      Welcome back, {firstName}! 👋
+                    </h1>
+                    <p className="text-muted-foreground mt-1">
+                      Here's what needs your attention
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => navigate("/reports")}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    View Reports
+                  </Button>
                 </div>
-                <Button onClick={() => navigate("/reports")} variant="outline" className="gap-2">
-                  <BarChart3 className="h-4 w-4" />
-                  View Reports
-                </Button>
-              </div>
 
-              {/* Total Value Created - Hero Metric */}
-              <TotalValueCard
-                taxSavings={stats.taxSavings}
-                disputeSavings={stats.disputeSavings}
-                rewardsEarned={stats.rewardsEarned}
-                paymentOptimizations={0}
-                hasHSA={hasHSA}
-              />
-
-              {/* Quick Stats - Secondary Metrics */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <Card>
-                  <CardContent className="pt-4 pb-4">
-                    <div className="text-2xl font-bold">${stats.totalExpenses.toFixed(0)}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Total Tracked</p>
-                  </CardContent>
-                </Card>
-                {showHSAFeatures && hasHSA && (
-                  <Card>
-                    <CardContent className="pt-4 pb-4">
-                      <div className="text-2xl font-bold text-primary">${stats.hsaClaimableAmount.toFixed(0)}</div>
-                      <p className="text-xs text-muted-foreground mt-1">Ready to Claim</p>
-                    </CardContent>
-                  </Card>
-                )}
-                <Card>
-                  <CardContent className="pt-4 pb-4">
-                    <div className="text-2xl font-bold">{stats.expenseCount}</div>
-                    <p className="text-xs text-muted-foreground mt-1">Bills Tracked</p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Quick Actions */}
-              <QuickActionBar
-                hasHSA={hasHSA}
-                hsaClaimable={stats.hsaClaimableAmount}
-                unreviewedTransactions={stats.unreviewedTransactions}
-              />
-
-              {/* HSA Health Check - Adaptive Widget */}
-              {showHSAFeatures && (
-                <HSAHealthCheck
+                {/* Hero Metrics */}
+                <TotalValueCard
+                  taxSavings={stats.taxSavings}
+                  disputeSavings={stats.disputeSavings}
+                  rewardsEarned={stats.rewardsEarned}
+                  paymentOptimizations={0}
                   hasHSA={hasHSA}
-                  unreimbursedExpenses={stats.hsaClaimableAmount}
+                  hsaClaimableAmount={stats.hsaClaimableAmount}
+                  totalTracked={stats.totalExpenses}
+                  billCount={stats.expenseCount}
                 />
-              )}
 
-              {/* Insurance Plan Prompt - Collects user insurance info */}
-              <InsurancePlanPrompt expenseCount={stats.expenseCount} />
+                {/* Quick Actions */}
+                <QuickActionBar
+                  hasHSA={hasHSA}
+                  hsaClaimable={stats.hsaClaimableAmount}
+                  unreviewedTransactions={stats.unreviewedTransactions}
+                />
 
-              {/* HSA Account Performance */}
-              {showHSAFeatures && hasHSA && <HSAAccountPerformance />}
+                {/* HSA Health Check - Adaptive Widget */}
+                {showHSAFeatures && (
+                  <HSAHealthCheck
+                    hasHSA={hasHSA}
+                    unreimbursedExpenses={stats.hsaClaimableAmount}
+                  />
+                )}
 
-              {/* Value Spotlight */}
-              {/* Bill review feature archived - removed ValueSpotlight */}
-
-              {/* Recent Bills */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="lg:col-span-2 space-y-4">
-                  {recentExpenses.length > 0 && (
-                    <ActionCard
-                      icon="🏥"
-                      title="Recent Medical Bills"
-                      count={recentExpenses.length}
-                      actions={
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => navigate("/bills")}
-                        >
-                          View All
-                        </Button>
-                      }
-                      buttonText="Show recent bills"
-                    >
-                      <div className="space-y-3">
-                        {recentExpenses.slice(0, 3).map((expense) => (
-                          <div key={expense.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => navigate(`/bills/${expense.id}`)}>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <p className="font-medium">{expense.vendor}</p>
-                                {(() => {
-                                  const rawDate = expense.invoice_date || expense.date;
-                                  const eligibleAfter = expense.is_hsa_eligible && (!hsaOpenedDate || (rawDate && new Date(rawDate) >= new Date(hsaOpenedDate)));
-                                  return eligibleAfter ? (
-                                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                                      HSA-eligible ✓
-                                    </span>
-                                  ) : null;
-                                })()}
+                {/* Recent Bills */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <div className="lg:col-span-2 space-y-4">
+                    {recentExpenses.length > 0 && (
+                      <ActionCard
+                        icon="🏥"
+                        title="Recent Medical Bills"
+                        count={recentExpenses.length}
+                        actions={
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate("/bills")}
+                          >
+                            View All
+                          </Button>
+                        }
+                        buttonText="Show recent bills"
+                      >
+                        <div className="space-y-3">
+                          {recentExpenses.slice(0, 3).map((expense) => (
+                            <div
+                              key={expense.id}
+                              className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
+                              onClick={() => navigate(`/bills/${expense.id}`)}
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium">
+                                    {expense.vendor}
+                                  </p>
+                                  {(() => {
+                                    const rawDate =
+                                      expense.invoice_date || expense.date;
+                                    const eligibleAfter =
+                                      expense.is_hsa_eligible &&
+                                      (!hsaOpenedDate ||
+                                        (rawDate &&
+                                          new Date(rawDate) >=
+                                            new Date(hsaOpenedDate)));
+                                    return eligibleAfter ? (
+                                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                        HSA-eligible ✓
+                                      </span>
+                                    ) : null;
+                                  })()}
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {new Date(expense.date).toLocaleDateString()}
+                                </p>
                               </div>
-                              <p className="text-sm text-muted-foreground">
-                                {new Date(expense.date).toLocaleDateString()}
+                              <p className="font-semibold">
+                                ${Number(expense.amount).toFixed(2)}
                               </p>
                             </div>
-                            <p className="font-semibold">${Number(expense.amount).toFixed(2)}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </ActionCard>
-                  )}
+                          ))}
+                        </div>
+                      </ActionCard>
+                    )}
 
-                  {/* Bill review feature archived - removed pending reviews section */}
-                </div>
+                    {/* Bill review feature archived - removed pending reviews section */}
+                  </div>
 
-                {/* Side Cards */}
-                <div className="space-y-4">
-                  <ProgressTracker steps={progressSteps} />
-                  <WellbieTip 
-                    unreviewedCount={stats.unreviewedTransactions}
-                    hasExpenses={stats.expenseCount > 0}
-                  />
+                  {/* Side Cards */}
+                  <div className="space-y-4">
+                    <WellbieTip
+                      unreviewedCount={stats.unreviewedTransactions}
+                      hasExpenses={stats.expenseCount > 0}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
             </>
           )}
         </div>

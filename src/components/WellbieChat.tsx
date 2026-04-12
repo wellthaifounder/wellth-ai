@@ -40,8 +40,9 @@ export const WellbieChat = () => {
       handleOpen();
     };
 
-    window.addEventListener('openWellbieChat', handleOpenWellbie);
-    return () => window.removeEventListener('openWellbieChat', handleOpenWellbie);
+    window.addEventListener("openWellbieChat", handleOpenWellbie);
+    return () =>
+      window.removeEventListener("openWellbieChat", handleOpenWellbie);
   }, []);
 
   return (
@@ -50,12 +51,12 @@ export const WellbieChat = () => {
       {isOpen && (
         <>
           {/* Backdrop */}
-          <div 
+          <div
             className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[50] animate-fade-in"
             onClick={handleClose}
             aria-hidden="true"
           />
-          
+
           {/* Chat Panel - Fully responsive */}
           <div className="fixed inset-4 sm:bottom-6 sm:right-6 sm:top-auto sm:left-auto sm:w-[90vw] sm:max-w-[400px] sm:h-[85vh] sm:max-h-[600px] z-[55] animate-slide-in-right">
             <WellbieChatPanel
@@ -75,15 +76,15 @@ export const WellbieChat = () => {
         </>
       )}
 
-      {/* Minimized State */}
+      {/* Minimized State — hidden on mobile since bottom nav has the Wellbie tab */}
       {isMinimized && (
         <button
           onClick={handleOpen}
-          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[55] bg-card border border-border rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 p-2 sm:p-3 flex items-center gap-2 hover:bg-accent"
+          className="hidden lg:flex fixed bottom-6 right-6 z-[55] bg-card border border-border rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 p-3 items-center gap-2 hover:bg-accent"
           aria-label="Reopen Wellbie AI assistant chat"
         >
           <WellbieAvatar size="sm" />
-          <span className="text-xs sm:text-sm font-medium">Wellbie</span>
+          <span className="text-sm font-medium">Wellbie</span>
         </button>
       )}
     </>

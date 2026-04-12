@@ -28,10 +28,15 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { useDropzone } from "react-dropzone";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -104,17 +109,69 @@ interface BillUploadWizardProps {
   onCancel?: () => void;
 }
 
+// ── Step indicator ───────────────────────────────────────────────────────────
+
+const STEP_LABELS = ["Upload", "Confirm", "Saved"] as const;
+
+function StepIndicator({ activeStep }: { activeStep: number }) {
+  return (
+    <div className="flex items-center justify-center gap-2 px-6 py-3 border-b">
+      {STEP_LABELS.map((label, i) => (
+        <div key={label} className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <div
+              className={cn(
+                "h-6 w-6 rounded-full flex items-center justify-center text-xs font-semibold transition-colors",
+                i < activeStep
+                  ? "bg-primary text-primary-foreground"
+                  : i === activeStep
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground",
+              )}
+            >
+              {i < activeStep ? (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              ) : (
+                i + 1
+              )}
+            </div>
+            <span
+              className={cn(
+                "text-xs font-medium",
+                i <= activeStep ? "text-foreground" : "text-muted-foreground",
+              )}
+            >
+              {label}
+            </span>
+          </div>
+          {i < STEP_LABELS.length - 1 && (
+            <div
+              className={cn(
+                "h-px w-8",
+                i < activeStep ? "bg-primary" : "bg-muted-foreground/25",
+              )}
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Component ──────────────────────────────────────────────────────────────────
 
-export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps) {
-  const { toast } = useToast();
-
+export function BillUploadWizard({
+  onComplete,
+  onCancel,
+}: BillUploadWizardProps) {
   const [step, setStep] = useState<Step>("upload");
   const [fileEntries, setFileEntries] = useState<FileEntry[]>([]);
   const [drafts, setDrafts] = useState<BillDraft[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const [collections, setCollections] = useState<{ id: string; title: string }[]>([]);
+  const [collections, setCollections] = useState<
+    { id: string; title: string }[]
+  >([]);
   const [collectionsLoaded, setCollectionsLoaded] = useState(false);
   const [showCollectionSection, setShowCollectionSection] = useState(false);
 
@@ -125,9 +182,22 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
   const [errorMessage, setErrorMessage] = useState("");
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
+  // Coach marks — shown once per user on their first upload
+  const [showCoachMarks, setShowCoachMarks] = useState(() => {
+    return localStorage.getItem("billUploadCoachSeen") !== "true";
+  });
+  const dismissCoachMarks = () => {
+    setShowCoachMarks(false);
+    localStorage.setItem("billUploadCoachSeen", "true");
+  };
+
   // OCR state — tracks scanning progress and which fields were AI-filled per draft
-  const [ocrStatus, setOcrStatus] = useState<Record<number, "loading" | "done" | "error" | "skipped">>({});
-  const [ocrFields, setOcrFields] = useState<Record<number, Array<"vendor" | "amount" | "date" | "category">>>({});
+  const [ocrStatus, setOcrStatus] = useState<
+    Record<number, "loading" | "done" | "error" | "skipped">
+  >({});
+  const [ocrFields, setOcrFields] = useState<
+    Record<number, Array<"vendor" | "amount" | "date" | "category">>
+  >({});
 
   // Sync collection section visibility when navigating between drafts
   const prevIndexRef = useRef(-1);
@@ -137,7 +207,9 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
       const d = drafts[currentIndex];
       if (d) {
         setShowCollectionSection(
-          !!d.collectionId || !!d.newCollectionTitle || d.isCreatingNewCollection
+          !!d.collectionId ||
+            !!d.newCollectionTitle ||
+            d.isCreatingNewCollection,
         );
       } else {
         setShowCollectionSection(false);
@@ -151,10 +223,8 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
     (acceptedFiles: File[]) => {
       const oversized = acceptedFiles.filter((f) => f.size > MAX_FILE_SIZE);
       if (oversized.length > 0) {
-        toast({
-          title: "File too large",
+        toast.error("File too large", {
           description: `${oversized[0].name} exceeds 10MB`,
-          variant: "destructive",
         });
       }
       const valid = acceptedFiles.filter((f) => f.size <= MAX_FILE_SIZE);
@@ -165,13 +235,15 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
       setFileEntries((prev) => {
         const combined = [...prev, ...newEntries];
         if (combined.length > MAX_FILES) {
-          combined.slice(MAX_FILES).forEach((e) => URL.revokeObjectURL(e.objectUrl));
+          combined
+            .slice(MAX_FILES)
+            .forEach((e) => URL.revokeObjectURL(e.objectUrl));
           return combined.slice(0, MAX_FILES);
         }
         return combined;
       });
     },
-    [toast]
+    [toast],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -204,9 +276,12 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
     setOcrStatus((prev) => ({ ...prev, [index]: "loading" }));
     try {
       const imageBase64 = await fileToBase64(file);
-      const { data, error } = await supabase.functions.invoke("process-receipt-ocr", {
-        body: { imageBase64 },
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "process-receipt-ocr",
+        {
+          body: { imageBase64 },
+        },
+      );
       if (error || !data?.success) {
         setOcrStatus((prev) => ({ ...prev, [index]: "error" }));
         return;
@@ -236,12 +311,16 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
             updates.date = extracted.date;
             filled.push("date");
           }
-          if (extracted.category && CATEGORIES.includes(extracted.category) && d.category === "Medical") {
+          if (
+            extracted.category &&
+            CATEGORIES.includes(extracted.category) &&
+            d.category === "Medical"
+          ) {
             updates.category = extracted.category;
             filled.push("category");
           }
           return { ...d, ...updates };
-        })
+        }),
       );
       setOcrFields((prev) => ({ ...prev, [index]: filled }));
       setOcrStatus((prev) => ({ ...prev, [index]: "done" }));
@@ -283,7 +362,9 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
   // ── Draft helpers ────────────────────────────────────────────────────────────
 
   const updateDraft = (index: number, updates: Partial<BillDraft>) => {
-    setDrafts((prev) => prev.map((d, i) => (i === index ? { ...d, ...updates } : d)));
+    setDrafts((prev) =>
+      prev.map((d, i) => (i === index ? { ...d, ...updates } : d)),
+    );
   };
 
   const draft = drafts[currentIndex];
@@ -307,7 +388,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
         .order("title");
       setCollections(data ?? []);
     } catch {
-      // silently fail — user can still create a new collection
+      // silently fail — user can still create a new care event
     } finally {
       setCollectionsLoaded(true);
     }
@@ -346,6 +427,40 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Please sign in to upload bills");
+
+      // ── Duplicate detection ──────────────────────────────────────────────
+      // Check for existing bills with matching vendor + amount + date
+      const dupChecks = drafts
+        .filter((d) => d.vendor.trim() && d.amount && d.date)
+        .map((d) => ({
+          vendor: d.vendor.trim().toLowerCase(),
+          amount: parseFloat(d.amount),
+          date: d.date,
+        }));
+
+      if (dupChecks.length > 0) {
+        const { data: existing } = await supabase
+          .from("invoices")
+          .select("vendor, amount, date")
+          .eq("user_id", user.id)
+          .limit(500);
+
+        if (existing) {
+          const dupes = dupChecks.filter((check) =>
+            existing.some(
+              (inv) =>
+                inv.vendor.toLowerCase() === check.vendor &&
+                Math.abs(Number(inv.amount) - check.amount) < 0.01 &&
+                inv.date === check.date,
+            ),
+          );
+          if (dupes.length > 0) {
+            toast.warning(
+              `Possible duplicate: ${dupes[0].vendor} ($${dupes[0].amount.toFixed(2)}) on ${new Date(dupes[0].date + "T00:00:00").toLocaleDateString()} already exists. Saving anyway.`,
+            );
+          }
+        }
+      }
 
       const results: { id: string; vendor: string; amount: string }[] = [];
 
@@ -416,7 +531,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
       const msg =
         error instanceof Error
           ? error.message
-          : (error as { message?: string })?.message ?? "Upload failed";
+          : ((error as { message?: string })?.message ?? "Upload failed");
       setErrorMessage(msg);
       setStep("error");
     }
@@ -450,6 +565,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
   if (step === "upload") {
     return (
       <Card>
+        <StepIndicator activeStep={0} />
         <CardContent className="p-6 space-y-6">
           {/* Drop zone */}
           <div
@@ -458,21 +574,22 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
               "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
               isDragActive
                 ? "border-primary bg-primary/5"
-                : "border-muted-foreground/25 hover:border-primary/50"
+                : "border-muted-foreground/25 hover:border-primary/50",
             )}
           >
             <input {...getInputProps()} />
             <Upload
               className={cn(
                 "h-10 w-10 mx-auto mb-3",
-                isDragActive ? "text-primary" : "text-muted-foreground"
+                isDragActive ? "text-primary" : "text-muted-foreground",
               )}
             />
             <p className="font-medium mb-1">
               {isDragActive ? "Drop files here" : "Upload documents"}
             </p>
             <p className="text-sm text-muted-foreground">
-              Drag & drop or click to browse · PDF, PNG, JPG up to 10MB · up to {MAX_FILES} files
+              Drag & drop or click to browse · PDF, PNG, JPG up to 10MB · up to{" "}
+              {MAX_FILES} files
             </p>
           </div>
 
@@ -480,9 +597,12 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
           {fileEntries.length > 0 && (
             <>
               <p className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">{fileEntries.length}</span> file
-                {fileEntries.length > 1 ? "s" : ""} selected — you'll enter details for each on
-                the next step.
+                <span className="font-medium text-foreground">
+                  {fileEntries.length}
+                </span>{" "}
+                file
+                {fileEntries.length > 1 ? "s" : ""} selected — you'll enter
+                details for each on the next step.
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {fileEntries.map((entry, i) => (
@@ -553,6 +673,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
 
     return (
       <Card>
+        <StepIndicator activeStep={1} />
         <CardContent className="p-0">
           {/* Progress header */}
           <div className="border-b px-6 py-3 flex items-center justify-between">
@@ -568,8 +689,8 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                     i === currentIndex
                       ? "w-6 bg-primary"
                       : i < currentIndex
-                      ? "w-3 bg-primary/50"
-                      : "w-3 bg-muted-foreground/25"
+                        ? "w-3 bg-primary/50"
+                        : "w-3 bg-muted-foreground/25",
                   )}
                 />
               ))}
@@ -579,7 +700,10 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
           {/* Side-by-side body */}
           <div className="flex flex-col md:flex-row">
             {/* Lightbox */}
-            <Dialog open={!!lightboxUrl} onOpenChange={(open) => !open && setLightboxUrl(null)}>
+            <Dialog
+              open={!!lightboxUrl}
+              onOpenChange={(open) => !open && setLightboxUrl(null)}
+            >
               <DialogContent className="max-w-5xl w-full p-2 bg-black/90 border-0">
                 {lightboxUrl && (
                   <img
@@ -616,7 +740,9 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                     <FileText className="h-10 w-10 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium break-all px-2">{draft.file.name}</p>
+                    <p className="text-sm font-medium break-all px-2">
+                      {draft.file.name}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {(draft.file.size / 1024 / 1024).toFixed(1)} MB
                     </p>
@@ -642,19 +768,24 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                   Scanning with AI — fields will fill automatically…
                 </div>
               )}
-              {ocrStatus[currentIndex] === "done" && (ocrFields[currentIndex]?.length ?? 0) > 0 && (
-                <div className="flex items-center gap-2 text-sm text-violet-700 bg-violet-50 border border-violet-200 rounded-lg px-3 py-2">
-                  <Sparkles className="h-3.5 w-3.5 shrink-0" />
-                  AI extracted {ocrFields[currentIndex].length} field{ocrFields[currentIndex].length > 1 ? "s" : ""} — review and correct as needed.
-                </div>
-              )}
+              {ocrStatus[currentIndex] === "done" &&
+                (ocrFields[currentIndex]?.length ?? 0) > 0 && (
+                  <div className="flex items-center gap-2 text-sm text-violet-700 bg-violet-50 border border-violet-200 rounded-lg px-3 py-2">
+                    <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                    AI extracted {ocrFields[currentIndex].length} field
+                    {ocrFields[currentIndex].length > 1 ? "s" : ""} — review and
+                    correct as needed.
+                  </div>
+                )}
 
               {/* Document Type */}
               <div className="space-y-1.5">
                 <Label>Document Type</Label>
                 <Select
                   value={draft.documentType}
-                  onValueChange={(v) => updateDraft(currentIndex, { documentType: v })}
+                  onValueChange={(v) =>
+                    updateDraft(currentIndex, { documentType: v })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -673,23 +804,31 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
               <div className="space-y-1.5">
                 <Label htmlFor={`documentName-${currentIndex}`}>
                   Document Name{" "}
-                  <span className="text-muted-foreground font-normal text-xs">(optional)</span>
+                  <span className="text-muted-foreground font-normal text-xs">
+                    (optional)
+                  </span>
                 </Label>
                 <Input
                   id={`documentName-${currentIndex}`}
                   placeholder={`e.g. ER Visit Bill, EOB March 2026`}
                   value={draft.documentName}
-                  onChange={(e) => updateDraft(currentIndex, { documentName: e.target.value })}
+                  onChange={(e) =>
+                    updateDraft(currentIndex, { documentName: e.target.value })
+                  }
                 />
               </div>
 
               {/* Provider */}
               <div className="space-y-1.5">
-                <Label htmlFor={`vendor-${currentIndex}`} className="flex items-center gap-1.5">
+                <Label
+                  htmlFor={`vendor-${currentIndex}`}
+                  className="flex items-center gap-1.5"
+                >
                   Provider / Vendor
                   {ocrFields[currentIndex]?.includes("vendor") && (
                     <span className="inline-flex items-center gap-0.5 text-[10px] font-normal text-violet-600">
-                      <Sparkles className="h-2.5 w-2.5" />AI
+                      <Sparkles className="h-2.5 w-2.5" />
+                      AI
                     </span>
                   )}
                 </Label>
@@ -697,18 +836,24 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                   id={`vendor-${currentIndex}`}
                   placeholder="e.g. City Medical Center"
                   value={draft.vendor}
-                  onChange={(e) => updateDraft(currentIndex, { vendor: e.target.value })}
+                  onChange={(e) =>
+                    updateDraft(currentIndex, { vendor: e.target.value })
+                  }
                 />
               </div>
 
               {/* Amount + Date */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor={`amount-${currentIndex}`} className="flex items-center gap-1.5">
+                  <Label
+                    htmlFor={`amount-${currentIndex}`}
+                    className="flex items-center gap-1.5"
+                  >
                     Amount
                     {ocrFields[currentIndex]?.includes("amount") && (
                       <span className="inline-flex items-center gap-0.5 text-[10px] font-normal text-violet-600">
-                        <Sparkles className="h-2.5 w-2.5" />AI
+                        <Sparkles className="h-2.5 w-2.5" />
+                        AI
                       </span>
                     )}
                   </Label>
@@ -724,16 +869,22 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                       placeholder="0.00"
                       className="pl-7"
                       value={draft.amount}
-                      onChange={(e) => updateDraft(currentIndex, { amount: e.target.value })}
+                      onChange={(e) =>
+                        updateDraft(currentIndex, { amount: e.target.value })
+                      }
                     />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor={`date-${currentIndex}`} className="flex items-center gap-1.5">
+                  <Label
+                    htmlFor={`date-${currentIndex}`}
+                    className="flex items-center gap-1.5"
+                  >
                     Date
                     {ocrFields[currentIndex]?.includes("date") && (
                       <span className="inline-flex items-center gap-0.5 text-[10px] font-normal text-violet-600">
-                        <Sparkles className="h-2.5 w-2.5" />AI
+                        <Sparkles className="h-2.5 w-2.5" />
+                        AI
                       </span>
                     )}
                   </Label>
@@ -741,7 +892,9 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                     id={`date-${currentIndex}`}
                     type="date"
                     value={draft.date}
-                    onChange={(e) => updateDraft(currentIndex, { date: e.target.value })}
+                    onChange={(e) =>
+                      updateDraft(currentIndex, { date: e.target.value })
+                    }
                   />
                 </div>
               </div>
@@ -753,7 +906,8 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                     Category
                     {ocrFields[currentIndex]?.includes("category") && (
                       <span className="inline-flex items-center gap-0.5 text-[10px] font-normal text-violet-600">
-                        <Sparkles className="h-2.5 w-2.5" />AI
+                        <Sparkles className="h-2.5 w-2.5" />
+                        AI
                       </span>
                     )}
                   </Label>
@@ -765,7 +919,9 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                 </div>
                 <Select
                   value={draft.category}
-                  onValueChange={(v) => updateDraft(currentIndex, { category: v })}
+                  onValueChange={(v) =>
+                    updateDraft(currentIndex, { category: v })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -778,42 +934,55 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                     ))}
                   </SelectContent>
                 </Select>
+                {showCoachMarks && currentIndex === 0 && (
+                  <div className="flex items-start gap-2 text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-md px-3 py-2 mt-1.5">
+                    <Sparkles className="h-3 w-3 mt-0.5 shrink-0" />
+                    <span>
+                      Category determines HSA eligibility. Medical, Dental,
+                      Vision, and similar categories are automatically
+                      HSA-eligible.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={dismissCoachMarks}
+                      className="text-blue-500 hover:text-blue-700 shrink-0 ml-1"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* Invoice # */}
-              <div className="space-y-1.5">
-                <Label htmlFor={`invoiceNumber-${currentIndex}`}>
-                  Bill / Invoice #{" "}
-                  <span className="text-muted-foreground font-normal text-xs">(optional)</span>
-                </Label>
-                <Input
-                  id={`invoiceNumber-${currentIndex}`}
-                  placeholder="e.g. INV-20240312"
-                  value={draft.invoiceNumber}
-                  onChange={(e) => updateDraft(currentIndex, { invoiceNumber: e.target.value })}
-                />
-              </div>
-
-              {/* Collection picker */}
+              {/* Care event picker */}
               <div className="space-y-2">
                 {!showCollectionSection ? (
-                  <button
-                    type="button"
-                    onClick={handleToggleCollectionSection}
-                    className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Add to a Collection
-                    {collectionLabel && (
-                      <span className="text-primary font-medium ml-0.5">· {collectionLabel}</span>
+                  <div className="space-y-1.5">
+                    <button
+                      type="button"
+                      onClick={handleToggleCollectionSection}
+                      className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Add to a Care Event
+                      {collectionLabel && (
+                        <span className="text-primary font-medium ml-0.5">
+                          · {collectionLabel}
+                        </span>
+                      )}
+                    </button>
+                    {showCoachMarks && currentIndex === 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        Group related bills (e.g. "Knee Surgery 2026") to track
+                        an episode of care across multiple visits.
+                      </p>
                     )}
-                  </button>
+                  </div>
                 ) : (
                   <div className="rounded-lg border p-3 space-y-2 bg-muted/30">
                     <div className="flex items-center justify-between">
                       <Label className="flex items-center gap-1.5 text-sm">
                         <FolderHeart className="h-4 w-4 text-primary" />
-                        Collection
+                        Care Event
                       </Label>
                       <button
                         type="button"
@@ -857,7 +1026,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                       }}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select or create a collection…" />
+                        <SelectValue placeholder="Select or create a care event…" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="__none__">None</SelectItem>
@@ -866,15 +1035,19 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                             {c.title}
                           </SelectItem>
                         ))}
-                        <SelectItem value="__new__">＋ Create new collection…</SelectItem>
+                        <SelectItem value="__new__">
+                          ＋ Create new care event…
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     {draft.isCreatingNewCollection && (
                       <Input
-                        placeholder="Collection name (e.g. Knee Surgery 2026)"
+                        placeholder="Care event name (e.g. Knee Surgery 2026)"
                         value={draft.newCollectionTitle}
                         onChange={(e) =>
-                          updateDraft(currentIndex, { newCollectionTitle: e.target.value })
+                          updateDraft(currentIndex, {
+                            newCollectionTitle: e.target.value,
+                          })
                         }
                       />
                     )}
@@ -882,20 +1055,42 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                 )}
               </div>
 
-              {/* Notes */}
-              <div className="space-y-1.5">
-                <Label htmlFor={`notes-${currentIndex}`}>
-                  Notes{" "}
-                  <span className="text-muted-foreground font-normal text-xs">(optional)</span>
-                </Label>
-                <Textarea
-                  id={`notes-${currentIndex}`}
-                  placeholder="Additional details…"
-                  value={draft.notes}
-                  onChange={(e) => updateDraft(currentIndex, { notes: e.target.value })}
-                  rows={2}
-                />
-              </div>
+              {/* Advanced fields — collapsed by default */}
+              <Collapsible>
+                <CollapsibleTrigger className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <ChevronRight className="h-3.5 w-3.5 transition-transform [[data-state=open]>&]:rotate-90" />
+                  More details (optional)
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-3 pt-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`invoiceNumber-${currentIndex}`}>
+                      Bill / Invoice #
+                    </Label>
+                    <Input
+                      id={`invoiceNumber-${currentIndex}`}
+                      placeholder="e.g. INV-20240312"
+                      value={draft.invoiceNumber}
+                      onChange={(e) =>
+                        updateDraft(currentIndex, {
+                          invoiceNumber: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`notes-${currentIndex}`}>Notes</Label>
+                    <Textarea
+                      id={`notes-${currentIndex}`}
+                      placeholder="Additional details…"
+                      value={draft.notes}
+                      onChange={(e) =>
+                        updateDraft(currentIndex, { notes: e.target.value })
+                      }
+                      rows={2}
+                    />
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
             </div>
           </div>
 
@@ -905,12 +1100,21 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
               <ChevronLeft className="h-4 w-4 mr-1" />
               Back
             </Button>
-            <Button onClick={handleNext} disabled={!isDraftValid}>
+            <Button
+              onClick={
+                isLastFile && drafts.length === 1 ? handleSave : handleNext
+              }
+              disabled={!isDraftValid}
+            >
               {isLastFile ? (
-                <>
-                  Review All
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </>
+                drafts.length === 1 ? (
+                  "Save Bill"
+                ) : (
+                  <>
+                    Review All
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </>
+                )
               ) : (
                 <>
                   Next Bill
@@ -931,6 +1135,7 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
   if (step === "review") {
     return (
       <Card>
+        <StepIndicator activeStep={1} />
         <CardContent className="p-6 space-y-6">
           <div>
             <h3 className="text-xl font-semibold">
@@ -948,11 +1153,18 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                 : d.newCollectionTitle || null;
 
               return (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-lg border bg-card">
+                <div
+                  key={i}
+                  className="flex items-start gap-3 p-3 rounded-lg border bg-card"
+                >
                   {/* Thumbnail */}
                   <div className="h-12 w-12 rounded overflow-hidden border shrink-0 bg-muted flex items-center justify-center">
                     {isImageFile(d.file) ? (
-                      <img src={d.objectUrl} alt="" className="h-12 w-12 object-cover" />
+                      <img
+                        src={d.objectUrl}
+                        alt=""
+                        className="h-12 w-12 object-cover"
+                      />
                     ) : (
                       <FileText className="h-5 w-5 text-muted-foreground" />
                     )}
@@ -961,10 +1173,20 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="font-semibold truncate">{d.vendor || d.file.name.replace(/\.[^.]+$/, "")}</p>
+                        <p className="font-semibold truncate">
+                          {d.vendor || d.file.name.replace(/\.[^.]+$/, "")}
+                        </p>
                         <p className="text-sm text-muted-foreground">
-                          {d.amount ? `$${parseFloat(d.amount).toFixed(2)}` : "No amount"} ·{" "}
-                          {d.date ? new Date(d.date + "T00:00:00").toLocaleDateString() : "No date"} · {d.category}
+                          {d.amount
+                            ? `$${parseFloat(d.amount).toFixed(2)}`
+                            : "No amount"}{" "}
+                          ·{" "}
+                          {d.date
+                            ? new Date(
+                                d.date + "T00:00:00",
+                              ).toLocaleDateString()
+                            : "No date"}{" "}
+                          · {d.category}
                         </p>
                       </div>
                       <button
@@ -982,7 +1204,9 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
                       {collName && (
                         <div className="flex items-center gap-1">
                           <FolderHeart className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">{collName}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {collName}
+                          </span>
                         </div>
                       )}
                       {HSA_ELIGIBLE_CATEGORIES.includes(d.category) && (
@@ -1024,11 +1248,14 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
   if (step === "saving") {
     return (
       <Card>
+        <StepIndicator activeStep={2} />
         <CardContent className="p-8 text-center">
           <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">Saving your bills…</h3>
           <p className="text-sm text-muted-foreground">
-            {savingIndex > 0 ? `Saving bill ${savingIndex} of ${drafts.length}…` : "Preparing…"}
+            {savingIndex > 0
+              ? `Saving bill ${savingIndex} of ${drafts.length}…`
+              : "Preparing…"}
           </p>
         </CardContent>
       </Card>
@@ -1042,11 +1269,13 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
   if (step === "complete") {
     return (
       <Card>
+        <StepIndicator activeStep={2} />
         <CardContent className="p-8 text-center space-y-6">
           <div>
             <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-1">
-              {savedInvoices.length} bill{savedInvoices.length > 1 ? "s" : ""} saved!
+              {savedInvoices.length} bill{savedInvoices.length > 1 ? "s" : ""}{" "}
+              saved!
             </h3>
             <p className="text-sm text-muted-foreground">
               Your bills are now being tracked in Wellth.
@@ -1078,9 +1307,18 @@ export function BillUploadWizard({ onComplete, onCancel }: BillUploadWizardProps
             </div>
           )}
 
-          <Button variant="outline" onClick={handleReset} className="w-full">
-            Upload More Bills
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button onClick={handleReset} variant="outline" className="flex-1">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Another Bill
+            </Button>
+            <Button
+              onClick={() => (window.location.href = "/bills")}
+              className="flex-1"
+            >
+              I'm Done
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );

@@ -1,12 +1,29 @@
 import { useState } from "react";
-import { Calculator, Receipt, FileText, TrendingUp, Wallet, Settings, MessageSquare, Shield, Home, ChevronDown, ChevronRight, FolderHeart, ClipboardList } from "lucide-react";
+import {
+  Calculator,
+  Receipt,
+  FileText,
+  TrendingUp,
+  Wallet,
+  Settings,
+  MessageSquare,
+  Shield,
+  Home,
+  ChevronDown,
+  ChevronRight,
+  FolderHeart,
+  ClipboardList,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { useHSA } from "@/contexts/HSAContext";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import { Badge } from "@/components/ui/badge";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -15,7 +32,11 @@ import {
   SidebarMenuButton,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface AppSidebarProps {
   unreviewedTransactions?: number;
@@ -30,29 +51,52 @@ interface MenuItem {
 }
 
 const coreMenuItems: MenuItem[] = [
-  { icon: Home,        label: "Home",   path: "/dashboard",   badgeKey: null },
-  { icon: Receipt,     label: "Bills",  path: "/bills",        badgeKey: null },
-  { icon: FolderHeart, label: "Collections", path: "/collections",  badgeKey: null },
+  { icon: Home, label: "Home", path: "/dashboard", badgeKey: null },
+  { icon: Receipt, label: "Bills", path: "/bills", badgeKey: null },
+  {
+    icon: FolderHeart,
+    label: "Care Events",
+    path: "/collections",
+    badgeKey: null,
+  },
 ];
 
 const hsaMenuItems: MenuItem[] = [
-  { icon: Wallet,         label: "Transactions",   path: "/transactions",           badgeKey: "unreviewedTransactions" },
-  { icon: ClipboardList,  label: "HSA Claims",     path: "/reimbursement-requests", badgeKey: null },
-  { icon: Calculator,     label: "HSA Calculator", path: "/savings-calculator",     badgeKey: null },
+  {
+    icon: Wallet,
+    label: "Transactions",
+    path: "/transactions",
+    badgeKey: "unreviewedTransactions",
+  },
+  {
+    icon: ClipboardList,
+    label: "HSA Claims",
+    path: "/reimbursement-requests",
+    badgeKey: null,
+  },
+  {
+    icon: Calculator,
+    label: "HSA Calculator",
+    path: "/savings-calculator",
+    badgeKey: null,
+  },
 ];
 
 const insightsMenuItems: MenuItem[] = [
-  { icon: TrendingUp, label: "Insights",  path: "/reports",    badgeKey: null },
-  { icon: FileText,   label: "Documents", path: "/documents",  badgeKey: null },
+  { icon: TrendingUp, label: "Reports", path: "/reports", badgeKey: null },
+  { icon: FileText, label: "Documents", path: "/documents", badgeKey: null },
 ];
 
 export function AppSidebar({ unreviewedTransactions = 0 }: AppSidebarProps) {
   const { open } = useSidebar();
+  const navigate = useNavigate();
   const { hasHSA, userIntent } = useHSA();
   const { isAdmin } = useIsAdmin();
+  const { tier } = useSubscription();
 
   // Show HSA features if user selected HSA intent or actually has an HSA
-  const showHSAFeatures = userIntent === 'hsa' || userIntent === 'both' || hasHSA;
+  const showHSAFeatures =
+    userIntent === "hsa" || userIntent === "both" || hasHSA;
 
   // State for collapsible sections - default all open
   const [openSections, setOpenSections] = useState({
@@ -63,7 +107,7 @@ export function AppSidebar({ unreviewedTransactions = 0 }: AppSidebarProps) {
   });
 
   const toggleSection = (section: keyof typeof openSections) => {
-    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+    setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
   const getBadgeCount = (badgeKey: string | null) => {
@@ -72,9 +116,15 @@ export function AppSidebar({ unreviewedTransactions = 0 }: AppSidebarProps) {
     return 0;
   };
 
-  const renderMenuSection = (items: MenuItem[], label: string, sectionKey: keyof typeof openSections) => {
+  const renderMenuSection = (
+    items: MenuItem[],
+    label: string,
+    sectionKey: keyof typeof openSections,
+  ) => {
     // Filter HSA-only items if user doesn't have HSA features enabled
-    const filteredItems = items.filter(item => !item.hsaOnly || showHSAFeatures);
+    const filteredItems = items.filter(
+      (item) => !item.hsaOnly || showHSAFeatures,
+    );
 
     if (filteredItems.length === 0) return null;
 
@@ -131,9 +181,13 @@ export function AppSidebar({ unreviewedTransactions = 0 }: AppSidebarProps) {
       <SidebarContent className="overflow-y-auto">
         {renderMenuSection(coreMenuItems, "Core", "core")}
         {renderMenuSection(hsaMenuItems, "HSA & Money", "hsa")}
-        {renderMenuSection(insightsMenuItems, "Insights", "insights")}
+        {renderMenuSection(insightsMenuItems, "Reports", "insights")}
 
-        <Collapsible open={openSections.account} onOpenChange={() => toggleSection("account")} className="mt-auto">
+        <Collapsible
+          open={openSections.account}
+          onOpenChange={() => toggleSection("account")}
+          className="mt-auto"
+        >
           <SidebarGroup>
             <CollapsibleTrigger className="w-full">
               <SidebarGroupLabel className="flex items-center justify-between w-full cursor-pointer hover:bg-sidebar-accent/50 rounded-md px-2 py-1.5 transition-colors">
@@ -156,7 +210,12 @@ export function AppSidebar({ unreviewedTransactions = 0 }: AppSidebarProps) {
                           {open && (
                             <span className="flex items-center gap-2">
                               Manage Reviews
-                              <Badge variant="secondary" className="text-[10px] px-1 py-0">Admin</Badge>
+                              <Badge
+                                variant="secondary"
+                                className="text-[10px] px-1 py-0"
+                              >
+                                Admin
+                              </Badge>
                             </span>
                           )}
                         </NavLink>
@@ -185,6 +244,18 @@ export function AppSidebar({ unreviewedTransactions = 0 }: AppSidebarProps) {
           </SidebarGroup>
         </Collapsible>
       </SidebarContent>
+
+      {tier === "free" && open && (
+        <SidebarFooter className="border-t border-sidebar-border px-4 py-3">
+          <button
+            onClick={() => navigate("/checkout")}
+            className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors w-full"
+          >
+            <span>Free Plan</span>
+            <span className="text-primary font-medium">Upgrade</span>
+          </button>
+        </SidebarFooter>
+      )}
     </Sidebar>
   );
 }

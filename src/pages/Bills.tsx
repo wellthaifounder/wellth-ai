@@ -3,14 +3,23 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Plus, Loader2, FileText, Search } from "lucide-react";
 import { toast } from "sonner";
-import { calculateHSAEligibility, type PaymentTransaction } from "@/lib/hsaCalculations";
+import {
+  calculateHSAEligibility,
+  type PaymentTransaction,
+} from "@/lib/hsaCalculations";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { logError } from "@/utils/errorHandler";
 import { BillsHeroMetrics } from "@/components/bills/BillsHeroMetrics";
@@ -31,7 +40,7 @@ interface Bill {
 
 const Bills = () => {
   const navigate = useNavigate();
-  
+
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [hideFullyReimbursed, setHideFullyReimbursed] = useState(true);
@@ -39,15 +48,22 @@ const Bills = () => {
   const [showOnlyHSAEligible, setShowOnlyHSAEligible] = useState(false);
 
   // Fetch bills data
-  const { data: bills, isLoading: billsLoading, refetch: refetchBills } = useQuery({
-    queryKey: ['bills'],
+  const {
+    data: bills,
+    isLoading: billsLoading,
+    refetch: refetchBills,
+  } = useQuery({
+    queryKey: ["bills"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
         .from("invoices")
-        .select(`
+        .select(
+          `
           *,
           payment_transactions (
             id,
@@ -57,21 +73,26 @@ const Bills = () => {
             is_reimbursed,
             reimbursed_date
           )
-        `)
-        .eq('user_id', user.id)
+        `,
+        )
+        .eq("user_id", user.id)
         .order("date", { ascending: false })
         .limit(500); // Limit to most recent 500 bills for performance
 
       if (error) throw error;
       return data as Bill[];
-    }
+    },
   });
 
   // Bill review feature archived - removed review and dispute queries
 
-  const toggleHSAEligibility = async (billId: string, currentStatus: boolean, e: React.MouseEvent) => {
+  const toggleHSAEligibility = async (
+    billId: string,
+    currentStatus: boolean,
+    e: React.MouseEvent,
+  ) => {
     e.stopPropagation();
-    
+
     try {
       const { error } = await supabase
         .from("invoices")
@@ -80,7 +101,9 @@ const Bills = () => {
 
       if (error) throw error;
       refetchBills();
-      toast.success(`HSA eligibility ${!currentStatus ? 'enabled' : 'disabled'}`);
+      toast.success(
+        `HSA eligibility ${!currentStatus ? "enabled" : "disabled"}`,
+      );
     } catch (error) {
       logError("Error toggling HSA eligibility", error);
       toast.error("Failed to update HSA eligibility");
@@ -89,18 +112,32 @@ const Bills = () => {
 
   const filteredBills = useMemo(() => {
     if (!bills) return [];
-    return bills.filter(bill => {
-      if (searchTerm && !bill.vendor.toLowerCase().includes(searchTerm.toLowerCase())) {
+    return bills.filter((bill) => {
+      if (
+        searchTerm &&
+        !bill.vendor.toLowerCase().includes(searchTerm.toLowerCase())
+      ) {
         return false;
       }
 
-      const breakdown = calculateHSAEligibility(bill, bill.payment_transactions || []);
+      const breakdown = calculateHSAEligibility(
+        bill,
+        bill.payment_transactions || [],
+      );
 
-      if (hideFullyReimbursed && breakdown.paidViaHSA === breakdown.totalInvoiced && breakdown.totalInvoiced > 0) {
+      if (
+        hideFullyReimbursed &&
+        breakdown.paidViaHSA === breakdown.totalInvoiced &&
+        breakdown.totalInvoiced > 0
+      ) {
         return false;
       }
 
-      if (hideFullyPaid && breakdown.unpaidBalance === 0 && breakdown.totalInvoiced > 0) {
+      if (
+        hideFullyPaid &&
+        breakdown.unpaidBalance === 0 &&
+        breakdown.totalInvoiced > 0
+      ) {
         return false;
       }
 
@@ -110,7 +147,13 @@ const Bills = () => {
 
       return true;
     });
-  }, [bills, searchTerm, hideFullyReimbursed, hideFullyPaid, showOnlyHSAEligible]);
+  }, [
+    bills,
+    searchTerm,
+    hideFullyReimbursed,
+    hideFullyPaid,
+    showOnlyHSAEligible,
+  ]);
 
   // Bill review feature archived - removed review/dispute aggregations
 
@@ -121,8 +164,11 @@ const Bills = () => {
     let totalUnpaid = 0;
     let totalHSAEligible = 0;
 
-    filteredBills.forEach(bill => {
-      const breakdown = calculateHSAEligibility(bill, bill.payment_transactions || []);
+    filteredBills.forEach((bill) => {
+      const breakdown = calculateHSAEligibility(
+        bill,
+        bill.payment_transactions || [],
+      );
       totalInvoiced += breakdown.totalInvoiced;
       totalPaidHSA += breakdown.paidViaHSA;
       totalPaidOther += breakdown.paidViaOther;
@@ -130,7 +176,13 @@ const Bills = () => {
       totalHSAEligible += breakdown.hsaReimbursementEligible;
     });
 
-    return { totalInvoiced, totalPaidHSA, totalPaidOther, totalUnpaid, totalHSAEligible };
+    return {
+      totalInvoiced,
+      totalPaidHSA,
+      totalPaidOther,
+      totalUnpaid,
+      totalHSAEligible,
+    };
   }, [filteredBills]);
 
   if (billsLoading) {
@@ -147,11 +199,17 @@ const Bills = () => {
     <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-8 max-w-6xl space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Bills</h1>
-          <p className="text-muted-foreground">
-            Upload, track, and manage your medical bills and expenses
-          </p>
+        <div className="flex items-center justify-between sticky top-0 z-10 bg-background py-2 -mt-2">
+          <div>
+            <h1 className="text-3xl font-bold mb-1">Bills</h1>
+            <p className="text-muted-foreground text-sm">
+              Upload, track, and manage your medical bills and expenses
+            </p>
+          </div>
+          <Button onClick={() => navigate("/bills/new")}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Bill
+          </Button>
         </div>
 
         {/* Hero Metrics */}
@@ -163,11 +221,14 @@ const Bills = () => {
         />
 
         {/* Bills List */}
-        <div className="space-y-4">{""}
+        <div className="space-y-4">
+          {""}
           <Card>
             <CardHeader>
               <CardTitle>Filters</CardTitle>
-              <CardDescription>Customize which bills to display</CardDescription>
+              <CardDescription>
+                Customize which bills to display
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="relative">
@@ -184,7 +245,9 @@ const Bills = () => {
                   <Checkbox
                     id="hideReimbursed"
                     checked={hideFullyReimbursed}
-                    onCheckedChange={(checked) => setHideFullyReimbursed(checked as boolean)}
+                    onCheckedChange={(checked) =>
+                      setHideFullyReimbursed(checked as boolean)
+                    }
                   />
                   <Label htmlFor="hideReimbursed" className="cursor-pointer">
                     Hide Fully Reimbursed
@@ -194,7 +257,9 @@ const Bills = () => {
                   <Checkbox
                     id="hidePaid"
                     checked={hideFullyPaid}
-                    onCheckedChange={(checked) => setHideFullyPaid(checked as boolean)}
+                    onCheckedChange={(checked) =>
+                      setHideFullyPaid(checked as boolean)
+                    }
                   />
                   <Label htmlFor="hidePaid" className="cursor-pointer">
                     Hide Fully Paid
@@ -204,7 +269,9 @@ const Bills = () => {
                   <Checkbox
                     id="hsaOnly"
                     checked={showOnlyHSAEligible}
-                    onCheckedChange={(checked) => setShowOnlyHSAEligible(checked as boolean)}
+                    onCheckedChange={(checked) =>
+                      setShowOnlyHSAEligible(checked as boolean)
+                    }
                   />
                   <Label htmlFor="hsaOnly" className="cursor-pointer">
                     HSA Eligible Only
@@ -228,7 +295,28 @@ const Bills = () => {
               {filteredBills.length === 0 ? (
                 <div className="text-center py-12">
                   <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">No bills match your filters</p>
+                  <p className="text-muted-foreground mb-1">
+                    No bills match your current filters
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {showOnlyHSAEligible
+                      ? "Try turning off the HSA-eligible filter to see all bills."
+                      : searchTerm
+                        ? `No results for "${searchTerm}". Try a different search term.`
+                        : "Try adjusting your filter settings."}
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSearchTerm("");
+                      setShowOnlyHSAEligible(false);
+                      setHideFullyReimbursed(false);
+                      setHideFullyPaid(false);
+                    }}
+                  >
+                    Clear all filters
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -242,13 +330,18 @@ const Bills = () => {
                         <div>
                           <h4 className="font-medium">{bill.vendor}</h4>
                           <p className="text-sm text-muted-foreground">
-                            {bill.category} • {new Date(bill.date).toLocaleDateString()}
+                            {bill.category} •{" "}
+                            {new Date(bill.date).toLocaleDateString()}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold">${Number(bill.amount).toFixed(2)}</p>
+                          <p className="font-semibold">
+                            ${Number(bill.amount).toFixed(2)}
+                          </p>
                           {bill.is_hsa_eligible && (
-                            <Badge variant="secondary" className="mt-1">HSA Eligible</Badge>
+                            <Badge variant="secondary" className="mt-1">
+                              HSA Eligible
+                            </Badge>
                           )}
                         </div>
                       </div>
