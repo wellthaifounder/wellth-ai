@@ -34,10 +34,12 @@ import {
   AlertCircle,
   CreditCard,
   Receipt,
+  ShieldCheck,
 } from "lucide-react";
 import { format } from "date-fns";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { CollectionTimeline } from "@/components/collections/CollectionTimeline";
+import { ClaimHSADialog } from "@/components/ledger/ClaimHSADialog";
 
 interface Collection {
   id: string;
@@ -60,6 +62,7 @@ interface LinkedInvoice {
   date: string;
   category: string;
   is_hsa_eligible: boolean;
+  is_reimbursed: boolean;
   user_responsibility_amount: number | null;
 }
 
@@ -85,6 +88,7 @@ export default function CollectionDetail() {
   const queryClient = useQueryClient();
   const [isEditingBalance, setIsEditingBalance] = useState(false);
   const [manualBalance, setManualBalance] = useState("");
+  const [claimDialogOpen, setClaimDialogOpen] = useState(false);
 
   // Fetch collection details
   const { data: collection, isLoading: collectionLoading } = useQuery({
@@ -111,7 +115,7 @@ export default function CollectionDetail() {
       const { data, error } = await supabase
         .from("invoices")
         .select(
-          "id, vendor, amount, total_amount, date, category, is_hsa_eligible, user_responsibility_amount",
+          "id, vendor, amount, total_amount, date, category, is_hsa_eligible, is_reimbursed, user_responsibility_amount",
         )
         .eq("collection_id", id)
         .order("date", { ascending: false });
@@ -284,6 +288,17 @@ export default function CollectionDetail() {
           </div>
 
           <div className="flex gap-2">
+            {collection.hsa_eligible_amount > 0 &&
+              invoices?.some((i) => i.is_hsa_eligible && !i.is_reimbursed) && (
+                <Button
+                  variant="outline"
+                  className="border-purple-500/30 text-purple-600 hover:bg-purple-500/10"
+                  onClick={() => setClaimDialogOpen(true)}
+                >
+                  <ShieldCheck className="h-4 w-4 mr-2" />
+                  Claim HSA
+                </Button>
+              )}
             <Button
               variant="outline"
               onClick={() => navigate(`/bills/new?collectionId=${id}`)}
@@ -604,6 +619,30 @@ export default function CollectionDetail() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Claim HSA Dialog */}
+      <ClaimHSADialog
+        open={claimDialogOpen}
+        onOpenChange={setClaimDialogOpen}
+        entries={
+          invoices
+            ?.filter((i) => i.is_hsa_eligible && !i.is_reimbursed)
+            .map((i) => ({
+              invoice_id: i.id,
+              vendor: i.vendor,
+              category: i.category,
+              service_date: i.date,
+              amount: i.total_amount || i.amount,
+            })) || []
+        }
+        collectionId={id}
+        collectionTitle={collection?.title}
+        onSuccess={() => {
+          queryClient.invalidateQueries({
+            queryKey: ["collection-invoices", id],
+          });
+        }}
+      />
     </AuthenticatedLayout>
   );
 }

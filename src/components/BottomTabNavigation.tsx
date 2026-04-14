@@ -2,6 +2,7 @@ import { NavLink } from "@/components/NavLink";
 import {
   Home,
   Receipt,
+  BookOpen,
   FolderHeart,
   Settings,
   DollarSign,
@@ -19,7 +20,7 @@ export const BottomTabNavigation = ({
   const tabs = showHSAFeatures
     ? [
         { icon: Home, label: "Home", path: "/dashboard", badge: 0 },
-        { icon: Receipt, label: "Bills", path: "/bills", badge: 0 },
+        { icon: BookOpen, label: "Ledger", path: "/ledger", badge: 0 },
         {
           icon: DollarSign,
           label: "HSA",
@@ -30,7 +31,7 @@ export const BottomTabNavigation = ({
       ]
     : [
         { icon: Home, label: "Home", path: "/dashboard", badge: 0 },
-        { icon: Receipt, label: "Bills", path: "/bills", badge: 0 },
+        { icon: BookOpen, label: "Ledger", path: "/ledger", badge: 0 },
         {
           icon: FolderHeart,
           label: "Care Events",

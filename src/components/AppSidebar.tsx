@@ -13,6 +13,7 @@ import {
   ChevronRight,
   FolderHeart,
   ClipboardList,
+  BookOpen,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
@@ -53,6 +54,12 @@ interface MenuItem {
 const coreMenuItems: MenuItem[] = [
   { icon: Home, label: "Home", path: "/dashboard", badgeKey: null },
   { icon: Receipt, label: "Bills", path: "/bills", badgeKey: null },
+  {
+    icon: BookOpen,
+    label: "Ledger",
+    path: "/ledger",
+    badgeKey: null,
+  },
   {
     icon: FolderHeart,
     label: "Care Events",

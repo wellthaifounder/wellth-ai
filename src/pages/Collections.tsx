@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Plus,
   Search,
   Loader2,
@@ -29,14 +36,18 @@ interface Collection {
   hsa_eligible_amount: number;
   icon: string;
   color: string;
+  status: "active" | "complete" | "needs_attention";
   created_at: string;
   invoice_count: number;
   document_count: number;
 }
 
+type StatusFilter = "all" | "active" | "complete" | "needs_attention";
+
 export default function Collections() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [showOrganizeWizard, setShowOrganizeWizard] = useState(false);
 
   // Check if user has unorganized invoices
@@ -78,7 +89,7 @@ export default function Collections() {
           `
           id, title, description, total_billed, total_paid,
           user_responsibility_override, hsa_eligible_amount,
-          icon, color, created_at,
+          icon, color, status, created_at,
           invoices:invoices(count),
           receipts:receipts(count)
         `,
@@ -99,12 +110,16 @@ export default function Collections() {
   // Filter by search query
   const filteredCollections =
     collections?.filter((c) => {
-      if (!searchQuery) return true;
-      const query = searchQuery.toLowerCase();
-      return (
-        c.title.toLowerCase().includes(query) ||
-        c.description?.toLowerCase().includes(query)
-      );
+      if (statusFilter !== "all" && c.status !== statusFilter) return false;
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        if (
+          !c.title.toLowerCase().includes(query) &&
+          !c.description?.toLowerCase().includes(query)
+        )
+          return false;
+      }
+      return true;
     }) || [];
 
   // Calculate totals
@@ -241,15 +256,31 @@ export default function Collections() {
           </Card>
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search care events..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
+        {/* Search + Status Filter */}
+        <div className="flex gap-3 items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search care events..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Select
+            value={statusFilter}
+            onValueChange={(v) => setStatusFilter(v as StatusFilter)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="complete">Complete</SelectItem>
+              <SelectItem value="needs_attention">Needs Attention</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Collections Grid */}

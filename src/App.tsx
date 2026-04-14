@@ -1,5 +1,4 @@
 import { lazy, Suspense } from "react";
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -27,7 +26,9 @@ const BillDetail = lazy(() => import("./pages/BillDetail"));
 const Transactions = lazy(() => import("./pages/Transactions"));
 const PrePurchaseDecision = lazy(() => import("./pages/PrePurchaseDecision"));
 const HSAEligibility = lazy(() => import("./pages/HSAEligibility"));
-const ReimbursementRequests = lazy(() => import("./pages/ReimbursementRequests"));
+const ReimbursementRequests = lazy(
+  () => import("./pages/ReimbursementRequests"),
+);
 const ReimbursementDetails = lazy(() => import("./pages/ReimbursementDetails"));
 const HSAReimbursement = lazy(() => import("./pages/HSAReimbursement"));
 const BankAccounts = lazy(() => import("./pages/BankAccounts"));
@@ -39,6 +40,7 @@ const TripwireSuccess = lazy(() => import("./pages/TripwireSuccess"));
 const TripwireOffer = lazy(() => import("./pages/TripwireOffer"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const NewBillUpload = lazy(() => import("./pages/NewBillUpload"));
+const Ledger = lazy(() => import("./pages/Ledger"));
 // Bill Review & Dispute features archived - V2 feature
 // const BillReviews = lazy(() => import("./pages/BillReviews"));
 // const BillReview = lazy(() => import("./pages/BillReview"));
@@ -75,88 +77,380 @@ const App = () => (
         <HSAProvider>
           <OnboardingProvider>
             <DashboardLayoutProvider>
-              <Toaster />
               <Sonner />
               <BrowserRouter>
                 <PWAInstallPrompt />
                 <PWAUpdatePrompt />
                 <ErrorBoundary>
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
-                    {/* Public routes */}
-                    <Route path="/" element={<Index />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/calculator" element={<Calculator />} />
-                    <Route path="/tripwire-offer" element={<TripwireOffer />} />
-                    <Route path="/tripwire-success" element={<TripwireSuccess />} />
-                    <Route path="/checkout" element={<Checkout />} />
-                    <Route path="/install" element={<Install />} />
+                  <Suspense fallback={<PageLoader />}>
+                    <Routes>
+                      {/* Public routes */}
+                      <Route path="/" element={<Index />} />
+                      <Route path="/auth" element={<Auth />} />
+                      <Route path="/calculator" element={<Calculator />} />
+                      <Route
+                        path="/tripwire-offer"
+                        element={<TripwireOffer />}
+                      />
+                      <Route
+                        path="/tripwire-success"
+                        element={<TripwireSuccess />}
+                      />
+                      <Route path="/checkout" element={<Checkout />} />
+                      <Route path="/install" element={<Install />} />
 
-                    {/* Protected routes */}
-                    <Route path="/dashboard" element={<ProtectedRoute><ErrorBoundary><Dashboard /></ErrorBoundary></ProtectedRoute>} />
+                      {/* Protected routes */}
+                      <Route
+                        path="/dashboard"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <Dashboard />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
 
-                    {/* Unified Bills Management Routes */}
-                    <Route path="/bills" element={<ProtectedRoute><ErrorBoundary><Bills /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/bills/new" element={<ProtectedRoute><ErrorBoundary><NewBillUpload /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/bills/upload" element={<ProtectedRoute><ErrorBoundary><NewBillUpload /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/bills/:id" element={<ProtectedRoute><ErrorBoundary><BillDetail /></ErrorBoundary></ProtectedRoute>} />
+                      {/* Unified Bills Management Routes */}
+                      <Route
+                        path="/bills"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <Bills />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/bills/new"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <NewBillUpload />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/bills/upload"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <NewBillUpload />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/bills/:id"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <BillDetail />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
 
-                    {/* Bill Review & Dispute features archived - redirected to bills */}
-                    <Route path="/bill-reviews/:invoiceId" element={<ProtectedRoute><Bills /></ProtectedRoute>} />
-                    <Route path="/disputes/:id" element={<ProtectedRoute><Bills /></ProtectedRoute>} />
-                    <Route path="/bills/:invoiceId/dispute" element={<ProtectedRoute><Bills /></ProtectedRoute>} />
+                      {/* Bill Review & Dispute features archived - redirected to bills */}
+                      <Route
+                        path="/bill-reviews/:invoiceId"
+                        element={
+                          <ProtectedRoute>
+                            <Bills />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/disputes/:id"
+                        element={
+                          <ProtectedRoute>
+                            <Bills />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/bills/:invoiceId/dispute"
+                        element={
+                          <ProtectedRoute>
+                            <Bills />
+                          </ProtectedRoute>
+                        }
+                      />
 
-                    {/* Legacy redirects */}
-                    <Route path="/invoices" element={<ProtectedRoute><Bills /></ProtectedRoute>} />
-                    <Route path="/bill-reviews" element={<ProtectedRoute><Bills /></ProtectedRoute>} />
-                    <Route path="/disputes" element={<ProtectedRoute><Bills /></ProtectedRoute>} />
+                      {/* Legacy redirects */}
+                      <Route
+                        path="/invoices"
+                        element={
+                          <ProtectedRoute>
+                            <Bills />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/bill-reviews"
+                        element={
+                          <ProtectedRoute>
+                            <Bills />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/disputes"
+                        element={
+                          <ProtectedRoute>
+                            <Bills />
+                          </ProtectedRoute>
+                        }
+                      />
 
-                    {/* Decision Tool renamed to Savings Calculator (HSA only) */}
-                    <Route path="/savings-calculator" element={<ProtectedRoute><ErrorBoundary><PrePurchaseDecision /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/decision-tool" element={<ProtectedRoute><PrePurchaseDecision /></ProtectedRoute>} />
+                      {/* Decision Tool renamed to Savings Calculator (HSA only) */}
+                      <Route
+                        path="/savings-calculator"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <PrePurchaseDecision />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/decision-tool"
+                        element={
+                          <ProtectedRoute>
+                            <PrePurchaseDecision />
+                          </ProtectedRoute>
+                        }
+                      />
 
-                    {/* HSA Routes */}
-                    <Route path="/hsa-eligibility" element={<ProtectedRoute><ErrorBoundary><HSAEligibility /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/reimbursement-requests" element={<ProtectedRoute><ErrorBoundary><ReimbursementRequests /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/reimbursement/:id" element={<ProtectedRoute><ErrorBoundary><ReimbursementDetails /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/hsa-reimbursement" element={<ProtectedRoute><ErrorBoundary><HSAReimbursement /></ErrorBoundary></ProtectedRoute>} />
+                      {/* HSA Routes */}
+                      <Route
+                        path="/hsa-eligibility"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <HSAEligibility />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/reimbursement-requests"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <ReimbursementRequests />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/reimbursement/:id"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <ReimbursementDetails />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/hsa-reimbursement"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <HSAReimbursement />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
 
-                    {/* Payment Routes */}
-                    <Route path="/payments/new" element={<ProtectedRoute><ErrorBoundary><PaymentEntry /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/payment/new" element={<ProtectedRoute><ErrorBoundary><PaymentEntry /></ErrorBoundary></ProtectedRoute>} />
+                      {/* Payment Routes */}
+                      <Route
+                        path="/payments/new"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <PaymentEntry />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/payment/new"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <PaymentEntry />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
 
-                    {/* Transactions Route */}
-                    <Route path="/transactions" element={<ProtectedRoute><ErrorBoundary><Transactions /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/bank-accounts" element={<ProtectedRoute><ErrorBoundary><BankAccounts /></ErrorBoundary></ProtectedRoute>} />
+                      {/* Transactions Route */}
+                      <Route
+                        path="/transactions"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <Transactions />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/bank-accounts"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <BankAccounts />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
 
-                    {/* Collections Routes */}
-                    <Route path="/collections" element={<ProtectedRoute><ErrorBoundary><Collections /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/collections/new" element={<ProtectedRoute><ErrorBoundary><NewCollection /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/collections/:id" element={<ProtectedRoute><ErrorBoundary><CollectionDetail /></ErrorBoundary></ProtectedRoute>} />
+                      {/* Collections Routes */}
+                      <Route
+                        path="/collections"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <Collections />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/collections/new"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <NewCollection />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/collections/:id"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <CollectionDetail />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
 
-                    {/* Legacy redirects for medical events */}
-                    <Route path="/medical-events" element={<ProtectedRoute><Collections /></ProtectedRoute>} />
-                    <Route path="/medical-events/new" element={<ProtectedRoute><NewCollection /></ProtectedRoute>} />
-                    <Route path="/medical-events/:id" element={<ProtectedRoute><CollectionDetail /></ProtectedRoute>} />
+                      {/* Legacy redirects for medical events */}
+                      <Route
+                        path="/medical-events"
+                        element={
+                          <ProtectedRoute>
+                            <Collections />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/medical-events/new"
+                        element={
+                          <ProtectedRoute>
+                            <NewCollection />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/medical-events/:id"
+                        element={
+                          <ProtectedRoute>
+                            <CollectionDetail />
+                          </ProtectedRoute>
+                        }
+                      />
 
-                    {/* Supporting Routes */}
-                    <Route path="/documents" element={<ProtectedRoute><ErrorBoundary><Documents /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/settings" element={<ProtectedRoute><ErrorBoundary><Settings /></ErrorBoundary></ProtectedRoute>} />
+                      {/* Supporting Routes */}
+                      <Route
+                        path="/documents"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <Documents />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/settings"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <Settings />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
 
-                    {/* Reports (formerly Analytics) */}
-                    <Route path="/reports" element={<ProtectedRoute><ErrorBoundary><Reports /></ErrorBoundary></ProtectedRoute>} />
-                    <Route path="/analytics" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+                      {/* Reports (formerly Analytics) */}
+                      <Route
+                        path="/reports"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <Reports />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/analytics"
+                        element={
+                          <ProtectedRoute>
+                            <Reports />
+                          </ProtectedRoute>
+                        }
+                      />
 
-                    {/* User Feedback */}
-                    <Route path="/user-reviews" element={<ProtectedRoute><ErrorBoundary><UserReviews /></ErrorBoundary></ProtectedRoute>} />
+                      {/* User Feedback */}
+                      <Route
+                        path="/user-reviews"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <UserReviews />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
 
-                    {/* Admin Routes */}
-                    <Route path="/admin/reviews" element={<ProtectedRoute><ErrorBoundary><AdminReviews /></ErrorBoundary></ProtectedRoute>} />
+                      {/* Admin Routes */}
+                      <Route
+                        path="/admin/reviews"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <AdminReviews />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
 
-                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
+                      {/* Unified Ledger View (Phase 2 — parallel to Bills) */}
+                      <Route
+                        path="/ledger"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <Ledger />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
+
+                      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
                 </ErrorBoundary>
               </BrowserRouter>
             </DashboardLayoutProvider>
