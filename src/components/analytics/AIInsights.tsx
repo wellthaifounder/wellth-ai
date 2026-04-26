@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,10 +38,13 @@ export const AIInsights = ({ analyticsData }: AIInsightsProps) => {
         actualSavings: analyticsData.stats.actualSavings,
         topCategories: analyticsData.categoryData.slice(0, 3),
         rewardsData: analyticsData.paymentMethodsRewards,
-        yearlyTrend: analyticsData.yearlyData.length > 1 
-          ? analyticsData.yearlyData[analyticsData.yearlyData.length - 1].totalExpenses - 
-            analyticsData.yearlyData[analyticsData.yearlyData.length - 2].totalExpenses
-          : 0,
+        yearlyTrend:
+          analyticsData.yearlyData.length > 1
+            ? analyticsData.yearlyData[analyticsData.yearlyData.length - 1]
+                .totalExpenses -
+              analyticsData.yearlyData[analyticsData.yearlyData.length - 2]
+                .totalExpenses
+            : 0,
       };
 
       const { data, error } = await supabase.functions.invoke("wellbie-chat", {
@@ -46,8 +55,8 @@ Total Medical Expenses: $${context.totalExpenses}
 HSA-Eligible Amount: $${context.hsaEligible}
 Unreimbursed HSA Balance: $${context.unreimbursedTotal}
 Actual Savings Realized: $${context.actualSavings}
-Top Expense Categories: ${context.topCategories.map(c => `${c.category}: $${c.total}`).join(", ")}
-Payment Methods: ${context.rewardsData.map(p => `${p.name} (${p.rewardsRate}%)`).join(", ")}
+Top Expense Categories: ${context.topCategories.map((c) => `${c.category}: $${c.total}`).join(", ")}
+Payment Methods: ${context.rewardsData.map((p) => `${p.name} (${p.rewardsRate}%)`).join(", ")}
 
 Please provide insights in a numbered list format, focusing on:
 1. Opportunities to increase savings
@@ -91,14 +100,18 @@ Please provide insights in a numbered list format, focusing on:
               Personalized recommendations based on your financial data
             </CardDescription>
           </div>
-          <Button 
-            onClick={generateInsights} 
+          <Button
+            onClick={generateInsights}
             disabled={loading}
             size="sm"
             className="gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            {loading ? "Analyzing..." : insights.length > 0 ? "Refresh" : "Generate"}
+            {loading
+              ? "Analyzing..."
+              : insights.length > 0
+                ? "Refresh"
+                : "Generate"}
           </Button>
         </div>
       </CardHeader>
@@ -127,10 +140,11 @@ Please provide insights in a numbered list format, focusing on:
                 </div>
               </div>
             ))}
-            
+
             <div className="pt-4 border-t">
               <p className="text-xs text-muted-foreground text-center">
-                ✨ Powered by Wellbie AI • Insights refresh with your latest data
+                ✨ Powered by Wellbie AI • Insights refresh with your latest
+                data
               </p>
             </div>
           </div>

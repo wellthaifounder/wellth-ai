@@ -2,7 +2,13 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
@@ -19,7 +25,7 @@ const InvoicePaymentListEnhanced = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [expenses, setExpenses] = useState<any[]>([]);
-  
+
   // Filter states
   const [hideFullyReimbursed, setHideFullyReimbursed] = useState(true);
   const [hideFullyPaid, setHideFullyPaid] = useState(true);
@@ -28,7 +34,9 @@ const InvoicePaymentListEnhanced = () => {
 
   // Link transaction dialog state
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
-  const [selectedInvoiceForLinking, setSelectedInvoiceForLinking] = useState<any | null>(null);
+  const [selectedInvoiceForLinking, setSelectedInvoiceForLinking] = useState<
+    any | null
+  >(null);
 
   useEffect(() => {
     fetchData();
@@ -38,7 +46,8 @@ const InvoicePaymentListEnhanced = () => {
     try {
       const { data: invoicesData, error: invoicesError } = await supabase
         .from("invoices")
-        .select(`
+        .select(
+          `
           *,
           payment_transactions (
             id,
@@ -48,7 +57,8 @@ const InvoicePaymentListEnhanced = () => {
             is_reimbursed,
             reimbursed_date
           )
-        `)
+        `,
+        )
         .order("date", { ascending: false });
 
       if (invoicesError) throw invoicesError;
@@ -61,9 +71,13 @@ const InvoicePaymentListEnhanced = () => {
     }
   };
 
-  const toggleHSAEligibility = async (invoiceId: string, currentStatus: boolean, e?: React.MouseEvent) => {
+  const toggleHSAEligibility = async (
+    invoiceId: string,
+    currentStatus: boolean,
+    e?: React.MouseEvent,
+  ) => {
     e?.stopPropagation(); // Prevent navigation to detail page
-    
+
     try {
       const { error } = await supabase
         .from("invoices")
@@ -73,11 +87,17 @@ const InvoicePaymentListEnhanced = () => {
       if (error) throw error;
 
       // Update local state
-      setExpenses(prev => prev.map(exp => 
-        exp.id === invoiceId ? { ...exp, is_hsa_eligible: !currentStatus } : exp
-      ));
+      setExpenses((prev) =>
+        prev.map((exp) =>
+          exp.id === invoiceId
+            ? { ...exp, is_hsa_eligible: !currentStatus }
+            : exp,
+        ),
+      );
 
-      toast.success(`HSA eligibility ${!currentStatus ? 'enabled' : 'disabled'}`);
+      toast.success(
+        `HSA eligibility ${!currentStatus ? "enabled" : "disabled"}`,
+      );
     } catch (error) {
       logError("Error toggling HSA eligibility", error);
       toast.error("Failed to update HSA eligibility");
@@ -94,7 +114,12 @@ const InvoicePaymentListEnhanced = () => {
     fetchData(); // Refresh the data
   };
 
-  const getStatusEmoji = (paidHSA: number, paidOther: number, unpaid: number, total: number) => {
+  const getStatusEmoji = (
+    paidHSA: number,
+    paidOther: number,
+    unpaid: number,
+    total: number,
+  ) => {
     if (paidHSA === total && total > 0) return "🟢";
     if (paidOther > 0 && unpaid === 0) return "🟡";
     if (unpaid > 0) return "🔴";
@@ -103,28 +128,45 @@ const InvoicePaymentListEnhanced = () => {
   };
 
   const filteredExpenses = useMemo(() => {
-    return expenses.filter(expense => {
-      const breakdown = calculateHSAEligibility(expense, expense.payment_transactions || []);
-      
-      if (hideFullyReimbursed && breakdown.paidViaHSA === breakdown.totalInvoiced && breakdown.totalInvoiced > 0) {
+    return expenses.filter((expense) => {
+      const breakdown = calculateHSAEligibility(
+        expense,
+        expense.payment_transactions || [],
+      );
+
+      if (
+        hideFullyReimbursed &&
+        breakdown.paidViaHSA === breakdown.totalInvoiced &&
+        breakdown.totalInvoiced > 0
+      ) {
         return false;
       }
-      
-      if (hideFullyPaid && breakdown.unpaidBalance === 0 && breakdown.totalInvoiced > 0) {
+
+      if (
+        hideFullyPaid &&
+        breakdown.unpaidBalance === 0 &&
+        breakdown.totalInvoiced > 0
+      ) {
         return false;
       }
-      
+
       if (showOnlyHSAEligible && !expense.is_hsa_eligible) {
         return false;
       }
-      
+
       if (minUnpaidBalance > 0 && breakdown.unpaidBalance < minUnpaidBalance) {
         return false;
       }
-      
+
       return true;
     });
-  }, [expenses, hideFullyReimbursed, hideFullyPaid, showOnlyHSAEligible, minUnpaidBalance]);
+  }, [
+    expenses,
+    hideFullyReimbursed,
+    hideFullyPaid,
+    showOnlyHSAEligible,
+    minUnpaidBalance,
+  ]);
 
   const aggregateStats = useMemo(() => {
     let totalInvoiced = 0;
@@ -133,8 +175,11 @@ const InvoicePaymentListEnhanced = () => {
     let totalUnpaid = 0;
     let totalHSAEligible = 0;
 
-    filteredExpenses.forEach(expense => {
-      const breakdown = calculateHSAEligibility(expense, expense.payment_transactions || []);
+    filteredExpenses.forEach((expense) => {
+      const breakdown = calculateHSAEligibility(
+        expense,
+        expense.payment_transactions || [],
+      );
       totalInvoiced += breakdown.totalInvoiced;
       totalPaidHSA += breakdown.paidViaHSA;
       totalPaidOther += breakdown.paidViaOther;
@@ -142,7 +187,13 @@ const InvoicePaymentListEnhanced = () => {
       totalHSAEligible += breakdown.hsaReimbursementEligible;
     });
 
-    return { totalInvoiced, totalPaidHSA, totalPaidOther, totalUnpaid, totalHSAEligible };
+    return {
+      totalInvoiced,
+      totalPaidHSA,
+      totalPaidOther,
+      totalUnpaid,
+      totalHSAEligible,
+    };
   }, [filteredExpenses]);
 
   if (loading) {
@@ -177,7 +228,9 @@ const InvoicePaymentListEnhanced = () => {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle>Filters</CardTitle>
-            <CardDescription>Customize which invoices to display</CardDescription>
+            <CardDescription>
+              Customize which invoices to display
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -185,7 +238,9 @@ const InvoicePaymentListEnhanced = () => {
                 <Checkbox
                   id="hideReimbursed"
                   checked={hideFullyReimbursed}
-                  onCheckedChange={(checked) => setHideFullyReimbursed(checked as boolean)}
+                  onCheckedChange={(checked) =>
+                    setHideFullyReimbursed(checked as boolean)
+                  }
                 />
                 <Label htmlFor="hideReimbursed" className="cursor-pointer">
                   Hide Fully Reimbursed
@@ -195,7 +250,9 @@ const InvoicePaymentListEnhanced = () => {
                 <Checkbox
                   id="hidePaid"
                   checked={hideFullyPaid}
-                  onCheckedChange={(checked) => setHideFullyPaid(checked as boolean)}
+                  onCheckedChange={(checked) =>
+                    setHideFullyPaid(checked as boolean)
+                  }
                 />
                 <Label htmlFor="hidePaid" className="cursor-pointer">
                   Hide Fully Paid
@@ -205,7 +262,9 @@ const InvoicePaymentListEnhanced = () => {
                 <Checkbox
                   id="hsaOnly"
                   checked={showOnlyHSAEligible}
-                  onCheckedChange={(checked) => setShowOnlyHSAEligible(checked as boolean)}
+                  onCheckedChange={(checked) =>
+                    setShowOnlyHSAEligible(checked as boolean)
+                  }
                 />
                 <Label htmlFor="hsaOnly" className="cursor-pointer">
                   HSA Eligible Only
@@ -222,7 +281,8 @@ const InvoicePaymentListEnhanced = () => {
               <div>
                 <CardTitle>All Bills</CardTitle>
                 <CardDescription>
-                  {filteredExpenses.length} bill{filteredExpenses.length !== 1 ? 's' : ''} shown
+                  {filteredExpenses.length} bill
+                  {filteredExpenses.length !== 1 ? "s" : ""} shown
                 </CardDescription>
               </div>
               <Button onClick={() => navigate("/invoice/new")}>
@@ -234,17 +294,22 @@ const InvoicePaymentListEnhanced = () => {
           <CardContent>
             {filteredExpenses.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">No invoices match your filters</p>
+                <p className="text-muted-foreground">
+                  No invoices match your filters
+                </p>
               </div>
             ) : (
               <div className="space-y-3">
                 {filteredExpenses.map((expense) => {
-                  const breakdown = calculateHSAEligibility(expense, expense.payment_transactions || []);
+                  const breakdown = calculateHSAEligibility(
+                    expense,
+                    expense.payment_transactions || [],
+                  );
                   const emoji = getStatusEmoji(
                     breakdown.paidViaHSA,
                     breakdown.paidViaOther,
                     breakdown.unpaidBalance,
-                    breakdown.totalInvoiced
+                    breakdown.totalInvoiced,
                   );
 
                   return (
@@ -259,13 +324,17 @@ const InvoicePaymentListEnhanced = () => {
                             <span>{emoji}</span>
                             <h4 className="font-medium">{expense.vendor}</h4>
                             {expense.is_hsa_eligible && (
-                              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                              <Badge
+                                variant="secondary"
+                                className="bg-green-100 text-green-800"
+                              >
                                 HSA
                               </Badge>
                             )}
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {expense.category} • {new Date(expense.date).toLocaleDateString()}
+                            {expense.category} •{" "}
+                            {new Date(expense.date).toLocaleDateString()}
                           </p>
                         </div>
                         <div className="flex items-center gap-4">
@@ -278,12 +347,12 @@ const InvoicePaymentListEnhanced = () => {
                           >
                             <Link2 className="h-4 w-4" />
                           </Button>
-                          <div 
+                          <div
                             className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent/50 transition-colors"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <Label 
-                              htmlFor={`hsa-toggle-${expense.id}`} 
+                            <Label
+                              htmlFor={`hsa-toggle-${expense.id}`}
                               className="text-xs cursor-pointer whitespace-nowrap"
                             >
                               HSA Eligible
@@ -291,12 +360,25 @@ const InvoicePaymentListEnhanced = () => {
                             <Switch
                               id={`hsa-toggle-${expense.id}`}
                               checked={expense.is_hsa_eligible}
-                              onCheckedChange={() => toggleHSAEligibility(expense.id, expense.is_hsa_eligible)}
-                              onClick={(e) => toggleHSAEligibility(expense.id, expense.is_hsa_eligible, e)}
+                              onCheckedChange={() =>
+                                toggleHSAEligibility(
+                                  expense.id,
+                                  expense.is_hsa_eligible,
+                                )
+                              }
+                              onClick={(e) =>
+                                toggleHSAEligibility(
+                                  expense.id,
+                                  expense.is_hsa_eligible,
+                                  e,
+                                )
+                              }
                             />
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold">${breakdown.totalInvoiced.toFixed(2)}</p>
+                            <p className="font-semibold">
+                              ${breakdown.totalInvoiced.toFixed(2)}
+                            </p>
                             {breakdown.unpaidBalance > 0 && (
                               <p className="text-sm text-red-600">
                                 ${breakdown.unpaidBalance.toFixed(2)} unpaid
@@ -304,7 +386,8 @@ const InvoicePaymentListEnhanced = () => {
                             )}
                             {breakdown.hsaReimbursementEligible > 0 && (
                               <p className="text-sm text-amber-600">
-                                ${breakdown.hsaReimbursementEligible.toFixed(2)} eligible
+                                ${breakdown.hsaReimbursementEligible.toFixed(2)}{" "}
+                                eligible
                               </p>
                             )}
                           </div>

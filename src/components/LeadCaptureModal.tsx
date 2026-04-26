@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,13 +19,17 @@ interface LeadCaptureModalProps {
   source?: string;
 }
 
-export const LeadCaptureModal = ({ open, onOpenChange, source = "modal" }: LeadCaptureModalProps) => {
+export const LeadCaptureModal = ({
+  open,
+  onOpenChange,
+  source = "modal",
+}: LeadCaptureModalProps) => {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !email.includes("@")) {
       toast.error("Please enter a valid email address");
       return;
@@ -30,12 +40,14 @@ export const LeadCaptureModal = ({ open, onOpenChange, source = "modal" }: LeadC
     try {
       // Track lead capture
       analytics.leadCapture(source);
-      
+
       // Here you would typically send to your email service or save to database
       // For now, we'll just simulate success
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast.success("Thanks! We'll send you updates on HSA savings strategies.");
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      toast.success(
+        "Thanks! We'll send you updates on HSA savings strategies.",
+      );
       setEmail("");
       onOpenChange(false);
     } catch (error) {
@@ -52,9 +64,12 @@ export const LeadCaptureModal = ({ open, onOpenChange, source = "modal" }: LeadC
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <Sparkles className="h-6 w-6 text-primary" />
           </div>
-          <DialogTitle className="text-center text-2xl">Get HSA Savings Tips</DialogTitle>
+          <DialogTitle className="text-center text-2xl">
+            Get HSA Savings Tips
+          </DialogTitle>
           <DialogDescription className="text-center">
-            Join 10,000+ people maximizing their healthcare savings. Get expert tips delivered to your inbox.
+            Join 10,000+ people maximizing their healthcare savings. Get expert
+            tips delivered to your inbox.
           </DialogDescription>
         </DialogHeader>
 

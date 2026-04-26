@@ -34,7 +34,10 @@ export const TimeRangeFilter = ({
 }: TimeRangeFilterProps) => {
   return (
     <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-      <Select value={selectedRange} onValueChange={(value) => onRangeChange(value as TimeRange)}>
+      <Select
+        value={selectedRange}
+        onValueChange={(value) => onRangeChange(value as TimeRange)}
+      >
         <SelectTrigger className="w-full sm:w-[180px]">
           <SelectValue placeholder="Select time range" />
         </SelectTrigger>
@@ -53,7 +56,7 @@ export const TimeRangeFilter = ({
               variant="outline"
               className={cn(
                 "w-full sm:w-[280px] justify-start text-left font-normal",
-                !customDateRange && "text-muted-foreground"
+                !customDateRange && "text-muted-foreground",
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />

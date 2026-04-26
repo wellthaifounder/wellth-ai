@@ -4,8 +4,14 @@
 export const FILE_VALIDATION = {
   MAX_FILE_SIZE: 10 * 1024 * 1024, // 10 MB per file
   MAX_TOTAL_SIZE: 100 * 1024 * 1024, // 100 MB per upload batch
-  ALLOWED_TYPES: ['image/jpeg', 'image/png', 'application/pdf', 'image/gif', 'image/webp'],
-  ALLOWED_EXTENSIONS: ['.jpg', '.jpeg', '.png', '.pdf', '.gif', '.webp'],
+  ALLOWED_TYPES: [
+    "image/jpeg",
+    "image/png",
+    "application/pdf",
+    "image/gif",
+    "image/webp",
+  ],
+  ALLOWED_EXTENSIONS: [".jpg", ".jpeg", ".png", ".pdf", ".gif", ".webp"],
 } as const;
 
 export interface FileValidationError {
@@ -22,7 +28,10 @@ export interface FileValidationResult {
 /**
  * Validates file size
  */
-export function validateFileSize(file: File, maxSize: number = FILE_VALIDATION.MAX_FILE_SIZE): string | null {
+export function validateFileSize(
+  file: File,
+  maxSize: number = FILE_VALIDATION.MAX_FILE_SIZE,
+): string | null {
   if (file.size > maxSize) {
     const maxSizeMB = (maxSize / (1024 * 1024)).toFixed(1);
     const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
@@ -41,7 +50,7 @@ export function validateFileType(file: File): string | null {
   }
 
   // Check file extension
-  const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+  const extension = "." + file.name.split(".").pop()?.toLowerCase();
   if (!extension || !FILE_VALIDATION.ALLOWED_EXTENSIONS.includes(extension)) {
     return `File extension "${extension}" is not allowed`;
   }
@@ -52,7 +61,10 @@ export function validateFileType(file: File): string | null {
 /**
  * Validates total upload batch size
  */
-export function validateTotalSize(files: File[], maxTotal: number = FILE_VALIDATION.MAX_TOTAL_SIZE): string | null {
+export function validateTotalSize(
+  files: File[],
+  maxTotal: number = FILE_VALIDATION.MAX_TOTAL_SIZE,
+): string | null {
   const totalSize = files.reduce((sum, file) => sum + file.size, 0);
   if (totalSize > maxTotal) {
     const maxTotalMB = (maxTotal / (1024 * 1024)).toFixed(0);
@@ -94,7 +106,7 @@ export function validateFiles(files: File[]): FileValidationResult {
     const totalSizeError = validateTotalSize(valid);
     if (totalSizeError) {
       // Move all valid files to invalid
-      valid.forEach(file => {
+      valid.forEach((file) => {
         invalid.push({ file, errors: [totalSizeError] });
       });
       return { valid: [], invalid, totalSize: 0 };
@@ -108,11 +120,11 @@ export function validateFiles(files: File[]): FileValidationResult {
  * Format file size for display
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return "0 Bytes";
 
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 }

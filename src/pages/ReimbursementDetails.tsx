@@ -2,12 +2,24 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { WellthLogo } from "@/components/WellthLogo";
 import { ArrowLeft, Download, Mail, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { generateReimbursementPDF } from "@/lib/pdfGenerator";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ReceiptGallery } from "@/components/expense/ReceiptGallery";
 import { logError } from "@/utils/errorHandler";
 
@@ -36,10 +48,12 @@ const ReimbursementDetails = () => {
 
       const { data: itemsData, error: itemsError } = await supabase
         .from("reimbursement_items")
-        .select(`
+        .select(
+          `
           *,
           expense:expenses(*)
-        `)
+        `,
+        )
         .eq("reimbursement_request_id", id);
 
       if (itemsError) throw itemsError;
@@ -54,7 +68,7 @@ const ReimbursementDetails = () => {
           .select("*")
           .in("invoice_id", expenseIds)
           .order("display_order");
-        
+
         if (receiptsData) {
           setAllReceipts(receiptsData);
         }
@@ -69,17 +83,17 @@ const ReimbursementDetails = () => {
 
   const handleExportCSV = () => {
     const headers = ["Date", "Vendor", "Category", "Amount", "Notes"];
-    const rows = expenses.map(exp => [
+    const rows = expenses.map((exp) => [
       exp.date,
       exp.vendor,
       exp.category,
       exp.amount,
-      exp.notes || ""
+      exp.notes || "",
     ]);
 
     const csvContent = [
       headers.join(","),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv" });
@@ -93,7 +107,9 @@ const ReimbursementDetails = () => {
 
   const handleGeneratePDF = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       // Fetch HSA accounts for grouping
@@ -141,15 +157,19 @@ const ReimbursementDetails = () => {
 
       // Send notification email on meaningful status transitions (not same-status no-ops)
       if (previousStatus !== newStatus) {
-        supabase.functions.invoke("send-notification", {
-          body: {
-            type: "reimbursement_update",
-            request_id: id,
-            new_status: newStatus,
-            total_amount: Number(request?.total_amount ?? 0),
-            hsa_provider: request?.hsa_provider ?? undefined,
-          },
-        }).catch((err) => logError("Failed to send reimbursement notification", err));
+        supabase.functions
+          .invoke("send-notification", {
+            body: {
+              type: "reimbursement_update",
+              request_id: id,
+              new_status: newStatus,
+              total_amount: Number(request?.total_amount ?? 0),
+              hsa_provider: request?.hsa_provider ?? undefined,
+            },
+          })
+          .catch((err) =>
+            logError("Failed to send reimbursement notification", err),
+          );
       }
     } catch (error) {
       logError("Failed to update status", error);
@@ -169,8 +189,12 @@ const ReimbursementDetails = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground mb-4">Reimbursement request not found</p>
-          <Button onClick={() => navigate("/dashboard")}>Back to Dashboard</Button>
+          <p className="text-muted-foreground mb-4">
+            Reimbursement request not found
+          </p>
+          <Button onClick={() => navigate("/dashboard")}>
+            Back to Dashboard
+          </Button>
         </div>
       </div>
     );
@@ -180,14 +204,18 @@ const ReimbursementDetails = () => {
     <div className="min-h-screen bg-background">
       <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <button 
+          <button
             onClick={() => navigate("/dashboard")}
             className="hover:opacity-80 transition-opacity"
           >
             <WellthLogo size="sm" showTagline />
           </button>
-          
-          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/dashboard")}
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
@@ -196,7 +224,9 @@ const ReimbursementDetails = () => {
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Reimbursement Request Details</h1>
+          <h1 className="text-3xl font-bold mb-2">
+            Reimbursement Request Details
+          </h1>
           <p className="text-muted-foreground">
             View and manage your HSA reimbursement submission
           </p>
@@ -205,24 +235,36 @@ const ReimbursementDetails = () => {
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm font-medium">Total Amount</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Amount
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${Number(request.total_amount).toFixed(2)}</div>
+              <div className="text-2xl font-bold">
+                ${Number(request.total_amount).toFixed(2)}
+              </div>
               <p className="text-xs text-muted-foreground">
-                {expenses.length} {expenses.length === 1 ? "expense" : "expenses"}
+                {expenses.length}{" "}
+                {expenses.length === 1 ? "expense" : "expenses"}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm font-medium">HSA Provider</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                HSA Provider
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{request.hsa_provider || "Not specified"}</div>
+              <div className="text-2xl font-bold">
+                {request.hsa_provider || "Not specified"}
+              </div>
               <p className="text-xs text-muted-foreground">
-                Submitted {request.submitted_at ? new Date(request.submitted_at).toLocaleDateString() : "Not yet"}
+                Submitted{" "}
+                {request.submitted_at
+                  ? new Date(request.submitted_at).toLocaleDateString()
+                  : "Not yet"}
               </p>
             </CardContent>
           </Card>
@@ -255,7 +297,9 @@ const ReimbursementDetails = () => {
             <div className="flex justify-between items-center">
               <div>
                 <CardTitle>Export & Actions</CardTitle>
-                <CardDescription>Download your reimbursement documentation</CardDescription>
+                <CardDescription>
+                  Download your reimbursement documentation
+                </CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -287,27 +331,39 @@ const ReimbursementDetails = () => {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Attached Expenses</CardTitle>
-            <CardDescription>Expenses included in this reimbursement request</CardDescription>
+            <CardDescription>
+              Expenses included in this reimbursement request
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {expenses.map((expense) => (
-                <div key={expense.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div
+                  key={expense.id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <p className="font-medium">{expense.vendor}</p>
                       {expense.is_hsa_eligible && (
-                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">HSA</span>
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                          HSA
+                        </span>
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {expense.category} • {new Date(expense.date).toLocaleDateString()}
+                      {expense.category} •{" "}
+                      {new Date(expense.date).toLocaleDateString()}
                     </p>
                     {expense.notes && (
-                      <p className="text-xs text-muted-foreground mt-1">{expense.notes}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {expense.notes}
+                      </p>
                     )}
                   </div>
-                  <p className="font-semibold">${Number(expense.amount).toFixed(2)}</p>
+                  <p className="font-semibold">
+                    ${Number(expense.amount).toFixed(2)}
+                  </p>
                 </div>
               ))}
             </div>
@@ -318,7 +374,9 @@ const ReimbursementDetails = () => {
           <Card>
             <CardHeader>
               <CardTitle>Supporting Documents</CardTitle>
-              <CardDescription>All receipts and documentation for this reimbursement</CardDescription>
+              <CardDescription>
+                All receipts and documentation for this reimbursement
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <ReceiptGallery

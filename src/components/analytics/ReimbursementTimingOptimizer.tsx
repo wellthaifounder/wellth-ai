@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { TrendingUp, TrendingDown, Calendar, DollarSign } from "lucide-react";
 
@@ -16,7 +22,7 @@ export const ReimbursementTimingOptimizer = ({
   const currentSavings = unreimbursedTotal * (currentTaxBracket / 100);
   const futureSavings = unreimbursedTotal * (projectedTaxBracket / 100);
   const savingsDifferential = futureSavings - currentSavings;
-  
+
   const shouldWait = projectedTaxBracket > currentTaxBracket;
   const yearsToWait = shouldWait ? Math.ceil(savingsDifferential / 100) : 0;
 
@@ -45,8 +51,12 @@ export const ReimbursementTimingOptimizer = ({
 
         <div className="pt-4 border-t">
           <div className="space-y-1 mb-4">
-            <p className="text-sm text-muted-foreground">Unreimbursed HSA Balance</p>
-            <p className="text-3xl font-bold">${unreimbursedTotal.toFixed(2)}</p>
+            <p className="text-sm text-muted-foreground">
+              Unreimbursed HSA Balance
+            </p>
+            <p className="text-3xl font-bold">
+              ${unreimbursedTotal.toFixed(2)}
+            </p>
           </div>
 
           {shouldWait ? (
@@ -55,14 +65,20 @@ export const ReimbursementTimingOptimizer = ({
               <AlertDescription>
                 <p className="font-semibold mb-2">💡 Wait to Reimburse</p>
                 <p className="text-sm">
-                  Your projected tax bracket is higher. By waiting to reimburse, you could save an additional{" "}
-                  <span className="font-bold">${savingsDifferential.toFixed(2)}</span> in taxes.
+                  Your projected tax bracket is higher. By waiting to reimburse,
+                  you could save an additional{" "}
+                  <span className="font-bold">
+                    ${savingsDifferential.toFixed(2)}
+                  </span>{" "}
+                  in taxes.
                 </p>
                 <p className="text-sm mt-2">
-                  <span className="font-semibold">Current savings:</span> ${currentSavings.toFixed(2)}
+                  <span className="font-semibold">Current savings:</span> $
+                  {currentSavings.toFixed(2)}
                 </p>
                 <p className="text-sm">
-                  <span className="font-semibold">Future savings:</span> ${futureSavings.toFixed(2)}
+                  <span className="font-semibold">Future savings:</span> $
+                  {futureSavings.toFixed(2)}
                 </p>
               </AlertDescription>
             </Alert>
@@ -72,8 +88,12 @@ export const ReimbursementTimingOptimizer = ({
               <AlertDescription>
                 <p className="font-semibold mb-2">⚡ Reimburse Soon</p>
                 <p className="text-sm">
-                  Your current tax bracket is higher. Consider reimbursing now to maximize your tax savings of{" "}
-                  <span className="font-bold">${currentSavings.toFixed(2)}</span>.
+                  Your current tax bracket is higher. Consider reimbursing now
+                  to maximize your tax savings of{" "}
+                  <span className="font-bold">
+                    ${currentSavings.toFixed(2)}
+                  </span>
+                  .
                 </p>
               </AlertDescription>
             </Alert>

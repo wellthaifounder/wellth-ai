@@ -21,17 +21,18 @@ export const AuthenticatedLayout = ({
   // Enable session timeout for security (15 min inactivity, 2 min warning)
   useSessionTimeout(15, 2);
   const { hasHSA, userIntent } = useHSA();
-  const showHSAFeatures = userIntent === 'hsa' || userIntent === 'both' || hasHSA;
+  const showHSAFeatures =
+    userIntent === "hsa" || userIntent === "both" || hasHSA;
 
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full overflow-x-hidden">
         {/* Desktop Sidebar - hidden on mobile */}
         <div className="hidden lg:block">
-      <AppSidebar
-        unreviewedTransactions={unreviewedTransactions}
-        pendingReviews={pendingReviews}
-      />
+          <AppSidebar
+            unreviewedTransactions={unreviewedTransactions}
+            pendingReviews={pendingReviews}
+          />
         </div>
 
         <div className="flex-1 flex flex-col w-full">
@@ -40,16 +41,14 @@ export const AuthenticatedLayout = ({
             unreviewedTransactions={unreviewedTransactions}
             pendingReviews={pendingReviews}
           />
-          
+
           {/* Desktop Sidebar Trigger - visible on desktop */}
           <div className="hidden lg:block border-b border-border/40 px-4 py-2">
             <SidebarTrigger className="-ml-1" />
           </div>
 
           {/* Main Content */}
-          <main className="flex-1 pb-20 lg:pb-0">
-            {children}
-          </main>
+          <main className="flex-1 pb-20 lg:pb-0">{children}</main>
 
           {/* Bottom Tab Navigation - mobile only */}
           <BottomTabNavigation
@@ -58,7 +57,7 @@ export const AuthenticatedLayout = ({
           />
         </div>
       </div>
-      
+
       {/* Wellbie Chat - only for authenticated users */}
       <WellbieChat />
     </SidebarProvider>

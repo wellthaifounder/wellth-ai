@@ -64,7 +64,11 @@ const EVENT_TYPES = [
   { value: "other", label: "Other" },
 ];
 
-export function MigrationWizard({ open, onOpenChange, onComplete }: MigrationWizardProps) {
+export function MigrationWizard({
+  open,
+  onOpenChange,
+  onComplete,
+}: MigrationWizardProps) {
   const queryClient = useQueryClient();
   const [step, setStep] = useState<Step>("select");
   const [selectedInvoices, setSelectedInvoices] = useState<string[]>([]);
@@ -77,7 +81,9 @@ export function MigrationWizard({ open, onOpenChange, onComplete }: MigrationWiz
   const { data: invoices, isLoading } = useQuery({
     queryKey: ["unorganized-invoices"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
@@ -94,16 +100,22 @@ export function MigrationWizard({ open, onOpenChange, onComplete }: MigrationWiz
   });
 
   // Group invoices by vendor for easier selection
-  const invoicesByVendor = invoices?.reduce((acc, inv) => {
-    if (!acc[inv.vendor]) acc[inv.vendor] = [];
-    acc[inv.vendor].push(inv);
-    return acc;
-  }, {} as Record<string, Invoice[]>) || {};
+  const invoicesByVendor =
+    invoices?.reduce(
+      (acc, inv) => {
+        if (!acc[inv.vendor]) acc[inv.vendor] = [];
+        acc[inv.vendor].push(inv);
+        return acc;
+      },
+      {} as Record<string, Invoice[]>,
+    ) || {};
 
   // Create event mutation
   const createEventMutation = useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       // Create the event
@@ -114,9 +126,10 @@ export function MigrationWizard({ open, onOpenChange, onComplete }: MigrationWiz
           title: newEventTitle,
           event_type: newEventType,
           primary_provider: newEventProvider || null,
-          event_date: selectedInvoices.length > 0
-            ? invoices?.find((i) => selectedInvoices.includes(i.id))?.date
-            : null,
+          event_date:
+            selectedInvoices.length > 0
+              ? invoices?.find((i) => selectedInvoices.includes(i.id))?.date
+              : null,
         })
         .select()
         .single();
@@ -152,12 +165,18 @@ export function MigrationWizard({ open, onOpenChange, onComplete }: MigrationWiz
 
   const handleSelectAll = (vendor: string) => {
     const vendorInvoiceIds = invoicesByVendor[vendor].map((i) => i.id);
-    const allSelected = vendorInvoiceIds.every((id) => selectedInvoices.includes(id));
+    const allSelected = vendorInvoiceIds.every((id) =>
+      selectedInvoices.includes(id),
+    );
 
     if (allSelected) {
-      setSelectedInvoices(selectedInvoices.filter((id) => !vendorInvoiceIds.includes(id)));
+      setSelectedInvoices(
+        selectedInvoices.filter((id) => !vendorInvoiceIds.includes(id)),
+      );
     } else {
-      setSelectedInvoices([...new Set([...selectedInvoices, ...vendorInvoiceIds])]);
+      setSelectedInvoices([
+        ...new Set([...selectedInvoices, ...vendorInvoiceIds]),
+      ]);
     }
   };
 
@@ -187,7 +206,9 @@ export function MigrationWizard({ open, onOpenChange, onComplete }: MigrationWiz
   // Auto-fill event details from selection
   const autoFillFromSelection = () => {
     if (selectedInvoices.length > 0) {
-      const firstInvoice = invoices?.find((i) => selectedInvoices.includes(i.id));
+      const firstInvoice = invoices?.find((i) =>
+        selectedInvoices.includes(i.id),
+      );
       if (firstInvoice) {
         if (!newEventProvider) setNewEventProvider(firstInvoice.vendor);
         if (!newEventTitle) {
@@ -205,7 +226,8 @@ export function MigrationWizard({ open, onOpenChange, onComplete }: MigrationWiz
           <DialogTitle>Organize Your Bills</DialogTitle>
           <DialogDescription>
             {step === "select" && "Select bills to group into a medical event"}
-            {step === "organize" && "Create a new event and link the selected bills"}
+            {step === "organize" &&
+              "Create a new event and link the selected bills"}
             {step === "complete" && "Great job organizing your bills!"}
           </DialogDescription>
         </DialogHeader>
@@ -224,61 +246,72 @@ export function MigrationWizard({ open, onOpenChange, onComplete }: MigrationWiz
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {Object.entries(invoicesByVendor).map(([vendor, vendorInvoices]) => (
-                    <div key={vendor} className="border rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">{vendor}</span>
-                          <Badge variant="secondary" className="text-xs">
-                            {vendorInvoices.length} bill{vendorInvoices.length > 1 ? "s" : ""}
-                          </Badge>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleSelectAll(vendor)}
-                        >
-                          {vendorInvoices.every((i) => selectedInvoices.includes(i.id))
-                            ? "Deselect All"
-                            : "Select All"}
-                        </Button>
-                      </div>
-                      <div className="space-y-2">
-                        {vendorInvoices.map((invoice) => (
-                          <div
-                            key={invoice.id}
-                            className="flex items-center gap-3 p-2 rounded hover:bg-muted/50"
+                  {Object.entries(invoicesByVendor).map(
+                    ([vendor, vendorInvoices]) => (
+                      <div key={vendor} className="border rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Building2 className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">{vendor}</span>
+                            <Badge variant="secondary" className="text-xs">
+                              {vendorInvoices.length} bill
+                              {vendorInvoices.length > 1 ? "s" : ""}
+                            </Badge>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleSelectAll(vendor)}
                           >
-                            <Checkbox
-                              checked={selectedInvoices.includes(invoice.id)}
-                              onCheckedChange={() => toggleInvoice(invoice.id)}
-                            />
-                            <div className="flex-1 flex items-center justify-between">
-                              <div className="flex items-center gap-2 text-sm">
-                                <Calendar className="h-3 w-3 text-muted-foreground" />
-                                {format(new Date(invoice.date), "MMM d, yyyy")}
-                                <Badge variant="outline" className="text-xs">
-                                  {invoice.category}
-                                </Badge>
-                              </div>
-                              <div className="flex items-center gap-1 text-sm font-medium">
-                                <DollarSign className="h-3 w-3" />
-                                {invoice.amount.toFixed(2)}
+                            {vendorInvoices.every((i) =>
+                              selectedInvoices.includes(i.id),
+                            )
+                              ? "Deselect All"
+                              : "Select All"}
+                          </Button>
+                        </div>
+                        <div className="space-y-2">
+                          {vendorInvoices.map((invoice) => (
+                            <div
+                              key={invoice.id}
+                              className="flex items-center gap-3 p-2 rounded hover:bg-muted/50"
+                            >
+                              <Checkbox
+                                checked={selectedInvoices.includes(invoice.id)}
+                                onCheckedChange={() =>
+                                  toggleInvoice(invoice.id)
+                                }
+                              />
+                              <div className="flex-1 flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Calendar className="h-3 w-3 text-muted-foreground" />
+                                  {format(
+                                    new Date(invoice.date),
+                                    "MMM d, yyyy",
+                                  )}
+                                  <Badge variant="outline" className="text-xs">
+                                    {invoice.category}
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center gap-1 text-sm font-medium">
+                                  <DollarSign className="h-3 w-3" />
+                                  {invoice.amount.toFixed(2)}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ),
+                  )}
                 </div>
               )}
             </ScrollArea>
 
             <div className="flex items-center justify-between pt-4 border-t">
               <p className="text-sm text-muted-foreground">
-                {selectedInvoices.length} bill{selectedInvoices.length !== 1 ? "s" : ""} selected
+                {selectedInvoices.length} bill
+                {selectedInvoices.length !== 1 ? "s" : ""} selected
               </p>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -305,7 +338,10 @@ export function MigrationWizard({ open, onOpenChange, onComplete }: MigrationWiz
               <div className="p-3 bg-muted rounded-lg">
                 <p className="text-sm">
                   Creating event with{" "}
-                  <span className="font-semibold">{selectedInvoices.length} bill{selectedInvoices.length > 1 ? "s" : ""}</span>
+                  <span className="font-semibold">
+                    {selectedInvoices.length} bill
+                    {selectedInvoices.length > 1 ? "s" : ""}
+                  </span>
                 </p>
               </div>
 
@@ -355,7 +391,9 @@ export function MigrationWizard({ open, onOpenChange, onComplete }: MigrationWiz
               <div className="flex gap-2">
                 <Button
                   onClick={handleCreateEvent}
-                  disabled={createEventMutation.isPending || !newEventTitle.trim()}
+                  disabled={
+                    createEventMutation.isPending || !newEventTitle.trim()
+                  }
                 >
                   {createEventMutation.isPending && (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -373,10 +411,12 @@ export function MigrationWizard({ open, onOpenChange, onComplete }: MigrationWiz
             <div className="text-center py-8">
               <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">
-                {createdEventsCount} Event{createdEventsCount > 1 ? "s" : ""} Created!
+                {createdEventsCount} Event{createdEventsCount > 1 ? "s" : ""}{" "}
+                Created!
               </h3>
               <p className="text-muted-foreground">
-                Your bills are now organized into medical events for easier tracking.
+                Your bills are now organized into medical events for easier
+                tracking.
               </p>
             </div>
 

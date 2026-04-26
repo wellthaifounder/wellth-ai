@@ -15,8 +15,12 @@ interface Review {
 export const Testimonials = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
-  const { ref: headerRef, isVisible: headerVisible } = useScrollAnimation({ threshold: 0.3 });
-  const { ref: reviewsRef, isVisible: reviewsVisible } = useScrollAnimation({ threshold: 0.1 });
+  const { ref: headerRef, isVisible: headerVisible } = useScrollAnimation({
+    threshold: 0.3,
+  });
+  const { ref: reviewsRef, isVisible: reviewsVisible } = useScrollAnimation({
+    threshold: 0.1,
+  });
 
   useEffect(() => {
     const fetchFeaturedReviews = async () => {
@@ -46,9 +50,9 @@ export const Testimonials = () => {
   return (
     <section id="testimonials" className="py-20 lg:py-32 bg-gradient-soft">
       <div className="container mx-auto px-4">
-        <div 
+        <div
           ref={headerRef}
-          className={`mx-auto max-w-3xl text-center mb-12 scroll-fade-in ${headerVisible ? 'visible' : ''}`}
+          className={`mx-auto max-w-3xl text-center mb-12 scroll-fade-in ${headerVisible ? "visible" : ""}`}
         >
           <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
             What Our Users Say
@@ -58,9 +62,9 @@ export const Testimonials = () => {
           </p>
         </div>
 
-        <div 
+        <div
           ref={reviewsRef}
-          className={`mx-auto max-w-6xl grid gap-6 md:grid-cols-2 lg:grid-cols-3 scroll-fade-in ${reviewsVisible ? 'visible' : ''}`}
+          className={`mx-auto max-w-6xl grid gap-6 md:grid-cols-2 lg:grid-cols-3 scroll-fade-in ${reviewsVisible ? "visible" : ""}`}
         >
           {reviews.map((review) => (
             <Card key={review.id} className="hover:shadow-lg transition-shadow">

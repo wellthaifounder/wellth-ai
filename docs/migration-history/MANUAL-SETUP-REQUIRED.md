@@ -22,22 +22,26 @@ MIGRATION_ADMIN_KEY=f6AJDVZV6vgM4RXEcy/2RRwLdNndA3lGSO95oTX0Lbg=
 ## 📋 Manual Steps Checklist
 
 ### Prerequisites
+
 - [ ] Supabase CLI installed (`npm install -g supabase` or `brew install supabase/tap/supabase`)
 - [ ] Logged into Supabase CLI (`supabase login`)
 - [ ] Project linked (`supabase link --project-ref YOUR_PROJECT_REF`)
 
 ### Step 1: Set Environment Variables
+
 ```bash
 supabase secrets set PLAID_ENCRYPTION_KEY="v3DUs0QkAwzuuLghL7KB+pIL18qK3Caq6QbOT7tYBSg="
 supabase secrets set MIGRATION_ADMIN_KEY="f6AJDVZV6vgM4RXEcy/2RRwLdNndA3lGSO95oTX0Lbg="
 ```
 
 Verify:
+
 ```bash
 supabase secrets list
 ```
 
 ### Step 2: Run Database Migration
+
 ```bash
 supabase db push
 ```
@@ -45,6 +49,7 @@ supabase db push
 This adds the `encrypted_access_token` column to the `plaid_connections` table.
 
 Verify:
+
 ```bash
 supabase db query "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'plaid_connections' AND column_name = 'encrypted_access_token';"
 ```
@@ -52,6 +57,7 @@ supabase db query "SELECT column_name, data_type FROM information_schema.columns
 Expected output: Should show the new column exists.
 
 ### Step 3: Deploy Edge Functions
+
 ```bash
 # Deploy updated functions with encryption
 supabase functions deploy plaid-exchange-token
@@ -62,6 +68,7 @@ supabase functions deploy migrate-encrypt-tokens
 ```
 
 Verify:
+
 ```bash
 supabase functions list
 ```
@@ -69,6 +76,7 @@ supabase functions list
 ### Step 4: Migrate Existing Tokens (If Applicable)
 
 **Check if you have existing Plaid connections:**
+
 ```bash
 supabase db query "SELECT COUNT(*) as total_connections FROM plaid_connections;"
 ```
@@ -87,6 +95,7 @@ curl -X POST https://YOUR_PROJECT.supabase.co/functions/v1/migrate-encrypt-token
 ```
 
 Expected response:
+
 ```json
 {
   "success": true,
@@ -97,6 +106,7 @@ Expected response:
 ```
 
 **Verify migration:**
+
 ```bash
 supabase db query "SELECT COUNT(*) as encrypted FROM plaid_connections WHERE encrypted_access_token IS NOT NULL;"
 ```
@@ -161,6 +171,7 @@ supabase db query "
 ## 🆘 Troubleshooting
 
 ### "supabase: command not found"
+
 ```bash
 npm install -g supabase
 # OR
@@ -168,6 +179,7 @@ brew install supabase/tap/supabase
 ```
 
 ### "Project not linked"
+
 ```bash
 supabase link --project-ref YOUR_PROJECT_REF
 ```
@@ -175,6 +187,7 @@ supabase link --project-ref YOUR_PROJECT_REF
 Get your project ref from Supabase dashboard URL: `https://supabase.com/dashboard/project/YOUR_PROJECT_REF`
 
 ### "PLAID_ENCRYPTION_KEY not set" in logs
+
 ```bash
 # Check if secret was set correctly
 supabase secrets list
@@ -184,11 +197,13 @@ supabase secrets set PLAID_ENCRYPTION_KEY="v3DUs0QkAwzuuLghL7KB+pIL18qK3Caq6QbOT
 ```
 
 ### Migration function returns error
+
 - Check that `MIGRATION_ADMIN_KEY` matches exactly
 - Verify you're using the anon key, not service role key, in the Authorization header
 - Check function logs: `supabase functions logs migrate-encrypt-tokens`
 
 ### New connections still use plaintext
+
 - Verify `plaid-exchange-token` function was deployed successfully
 - Check function logs for errors: `supabase functions logs plaid-exchange-token`
 - Ensure `PLAID_ENCRYPTION_KEY` is set in Supabase secrets

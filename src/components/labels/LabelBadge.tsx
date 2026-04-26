@@ -8,7 +8,12 @@ interface LabelBadgeProps {
   className?: string;
 }
 
-export const LabelBadge = ({ name, color, onRemove, className }: LabelBadgeProps) => {
+export const LabelBadge = ({
+  name,
+  color,
+  onRemove,
+  className,
+}: LabelBadgeProps) => {
   return (
     <Badge
       variant="secondary"

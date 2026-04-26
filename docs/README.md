@@ -5,6 +5,7 @@ Welcome to the Wellth.ai documentation! This comprehensive guide covers everythi
 ## Quick Navigation
 
 ### Getting Started
+
 Start here if you're new to Wellth.ai development:
 
 - **[Installation Guide](getting-started/installation.md)** - Set up your local development environment
@@ -15,6 +16,7 @@ Start here if you're new to Wellth.ai development:
 **Time to first contribution:** <2 hours
 
 ### Architecture & Design
+
 Understand how Wellth.ai is built:
 
 - **[System Overview](architecture/README.md)** - High-level architecture and design decisions
@@ -23,6 +25,7 @@ Understand how Wellth.ai is built:
 - **[Frontend Architecture](architecture/frontend-architecture.md)** - React component structure and state management
 
 ### API Documentation
+
 Reference for all edge functions:
 
 - **[API Overview](api/README.md)** - All 17 Supabase edge functions
@@ -30,6 +33,7 @@ Reference for all edge functions:
 - **[Authentication](architecture/README.md#authentication)** - Auth flow and session management
 
 ### Security & Compliance
+
 Critical for healthcare applications:
 
 - **[Security Policy](security/SECURITY.md)** - Vulnerability reporting and security measures
@@ -38,6 +42,7 @@ Critical for healthcare applications:
 - **[RLS Policies](database/rls-policies.md)** - Row Level Security implementation
 
 ### Development
+
 Guidelines for contributing:
 
 - **[Coding Standards](development/coding-standards.md)** - TypeScript, React, and styling conventions
@@ -46,6 +51,7 @@ Guidelines for contributing:
 - **[Contributing](../CONTRIBUTING.md)** - How to contribute to Wellth.ai
 
 ### Features
+
 Feature-specific documentation:
 
 - **[Expense Tracking](features/expense-tracking.md)** - Receipt upload and categorization
@@ -55,6 +61,7 @@ Feature-specific documentation:
 - **[See all features →](features/README.md)**
 
 ### Design System
+
 UI/UX guidelines:
 
 - **[Design System](design/design-system.md)** - Complete design system documentation
@@ -62,6 +69,7 @@ UI/UX guidelines:
 - **[Pricing Tiers](design/pricing-tiers.md)** - Subscription feature gates
 
 ### Integrations
+
 Third-party service integration:
 
 - **[Stripe](integrations/stripe.md)** - Subscription and payment processing
@@ -69,6 +77,7 @@ Third-party service integration:
 - **[Gemini AI](integrations/gemini-ai.md)** - AI-powered bill analysis and chat
 
 ### Deployment & Operations
+
 Production deployment:
 
 - **[Supabase Setup](deployment/supabase-setup.md)** - Project creation and configuration
@@ -76,6 +85,7 @@ Production deployment:
 - **[Troubleshooting](deployment/troubleshooting.md)** - Common issues and solutions
 
 ### Audit Reports
+
 Historical documentation:
 
 - **[Complete Audit Summary](audits/complete-audit-summary.md)** - Comprehensive security and performance audit
@@ -168,33 +178,39 @@ docs/
 ### I want to...
 
 **...get started developing:**
+
 1. Read [Installation Guide](getting-started/installation.md)
 2. Set up [Environment Variables](getting-started/environment-variables.md)
 3. Follow [Development Guide](getting-started/development.md)
 
 **...understand the architecture:**
+
 1. Start with [System Overview](architecture/README.md)
 2. Review [Database Schema](database/schema.md)
 3. Explore [API Documentation](api/README.md)
 
 **...add a new feature:**
+
 1. Review [Coding Standards](development/coding-standards.md)
 2. Check [Contributing Guide](../CONTRIBUTING.md)
 3. Reference existing [Feature Documentation](features/README.md)
 4. Write tests following [Testing Guide](development/testing.md)
 
 **...ensure HIPAA compliance:**
+
 1. Read [HIPAA Compliance](security/hipaa-compliance.md)
 2. Follow [PHI Handling](security/phi-handling.md) guidelines
 3. Review [Security Architecture](security/README.md)
 4. Check [RLS Policies](database/rls-policies.md)
 
 **...deploy to production:**
+
 1. Follow [Supabase Setup](deployment/supabase-setup.md)
 2. Configure [Environment Setup](deployment/environment-setup.md)
 3. Review [Security Checklist](security/SECURITY.md)
 
 **...integrate a third-party service:**
+
 1. Check [Integrations](integrations/README.md)
 2. Follow service-specific guide ([Stripe](integrations/stripe.md), [Plaid](integrations/plaid.md), etc.)
 3. Update environment variables
@@ -218,22 +234,26 @@ When contributing to documentation:
 ## Key Metrics
 
 ### Security
+
 - **40+ RLS policies** protecting all user data
 - **AES-256-GCM encryption** for sensitive banking tokens
 - **HIPAA-compliant** architecture (Technical, Physical, Administrative safeguards)
 - **PHI redaction** in logs and errors
 
 ### Performance
+
 - **70-90% reduction** in database queries
 - **70%+ faster** page load times
 - **50-90% faster** filtered queries
 
 ### Accessibility
+
 - **WCAG 2.1 AA** compliance
 - **Keyboard navigation** throughout app
 - **Screen reader** support
 
 ### Coverage
+
 - **17 edge functions** documented
 - **20+ database tables** documented
 - **35+ migrations** tracked

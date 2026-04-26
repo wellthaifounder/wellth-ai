@@ -37,7 +37,7 @@ export const calculateInvestmentGrowth = (
   principal: number,
   monthlyRate: number,
   months: number,
-  monthlyPayment: number
+  monthlyPayment: number,
 ): number => {
   if (monthlyPayment <= 0) {
     // No monthly payments - simple compound growth on full principal
@@ -58,7 +58,9 @@ export const calculateInvestmentGrowth = (
   return totalGrowth;
 };
 
-export const getPaymentRecommendation = (input: RecommendationInput): PaymentRecommendation => {
+export const getPaymentRecommendation = (
+  input: RecommendationInput,
+): PaymentRecommendation => {
   const {
     amount,
     isHsaEligible,
@@ -96,28 +98,32 @@ export const getPaymentRecommendation = (input: RecommendationInput): PaymentRec
   // HSA-eligible expense - calculate the "invest and reimburse later" strategy
   const rewardsValue = amount * rewardsRate;
   const taxSavings = amount * taxRate;
-  
+
   // Timing benefit: Investment growth during card payoff period (on declining balance if monthly payments)
   const monthlyInvestmentRate = investmentReturnRate / 12;
   const timingBenefit = calculateInvestmentGrowth(
     amount,
     monthlyInvestmentRate,
     cardPayoffMonths,
-    monthlyPayment
+    monthlyPayment,
   );
-  
+
   // Long-term investment growth: From card payoff to eventual reimbursement
-  const remainingBalance = monthlyPayment > 0 
-    ? Math.max(0, amount - (monthlyPayment * cardPayoffMonths))
-    : amount;
-  
-  const yearsAfterPayoff = hsaInvestmentYears - (cardPayoffMonths / 12);
-  const longTermGrowth = yearsAfterPayoff > 0
-    ? remainingBalance * Math.pow(1 + investmentReturnRate, yearsAfterPayoff) - remainingBalance
-    : 0;
-  
+  const remainingBalance =
+    monthlyPayment > 0
+      ? Math.max(0, amount - monthlyPayment * cardPayoffMonths)
+      : amount;
+
+  const yearsAfterPayoff = hsaInvestmentYears - cardPayoffMonths / 12;
+  const longTermGrowth =
+    yearsAfterPayoff > 0
+      ? remainingBalance *
+          Math.pow(1 + investmentReturnRate, yearsAfterPayoff) -
+        remainingBalance
+      : 0;
+
   const totalInvestmentGrowth = timingBenefit + longTermGrowth;
-  
+
   // Total benefit includes rewards, tax savings, and all investment growth
   const totalBenefit = rewardsValue + taxSavings + totalInvestmentGrowth;
 
@@ -128,24 +134,23 @@ export const getPaymentRecommendation = (input: RecommendationInput): PaymentRec
 
   if (timingBenefit > 0) {
     reasoning.push(
-      `📈 Growth during payoff: +$${timingBenefit.toFixed(2)} (${cardPayoffMonths} months${monthlyPayment > 0 ? ' with declining balance' : ''})`
+      `📈 Growth during payoff: +$${timingBenefit.toFixed(2)} (${cardPayoffMonths} months${monthlyPayment > 0 ? " with declining balance" : ""})`,
     );
   }
 
   if (longTermGrowth > 0) {
     reasoning.push(
-      `📊 Long-term growth: +$${longTermGrowth.toFixed(2)} (${yearsAfterPayoff.toFixed(1)} years after payoff)`
+      `📊 Long-term growth: +$${longTermGrowth.toFixed(2)} (${yearsAfterPayoff.toFixed(1)} years after payoff)`,
     );
   }
 
   reasoning.push(
     "⏰ Card must be paid off on time to avoid interest charges",
-    "📄 Receipts are required for HSA reimbursement — there's no deadline to submit"
+    "📄 Receipts are required for HSA reimbursement — there's no deadline to submit",
   );
 
-  const payoffDescription = cardPayoffMonths <= 1 
-    ? "immediately" 
-    : `over ${cardPayoffMonths} months`;
+  const payoffDescription =
+    cardPayoffMonths <= 1 ? "immediately" : `over ${cardPayoffMonths} months`;
 
   return {
     method: "hsa-invest",

@@ -36,6 +36,7 @@ All TypeScript must pass strict type checking:
 ### Type Definitions
 
 **Interfaces over Types for Objects:**
+
 ```typescript
 // ✅ Good
 interface User {
@@ -49,15 +50,17 @@ type User = {
   id: string;
   email: string;
   name: string;
-}
+};
 ```
 
 **Use `type` for:**
+
 - Unions: `type Status = 'pending' | 'approved' | 'rejected'`
 - Intersections: `type Extended = Base & Additional`
 - Mapped types: `type Readonly<T> = { readonly [P in keyof T]: T[P] }`
 
 **Explicit Return Types:**
+
 ```typescript
 // ✅ Good - explicit return type
 export function calculateTotal(items: Item[]): number {
@@ -75,14 +78,14 @@ export function calculateTotal(items: Item[]) {
 Use Zod for all user input validation:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 // Define schema
 const expenseSchema = z.object({
   amount: z.number().positive(),
   category: z.string().min(1).max(50),
   date: z.string().datetime(),
-  isHsaEligible: z.boolean().optional()
+  isHsaEligible: z.boolean().optional(),
 });
 
 // Validate at runtime
@@ -106,7 +109,7 @@ interface DataItem {
 }
 
 function processData(data: DataItem[]): number[] {
-  return data.map(item => item.value);
+  return data.map((item) => item.value);
 }
 
 // ✅ Also acceptable when type truly unknown
@@ -195,18 +198,20 @@ export function ExpenseList({ userId, onExpenseClick }: ExpenseListProps) {
 ### Hooks Best Practices
 
 **Custom Hooks:**
+
 ```typescript
 // Prefix with 'use'
 function useExpenses(userId: string) {
   return useQuery({
-    queryKey: ['expenses', userId],
+    queryKey: ["expenses", userId],
     queryFn: () => fetchExpenses(userId),
-    staleTime: 5 * 60 * 1000 // 5 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 ```
 
 **Hook Dependencies:**
+
 ```typescript
 // ✅ Good - all dependencies listed
 useEffect(() => {
@@ -222,29 +227,32 @@ useEffect(() => {
 ### State Management
 
 **Server State (React Query):**
+
 ```typescript
 // Use React Query for server data
 const { data, isLoading, error } = useQuery({
-  queryKey: ['expense', id],
-  queryFn: () => fetchExpense(id)
+  queryKey: ["expense", id],
+  queryFn: () => fetchExpense(id),
 });
 
 const mutation = useMutation({
   mutationFn: createExpense,
   onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ['expenses'] });
-  }
+    queryClient.invalidateQueries({ queryKey: ["expenses"] });
+  },
 });
 ```
 
 **Local State (useState):**
+
 ```typescript
 // Use useState for component-local state
 const [isOpen, setIsOpen] = useState(false);
-const [filter, setFilter] = useState('');
+const [filter, setFilter] = useState("");
 ```
 
 **Global State (Context):**
+
 ```typescript
 // Use Context sparingly (theme, auth session only)
 const { theme, setTheme } = useTheme();
@@ -259,7 +267,7 @@ const handleClick = () => {};
 const handleChange = (e: ChangeEvent) => {};
 
 // ❌ Bad
-const onSubmit = () => {};  // Reserve 'on' for props
+const onSubmit = () => {}; // Reserve 'on' for props
 const submit = () => {};
 ```
 
@@ -269,13 +277,13 @@ const submit = () => {};
 
 ### Files and Directories
 
-| Type | Convention | Example |
-|------|------------|---------|
-| Components | PascalCase | `ExpenseForm.tsx` |
-| Hooks | camelCase with `use` | `useExpenses.ts` |
-| Utils | camelCase | `formatCurrency.ts` |
-| Types | PascalCase | `types.ts` or `expense.types.ts` |
-| Constants | SCREAMING_SNAKE_CASE file | `constants.ts` |
+| Type       | Convention                | Example                          |
+| ---------- | ------------------------- | -------------------------------- |
+| Components | PascalCase                | `ExpenseForm.tsx`                |
+| Hooks      | camelCase with `use`      | `useExpenses.ts`                 |
+| Utils      | camelCase                 | `formatCurrency.ts`              |
+| Types      | PascalCase                | `types.ts` or `expense.types.ts` |
+| Constants  | SCREAMING_SNAKE_CASE file | `constants.ts`                   |
 
 ### Code Naming
 
@@ -295,11 +303,11 @@ let expenseTotal = 0;
 
 // Constants: SCREAMING_SNAKE_CASE
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
-const API_ENDPOINT = '/api/expenses';
+const API_ENDPOINT = "/api/expenses";
 
 // Types/Interfaces: PascalCase
 interface Expense {}
-type PaymentMethod = 'credit' | 'debit' | 'hsa';
+type PaymentMethod = "credit" | "debit" | "hsa";
 
 // Private variables: prefix with underscore (if needed)
 const _internalCache = new Map();
@@ -345,23 +353,23 @@ src/
 
 ```typescript
 // 1. React imports
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 // 2. External libraries
-import { useQuery } from '@tanstack/react-query';
-import { z } from 'zod';
+import { useQuery } from "@tanstack/react-query";
+import { z } from "zod";
 
 // 3. Internal modules (@ alias)
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { useExpenses } from '@/hooks/useExpenses';
-import { formatCurrency } from '@/utils/formatCurrency';
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { useExpenses } from "@/hooks/useExpenses";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 // 4. Types
-import type { Expense } from '@/types/expense';
+import type { Expense } from "@/types/expense";
 
 // 5. Relative imports (avoid when possible, use @ alias)
-import { ExpenseCard } from './ExpenseCard';
+import { ExpenseCard } from "./ExpenseCard";
 ```
 
 ### Component File Structure
@@ -407,6 +415,7 @@ function validateAmount(amount: number): boolean {
 ### Tailwind CSS
 
 **Use Tailwind utility classes:**
+
 ```tsx
 // ✅ Good
 <div className="flex items-center justify-between px-4 py-2 bg-white rounded-lg shadow-md">
@@ -422,6 +431,7 @@ function validateAmount(amount: number): boolean {
 ### Design Tokens
 
 **Use semantic CSS variables:**
+
 ```tsx
 // ✅ Good - semantic colors from design system
 <button className="bg-primary text-primary-foreground hover:bg-primary/90">
@@ -437,6 +447,7 @@ function validateAmount(amount: number): boolean {
 ### Responsive Design
 
 **Mobile-first approach:**
+
 ```tsx
 // ✅ Good - mobile first, then tablet/desktop
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -465,24 +476,23 @@ function validateAmount(amount: number): boolean {
 ### Use Error Utilities
 
 ```typescript
-import { handleError, logError } from '@/utils/errorHandler';
+import { handleError, logError } from "@/utils/errorHandler";
 
 async function fetchExpenses(userId: string) {
   try {
     const { data, error } = await supabase
-      .from('expenses')
-      .select('*')
-      .eq('user_id', userId);
+      .from("expenses")
+      .select("*")
+      .eq("user_id", userId);
 
     if (error) throw error;
     return data;
-
   } catch (error) {
     // Development logging only
-    logError('Failed to fetch expenses', error, { userId });
+    logError("Failed to fetch expenses", error, { userId });
 
     // User-facing error (generic, no PHI)
-    handleError(error, 'fetch-expenses', toast, 'Failed to load expenses');
+    handleError(error, "fetch-expenses", toast, "Failed to load expenses");
 
     return null;
   }
@@ -499,7 +509,7 @@ try {
   if (error instanceof ValidationError) {
     showValidationErrors(error.errors);
   } else {
-    handleError(error, 'save-expense', toast);
+    handleError(error, "save-expense", toast);
   }
 }
 
@@ -519,7 +529,7 @@ try {
 
 ```typescript
 // ❌ Bad
-const API_KEY = 'sk_live_abc123...';
+const API_KEY = "sk_live_abc123...";
 
 // ✅ Good
 const API_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
@@ -531,7 +541,7 @@ const API_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 // ✅ Good
 const schema = z.object({
   amount: z.number().positive().max(1000000),
-  email: z.string().email().max(255)
+  email: z.string().email().max(255),
 });
 
 const validated = schema.parse(userInput);
@@ -541,19 +551,19 @@ const validated = schema.parse(userInput);
 
 ```typescript
 // ❌ Bad
-console.log('User email:', user.email);
-console.error('Failed for SSN:', ssn);
+console.log("User email:", user.email);
+console.error("Failed for SSN:", ssn);
 
 // ✅ Good
-import { logError } from '@/utils/errorHandler';
-logError('Operation failed', error, { userId: user.id }); // No email/SSN
+import { logError } from "@/utils/errorHandler";
+logError("Operation failed", error, { userId: user.id }); // No email/SSN
 ```
 
 ### 4. Sanitize Errors
 
 ```typescript
 // ✅ Good - use error handler
-handleError(error, 'context', toast, 'Generic message');
+handleError(error, "context", toast, "Generic message");
 
 // ❌ Bad - expose error details to user
 toast.error(error.message); // Might contain PHI or system details
@@ -564,16 +574,16 @@ toast.error(error.message); // Might contain PHI or system details
 ```typescript
 // ✅ Good - explicit user check (defense-in-depth)
 const { data } = await supabase
-  .from('expenses')
-  .select('*')
-  .eq('user_id', user.id) // Explicit ownership check
-  .eq('id', expenseId);
+  .from("expenses")
+  .select("*")
+  .eq("user_id", user.id) // Explicit ownership check
+  .eq("id", expenseId);
 
 // ⚠️ Acceptable (RLS protects) but explicit is better
 const { data } = await supabase
-  .from('expenses')
-  .select('*')
-  .eq('id', expenseId);
+  .from("expenses")
+  .select("*")
+  .eq("id", expenseId);
 ```
 
 ---
@@ -583,20 +593,20 @@ const { data } = await supabase
 ### Unit Tests
 
 ```typescript
-import { describe, it, expect } from 'vitest';
-import { formatCurrency } from './formatCurrency';
+import { describe, it, expect } from "vitest";
+import { formatCurrency } from "./formatCurrency";
 
-describe('formatCurrency', () => {
-  it('formats positive amounts correctly', () => {
-    expect(formatCurrency(1234.56)).toBe('$1,234.56');
+describe("formatCurrency", () => {
+  it("formats positive amounts correctly", () => {
+    expect(formatCurrency(1234.56)).toBe("$1,234.56");
   });
 
-  it('formats negative amounts correctly', () => {
-    expect(formatCurrency(-1234.56)).toBe('-$1,234.56');
+  it("formats negative amounts correctly", () => {
+    expect(formatCurrency(-1234.56)).toBe("-$1,234.56");
   });
 
-  it('handles zero', () => {
-    expect(formatCurrency(0)).toBe('$0.00');
+  it("handles zero", () => {
+    expect(formatCurrency(0)).toBe("$0.00");
   });
 });
 ```
@@ -620,11 +630,13 @@ describe('ExpenseCard', () => {
 ## Code Review Checklist
 
 ### Functionality
+
 - [ ] Code works as described
 - [ ] Edge cases handled
 - [ ] Error handling implemented
 
 ### Code Quality
+
 - [ ] Follows TypeScript standards (strict mode passes)
 - [ ] No `any` types (unless truly necessary)
 - [ ] Explicit return types on exported functions
@@ -633,12 +645,14 @@ describe('ExpenseCard', () => {
 - [ ] Functions are focused (<50 lines ideal)
 
 ### React Best Practices
+
 - [ ] Function components only
 - [ ] Hooks in correct order
 - [ ] Proper dependency arrays
 - [ ] Event handlers named with `handle` prefix
 
 ### Security
+
 - [ ] No secrets in code
 - [ ] Input validation with Zod
 - [ ] Error messages sanitized
@@ -646,23 +660,27 @@ describe('ExpenseCard', () => {
 - [ ] User ownership verified
 
 ### Performance
+
 - [ ] No N+1 queries
 - [ ] Proper React Query usage
 - [ ] No unnecessary re-renders
 - [ ] Memoization where appropriate
 
 ### Styling
+
 - [ ] Tailwind classes only (no inline styles)
 - [ ] Semantic design tokens used
 - [ ] Mobile-responsive
 - [ ] Consistent spacing
 
 ### Testing
+
 - [ ] Unit tests for utilities
 - [ ] Component tests for UI
 - [ ] All tests pass
 
 ### Documentation
+
 - [ ] JSDoc comments on complex functions
 - [ ] README updated if needed
 - [ ] Type definitions clear

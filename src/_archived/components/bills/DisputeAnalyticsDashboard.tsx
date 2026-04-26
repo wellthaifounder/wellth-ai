@@ -1,5 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, DollarSign, Clock, Target, AlertCircle } from "lucide-react";
+import {
+  TrendingUp,
+  DollarSign,
+  Clock,
+  Target,
+  AlertCircle,
+} from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency, formatNumber } from "@/lib/utils";
@@ -9,7 +15,10 @@ interface DisputeAnalyticsDashboardProps {
   isLoading?: boolean;
 }
 
-export const DisputeAnalyticsDashboard = ({ disputes, isLoading = false }: DisputeAnalyticsDashboardProps) => {
+export const DisputeAnalyticsDashboard = ({
+  disputes,
+  isLoading = false,
+}: DisputeAnalyticsDashboardProps) => {
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -35,27 +44,35 @@ export const DisputeAnalyticsDashboard = ({ disputes, isLoading = false }: Dispu
   }
 
   const totalDisputes = disputes.length;
-  const resolvedDisputes = disputes.filter(d => 
-    ['resolved', 'settled', 'withdrawn'].includes(d.dispute_status)
+  const resolvedDisputes = disputes.filter((d) =>
+    ["resolved", "settled", "withdrawn"].includes(d.dispute_status),
   ).length;
-  const wonDisputes = disputes.filter(d => 
-    d.dispute_status === 'resolved' && d.savings_achieved > 0
+  const wonDisputes = disputes.filter(
+    (d) => d.dispute_status === "resolved" && d.savings_achieved > 0,
   ).length;
-  
-  const totalSavings = disputes.reduce((sum, d) => sum + (d.savings_achieved || 0), 0);
+
+  const totalSavings = disputes.reduce(
+    (sum, d) => sum + (d.savings_achieved || 0),
+    0,
+  );
   const totalDisputed = disputes.reduce((sum, d) => sum + d.disputed_amount, 0);
-  const successRate = resolvedDisputes > 0 ? (wonDisputes / resolvedDisputes) * 100 : 0;
+  const successRate =
+    resolvedDisputes > 0 ? (wonDisputes / resolvedDisputes) * 100 : 0;
   const avgResolutionDays = disputes
-    .filter(d => d.resolution_date && d.submitted_date)
+    .filter((d) => d.resolution_date && d.submitted_date)
     .reduce((sum, d, _, arr) => {
       const days = Math.floor(
-        (new Date(d.resolution_date).getTime() - new Date(d.submitted_date).getTime()) / (1000 * 60 * 60 * 24)
+        (new Date(d.resolution_date).getTime() -
+          new Date(d.submitted_date).getTime()) /
+          (1000 * 60 * 60 * 24),
       );
       return sum + days / arr.length;
     }, 0);
 
-  const pendingDisputes = disputes.filter(d => 
-    ['submitted', 'under_review', 'additional_info_requested'].includes(d.dispute_status)
+  const pendingDisputes = disputes.filter((d) =>
+    ["submitted", "under_review", "additional_info_requested"].includes(
+      d.dispute_status,
+    ),
   ).length;
 
   const metrics = [
@@ -97,7 +114,9 @@ export const DisputeAnalyticsDashboard = ({ disputes, isLoading = false }: Dispu
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">{metric.title}</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {metric.title}
+                  </p>
                   <p className="text-2xl font-bold mt-2">{metric.value}</p>
                 </div>
                 <div className={`p-3 rounded-lg ${metric.bgColor}`}>
@@ -124,17 +143,24 @@ export const DisputeAnalyticsDashboard = ({ disputes, isLoading = false }: Dispu
                 {resolvedDisputes} of {totalDisputes} resolved
               </span>
             </div>
-            <Progress value={(resolvedDisputes / totalDisputes) * 100} className="h-2" />
+            <Progress
+              value={(resolvedDisputes / totalDisputes) * 100}
+              className="h-2"
+            />
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">Savings Recovery</span>
               <span className="text-sm text-muted-foreground">
-                ${totalSavings.toLocaleString()} of ${totalDisputed.toLocaleString()}
+                ${totalSavings.toLocaleString()} of $
+                {totalDisputed.toLocaleString()}
               </span>
             </div>
-            <Progress value={(totalSavings / totalDisputed) * 100} className="h-2" />
+            <Progress
+              value={(totalSavings / totalDisputed) * 100}
+              className="h-2"
+            />
           </div>
         </CardContent>
       </Card>

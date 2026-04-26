@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { usePlaidLink } from 'react-plaid-link';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { logError } from '@/utils/errorHandler';
+import { useEffect, useState } from "react";
+import { usePlaidLink } from "react-plaid-link";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { logError } from "@/utils/errorHandler";
 
 interface PlaidLinkProps {
   onSuccess?: () => void;
@@ -21,14 +21,16 @@ export function PlaidLink({ onSuccess }: PlaidLinkProps) {
   const createLinkToken = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke('plaid-create-link-token');
-      
+      const { data, error } = await supabase.functions.invoke(
+        "plaid-create-link-token",
+      );
+
       if (error) throw error;
-      
+
       setLinkToken(data.link_token);
     } catch (error) {
-      logError('Error creating link token', error);
-      toast.error('Failed to initialize Plaid Link');
+      logError("Error creating link token", error);
+      toast.error("Failed to initialize Plaid Link");
     } finally {
       setLoading(false);
     }
@@ -37,17 +39,20 @@ export function PlaidLink({ onSuccess }: PlaidLinkProps) {
   const onSuccessCallback = async (public_token: string) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke('plaid-exchange-token', {
-        body: { public_token },
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "plaid-exchange-token",
+        {
+          body: { public_token },
+        },
+      );
 
       if (error) throw error;
 
-      toast.success('Bank account connected successfully!');
+      toast.success("Bank account connected successfully!");
       onSuccess?.();
     } catch (error) {
-      logError('Error exchanging token', error);
-      toast.error('Failed to connect bank account');
+      logError("Error exchanging token", error);
+      toast.error("Failed to connect bank account");
     } finally {
       setLoading(false);
     }

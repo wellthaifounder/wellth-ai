@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { RefreshCw, X } from "lucide-react";
 import { useRegisterSW } from "virtual:pwa-register/react";
 
@@ -67,8 +73,8 @@ export const PWAUpdatePrompt = () => {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            We've made improvements to enhance your experience. Update now to get the latest
-            features and bug fixes.
+            We've made improvements to enhance your experience. Update now to
+            get the latest features and bug fixes.
           </p>
 
           <div className="flex gap-2">

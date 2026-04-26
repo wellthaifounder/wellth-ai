@@ -8,19 +8,56 @@ interface Screen4Props {
   onBack: () => void;
 }
 
-export const Screen4Expenses = ({ data, updateData, onNext, onBack }: Screen4Props) => {
+export const Screen4Expenses = ({
+  data,
+  updateData,
+  onNext,
+  onBack,
+}: Screen4Props) => {
   const trackingOptions = [
-    { value: "spreadsheet", label: "Spreadsheet", description: "Excel, Google Sheets, etc." },
-    { value: "shoebox", label: "Paper / folder", description: "Physical receipts and files" },
-    { value: "app", label: "Another app", description: "Mint, YNAB, or similar" },
-    { value: "none", label: "I don't track", description: "No system currently" },
+    {
+      value: "spreadsheet",
+      label: "Spreadsheet",
+      description: "Excel, Google Sheets, etc.",
+    },
+    {
+      value: "shoebox",
+      label: "Paper / folder",
+      description: "Physical receipts and files",
+    },
+    {
+      value: "app",
+      label: "Another app",
+      description: "Mint, YNAB, or similar",
+    },
+    {
+      value: "none",
+      label: "I don't track",
+      description: "No system currently",
+    },
   ];
 
   const priorityOptions = [
-    { value: "taxes", label: "Saving on taxes", description: "Maximize deductions and pre-tax spending" },
-    { value: "organizing", label: "Organizing receipts", description: "One place for all medical documents" },
-    { value: "hsa_growth", label: "Maximizing HSA growth", description: "Invest and grow my HSA long-term" },
-    { value: "all", label: "All of the above", description: "I want the full picture" },
+    {
+      value: "taxes",
+      label: "Saving on taxes",
+      description: "Maximize deductions and pre-tax spending",
+    },
+    {
+      value: "organizing",
+      label: "Organizing receipts",
+      description: "One place for all medical documents",
+    },
+    {
+      value: "hsa_growth",
+      label: "Maximizing HSA growth",
+      description: "Invest and grow my HSA long-term",
+    },
+    {
+      value: "all",
+      label: "All of the above",
+      description: "I want the full picture",
+    },
   ];
 
   return (
@@ -49,7 +86,9 @@ export const Screen4Expenses = ({ data, updateData, onNext, onBack }: Screen4Pro
                 }`}
               >
                 <div className="font-medium text-sm">{option.label}</div>
-                <div className="text-xs text-muted-foreground mt-1">{option.description}</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {option.description}
+                </div>
               </button>
             ))}
           </div>
@@ -72,7 +111,9 @@ export const Screen4Expenses = ({ data, updateData, onNext, onBack }: Screen4Pro
               >
                 <div className="flex-1">
                   <div className="font-medium">{option.label}</div>
-                  <div className="text-sm text-muted-foreground">{option.description}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {option.description}
+                  </div>
                 </div>
               </button>
             ))}

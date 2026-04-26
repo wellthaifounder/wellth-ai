@@ -16,17 +16,22 @@ export function MissingHSADateBanner({ onDateSet }: MissingHSADateBannerProps) {
 
   return (
     <>
-      <Alert className={`mb-6 bg-yellow-500/10 border-yellow-500/20 relative z-[var(--z-toast)] ${dialogOpen ? "invisible" : ""}`}>
+      <Alert
+        className={`mb-6 bg-yellow-500/10 border-yellow-500/20 relative z-[var(--z-toast)] ${dialogOpen ? "invisible" : ""}`}
+      >
         <AlertCircle className="h-4 w-4 text-yellow-600" />
         <AlertTitle className="text-yellow-900 dark:text-yellow-100">
           Important: Set your HSA opened date
         </AlertTitle>
         <AlertDescription className="text-yellow-800 dark:text-yellow-200">
           <div className="flex items-center justify-between gap-4">
-            <span>We need to know when you opened your HSA to accurately track which expenses are reimbursable.</span>
+            <span>
+              We need to know when you opened your HSA to accurately track which
+              expenses are reimbursable.
+            </span>
             <div className="flex items-center gap-2 shrink-0">
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 onClick={() => setDialogOpen(true)}
                 className="bg-yellow-600 hover:bg-yellow-700 text-white"
               >

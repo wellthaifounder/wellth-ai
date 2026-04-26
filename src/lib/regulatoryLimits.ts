@@ -32,7 +32,7 @@ export const HDHP_THRESHOLDS_2025 = {
 
 export const FSA_LIMITS_2025 = {
   contribution: 3300, // Up from $3,050 in 2024
-  carryover: 660,     // Up from $610 in 2024; only if plan allows carryover (not grace period)
+  carryover: 660, // Up from $610 in 2024; only if plan allows carryover (not grace period)
 } as const;
 
 // ── 2026 Preview Limits ───────────────────────────────────────────────────────

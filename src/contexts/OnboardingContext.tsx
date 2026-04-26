@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 interface OnboardingState {
   hasSeenBillIntelligence: boolean;
@@ -9,12 +15,14 @@ interface OnboardingState {
 }
 
 interface OnboardingContextType extends OnboardingState {
-  markAsSeen: (feature: keyof Omit<OnboardingState, 'hasCompletedOnboarding'>) => void;
+  markAsSeen: (
+    feature: keyof Omit<OnboardingState, "hasCompletedOnboarding">,
+  ) => void;
   completeOnboarding: () => void;
   resetOnboarding: () => void;
 }
 
-const STORAGE_KEY = 'wellth_onboarding_state';
+const STORAGE_KEY = "wellth_onboarding_state";
 
 const defaultState: OnboardingState = {
   hasSeenBillIntelligence: false,
@@ -24,7 +32,9 @@ const defaultState: OnboardingState = {
   hasCompletedOnboarding: false,
 };
 
-const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
+const OnboardingContext = createContext<OnboardingContextType | undefined>(
+  undefined,
+);
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<OnboardingState>(() => {
@@ -43,12 +53,14 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
-  const markAsSeen = (feature: keyof Omit<OnboardingState, 'hasCompletedOnboarding'>) => {
-    setState(prev => ({ ...prev, [feature]: true }));
+  const markAsSeen = (
+    feature: keyof Omit<OnboardingState, "hasCompletedOnboarding">,
+  ) => {
+    setState((prev) => ({ ...prev, [feature]: true }));
   };
 
   const completeOnboarding = () => {
-    setState(prev => ({ ...prev, hasCompletedOnboarding: true }));
+    setState((prev) => ({ ...prev, hasCompletedOnboarding: true }));
   };
 
   const resetOnboarding = () => {
@@ -57,7 +69,9 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <OnboardingContext.Provider value={{ ...state, markAsSeen, completeOnboarding, resetOnboarding }}>
+    <OnboardingContext.Provider
+      value={{ ...state, markAsSeen, completeOnboarding, resetOnboarding }}
+    >
       {children}
     </OnboardingContext.Provider>
   );

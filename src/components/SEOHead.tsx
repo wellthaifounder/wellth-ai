@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 interface SEOHeadProps {
   title?: string;
@@ -22,41 +22,47 @@ export const SEOHead = ({
     document.title = title;
 
     // Update or create meta tags
-    const updateMetaTag = (name: string, content: string, isProperty = false) => {
-      const attr = isProperty ? 'property' : 'name';
+    const updateMetaTag = (
+      name: string,
+      content: string,
+      isProperty = false,
+    ) => {
+      const attr = isProperty ? "property" : "name";
       let element = document.querySelector(`meta[${attr}="${name}"]`);
-      
+
       if (!element) {
-        element = document.createElement('meta');
+        element = document.createElement("meta");
         element.setAttribute(attr, name);
         document.head.appendChild(element);
       }
-      
-      element.setAttribute('content', content);
+
+      element.setAttribute("content", content);
     };
 
     // Standard meta tags
-    updateMetaTag('description', description);
-    updateMetaTag('keywords', keywords);
+    updateMetaTag("description", description);
+    updateMetaTag("keywords", keywords);
 
     // Open Graph tags
-    updateMetaTag('og:title', title, true);
-    updateMetaTag('og:description', description, true);
-    updateMetaTag('og:image', ogImage, true);
-    updateMetaTag('og:type', ogType, true);
-    updateMetaTag('og:url', canonical, true);
+    updateMetaTag("og:title", title, true);
+    updateMetaTag("og:description", description, true);
+    updateMetaTag("og:image", ogImage, true);
+    updateMetaTag("og:type", ogType, true);
+    updateMetaTag("og:url", canonical, true);
 
     // Twitter Card tags
-    updateMetaTag('twitter:card', 'summary_large_image');
-    updateMetaTag('twitter:title', title);
-    updateMetaTag('twitter:description', description);
-    updateMetaTag('twitter:image', ogImage);
+    updateMetaTag("twitter:card", "summary_large_image");
+    updateMetaTag("twitter:title", title);
+    updateMetaTag("twitter:description", description);
+    updateMetaTag("twitter:image", ogImage);
 
     // Canonical link
-    let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    let canonicalLink = document.querySelector(
+      'link[rel="canonical"]',
+    ) as HTMLLinkElement;
     if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.rel = 'canonical';
+      canonicalLink = document.createElement("link");
+      canonicalLink.rel = "canonical";
       document.head.appendChild(canonicalLink);
     }
     canonicalLink.href = canonical;
@@ -65,26 +71,28 @@ export const SEOHead = ({
     const structuredData = {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
-      "name": "Wellth",
-      "applicationCategory": "FinanceApplication",
-      "description": description,
-      "offers": {
+      name: "Wellth",
+      applicationCategory: "FinanceApplication",
+      description: description,
+      offers: {
         "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
+        price: "0",
+        priceCurrency: "USD",
       },
-      "operatingSystem": "Web, iOS, Android",
-      "aggregateRating": {
+      operatingSystem: "Web, iOS, Android",
+      aggregateRating: {
         "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "ratingCount": "1250"
-      }
+        ratingValue: "4.8",
+        ratingCount: "1250",
+      },
     };
 
-    let scriptTag = document.querySelector('script[type="application/ld+json"]') as HTMLScriptElement;
+    let scriptTag = document.querySelector(
+      'script[type="application/ld+json"]',
+    ) as HTMLScriptElement;
     if (!scriptTag) {
-      scriptTag = document.createElement('script');
-      scriptTag.type = 'application/ld+json';
+      scriptTag = document.createElement("script");
+      scriptTag.type = "application/ld+json";
       document.head.appendChild(scriptTag);
     }
     scriptTag.textContent = JSON.stringify(structuredData);

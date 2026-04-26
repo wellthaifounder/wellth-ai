@@ -1,6 +1,21 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Download, Smartphone, Zap, Wifi, Bell, Shield, CheckCircle2 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ArrowLeft,
+  Download,
+  Smartphone,
+  Zap,
+  Wifi,
+  Bell,
+  Shield,
+  CheckCircle2,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
@@ -25,7 +40,7 @@ const Install = () => {
     setIsIOS(ios);
 
     // Check if already installed
-    const standalone = window.matchMedia('(display-mode: standalone)').matches;
+    const standalone = window.matchMedia("(display-mode: standalone)").matches;
     setIsStandalone(standalone);
 
     // Listen for install prompt
@@ -34,10 +49,13 @@ const Install = () => {
       setDeferredPrompt(e);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
     };
   }, []);
 
@@ -45,15 +63,17 @@ const Install = () => {
     if (!deferredPrompt) {
       if (isIOS) {
         // Scroll to iOS instructions
-        document.getElementById('ios-instructions')?.scrollIntoView({ behavior: 'smooth' });
+        document
+          .getElementById("ios-instructions")
+          ?.scrollIntoView({ behavior: "smooth" });
       }
       return;
     }
 
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
+
+    if (outcome === "accepted") {
       setDeferredPrompt(null);
     }
   };
@@ -62,23 +82,27 @@ const Install = () => {
     {
       icon: Zap,
       title: "Instant Access",
-      description: "Launch the app instantly from your home screen without opening a browser"
+      description:
+        "Launch the app instantly from your home screen without opening a browser",
     },
     {
       icon: Wifi,
       title: "Offline Support",
-      description: "View your expenses and track your HSA even without an internet connection"
+      description:
+        "View your expenses and track your HSA even without an internet connection",
     },
     {
       icon: Bell,
       title: "Push Notifications",
-      description: "Get timely reminders about reimbursements and important updates"
+      description:
+        "Get timely reminders about reimbursements and important updates",
     },
     {
       icon: Shield,
       title: "Secure & Private",
-      description: "Your data stays safe with app-level security and encrypted storage"
-    }
+      description:
+        "Your data stays safe with app-level security and encrypted storage",
+    },
   ];
 
   return (
@@ -87,7 +111,10 @@ const Install = () => {
 
       <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-4xl">
         <div className="mb-6">
-          <Button variant="ghost" onClick={() => navigate(isAuthenticated ? "/dashboard" : "/")}>
+          <Button
+            variant="ghost"
+            onClick={() => navigate(isAuthenticated ? "/dashboard" : "/")}
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
@@ -99,7 +126,8 @@ const Install = () => {
           </div>
           <h1 className="text-4xl font-bold mb-4">Install Wellth.ai</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Get the full app experience with instant access, offline support, and push notifications
+            Get the full app experience with instant access, offline support,
+            and push notifications
           </p>
         </div>
 
@@ -109,8 +137,12 @@ const Install = () => {
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="h-6 w-6 text-success" />
                 <div>
-                  <p className="font-semibold text-success">App Already Installed!</p>
-                  <p className="text-sm text-muted-foreground">You're using Wellth.ai as an installed app.</p>
+                  <p className="font-semibold text-success">
+                    App Already Installed!
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    You're using Wellth.ai as an installed app.
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -140,7 +172,9 @@ const Install = () => {
 
         <div className="space-y-8">
           <div>
-            <h2 className="text-2xl font-bold mb-6">Installation Instructions</h2>
+            <h2 className="text-2xl font-bold mb-6">
+              Installation Instructions
+            </h2>
 
             {/* Android/Chrome Instructions */}
             {!isIOS && (
@@ -150,15 +184,22 @@ const Install = () => {
                     <Smartphone className="h-5 w-5" />
                     Android / Chrome
                   </CardTitle>
-                  <CardDescription>Install on Android devices or Chrome browser</CardDescription>
+                  <CardDescription>
+                    Install on Android devices or Chrome browser
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {deferredPrompt ? (
                     <div className="space-y-4">
                       <p className="text-sm text-muted-foreground">
-                        Click the button below to install Wellth.ai on your device:
+                        Click the button below to install Wellth.ai on your
+                        device:
                       </p>
-                      <Button onClick={handleInstall} size="lg" className="w-full">
+                      <Button
+                        onClick={handleInstall}
+                        size="lg"
+                        className="w-full"
+                      >
                         <Download className="h-4 w-4 mr-2" />
                         Install App Now
                       </Button>
@@ -166,19 +207,32 @@ const Install = () => {
                   ) : (
                     <ol className="space-y-3 text-sm">
                       <li className="flex gap-3">
-                        <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">1</span>
-                        <span>Tap the menu icon (⋮) in the top-right corner of Chrome</span>
+                        <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                          1
+                        </span>
+                        <span>
+                          Tap the menu icon (⋮) in the top-right corner of
+                          Chrome
+                        </span>
                       </li>
                       <li className="flex gap-3">
-                        <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">2</span>
-                        <span>Select "Install app" or "Add to Home screen"</span>
+                        <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                          2
+                        </span>
+                        <span>
+                          Select "Install app" or "Add to Home screen"
+                        </span>
                       </li>
                       <li className="flex gap-3">
-                        <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">3</span>
+                        <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                          3
+                        </span>
                         <span>Tap "Install" when prompted</span>
                       </li>
                       <li className="flex gap-3">
-                        <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">4</span>
+                        <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                          4
+                        </span>
                         <span>The app will appear on your home screen</span>
                       </li>
                     </ol>
@@ -194,29 +248,49 @@ const Install = () => {
                   <Smartphone className="h-5 w-5" />
                   iOS / Safari
                 </CardTitle>
-                <CardDescription>Install on iPhone or iPad using Safari</CardDescription>
+                <CardDescription>
+                  Install on iPhone or iPad using Safari
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <ol className="space-y-3 text-sm">
                   <li className="flex gap-3">
-                    <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">1</span>
-                    <span>Open Wellth.ai in Safari (this won't work in Chrome on iOS)</span>
+                    <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                      1
+                    </span>
+                    <span>
+                      Open Wellth.ai in Safari (this won't work in Chrome on
+                      iOS)
+                    </span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">2</span>
-                    <span>Tap the Share button (square with arrow pointing up) at the bottom of the screen</span>
+                    <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                      2
+                    </span>
+                    <span>
+                      Tap the Share button (square with arrow pointing up) at
+                      the bottom of the screen
+                    </span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">3</span>
+                    <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                      3
+                    </span>
                     <span>Scroll down and tap "Add to Home Screen"</span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">4</span>
+                    <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                      4
+                    </span>
                     <span>Tap "Add" in the top-right corner</span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">5</span>
-                    <span>The Wellth.ai icon will appear on your home screen</span>
+                    <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                      5
+                    </span>
+                    <span>
+                      The Wellth.ai icon will appear on your home screen
+                    </span>
                   </li>
                 </ol>
               </CardContent>
@@ -229,11 +303,13 @@ const Install = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">
-                If you're having trouble installing the app, make sure you're using a supported browser 
-                (Chrome, Safari, Edge, or Firefox) and that your device allows app installations.
+                If you're having trouble installing the app, make sure you're
+                using a supported browser (Chrome, Safari, Edge, or Firefox) and
+                that your device allows app installations.
               </p>
               <p className="text-sm text-muted-foreground">
-                For detailed troubleshooting, visit our support documentation or contact us at support@wellth.ai
+                For detailed troubleshooting, visit our support documentation or
+                contact us at support@wellth.ai
               </p>
             </CardContent>
           </Card>

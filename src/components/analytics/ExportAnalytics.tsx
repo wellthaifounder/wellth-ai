@@ -31,7 +31,10 @@ interface ExportAnalyticsProps {
   dateRange?: string;
 }
 
-export const ExportAnalytics = ({ data, dateRange = "All Time" }: ExportAnalyticsProps) => {
+export const ExportAnalytics = ({
+  data,
+  dateRange = "All Time",
+}: ExportAnalyticsProps) => {
   const [exporting, setExporting] = useState(false);
 
   const exportToCSV = () => {
@@ -45,7 +48,10 @@ export const ExportAnalytics = ({ data, dateRange = "All Time" }: ExportAnalytic
         ["Projected Savings", `$${data.stats.projectedSavings.toFixed(2)}`],
         ["Actual Savings", `$${data.stats.actualSavings.toFixed(2)}`],
         ["Average Monthly", `$${data.stats.avgMonthly.toFixed(2)}`],
-        ["Unreimbursed HSA Total", `$${data.stats.unreimbursedHsaTotal.toFixed(2)}`],
+        [
+          "Unreimbursed HSA Total",
+          `$${data.stats.unreimbursedHsaTotal.toFixed(2)}`,
+        ],
       ];
 
       // Monthly Data
@@ -53,7 +59,7 @@ export const ExportAnalytics = ({ data, dateRange = "All Time" }: ExportAnalytic
         ["", ""],
         ["MONTHLY TRENDS"],
         ["Month", "Total"],
-        ...data.monthlyData.map(m => [m.month, m.total]),
+        ...data.monthlyData.map((m) => [m.month, m.total]),
       ];
 
       // Category Data
@@ -61,7 +67,7 @@ export const ExportAnalytics = ({ data, dateRange = "All Time" }: ExportAnalytic
         ["", ""],
         ["CATEGORY BREAKDOWN"],
         ["Category", "Total"],
-        ...data.categoryData.map(c => [c.category, c.total]),
+        ...data.categoryData.map((c) => [c.category, c.total]),
       ];
 
       // Rewards Data
@@ -69,7 +75,7 @@ export const ExportAnalytics = ({ data, dateRange = "All Time" }: ExportAnalytic
         ["", ""],
         ["REWARDS BY PAYMENT METHOD"],
         ["Payment Method", "Rewards Earned", "Rewards Rate", "Total Spent"],
-        ...data.paymentMethodsRewards.map(pm => [
+        ...data.paymentMethodsRewards.map((pm) => [
           pm.name,
           pm.rewardsEarned.toFixed(2),
           `${pm.rewardsRate}%`,
@@ -81,8 +87,14 @@ export const ExportAnalytics = ({ data, dateRange = "All Time" }: ExportAnalytic
       const yearlyCSV = [
         ["", ""],
         ["YEAR-OVER-YEAR COMPARISON"],
-        ["Year", "Total Expenses", "Tax Savings", "Rewards Earned", "HSA Eligible"],
-        ...data.yearlyData.map(y => [
+        [
+          "Year",
+          "Total Expenses",
+          "Tax Savings",
+          "Rewards Earned",
+          "HSA Eligible",
+        ],
+        ...data.yearlyData.map((y) => [
           y.year,
           y.totalExpenses.toFixed(2),
           y.taxSavings.toFixed(2),
@@ -102,7 +114,7 @@ export const ExportAnalytics = ({ data, dateRange = "All Time" }: ExportAnalytic
         ...rewardsCSV,
         ...yearlyCSV,
       ]
-        .map(row => row.join(","))
+        .map((row) => row.join(","))
         .join("\n");
 
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });

@@ -2,7 +2,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, X, FileText, Image as ImageIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +36,10 @@ const DOCUMENT_TYPES = [
   { value: "other", label: "Other Document" },
 ];
 
-export function MultiFileUpload({ onFilesChange, disabled }: MultiFileUploadProps) {
+export function MultiFileUpload({
+  onFilesChange,
+  disabled,
+}: MultiFileUploadProps) {
   const [files, setFiles] = useState<FileWithMetadata[]>([]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,14 +52,13 @@ export function MultiFileUpload({ onFilesChange, disabled }: MultiFileUploadProp
 
     // Show error for invalid files
     if (invalid.length > 0) {
-      const errorMessages = invalid.map(({ file, errors }) =>
-        `${file.name}: ${errors[0]}`
-      ).join('\n');
+      const errorMessages = invalid
+        .map(({ file, errors }) => `${file.name}: ${errors[0]}`)
+        .join("\n");
 
-      toast.error(
-        `${invalid.length} file(s) rejected:\n${errorMessages}`,
-        { duration: 5000 }
-      );
+      toast.error(`${invalid.length} file(s) rejected:\n${errorMessages}`, {
+        duration: 5000,
+      });
     }
 
     // Add valid files
@@ -75,9 +83,13 @@ export function MultiFileUpload({ onFilesChange, disabled }: MultiFileUploadProp
     e.target.value = "";
   };
 
-  const updateFileMetadata = (id: string, field: "documentType" | "description", value: string) => {
+  const updateFileMetadata = (
+    id: string,
+    field: "documentType" | "description",
+    value: string,
+  ) => {
     const updatedFiles = files.map((f) =>
-      f.id === id ? { ...f, [field]: value } : f
+      f.id === id ? { ...f, [field]: value } : f,
     );
     setFiles(updatedFiles);
     onFilesChange(updatedFiles);
@@ -115,7 +127,9 @@ export function MultiFileUpload({ onFilesChange, disabled }: MultiFileUploadProp
             Add Documents
           </Button>
           {files.length > 0 && (
-            <Badge variant="secondary">{files.length} file{files.length !== 1 ? 's' : ''}</Badge>
+            <Badge variant="secondary">
+              {files.length} file{files.length !== 1 ? "s" : ""}
+            </Badge>
           )}
         </div>
       </div>
@@ -123,7 +137,10 @@ export function MultiFileUpload({ onFilesChange, disabled }: MultiFileUploadProp
       {files.length > 0 && (
         <div className="space-y-3">
           {files.map((fileData, index) => (
-            <div key={fileData.id} className="border rounded-lg p-4 space-y-3 bg-card">
+            <div
+              key={fileData.id}
+              className="border rounded-lg p-4 space-y-3 bg-card"
+            >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2 flex-1">
                   {fileData.file.type.startsWith("image/") ? (
@@ -132,7 +149,9 @@ export function MultiFileUpload({ onFilesChange, disabled }: MultiFileUploadProp
                     <FileText className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{fileData.file.name}</p>
+                    <p className="text-sm font-medium truncate">
+                      {fileData.file.name}
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {(fileData.file.size / 1024).toFixed(1)} KB
                     </p>
@@ -152,7 +171,10 @@ export function MultiFileUpload({ onFilesChange, disabled }: MultiFileUploadProp
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor={`doc-type-${fileData.id}`} className="text-xs">
+                  <Label
+                    htmlFor={`doc-type-${fileData.id}`}
+                    className="text-xs"
+                  >
                     Document Type
                   </Label>
                   <Select
@@ -176,7 +198,10 @@ export function MultiFileUpload({ onFilesChange, disabled }: MultiFileUploadProp
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor={`description-${fileData.id}`} className="text-xs">
+                  <Label
+                    htmlFor={`description-${fileData.id}`}
+                    className="text-xs"
+                  >
                     Description (Optional)
                   </Label>
                   <Input
@@ -184,7 +209,11 @@ export function MultiFileUpload({ onFilesChange, disabled }: MultiFileUploadProp
                     placeholder="e.g., March payment #3 of 12"
                     value={fileData.description}
                     onChange={(e) =>
-                      updateFileMetadata(fileData.id, "description", e.target.value)
+                      updateFileMetadata(
+                        fileData.id,
+                        "description",
+                        e.target.value,
+                      )
                     }
                     disabled={disabled}
                   />

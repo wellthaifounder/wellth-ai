@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { ArrowUpDown, ArrowUp, ArrowDown, Filter, Calendar, Check } from "lucide-react";
+import {
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Filter,
+  Calendar,
+  Check,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,10 +18,21 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
@@ -125,7 +143,9 @@ export function TableColumnHeader({
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent className="w-56 p-0">
                   <Command>
-                    <CommandInput placeholder={`Search ${title.toLowerCase()}...`} />
+                    <CommandInput
+                      placeholder={`Search ${title.toLowerCase()}...`}
+                    />
                     <CommandList>
                       <CommandEmpty>No results found.</CommandEmpty>
                       <CommandGroup>
@@ -134,7 +154,10 @@ export function TableColumnHeader({
                             key={option}
                             value={option}
                             onSelect={(currentValue) => {
-                              const newValue = currentValue === textFilter.toLowerCase() ? "" : option;
+                              const newValue =
+                                currentValue === textFilter.toLowerCase()
+                                  ? ""
+                                  : option;
                               setTextFilter(newValue);
                               onFilter?.(newValue);
                               setComboboxOpen(false);
@@ -143,9 +166,10 @@ export function TableColumnHeader({
                             <Check
                               className={cn(
                                 "mr-2 h-4 w-4",
-                                textFilter.toLowerCase() === option.toLowerCase()
+                                textFilter.toLowerCase() ===
+                                  option.toLowerCase()
                                   ? "opacity-100"
-                                  : "opacity-0"
+                                  : "opacity-0",
                               )}
                             />
                             {option}
@@ -156,7 +180,12 @@ export function TableColumnHeader({
                   </Command>
                   {textFilter && (
                     <div className="p-2 border-t">
-                      <Button size="sm" variant="ghost" onClick={handleClearFilter} className="w-full">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleClearFilter}
+                        className="w-full"
+                      >
                         Clear Filter
                       </Button>
                     </div>
@@ -178,10 +207,19 @@ export function TableColumnHeader({
                     className="mb-2"
                   />
                   <div className="flex gap-2">
-                    <Button size="sm" onClick={handleTextFilterApply} className="flex-1">
+                    <Button
+                      size="sm"
+                      onClick={handleTextFilterApply}
+                      className="flex-1"
+                    >
                       Apply
                     </Button>
-                    <Button size="sm" variant="outline" onClick={handleClearFilter} className="flex-1">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleClearFilter}
+                      className="flex-1"
+                    >
                       Clear
                     </Button>
                   </div>
@@ -200,7 +238,10 @@ export function TableColumnHeader({
                       <label className="text-sm font-medium">From Date</label>
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" className="w-full justify-start text-left font-normal">
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start text-left font-normal"
+                          >
                             <Calendar className="mr-2 h-4 w-4" />
                             {dateFrom ? format(dateFrom, "PPP") : "Select date"}
                           </Button>
@@ -217,10 +258,15 @@ export function TableColumnHeader({
                       </Popover>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">To Date (Optional)</label>
+                      <label className="text-sm font-medium">
+                        To Date (Optional)
+                      </label>
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" className="w-full justify-start text-left font-normal">
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start text-left font-normal"
+                          >
                             <Calendar className="mr-2 h-4 w-4" />
                             {dateTo ? format(dateTo, "PPP") : "Select date"}
                           </Button>
@@ -237,10 +283,19 @@ export function TableColumnHeader({
                       </Popover>
                     </div>
                     <div className="flex gap-2 pt-2">
-                      <Button size="sm" onClick={handleDateRangeApply} className="flex-1">
+                      <Button
+                        size="sm"
+                        onClick={handleDateRangeApply}
+                        className="flex-1"
+                      >
                         Apply
                       </Button>
-                      <Button size="sm" variant="outline" onClick={handleClearFilter} className="flex-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleClearFilter}
+                        className="flex-1"
+                      >
                         Clear
                       </Button>
                     </div>
@@ -277,10 +332,19 @@ export function TableColumnHeader({
                       />
                     </div>
                     <div className="flex gap-2 pt-2">
-                      <Button size="sm" onClick={handleNumberRangeApply} className="flex-1">
+                      <Button
+                        size="sm"
+                        onClick={handleNumberRangeApply}
+                        className="flex-1"
+                      >
                         Apply
                       </Button>
-                      <Button size="sm" variant="outline" onClick={handleClearFilter} className="flex-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleClearFilter}
+                        className="flex-1"
+                      >
                         Clear
                       </Button>
                     </div>

@@ -58,8 +58,13 @@ export function useTransactionSplits(transactionId: string | null) {
       if (insertError) throw insertError;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["transaction-splits", variables.transactionId] });
-      queryClient.invalidateQueries({ queryKey: ["transactions"], refetchType: "active" });
+      queryClient.invalidateQueries({
+        queryKey: ["transaction-splits", variables.transactionId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["transactions"],
+        refetchType: "active",
+      });
       toast.success("Transaction split successfully");
     },
     onError: (error) => {
@@ -85,7 +90,9 @@ export function useTransactionSplits(transactionId: string | null) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transaction-splits", transactionId] });
+      queryClient.invalidateQueries({
+        queryKey: ["transaction-splits", transactionId],
+      });
       toast.success("Split updated");
     },
     onError: (error) => {
@@ -114,8 +121,13 @@ export function useTransactionSplits(transactionId: string | null) {
       if (updateError) throw updateError;
     },
     onSuccess: (_, transactionId) => {
-      queryClient.invalidateQueries({ queryKey: ["transaction-splits", transactionId] });
-      queryClient.invalidateQueries({ queryKey: ["transactions"], refetchType: "active" });
+      queryClient.invalidateQueries({
+        queryKey: ["transaction-splits", transactionId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["transactions"],
+        refetchType: "active",
+      });
       toast.success("Transaction unsplit");
     },
     onError: (error) => {

@@ -42,7 +42,9 @@ export const CountdownTimer = ({ minutes = 15 }: CountdownTimerProps) => {
   return (
     <div
       className={`flex items-center gap-2 rounded-lg px-4 py-2 ${
-        isUrgent ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"
+        isUrgent
+          ? "bg-destructive/10 text-destructive"
+          : "bg-primary/10 text-primary"
       }`}
     >
       <Clock className="h-4 w-4" />

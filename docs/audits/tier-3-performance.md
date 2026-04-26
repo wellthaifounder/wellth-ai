@@ -11,16 +11,17 @@
 
 ### Performance Improvements Achieved
 
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Database queries (10 bill reviews) | 11 queries | 1 query | **90% reduction** |
-| Database queries (3 HSA accounts) | 9 queries | 3 queries | **67% reduction** |
-| Reports page (1000 invoices) | Unbounded | 1000 limit | **Prevents OOM** |
-| Bills page load time | Variable | 50-80% faster | **Major speedup** |
-| Provider directory bandwidth | 100% | 30-40% | **60-70% reduction** |
-| Provider search CPU usage | High | Minimal | **Database-level** |
+| Metric                             | Before     | After         | Improvement          |
+| ---------------------------------- | ---------- | ------------- | -------------------- |
+| Database queries (10 bill reviews) | 11 queries | 1 query       | **90% reduction**    |
+| Database queries (3 HSA accounts)  | 9 queries  | 3 queries     | **67% reduction**    |
+| Reports page (1000 invoices)       | Unbounded  | 1000 limit    | **Prevents OOM**     |
+| Bills page load time               | Variable   | 50-80% faster | **Major speedup**    |
+| Provider directory bandwidth       | 100%       | 30-40%        | **60-70% reduction** |
+| Provider search CPU usage          | High       | Minimal       | **Database-level**   |
 
 ### Code Impact
+
 - **Modified Files:** 8 files
 - **Lines Changed:** ~200 lines optimized
 - **Database Indexes Added:** 10 new indexes
@@ -33,33 +34,37 @@
 ### ✅ P0 - CRITICAL (4/4 Complete)
 
 #### 1. N+1 Query Problem - Bill Error Counts
+
 **Severity:** CRITICAL
 **Impact:** 90% reduction in database queries
 
 **Problem:**
 Dashboard, BillReviews, and Bills pages each made N+1 queries:
+
 - 1 query to fetch bill reviews
 - N queries to count errors for each review (1 per review)
 
 **Solution:**
 Use Supabase JOIN to fetch error counts in single query:
+
 ```typescript
 // Before: 11 queries for 10 reviews
-reviews.map(async review => {
+reviews.map(async (review) => {
   const { data: errors } = await supabase
-    .from('bill_errors')
-    .select('id')
-    .eq('bill_review_id', review.id);
+    .from("bill_errors")
+    .select("id")
+    .eq("bill_review_id", review.id);
 });
 
 // After: 1 query for all reviews
 supabase
-  .from('bill_reviews')
+  .from("bill_reviews")
   .select(`*, bill_errors!bill_review_id(id, status)`)
-  .eq('user_id', user.id);
+  .eq("user_id", user.id);
 ```
 
 **Files Modified:**
+
 - `src/pages/Dashboard.tsx:192-224`
 - `src/pages/BillReviews.tsx:30-60`
 - `src/pages/Bills.tsx:96-125`
@@ -69,17 +74,20 @@ supabase
 ---
 
 #### 2. Missing Pagination - Reports & Bills
+
 **Severity:** CRITICAL
 **Impact:** Prevents out-of-memory errors, 50-80% faster page loads
 
 **Problem:**
 Reports and Bills pages fetched ALL user invoices without limit. Users with 5000+ invoices experienced:
+
 - Browser memory exhaustion
 - 10+ second page load times
 - Browser freezing
 
 **Solution:**
 Added reasonable pagination limits:
+
 ```typescript
 // Reports.tsx
 .select("...")
@@ -91,6 +99,7 @@ Added reasonable pagination limits:
 ```
 
 **Files Modified:**
+
 - `src/pages/Reports.tsx:99`
 - `src/pages/Bills.tsx:83`
 
@@ -99,6 +108,7 @@ Added reasonable pagination limits:
 ---
 
 #### 3. Missing Database Indexes
+
 **Severity:** CRITICAL
 **Impact:** 50-90% faster filtered/sorted queries
 
@@ -120,6 +130,7 @@ Created 10 composite indexes on hot paths:
 10. **provider_reviews(provider_id, is_flagged)** - Review aggregation
 
 **Files Created:**
+
 - `supabase/migrations/20251206_add_performance_indexes.sql`
 
 **Status:** ✅ Applied to Supabase database
@@ -129,34 +140,38 @@ Created 10 composite indexes on hot paths:
 ---
 
 #### 4. HSA Account Stats Triple Queries
+
 **Severity:** CRITICAL
 **Impact:** 67-90% reduction in queries
 
 **Problem:**
 Dashboard fetched HSA account statistics with N+1 pattern:
+
 - For each HSA account, made 3 separate queries (invoices, payments, splits)
 - 3 accounts = 9 database queries
 
 **Solution:**
 Fetch all data for all accounts in 3 parallel queries using `.in()`:
+
 ```typescript
 // Before: 3N queries (9 for 3 accounts)
-accounts.map(async account => {
-  await supabase.from('invoices').eq('hsa_account_id', account.id);
-  await supabase.from('payments').eq('hsa_account_id', account.id);
-  await supabase.from('splits').eq('hsa_account_id', account.id);
+accounts.map(async (account) => {
+  await supabase.from("invoices").eq("hsa_account_id", account.id);
+  await supabase.from("payments").eq("hsa_account_id", account.id);
+  await supabase.from("splits").eq("hsa_account_id", account.id);
 });
 
 // After: 3 queries total
-const accountIds = accounts.map(a => a.id);
+const accountIds = accounts.map((a) => a.id);
 Promise.all([
-  supabase.from('invoices').in('hsa_account_id', accountIds),
-  supabase.from('payments').in('hsa_account_id', accountIds),
-  supabase.from('splits').in('hsa_account_id', accountIds)
+  supabase.from("invoices").in("hsa_account_id", accountIds),
+  supabase.from("payments").in("hsa_account_id", accountIds),
+  supabase.from("splits").in("hsa_account_id", accountIds),
 ]);
 ```
 
 **Files Modified:**
+
 - `src/components/dashboard/HSAAccountPerformance.tsx:15-69`
 
 **Commit:** `9a12e20`
@@ -165,7 +180,8 @@ Promise.all([
 
 ### ✅ P1 - HIGH PRIORITY (2/3 Complete)
 
-#### 5. SELECT * - Unnecessary Column Fetching
+#### 5. SELECT \* - Unnecessary Column Fetching
+
 **Severity:** HIGH
 **Impact:** 40-60% bandwidth reduction
 
@@ -176,6 +192,7 @@ Promise.all([
 Specify exact columns needed in most frequently used pages:
 
 **Reports.tsx:**
+
 ```typescript
 // Before: SELECT * (15+ columns)
 .select("*")
@@ -185,6 +202,7 @@ Specify exact columns needed in most frequently used pages:
 ```
 
 **Dashboard.tsx:**
+
 ```typescript
 // Before: SELECT * (15+ columns)
 .select("*")
@@ -194,6 +212,7 @@ Specify exact columns needed in most frequently used pages:
 ```
 
 **ProviderDirectory.tsx:**
+
 ```typescript
 // Before: SELECT * (20+ columns)
 .select("*")
@@ -203,6 +222,7 @@ Specify exact columns needed in most frequently used pages:
 ```
 
 **Files Modified:**
+
 - `src/pages/Reports.tsx:97,119`
 - `src/pages/Dashboard.tsx:93`
 - `src/pages/ProviderDirectory.tsx:33`
@@ -212,41 +232,45 @@ Specify exact columns needed in most frequently used pages:
 ---
 
 #### 6. Client-Side Filtering - Provider Directory
+
 **Severity:** HIGH
 **Impact:** 70-90% bandwidth reduction when filters applied
 
 **Problem:**
 ProviderDirectory fetched ALL providers (~1000+ records), then filtered in JavaScript:
+
 ```typescript
 // Inefficient: Fetch everything, filter client-side
-const providers = await supabase.from('providers').select('*');
-return providers.filter(p =>
-  p.name.includes(searchQuery) &&
-  p.insurance_networks.includes(plan)
+const providers = await supabase.from("providers").select("*");
+return providers.filter(
+  (p) => p.name.includes(searchQuery) && p.insurance_networks.includes(plan),
 );
 ```
 
 **Solution:**
 Move filtering to database using PostgreSQL operators:
+
 ```typescript
 // Efficient: Filter in database, return only matches
-let query = supabase.from('providers').select('...');
+let query = supabase.from("providers").select("...");
 
 if (searchQuery) {
   query = query.or(`name.ilike.%${searchQuery}%,city.ilike.%${searchQuery}%`);
 }
 
-if (insurancePlan !== 'all') {
-  query = query.contains('insurance_networks', [insurancePlan]);
+if (insurancePlan !== "all") {
+  query = query.contains("insurance_networks", [insurancePlan]);
 }
 ```
 
 **Benefits:**
+
 - Database performs filtering using indexes
 - Only matching records transferred over network
 - Client-side CPU freed up for rendering
 
 **Files Modified:**
+
 - `src/pages/ProviderDirectory.tsx:28-55`
 
 **Commit:** `ad733d0`
@@ -256,15 +280,19 @@ if (insurancePlan !== 'all') {
 ## 🔄 Remaining P1 Issues (Optional)
 
 ### 7. Heavy Analytics Bundle (Not Implemented)
+
 **Severity:** MEDIUM
 **Impact:** Initial page load time
 
 **Issue:** Reports page loads entire recharts library (~150KB) and all analytics components upfront.
 
 **Recommended Solution:**
+
 ```typescript
-const ReportsPage = lazy(() => import('./pages/Reports'));
-const BarChart = lazy(() => import('recharts').then(m => ({ default: m.BarChart })));
+const ReportsPage = lazy(() => import("./pages/Reports"));
+const BarChart = lazy(() =>
+  import("recharts").then((m) => ({ default: m.BarChart })),
+);
 ```
 
 **Reason Deferred:** Medium impact, requires significant refactoring of analytics architecture.
@@ -275,29 +303,29 @@ const BarChart = lazy(() => import('recharts').then(m => ({ default: m.BarChart 
 
 ### Query Optimization Results
 
-| Page | Queries Before | Queries After | Reduction |
-|------|----------------|---------------|-----------|
-| Dashboard (10 pending reviews) | 11 | 1 | 90% |
-| Dashboard (3 HSA accounts) | 9 | 3 | 67% |
-| BillReviews (20 reviews) | 21 | 1 | 95% |
-| Bills (50 bills with reviews) | 51 | 2 | 96% |
+| Page                           | Queries Before | Queries After | Reduction |
+| ------------------------------ | -------------- | ------------- | --------- |
+| Dashboard (10 pending reviews) | 11             | 1             | 90%       |
+| Dashboard (3 HSA accounts)     | 9              | 3             | 67%       |
+| BillReviews (20 reviews)       | 21             | 1             | 95%       |
+| Bills (50 bills with reviews)  | 51             | 2             | 96%       |
 
 ### Bandwidth Reduction
 
-| Page | Bandwidth Before | Bandwidth After | Reduction |
-|------|------------------|-----------------|-----------|
-| Reports (1000 invoices) | ~500 KB | ~200 KB | 60% |
-| Dashboard | ~300 KB | ~120 KB | 60% |
-| ProviderDirectory (search: "heart") | ~200 KB | ~50 KB | 75% |
+| Page                                | Bandwidth Before | Bandwidth After | Reduction |
+| ----------------------------------- | ---------------- | --------------- | --------- |
+| Reports (1000 invoices)             | ~500 KB          | ~200 KB         | 60%       |
+| Dashboard                           | ~300 KB          | ~120 KB         | 60%       |
+| ProviderDirectory (search: "heart") | ~200 KB          | ~50 KB          | 75%       |
 
 ### Page Load Times (Simulated on 1000+ records)
 
-| Page | Before | After | Improvement |
-|------|--------|-------|-------------|
-| Reports | 8.2s | 2.1s | 74% faster |
-| Bills | 6.5s | 1.8s | 72% faster |
-| Dashboard | 4.3s | 1.2s | 72% faster |
-| ProviderDirectory (filtered) | 3.1s | 0.9s | 71% faster |
+| Page                         | Before | After | Improvement |
+| ---------------------------- | ------ | ----- | ----------- |
+| Reports                      | 8.2s   | 2.1s  | 74% faster  |
+| Bills                        | 6.5s   | 1.8s  | 72% faster  |
+| Dashboard                    | 4.3s   | 1.2s  | 72% faster  |
+| ProviderDirectory (filtered) | 3.1s   | 0.9s  | 71% faster  |
 
 ---
 
@@ -339,7 +367,7 @@ All changes deployed to Lovable production:
 2. `5c3e0ae` - perf: add pagination limits to Reports and Bills pages (Tier 3)
 3. `73f47cf` - perf: add database indexes for query optimization (Tier 3)
 4. `9a12e20` - perf: fix HSA account stats N+1 query pattern (Tier 3)
-5. `25399b6` - perf: replace select(*) with specific columns (Tier 3 P1)
+5. `25399b6` - perf: replace select(\*) with specific columns (Tier 3 P1)
 6. `ad733d0` - perf: move provider filtering from client to database (Tier 3 P1)
 
 ---
@@ -359,21 +387,25 @@ All changes deployed to Lovable production:
 ## 🎓 Best Practices Established
 
 ### 1. Query Optimization
+
 - Always use JOINs instead of sequential queries
 - Batch fetch with `.in()` for multiple IDs
 - Use `.limit()` on all unbounded queries
 
 ### 2. Data Transfer
+
 - Select only required columns
 - Apply filters at database level
 - Use pagination for large datasets
 
 ### 3. Indexing Strategy
+
 - Create composite indexes for common filter combinations
 - Index foreign keys used in JOINs
 - Use partial indexes for conditional queries
 
 ### 4. React Query Patterns
+
 - Include filters in queryKey for proper cache invalidation
 - Use `queryKey: ['resource', ...filterValues]`
 - Leverage automatic refetch on filter changes
@@ -391,6 +423,7 @@ All changes deployed to Lovable production:
 ## 🚀 Impact Summary
 
 **Performance Gains:**
+
 - **70-90% reduction** in database queries
 - **40-60% reduction** in bandwidth usage
 - **70%+ faster** page load times on large datasets
@@ -398,12 +431,14 @@ All changes deployed to Lovable production:
 - **Improved** user experience significantly
 
 **Code Quality:**
+
 - Cleaner, more maintainable queries
 - Better separation of concerns (DB vs client)
 - Established patterns for future development
 - Comprehensive database indexing strategy
 
 **Scalability:**
+
 - Application now handles 10,000+ records efficiently
 - Database queries remain fast under load
 - Client-side performance improved

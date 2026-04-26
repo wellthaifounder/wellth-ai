@@ -1,4 +1,9 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,7 +37,9 @@ export function QuickAddTransactionDialog({
 
   const addTransaction = useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase.from("transactions").insert({
         user_id: user.id,
@@ -85,7 +92,9 @@ export function QuickAddTransactionDialog({
               id="date"
               type="date"
               value={formData.transaction_date}
-              onChange={(e) => setFormData({ ...formData, transaction_date: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, transaction_date: e.target.value })
+              }
               required
             />
           </div>
@@ -95,7 +104,9 @@ export function QuickAddTransactionDialog({
             <Input
               id="vendor"
               value={formData.vendor}
-              onChange={(e) => setFormData({ ...formData, vendor: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, vendor: e.target.value })
+              }
               placeholder="e.g., CVS Pharmacy"
               required
             />
@@ -108,7 +119,9 @@ export function QuickAddTransactionDialog({
               type="number"
               step="0.01"
               value={formData.amount}
-              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, amount: e.target.value })
+              }
               placeholder="0.00"
               required
             />
@@ -119,7 +132,9 @@ export function QuickAddTransactionDialog({
             <Input
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               placeholder="Transaction details"
             />
           </div>
@@ -129,7 +144,9 @@ export function QuickAddTransactionDialog({
             <Switch
               id="is-medical"
               checked={formData.is_medical}
-              onCheckedChange={(checked) => setFormData({ ...formData, is_medical: checked })}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, is_medical: checked })
+              }
             />
           </div>
 
@@ -138,14 +155,20 @@ export function QuickAddTransactionDialog({
             <Textarea
               id="notes"
               value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
               placeholder="Add any additional notes..."
               rows={3}
             />
           </div>
 
           <div className="flex gap-2 pt-4">
-            <Button type="submit" disabled={addTransaction.isPending} className="flex-1">
+            <Button
+              type="submit"
+              disabled={addTransaction.isPending}
+              className="flex-1"
+            >
               {addTransaction.isPending ? "Adding..." : "Add Transaction"}
             </Button>
             <Button

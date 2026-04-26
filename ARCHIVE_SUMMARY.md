@@ -6,6 +6,7 @@
 ## What Was Archived
 
 ### Database Tables (via migration)
+
 - `bill_reviews` - AI analysis results
 - `bill_errors` - Detected billing errors
 - `bill_disputes` - Dispute case management
@@ -14,11 +15,13 @@
 - `cpt_code_reference` - CPT code pricing reference
 
 ### Edge Functions
+
 - `analyze-medical-bill` → moved to `supabase/functions/_archived/`
   - Used Gemini 2.5 Pro via Lovable AI Gateway
   - Required `LOVABLE_API_KEY` (can be removed from secrets if not used elsewhere)
 
 ### Frontend Pages
+
 - `BillReviews.tsx` → moved to `src/_archived/pages/`
 - `BillReview.tsx` → moved to `src/_archived/pages/`
 - `BillDispute.tsx` → moved to `src/_archived/pages/`
@@ -26,10 +29,12 @@
 - `DisputeDetail.tsx` → moved to `src/_archived/pages/`
 
 ### Frontend Components
+
 - `BillReviewCard.tsx` → moved to `src/_archived/components/bills/`
 - `DisputeWizard.tsx` → moved to `src/_archived/components/bills/`
 
 ### Routes Removed/Redirected
+
 - `/bill-reviews/:invoiceId` → redirects to `/bills`
 - `/disputes/:id` → redirects to `/bills`
 - `/bills/:invoiceId/dispute` → redirects to `/bills`
@@ -37,6 +42,7 @@
 ## What Was Kept
 
 ### Core Features (Focus Areas)
+
 ✅ HSA/FSA receipt tracking and storage
 ✅ Document organization (Medical Events)
 ✅ Plaid integration for HSA account tracking
@@ -45,6 +51,7 @@
 ✅ Reimbursement requests
 
 ### Database Tables (Still Active)
+
 - `invoices` - Medical bills/invoices
 - `receipts` - Uploaded documents
 - `payment_transactions` - Payment tracking

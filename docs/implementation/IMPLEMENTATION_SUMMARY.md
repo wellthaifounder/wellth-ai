@@ -11,19 +11,24 @@ All tasks from the comprehensive product review plan have been successfully impl
 ### **Month 1: Foundation & Quick Wins (100% Complete)**
 
 #### ✅ Task 1: Hero Messaging Rewrite
+
 **File**: [`src/components/Hero.tsx`](src/components/Hero.tsx)
 
 **Changes**:
+
 - Updated headline: "Medical Bills Overcharged You. We'll Prove It."
 - Added social proof: "Join 10,000+ families who've recovered $2.4M in overcharges"
 - Changed CTA to "Find My Billing Errors" (outcome-focused)
 
 #### ✅ Task 2: Navigation Consolidation (15 → 5 categories)
+
 **Files**:
+
 - [`src/components/AppSidebar.tsx`](src/components/AppSidebar.tsx)
 - [`src/components/AuthenticatedNav.tsx`](src/components/AuthenticatedNav.tsx)
 
 **New Structure**:
+
 - **Money**: Dashboard, Transactions, Savings Tools
 - **Bills**: Bills, Documents
 - **Insights**: Reports
@@ -31,11 +36,13 @@ All tasks from the comprehensive product review plan have been successfully impl
 - **Account**: Settings, Feedback
 
 #### ✅ Task 3: Social Proof Metrics
+
 **File**: [`src/components/Hero.tsx`](src/components/Hero.tsx)
 
 Added to landing page hero section.
 
 #### ✅ Task 4: Persistent "Upload Bill" Button
+
 **File**: [`src/components/AuthenticatedNav.tsx:114-123`](src/components/AuthenticatedNav.tsx#L114-L123)
 
 Visible on all authenticated pages in header.
@@ -45,17 +52,21 @@ Visible on all authenticated pages in header.
 ### **Month 1 (Cont'd): Dashboard Improvements**
 
 #### ✅ Task 5: Dashboard Hero Metric
+
 **File**: [`src/components/dashboard/TotalValueCard.tsx`](src/components/dashboard/TotalValueCard.tsx)
 
 **Features**:
+
 - Unified "Total Value Created" metric
 - Expandable breakdown: errors found, rewards, tax savings, payment optimizations
 - Adaptive for HSA vs non-HSA users
 
 #### ✅ Task 6: HSA Health Check Widget
+
 **File**: [`src/components/dashboard/HSAHealthCheck.tsx`](src/components/dashboard/HSAHealthCheck.tsx)
 
 **Adaptive UI**:
+
 - **Non-HSA users**: Eligibility checker + educational content
 - **HSA users**: Balance tracking, contribution progress, investment status, optimization tips
 
@@ -64,22 +75,28 @@ Visible on all authenticated pages in header.
 ### **Month 2: HSA Experience Unification (100% Complete)**
 
 #### ✅ Task 7: In-Context HSA Upgrade Prompts
+
 **Files**:
+
 - Component: [`src/components/HSAUpgradePrompt.tsx`](src/components/HSAUpgradePrompt.tsx)
 - Bill Detail: [`src/pages/BillDetail.tsx:536-543`](src/pages/BillDetail.tsx#L536-L543)
 - Calculator: [`src/pages/PrePurchaseDecision.tsx:349-357`](src/pages/PrePurchaseDecision.tsx#L349-L357)
 
 **Features**:
+
 - Shows specific tax savings + investment growth calculations
 - Two variants: compact (bill detail) and default (calculator)
 - Dismissible prompts
 
 #### ✅ Task 8: Progressive Calculator Unlock
+
 **Files**:
+
 - [`src/pages/PrePurchaseDecision.tsx`](src/pages/PrePurchaseDecision.tsx)
 - [`src/components/HSAUpgradePrompt.tsx`](src/components/HSAUpgradePrompt.tsx)
 
 **Implementation**:
+
 - All users see card rewards optimization
 - Non-HSA users see upgrade prompt showing advanced HSA strategy value
 - HSA users see full HSA investment strategy in recommendations
@@ -89,30 +106,37 @@ Visible on all authenticated pages in header.
 ### **Month 1-2: Onboarding Improvements (100% Complete)**
 
 #### ✅ Task 9: Redesigned Onboarding (Outcome-First)
+
 **File**: [`src/components/dashboard/EmptyStateOnboarding.tsx`](src/components/dashboard/EmptyStateOnboarding.tsx)
 
 **New Flow**:
+
 1. Upload your first bill (immediate value)
 2. See errors found (motivates completion)
 3. Complete setup (connect bank/HSA)
 
 **Key Features**:
+
 - Headline: "Find Your First $380 in Savings"
 - Visual progress indicator (3 steps)
 - Social proof: "Average first-bill savings: $380"
 - Primary CTA: "Upload Your First Bill"
 
 #### ✅ Task 10: Onboarding Progress Bar in Header
+
 **Files**:
+
 - Component: [`src/components/onboarding/OnboardingProgressBar.tsx`](src/components/onboarding/OnboardingProgressBar.tsx)
 - Integration: [`src/components/AuthenticatedNav.tsx:251`](src/components/AuthenticatedNav.tsx#L251)
 
 **Tracks 3 Milestones**:
+
 1. Bill uploaded
 2. Bill analyzed (errors found)
 3. Accounts connected (bank OR HSA)
 
 **Features**:
+
 - Shows progress percentage
 - Desktop: full step labels with icons
 - Mobile: compact progress bar
@@ -123,32 +147,39 @@ Visible on all authenticated pages in header.
 ### **Month 3: Feature Depth (100% Complete)**
 
 #### ✅ Task 11: Insurance Plan Onboarding
+
 **Files**:
+
 - Dialog: [`src/components/onboarding/InsurancePlanDialog.tsx`](src/components/onboarding/InsurancePlanDialog.tsx)
 - Hook: [`src/hooks/useInsurancePlan.ts`](src/hooks/useInsurancePlan.ts)
 - Dashboard Widget: [`src/components/dashboard/InsurancePlanPrompt.tsx`](src/components/dashboard/InsurancePlanPrompt.tsx)
 
 **Collects**:
+
 - Insurance carrier (dropdown: Aetna, BCBS, Cigna, UnitedHealthcare, etc.)
 - Plan type (HMO, PPO, EPO, POS, HDHP)
 - Annual deductible + amount met
 - Out-of-pocket max + amount met
 
 **Features**:
+
 - Auto-calculates remaining amounts
 - Progress bars for deductible & OOP
 - Shows "You're $X away from meeting your deductible" alerts
 - Identifies HDHP plans eligible for HSA
 
 **Dashboard Integration**:
+
 - Prompts non-insurance users to add plan
 - Shows progress tracking for users with plans
 - Edit functionality
 
 #### ✅ Task 12: Analytics Tracking for 8 Core KPIs
+
 **File**: [`src/lib/analytics.ts`](src/lib/analytics.ts)
 
 **KPI Tracking Methods**:
+
 1. **Onboarding Completion Rate**:
    - `trackOnboardingStarted()`
    - `trackOnboardingStepCompleted(step, stepNumber)`
@@ -177,6 +208,7 @@ Visible on all authenticated pages in header.
    - Track via `dispute_filed` and `dispute_resolved` with outcomes
 
 **Database Integration**:
+
 - All events stored in `analytics_events` table
 - Includes: `user_id`, `event_name`, `event_properties`, `created_at`
 - Non-blocking (failures don't break app)
@@ -258,6 +290,7 @@ Add the new components to your Dashboard page:
 ```
 
 Import:
+
 ```typescript
 import { InsurancePlanPrompt } from "@/components/dashboard/InsurancePlanPrompt";
 ```
@@ -274,7 +307,7 @@ import { analytics } from "@/lib/analytics";
 analytics.billUpload(parseFloat(formData.totalAmount), formData.category);
 
 // After AI analysis completes
-analytics.track({ type: 'bill_analyzed', value: potentialSavings });
+analytics.track({ type: "bill_analyzed", value: potentialSavings });
 
 // When user starts dispute
 analytics.trackDisputeConversion(billAmount, disputeAmount);
@@ -292,7 +325,7 @@ analytics.trackOnboardingCompleted(Date.now() - onboardingStartTime);
 // In src/pages/PrePurchaseDecision.tsx, when calculator shows results
 const startTime = Date.now();
 // ... show results
-analytics.trackTimeToFirstValue('calculator_result', Date.now() - startTime);
+analytics.trackTimeToFirstValue("calculator_result", Date.now() - startTime);
 ```
 
 ### 5. **Optional: External Analytics Integration**
@@ -333,24 +366,28 @@ async track(event: AnalyticsEvent) {
 These were identified in the plan but are not critical for beta:
 
 #### Insurance Plan API Integration
+
 - **Carrier APIs**: Most insurance carriers don't have public APIs
 - **Workaround for MVP**: Manual entry (implemented)
 - **Future**: Consider services like Change Healthcare, Availity, or Waystar for claims verification
 - **Cost**: $500-$2,000/month + per-transaction fees
 
 #### EOB Parsing (Explanation of Benefits)
+
 - **Current**: Manual bill upload + AI analysis
 - **Future**: Parse EOB PDFs to extract claim numbers, dates, amounts, adjustment codes
 - **Implementation**: Enhance existing OCR with EOB-specific templates
 - **Timeline**: Month 4-6
 
 #### HSA Provider Direct Integration
+
 - **Target providers**: Fidelity, HealthEquity, Lively, HSA Bank
 - **API availability**: Fidelity and HealthEquity have OAuth APIs (requires partnership)
 - **MVP alternative**: Manual HSA balance entry (already in HSAHealthCheck)
 - **Timeline**: Month 6+ (requires legal BAAs and partnerships)
 
 #### Card Optimization Engine
+
 - **Current**: Manual card selection in calculator
 - **Future**: Auto-suggest best card based on category rewards
 - **Implementation**: Integrate with Plaid to pull user's cards, match with rewards databases
@@ -361,6 +398,7 @@ These were identified in the plan but are not critical for beta:
 ## 🎯 Testing Checklist for Beta
 
 ### Onboarding Flow
+
 - [ ] New user sees outcome-first onboarding with "Find Your First $380"
 - [ ] Progress bar appears in header showing 0/3 complete
 - [ ] Uploading first bill updates progress to 1/3
@@ -369,12 +407,14 @@ These were identified in the plan but are not critical for beta:
 - [ ] Progress bar disappears after completion
 
 ### Navigation
+
 - [ ] Desktop sidebar shows 5 main categories (Money, Bills, Insights, Providers, Account)
 - [ ] Mobile menu shows organized sub-items under each category
 - [ ] "Upload Bill" button visible in header on all pages
 - [ ] Navigation badges show pending reviews/transactions
 
 ### Dashboard
+
 - [ ] "Total Value Created" card shows unified savings metric
 - [ ] Card expands to show breakdown by category
 - [ ] HSA Health Check shows eligibility checker for non-HSA users
@@ -383,6 +423,7 @@ These were identified in the plan but are not critical for beta:
 - [ ] Insurance Plan Summary shows progress bars for users with plans
 
 ### HSA Features (Progressive Disclosure)
+
 - [ ] Non-HSA users see HSA upgrade prompt on bill detail (when marked HSA-eligible)
 - [ ] Prompt shows specific tax savings calculation
 - [ ] Calculator shows HSA upgrade prompt for non-HSA users
@@ -390,6 +431,7 @@ These were identified in the plan but are not critical for beta:
 - [ ] Prompts are dismissible
 
 ### Insurance Plan
+
 - [ ] Dialog opens from dashboard widget
 - [ ] Dropdown populated with major carriers
 - [ ] Plan type selector includes HDHP (shows HSA tip)
@@ -398,6 +440,7 @@ These were identified in the plan but are not critical for beta:
 - [ ] Edit functionality works
 
 ### Analytics (Check browser console in dev mode)
+
 - [ ] Events logged on: bill upload, analysis, dispute start, calculator use
 - [ ] Onboarding events track steps
 - [ ] Events stored in database with correct user_id
@@ -499,6 +542,7 @@ WHERE event_name = 'free_to_plus_conversion'
 ## 🚀 Deployment Steps
 
 1. **Database Migration**:
+
    ```bash
    # Run the SQL migrations in Supabase dashboard or CLI
    supabase migration new add_analytics_and_insurance
@@ -507,6 +551,7 @@ WHERE event_name = 'free_to_plus_conversion'
    ```
 
 2. **Code Deployment**:
+
    ```bash
    # Test locally first
    npm run dev
@@ -519,6 +564,7 @@ WHERE event_name = 'free_to_plus_conversion'
    ```
 
 3. **Environment Variables** (if needed):
+
    ```env
    VITE_ENABLE_ANALYTICS=true
    VITE_POSTHOG_KEY=your_key_here  # Optional
@@ -551,6 +597,7 @@ After deploying to beta users, monitor these metrics weekly:
 **All 12 high-priority tasks completed!**
 
 The MVP is ready for beta testing with:
+
 - ✅ Outcome-focused messaging & onboarding
 - ✅ Simplified navigation (15 → 5 categories)
 - ✅ Progressive disclosure for HSA features
@@ -558,6 +605,7 @@ The MVP is ready for beta testing with:
 - ✅ Analytics foundation for KPI measurement
 
 **What's Working:**
+
 - Users will see immediate value ("Find Your First $380")
 - Navigation is no longer overwhelming
 - HSA features shown contextually (not hidden)
@@ -565,6 +613,7 @@ The MVP is ready for beta testing with:
 - Analytics ready for data-driven iteration
 
 **Next Steps for You:**
+
 1. Run database migrations
 2. Add `InsurancePlanPrompt` to Dashboard
 3. Add analytics tracking calls to key events

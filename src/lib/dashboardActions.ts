@@ -1,4 +1,10 @@
-import { LucideIcon, ListChecks, FileText, DollarSign, TrendingUp } from "lucide-react";
+import {
+  LucideIcon,
+  ListChecks,
+  FileText,
+  DollarSign,
+  TrendingUp,
+} from "lucide-react";
 
 export interface DashboardAction {
   priority: number;
@@ -23,11 +29,12 @@ export function getNextAction(stats: DashboardStats): DashboardAction {
     return {
       priority: 1,
       title: "Review Your Transactions",
-      description: `You have ${stats.unreviewedTransactions} ${stats.unreviewedTransactions === 1 ? 'transaction' : 'transactions'} waiting for review`,
-      buttonText: `Review ${stats.unreviewedTransactions} Transaction${stats.unreviewedTransactions === 1 ? '' : 's'}`,
+      description: `You have ${stats.unreviewedTransactions} ${stats.unreviewedTransactions === 1 ? "transaction" : "transactions"} waiting for review`,
+      buttonText: `Review ${stats.unreviewedTransactions} Transaction${stats.unreviewedTransactions === 1 ? "" : "s"}`,
       route: "/transactions?tab=review",
       icon: ListChecks,
-      timeEstimate: stats.unreviewedTransactions <= 5 ? "~2 minutes" : "~5 minutes"
+      timeEstimate:
+        stats.unreviewedTransactions <= 5 ? "~2 minutes" : "~5 minutes",
     };
   }
 
@@ -36,11 +43,12 @@ export function getNextAction(stats: DashboardStats): DashboardAction {
     return {
       priority: 2,
       title: "Add Your First Medical Bill",
-      description: "Start tracking your healthcare expenses to maximize savings",
+      description:
+        "Start tracking your healthcare expenses to maximize savings",
       buttonText: "Add Your First Bill",
       route: "/expenses/new",
       icon: FileText,
-      timeEstimate: "~1 minute"
+      timeEstimate: "~1 minute",
     };
   }
 
@@ -53,7 +61,7 @@ export function getNextAction(stats: DashboardStats): DashboardAction {
       buttonText: `Claim $${stats.hsaClaimableAmount.toFixed(2)}`,
       route: "/hsa-reimbursement",
       icon: DollarSign,
-      timeEstimate: "~3 minutes"
+      timeEstimate: "~3 minutes",
     };
   }
 
@@ -65,6 +73,6 @@ export function getNextAction(stats: DashboardStats): DashboardAction {
     buttonText: "View Your Savings",
     route: "/analytics",
     icon: TrendingUp,
-    timeEstimate: undefined
+    timeEstimate: undefined,
   };
 }

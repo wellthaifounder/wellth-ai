@@ -28,7 +28,8 @@ export default function NewBillUpload() {
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold mb-2">Upload Medical Bill</h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Upload documents and enter your bill details to track this expense and maximize your HSA/FSA savings.
+            Upload documents and enter your bill details to track this expense
+            and maximize your HSA/FSA savings.
           </p>
         </div>
 

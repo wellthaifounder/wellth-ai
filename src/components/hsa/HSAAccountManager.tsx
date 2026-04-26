@@ -23,21 +23,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Edit, Trash2, Calendar } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useHSAAccounts } from "@/hooks/useHSAAccounts";
-import { formatHSAAccountDateRange, validateHSAAccountDates } from "@/lib/hsaAccountUtils";
+import {
+  formatHSAAccountDateRange,
+  validateHSAAccountDates,
+} from "@/lib/hsaAccountUtils";
 import type { HSAAccount } from "@/lib/hsaAccountUtils";
 import { GenericSkeleton } from "@/components/skeletons/GenericSkeleton";
 import { logError } from "@/utils/errorHandler";
 
 export function HSAAccountManager() {
-  const { accounts, isLoading, createAccount, updateAccount, deleteAccount } = useHSAAccounts();
+  const { accounts, isLoading, createAccount, updateAccount, deleteAccount } =
+    useHSAAccounts();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<HSAAccount | null>(null);
-  const [deletingAccountId, setDeletingAccountId] = useState<string | null>(null);
-  
+  const [deletingAccountId, setDeletingAccountId] = useState<string | null>(
+    null,
+  );
+
   const [formData, setFormData] = useState({
     account_name: "",
     opened_date: "",
@@ -92,7 +104,10 @@ export function HSAAccountManager() {
 
     // Validate dates
     if (formData.closed_date) {
-      const dateError = validateHSAAccountDates(formData.opened_date, formData.closed_date);
+      const dateError = validateHSAAccountDates(
+        formData.opened_date,
+        formData.closed_date,
+      );
       if (dateError) {
         setFormError(dateError);
         return;
@@ -109,7 +124,9 @@ export function HSAAccountManager() {
 
       const extendedFields = {
         ...baseFields,
-        ...(formData.eligibility_start_date ? { eligibility_start_date: formData.eligibility_start_date } : {}),
+        ...(formData.eligibility_start_date
+          ? { eligibility_start_date: formData.eligibility_start_date }
+          : {}),
         ...(formData.qle_type ? { qle_type: formData.qle_type } : {}),
         ...(formData.notes.trim() ? { notes: formData.notes.trim() } : {}),
       };
@@ -126,8 +143,16 @@ export function HSAAccountManager() {
         await save(extendedFields);
       } catch (extendedError) {
         // If the extended columns don't exist yet (migration pending), fall back to base fields
-        const msg = extendedError instanceof Error ? extendedError.message : String(extendedError);
-        if (msg.includes("column") && (msg.includes("eligibility_start_date") || msg.includes("qle_type") || msg.includes("notes"))) {
+        const msg =
+          extendedError instanceof Error
+            ? extendedError.message
+            : String(extendedError);
+        if (
+          msg.includes("column") &&
+          (msg.includes("eligibility_start_date") ||
+            msg.includes("qle_type") ||
+            msg.includes("notes"))
+        ) {
           await save(baseFields);
         } else {
           throw extendedError;
@@ -148,7 +173,7 @@ export function HSAAccountManager() {
 
   const handleConfirmDelete = async () => {
     if (!deletingAccountId) return;
-    
+
     try {
       await deleteAccount(deletingAccountId);
       setDeleteDialogOpen(false);
@@ -171,9 +196,12 @@ export function HSAAccountManager() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-foreground">HSA Accounts</h3>
+          <h3 className="text-lg font-semibold text-foreground">
+            HSA Accounts
+          </h3>
           <p className="text-sm text-muted-foreground">
-            Manage your Health Savings Accounts to track eligibility across different time periods
+            Manage your Health Savings Accounts to track eligibility across
+            different time periods
           </p>
         </div>
         <Button onClick={() => handleOpenDialog()}>
@@ -185,9 +213,12 @@ export function HSAAccountManager() {
       {accounts.length === 0 ? (
         <Card className="p-8 text-center">
           <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h4 className="text-lg font-medium text-foreground mb-2">No HSA Accounts</h4>
+          <h4 className="text-lg font-medium text-foreground mb-2">
+            No HSA Accounts
+          </h4>
           <p className="text-sm text-muted-foreground mb-4">
-            Add your HSA accounts to track which expenses are eligible for reimbursement
+            Add your HSA accounts to track which expenses are eligible for
+            reimbursement
           </p>
           <Button onClick={() => handleOpenDialog()}>
             <Plus className="h-4 w-4 mr-2" />
@@ -201,7 +232,9 @@ export function HSAAccountManager() {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-1">
-                    <h4 className="font-medium text-foreground">{account.account_name}</h4>
+                    <h4 className="font-medium text-foreground">
+                      {account.account_name}
+                    </h4>
                     {account.is_active && !account.closed_date && (
                       <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                         Active
@@ -275,51 +308,76 @@ export function HSAAccountManager() {
               <div className="space-y-2">
                 <Label htmlFor="eligibility_start_date">
                   Eligibility Start Date{" "}
-                  <span className="text-muted-foreground font-normal text-xs">(optional)</span>
+                  <span className="text-muted-foreground font-normal text-xs">
+                    (optional)
+                  </span>
                 </Label>
                 <Input
                   id="eligibility_start_date"
                   type="date"
                   value={formData.eligibility_start_date}
                   onChange={(e) =>
-                    setFormData({ ...formData, eligibility_start_date: e.target.value })
+                    setFormData({
+                      ...formData,
+                      eligibility_start_date: e.target.value,
+                    })
                   }
                 />
                 <p className="text-xs text-muted-foreground">
-                  If your HSA eligibility began before you opened the account (e.g. retroactive election after a qualifying life event), enter that earlier date here.
+                  If your HSA eligibility began before you opened the account
+                  (e.g. retroactive election after a qualifying life event),
+                  enter that earlier date here.
                 </p>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="qle_type">
                   What triggered this account?{" "}
-                  <span className="text-muted-foreground font-normal text-xs">(optional)</span>
+                  <span className="text-muted-foreground font-normal text-xs">
+                    (optional)
+                  </span>
                 </Label>
                 <Select
                   value={formData.qle_type}
-                  onValueChange={(v) => setFormData({ ...formData, qle_type: v })}
+                  onValueChange={(v) =>
+                    setFormData({ ...formData, qle_type: v })
+                  }
                 >
                   <SelectTrigger id="qle_type">
                     <SelectValue placeholder="Select a qualifying life event…" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="new_employment">New employment / employer plan</SelectItem>
-                    <SelectItem value="loss_of_coverage">Loss of prior coverage</SelectItem>
+                    <SelectItem value="new_employment">
+                      New employment / employer plan
+                    </SelectItem>
+                    <SelectItem value="loss_of_coverage">
+                      Loss of prior coverage
+                    </SelectItem>
                     <SelectItem value="marriage">Marriage</SelectItem>
-                    <SelectItem value="divorce">Divorce / separation</SelectItem>
-                    <SelectItem value="birth_adoption">Birth or adoption</SelectItem>
-                    <SelectItem value="plan_change">Mid-year plan change to HDHP</SelectItem>
+                    <SelectItem value="divorce">
+                      Divorce / separation
+                    </SelectItem>
+                    <SelectItem value="birth_adoption">
+                      Birth or adoption
+                    </SelectItem>
+                    <SelectItem value="plan_change">
+                      Mid-year plan change to HDHP
+                    </SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Helps accurately track which expenses are reimbursable when eligibility started mid-year.
+                  Helps accurately track which expenses are reimbursable when
+                  eligibility started mid-year.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="closed_date">Closed Date{" "}
-                  <span className="text-muted-foreground font-normal text-xs">(optional)</span>
+                <Label htmlFor="closed_date">
+                  Closed Date{" "}
+                  <span className="text-muted-foreground font-normal text-xs">
+                    (optional)
+                  </span>
                 </Label>
                 <Input
                   id="closed_date"
@@ -329,19 +387,25 @@ export function HSAAccountManager() {
                     setFormData({ ...formData, closed_date: e.target.value })
                   }
                 />
-                <p className="text-xs text-muted-foreground">Leave empty if account is still active</p>
+                <p className="text-xs text-muted-foreground">
+                  Leave empty if account is still active
+                </p>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="notes">
                   Notes{" "}
-                  <span className="text-muted-foreground font-normal text-xs">(optional)</span>
+                  <span className="text-muted-foreground font-normal text-xs">
+                    (optional)
+                  </span>
                 </Label>
                 <Textarea
                   id="notes"
                   placeholder="e.g. Switched to Fidelity HDHP Gold on July 1, covers spouse and dependents"
                   value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, notes: e.target.value })
+                  }
                   rows={2}
                 />
               </div>
@@ -361,7 +425,11 @@ export function HSAAccountManager() {
               )}
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleCloseDialog}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCloseDialog}
+              >
                 Cancel
               </Button>
               <Button type="submit">
@@ -377,8 +445,9 @@ export function HSAAccountManager() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete HSA Account</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this HSA account? This action cannot be undone.
-              Historical reimbursement requests will still show which account was used.
+              Are you sure you want to delete this HSA account? This action
+              cannot be undone. Historical reimbursement requests will still
+              show which account was used.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

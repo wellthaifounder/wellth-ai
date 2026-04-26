@@ -1,4 +1,9 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -69,14 +74,16 @@ export function TransactionDetailDialog({
     try {
       const { error } = await supabase
         .from("transactions")
-        .update({ 
+        .update({
           is_medical: !transaction.is_medical,
-          is_hsa_eligible: !transaction.is_medical // Auto-mark as HSA eligible if medical
+          is_hsa_eligible: !transaction.is_medical, // Auto-mark as HSA eligible if medical
         })
         .eq("id", transaction.id);
 
       if (error) throw error;
-      toast.success(transaction.is_medical ? "Unmarked as medical" : "Marked as medical");
+      toast.success(
+        transaction.is_medical ? "Unmarked as medical" : "Marked as medical",
+      );
       onUpdate();
     } catch (error) {
       logError("Error updating transaction", error);
@@ -116,7 +123,7 @@ export function TransactionDetailDialog({
                 {format(new Date(transaction.transaction_date), "MMMM d, yyyy")}
               </p>
             </div>
-            
+
             <div>
               <Label className="text-sm text-muted-foreground">Amount</Label>
               <p className="text-2xl font-bold text-foreground">
@@ -127,7 +134,9 @@ export function TransactionDetailDialog({
 
           <div>
             <Label className="text-sm text-muted-foreground">Vendor</Label>
-            <p className="text-base font-medium">{transaction.vendor || "Not specified"}</p>
+            <p className="text-base font-medium">
+              {transaction.vendor || "Not specified"}
+            </p>
           </div>
 
           <div>
@@ -142,9 +151,12 @@ export function TransactionDetailDialog({
             {transaction.payment_methods?.is_hsa_account && (
               <Badge variant="success">Paid via HSA</Badge>
             )}
-            {transaction.is_hsa_eligible && !transaction.payment_methods?.is_hsa_account && (
-              <Badge className="bg-primary/10 text-primary">HSA Eligible</Badge>
-            )}
+            {transaction.is_hsa_eligible &&
+              !transaction.payment_methods?.is_hsa_account && (
+                <Badge className="bg-primary/10 text-primary">
+                  HSA Eligible
+                </Badge>
+              )}
             <Badge variant="secondary">{transaction.category}</Badge>
             {transaction.reconciliation_status === "linked_to_invoice" && (
               <Badge className="bg-green-500/10 text-green-700 dark:text-green-400">

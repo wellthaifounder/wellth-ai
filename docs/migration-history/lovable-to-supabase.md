@@ -96,6 +96,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 ```
 
 **If using Lovable:**
+
 1. Go to Lovable project settings
 2. Update Supabase URL and Anon Key
 3. Or switch to "Connect External Supabase" and enter your project details
@@ -105,6 +106,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 ### **STEP 5: Verify Everything Works**
 
 **Check Database:**
+
 ```sql
 -- Run in SQL Editor to verify tables exist
 SELECT table_name
@@ -116,11 +118,13 @@ ORDER BY table_name;
 Expected tables: invoices, transactions, plaid_connections, wellbie_conversations, etc.
 
 **Check Edge Functions:**
+
 1. Go to Edge Functions tab
 2. Verify all 18 functions are deployed
 3. Check logs for any errors
 
 **Test in Your App:**
+
 1. Try logging in
 2. Try linking a bank account (Plaid)
 3. Check that encryption is working
@@ -132,11 +136,13 @@ Expected tables: invoices, transactions, plaid_connections, wellbie_conversation
 If you have existing data in Lovable Cloud that you want to migrate:
 
 ### **Export from Lovable Cloud:**
+
 1. Use Lovable's backup/export feature (if available)
 2. Or query tables via SQL and export as CSV
 3. Or use `pg_dump` if you have direct database access
 
 ### **Import to New Supabase:**
+
 1. Use SQL Editor to import data
 2. Or use Supabase Dashboard → Table Editor → Import CSV
 3. Make sure UUIDs and foreign keys match
@@ -146,6 +152,7 @@ If you have existing data in Lovable Cloud that you want to migrate:
 ## 📋 **Quick Reference**
 
 ### **Your New Supabase Project:**
+
 - **Project ID:** fzmdfhdfvayaalhogskm
 - **URL:** https://fzmdfhdfvayaalhogskm.supabase.co
 - **Dashboard:** https://supabase.com/dashboard/project/fzmdfhdfvayaalhogskm
@@ -153,6 +160,7 @@ If you have existing data in Lovable Cloud that you want to migrate:
 - **Service Role Key:** `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` (keep secret!)
 
 ### **Encryption Keys (Store Securely!):**
+
 - **PLAID_ENCRYPTION_KEY:** `v3DUs0QkAwzuuLghL7KB+pIL18qK3Caq6QbOT7tYBSg=`
 - **MIGRATION_ADMIN_KEY:** `f6AJDVZV6vgM4RXEcy/2RRwLdNndA3lGSO95oTX0Lbg=`
 
@@ -179,16 +187,19 @@ If you have existing data in Lovable Cloud that you want to migrate:
 ## 🆘 **Troubleshooting**
 
 ### "Relation already exists" errors during migration
+
 - Some tables might already exist
 - Safe to ignore these specific errors
 - Or start fresh: Database → Settings → Reset Database
 
 ### Edge functions not deploying
+
 - Check you have the right permissions
 - Try deploying via GitHub integration
 - Or manually copy/paste function code in dashboard
 
 ### Frontend can't connect
+
 - Double-check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
 - Make sure CORS is configured (ALLOWED_ORIGIN secret)
 - Check browser console for errors
@@ -199,6 +210,7 @@ If you have existing data in Lovable Cloud that you want to migrate:
 **Priority:** HIGH - Required for production deployment
 
 **Next Steps After Migration:**
+
 1. Test thoroughly in staging
 2. Update DNS/domains if needed
 3. Monitor logs for any issues

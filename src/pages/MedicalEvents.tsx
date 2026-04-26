@@ -3,7 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -48,7 +54,9 @@ export default function MedicalEvents() {
   const { data: unorganizedCount } = useQuery({
     queryKey: ["unorganized-invoices-count"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return 0;
 
       const { count, error } = await supabase
@@ -63,20 +71,28 @@ export default function MedicalEvents() {
   });
 
   // Fetch medical events with counts
-  const { data: events, isLoading, refetch } = useQuery({
+  const {
+    data: events,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["medical-events"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       // Get events with invoice and document counts
       const { data, error } = await supabase
         .from("medical_events")
-        .select(`
+        .select(
+          `
           *,
           invoices:invoices(count),
           receipts:receipts(count)
-        `)
+        `,
+        )
         .eq("user_id", user.id)
         .order("event_date", { ascending: false, nullsFirst: false });
 
@@ -103,19 +119,27 @@ export default function MedicalEvents() {
   });
 
   // Group events by status
-  const activeEvents = filteredEvents?.filter((e) => e.status === "active") || [];
-  const disputedEvents = filteredEvents?.filter((e) => e.status === "disputed") || [];
-  const resolvedEvents = filteredEvents?.filter((e) => ["resolved", "archived"].includes(e.status)) || [];
+  const activeEvents =
+    filteredEvents?.filter((e) => e.status === "active") || [];
+  const disputedEvents =
+    filteredEvents?.filter((e) => e.status === "disputed") || [];
+  const resolvedEvents =
+    filteredEvents?.filter((e) =>
+      ["resolved", "archived"].includes(e.status),
+    ) || [];
 
   // Calculate totals
   const totals = events?.reduce(
     (acc, event) => ({
       totalBilled: acc.totalBilled + event.total_billed,
       totalPaid: acc.totalPaid + event.total_paid,
-      totalOutstanding: acc.totalOutstanding + (event.user_responsibility_override ?? (event.total_billed - event.total_paid)),
+      totalOutstanding:
+        acc.totalOutstanding +
+        (event.user_responsibility_override ??
+          event.total_billed - event.total_paid),
       hsaEligible: acc.hsaEligible + event.hsa_eligible_amount,
     }),
-    { totalBilled: 0, totalPaid: 0, totalOutstanding: 0, hsaEligible: 0 }
+    { totalBilled: 0, totalPaid: 0, totalOutstanding: 0, hsaEligible: 0 },
   ) || { totalBilled: 0, totalPaid: 0, totalOutstanding: 0, hsaEligible: 0 };
 
   if (isLoading) {
@@ -139,7 +163,10 @@ export default function MedicalEvents() {
               Track your medical care episodes and related expenses
             </p>
           </div>
-          <Button onClick={() => navigate("/medical-events/new")} className="gap-2">
+          <Button
+            onClick={() => navigate("/medical-events/new")}
+            className="gap-2"
+          >
             <Plus className="h-4 w-4" />
             New Event
           </Button>
@@ -154,13 +181,20 @@ export default function MedicalEvents() {
                   <Sparkles className="h-6 w-6 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold">Organize Your Existing Bills</h3>
+                  <h3 className="font-semibold">
+                    Organize Your Existing Bills
+                  </h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    You have {unorganizedCount} bill{unorganizedCount > 1 ? "s" : ""} that aren't linked to a medical event.
-                    Organizing them helps you track expenses by episode of care.
+                    You have {unorganizedCount} bill
+                    {unorganizedCount > 1 ? "s" : ""} that aren't linked to a
+                    medical event. Organizing them helps you track expenses by
+                    episode of care.
                   </p>
                   <div className="flex gap-2 mt-3">
-                    <Button size="sm" onClick={() => setShowMigrationWizard(true)}>
+                    <Button
+                      size="sm"
+                      onClick={() => setShowMigrationWizard(true)}
+                    >
                       Organize Now
                     </Button>
                     <Button size="sm" variant="ghost">
@@ -179,7 +213,9 @@ export default function MedicalEvents() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Total Events</span>
+                <span className="text-sm text-muted-foreground">
+                  Total Events
+                </span>
               </div>
               <p className="text-2xl font-bold">{events?.length || 0}</p>
             </CardContent>
@@ -189,9 +225,13 @@ export default function MedicalEvents() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Total Billed</span>
+                <span className="text-sm text-muted-foreground">
+                  Total Billed
+                </span>
               </div>
-              <p className="text-2xl font-bold">${totals.totalBilled.toFixed(2)}</p>
+              <p className="text-2xl font-bold">
+                ${totals.totalBilled.toFixed(2)}
+              </p>
             </CardContent>
           </Card>
 
@@ -199,7 +239,9 @@ export default function MedicalEvents() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-2">
                 <AlertCircle className="h-4 w-4 text-destructive" />
-                <span className="text-sm text-muted-foreground">Outstanding</span>
+                <span className="text-sm text-muted-foreground">
+                  Outstanding
+                </span>
               </div>
               <p className="text-2xl font-bold text-destructive">
                 ${totals.totalOutstanding.toFixed(2)}
@@ -211,7 +253,9 @@ export default function MedicalEvents() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle2 className="h-4 w-4 text-green-600" />
-                <span className="text-sm text-muted-foreground">HSA Eligible</span>
+                <span className="text-sm text-muted-foreground">
+                  HSA Eligible
+                </span>
               </div>
               <p className="text-2xl font-bold text-green-600">
                 ${totals.hsaEligible.toFixed(2)}
@@ -275,7 +319,9 @@ export default function MedicalEvents() {
             {disputedEvents.length === 0 ? (
               <Card className="p-8 text-center">
                 <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Disputed Events</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  No Disputed Events
+                </h3>
                 <p className="text-muted-foreground">
                   Events with active disputes will appear here
                 </p>
@@ -297,7 +343,9 @@ export default function MedicalEvents() {
             {resolvedEvents.length === 0 ? (
               <Card className="p-8 text-center">
                 <CheckCircle2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Resolved Events</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  No Resolved Events
+                </h3>
                 <p className="text-muted-foreground">
                   Completed episodes of care will appear here
                 </p>

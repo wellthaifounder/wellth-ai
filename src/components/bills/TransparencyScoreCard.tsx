@@ -1,7 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Award, Info, Shield, Star } from "lucide-react";
 
 interface TransparencyScoreCardProps {
@@ -36,10 +41,29 @@ export function TransparencyScoreCard({
   }
 
   const getTransparencyBadge = (score: number) => {
-    if (score >= 90) return { label: "Highly Transparent", icon: Shield, color: "text-green-600 dark:text-green-400" };
-    if (score >= 75) return { label: "Transparent", icon: Award, color: "text-blue-600 dark:text-blue-400" };
-    if (score >= 60) return { label: "Moderately Transparent", icon: Star, color: "text-yellow-600 dark:text-yellow-400" };
-    return { label: "Needs Improvement", icon: Info, color: "text-orange-600 dark:text-orange-400" };
+    if (score >= 90)
+      return {
+        label: "Highly Transparent",
+        icon: Shield,
+        color: "text-green-600 dark:text-green-400",
+      };
+    if (score >= 75)
+      return {
+        label: "Transparent",
+        icon: Award,
+        color: "text-blue-600 dark:text-blue-400",
+      };
+    if (score >= 60)
+      return {
+        label: "Moderately Transparent",
+        icon: Star,
+        color: "text-yellow-600 dark:text-yellow-400",
+      };
+    return {
+      label: "Needs Improvement",
+      icon: Info,
+      color: "text-orange-600 dark:text-orange-400",
+    };
   };
 
   const badge = getTransparencyBadge(transparencyScore);
@@ -116,7 +140,9 @@ export function TransparencyScoreCard({
           <div className="space-y-1">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Billing Accuracy</span>
-              <span className="font-medium">{billingAccuracyScore?.toFixed(0) ?? 'N/A'}%</span>
+              <span className="font-medium">
+                {billingAccuracyScore?.toFixed(0) ?? "N/A"}%
+              </span>
             </div>
             <Progress value={billingAccuracyScore ?? 0} className="h-2" />
           </div>
@@ -124,27 +150,34 @@ export function TransparencyScoreCard({
           <div className="space-y-1">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Fair Pricing</span>
-              <span className="font-medium">{fairPricingScore?.toFixed(0) ?? 'N/A'}%</span>
+              <span className="font-medium">
+                {fairPricingScore?.toFixed(0) ?? "N/A"}%
+              </span>
             </div>
             <Progress value={fairPricingScore ?? 0} className="h-2" />
           </div>
 
           <div className="space-y-1">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Patient Satisfaction</span>
+              <span className="text-muted-foreground">
+                Patient Satisfaction
+              </span>
               <span className="font-medium">
-                {overallRating ? `${(overallRating * 20).toFixed(0)}%` : 'N/A'}
+                {overallRating ? `${(overallRating * 20).toFixed(0)}%` : "N/A"}
               </span>
             </div>
-            <Progress value={overallRating ? overallRating * 20 : 0} className="h-2" />
+            <Progress
+              value={overallRating ? overallRating * 20 : 0}
+              className="h-2"
+            />
           </div>
         </div>
 
         <div className="pt-4 border-t">
           <p className="text-xs text-muted-foreground text-center">
-            Based on analysis of {billingAccuracyScore ? 'billing data, ' : ''}
-            {fairPricingScore ? 'price comparisons, ' : ''}
-            {overallRating ? 'and patient reviews' : ''}
+            Based on analysis of {billingAccuracyScore ? "billing data, " : ""}
+            {fairPricingScore ? "price comparisons, " : ""}
+            {overallRating ? "and patient reviews" : ""}
           </p>
         </div>
       </CardContent>

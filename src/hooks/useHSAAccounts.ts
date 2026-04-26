@@ -8,10 +8,16 @@ export function useHSAAccounts() {
   const queryClient = useQueryClient();
 
   // Fetch all HSA accounts for the current user
-  const { data: accounts = [], isLoading, error } = useQuery({
+  const {
+    data: accounts = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["hsa-accounts"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
@@ -27,8 +33,12 @@ export function useHSAAccounts() {
 
   // Create a new HSA account
   const createAccount = useMutation({
-    mutationFn: async (account: Omit<HSAAccount, "id" | "user_id" | "created_at" | "updated_at">) => {
-      const { data: { user } } = await supabase.auth.getUser();
+    mutationFn: async (
+      account: Omit<HSAAccount, "id" | "user_id" | "created_at" | "updated_at">,
+    ) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
@@ -55,7 +65,13 @@ export function useHSAAccounts() {
 
   // Update an existing HSA account
   const updateAccount = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<HSAAccount> }) => {
+    mutationFn: async ({
+      id,
+      updates,
+    }: {
+      id: string;
+      updates: Partial<HSAAccount>;
+    }) => {
       const { data, error } = await supabase
         .from("hsa_accounts")
         .update(updates)

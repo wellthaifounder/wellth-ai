@@ -11,7 +11,9 @@ export const ProgressBar = ({ currentStep, totalSteps }: ProgressBarProps) => {
   return (
     <div className="space-y-2">
       <div className="flex justify-between text-sm text-muted-foreground">
-        <span>Step {currentStep} of {totalSteps}</span>
+        <span>
+          Step {currentStep} of {totalSteps}
+        </span>
         <span>{Math.round(progress)}%</span>
       </div>
       <Progress value={progress} className="h-2" />

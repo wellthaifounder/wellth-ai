@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, DollarSign, TrendingUp, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -36,7 +42,7 @@ export function HSAUpgradePrompt({
   context,
   onConnect,
   title,
-  variant = "default"
+  variant = "default",
 }: HSAUpgradePromptProps) {
   const navigate = useNavigate();
   const [isDismissed, setIsDismissed] = useState(false);
@@ -45,7 +51,9 @@ export function HSAUpgradePrompt({
 
   // Calculate example savings based on expense amount
   const taxSavings = expenseAmount ? Math.round(expenseAmount * 0.3) : 300;
-  const investmentGrowth = expenseAmount ? Math.round(expenseAmount * 0.07 * 5) : 102;
+  const investmentGrowth = expenseAmount
+    ? Math.round(expenseAmount * 0.07 * 5)
+    : 102;
   const totalBenefit = taxSavings + investmentGrowth;
 
   const handleConnect = () => {
@@ -77,10 +85,15 @@ export function HSAUpgradePrompt({
                   💡 HSA Tip: Save ${totalBenefit} More
                 </h4>
                 <p className="text-xs text-muted-foreground mb-3">
-                  This expense qualifies for HSA tax benefits. Connect your HSA to unlock savings.
+                  This expense qualifies for HSA tax benefits. Connect your HSA
+                  to unlock savings.
                 </p>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={handleConnect} className="h-8 text-xs">
+                  <Button
+                    size="sm"
+                    onClick={handleConnect}
+                    className="h-8 text-xs"
+                  >
                     Connect HSA
                   </Button>
                   <Button
@@ -145,7 +158,9 @@ export function HSAUpgradePrompt({
               <div className="flex items-center justify-between p-2 bg-background/50 rounded-lg">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  <span className="text-sm font-medium">Investment growth (5 yrs)</span>
+                  <span className="text-sm font-medium">
+                    Investment growth (5 yrs)
+                  </span>
                 </div>
                 <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
                   ${investmentGrowth}
@@ -154,7 +169,9 @@ export function HSAUpgradePrompt({
             </div>
 
             <div className="flex items-center justify-between p-3 bg-accent/10 rounded-lg border border-accent/20">
-              <span className="text-sm font-semibold">Total Additional Benefit</span>
+              <span className="text-sm font-semibold">
+                Total Additional Benefit
+              </span>
               <span className="text-xl font-black text-accent">
                 ${totalBenefit}
               </span>

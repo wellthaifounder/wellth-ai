@@ -1,5 +1,11 @@
 import { useMemo } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, DollarSign } from "lucide-react";
 
@@ -17,27 +23,34 @@ interface PaymentStrategyTimelineProps {
   expenses: TimelineExpense[];
 }
 
-export function PaymentStrategyTimeline({ expenses }: PaymentStrategyTimelineProps) {
+export function PaymentStrategyTimeline({
+  expenses,
+}: PaymentStrategyTimelineProps) {
   const timelineData = useMemo(() => {
     // Filter expenses with strategy data
     const strategyExpenses = expenses.filter(
-      e => e.reimbursement_strategy && e.reimbursement_strategy !== 'immediate'
+      (e) =>
+        e.reimbursement_strategy && e.reimbursement_strategy !== "immediate",
     );
 
     // Sort by date
-    return strategyExpenses.sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+    return strategyExpenses.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
   }, [expenses]);
 
   const monthlyFlows = useMemo(() => {
     const flows: Map<string, { outflows: number; inflows: number }> = new Map();
-    
-    timelineData.forEach(expense => {
+
+    timelineData.forEach((expense) => {
       // Calculate payoff period
       const expenseDate = new Date(expense.date);
       for (let i = 0; i < expense.card_payoff_months; i++) {
-        const monthKey = new Date(expenseDate.getFullYear(), expenseDate.getMonth() + i, 1)
+        const monthKey = new Date(
+          expenseDate.getFullYear(),
+          expenseDate.getMonth() + i,
+          1,
+        )
           .toISOString()
           .slice(0, 7);
         const current = flows.get(monthKey) || { outflows: 0, inflows: 0 };
@@ -48,7 +61,10 @@ export function PaymentStrategyTimeline({ expenses }: PaymentStrategyTimelinePro
       // Add inflow at reimbursement date
       if (expense.planned_reimbursement_date) {
         const reimburseMonth = expense.planned_reimbursement_date.slice(0, 7);
-        const current = flows.get(reimburseMonth) || { outflows: 0, inflows: 0 };
+        const current = flows.get(reimburseMonth) || {
+          outflows: 0,
+          inflows: 0,
+        };
         current.inflows += expense.amount;
         flows.set(reimburseMonth, current);
       }
@@ -75,7 +91,8 @@ export function PaymentStrategyTimeline({ expenses }: PaymentStrategyTimelinePro
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-8">
-            Ready to track your first expense? Add an expense to see your timeline and strategy recommendations.
+            Ready to track your first expense? Add an expense to see your
+            timeline and strategy recommendations.
           </p>
         </CardContent>
       </Card>
@@ -101,31 +118,49 @@ export function PaymentStrategyTimeline({ expenses }: PaymentStrategyTimelinePro
             {timelineData.map((expense) => {
               const expenseDate = new Date(expense.date);
               const payoffEndDate = new Date(expenseDate);
-              payoffEndDate.setMonth(payoffEndDate.getMonth() + expense.card_payoff_months);
-              
+              payoffEndDate.setMonth(
+                payoffEndDate.getMonth() + expense.card_payoff_months,
+              );
+
               return (
-                <div key={expense.id} className="relative pl-6 border-l-2 border-primary/30">
+                <div
+                  key={expense.id}
+                  className="relative pl-6 border-l-2 border-primary/30"
+                >
                   <div className="absolute -left-2 top-0 h-4 w-4 rounded-full bg-primary" />
                   <div className="pb-4">
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{expense.vendor}</span>
                         <Badge variant="outline">
-                          {expense.reimbursement_strategy === 'vault' ? '💎 Vault' : 'Medium-term'}
+                          {expense.reimbursement_strategy === "vault"
+                            ? "💎 Vault"
+                            : "Medium-term"}
                         </Badge>
                       </div>
-                      <span className="font-semibold">${expense.amount.toFixed(2)}</span>
+                      <span className="font-semibold">
+                        ${expense.amount.toFixed(2)}
+                      </span>
                     </div>
                     <div className="text-sm text-muted-foreground space-y-1">
                       <div className="flex items-center gap-4">
-                        <span>📅 Expense: {expenseDate.toLocaleDateString()}</span>
+                        <span>
+                          📅 Expense: {expenseDate.toLocaleDateString()}
+                        </span>
                         {expense.card_payoff_months > 0 && (
-                          <span>💳 Payoff: {expense.card_payoff_months} months</span>
+                          <span>
+                            💳 Payoff: {expense.card_payoff_months} months
+                          </span>
                         )}
                       </div>
                       {expense.planned_reimbursement_date && (
                         <div>
-                          <span>💰 Reimburse: {new Date(expense.planned_reimbursement_date).toLocaleDateString()}</span>
+                          <span>
+                            💰 Reimburse:{" "}
+                            {new Date(
+                              expense.planned_reimbursement_date,
+                            ).toLocaleDateString()}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -145,30 +180,36 @@ export function PaymentStrategyTimeline({ expenses }: PaymentStrategyTimelinePro
               {monthlyFlows.map((flow) => (
                 <div key={flow.month} className="flex items-center gap-3">
                   <span className="text-sm font-medium w-20">
-                    {new Date(flow.month + '-01').toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      year: '2-digit' 
+                    {new Date(flow.month + "-01").toLocaleDateString("en-US", {
+                      month: "short",
+                      year: "2-digit",
                     })}
                   </span>
                   <div className="flex-1 flex gap-2 items-center">
                     {flow.outflows > 0 && (
-                      <div 
+                      <div
                         className="bg-red-500/20 h-6 rounded flex items-center justify-center text-xs px-2"
-                        style={{ width: `${(flow.outflows / Math.max(...monthlyFlows.map(f => Math.max(f.outflows, f.inflows)))) * 100}%` }}
+                        style={{
+                          width: `${(flow.outflows / Math.max(...monthlyFlows.map((f) => Math.max(f.outflows, f.inflows)))) * 100}%`,
+                        }}
                       >
                         -{flow.outflows.toFixed(0)}
                       </div>
                     )}
                     {flow.inflows > 0 && (
-                      <div 
+                      <div
                         className="bg-green-500/20 h-6 rounded flex items-center justify-center text-xs px-2"
-                        style={{ width: `${(flow.inflows / Math.max(...monthlyFlows.map(f => Math.max(f.outflows, f.inflows)))) * 100}%` }}
+                        style={{
+                          width: `${(flow.inflows / Math.max(...monthlyFlows.map((f) => Math.max(f.outflows, f.inflows)))) * 100}%`,
+                        }}
                       >
                         +{flow.inflows.toFixed(0)}
                       </div>
                     )}
                   </div>
-                  <span className={`text-sm font-medium w-20 text-right ${flow.net >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  <span
+                    className={`text-sm font-medium w-20 text-right ${flow.net >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
+                  >
                     ${flow.net.toFixed(0)}
                   </span>
                 </div>

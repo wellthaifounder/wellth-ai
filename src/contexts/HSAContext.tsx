@@ -1,11 +1,17 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { logError } from "@/utils/errorHandler";
 
 interface HSAContextType {
   hasHSA: boolean;
   hsaOpenedDate: string | null;
-  userIntent: 'billing' | 'hsa' | 'both' | null;
+  userIntent: "billing" | "hsa" | "both" | null;
   loading: boolean;
   refreshHSAStatus: () => Promise<void>;
 }
@@ -15,12 +21,16 @@ const HSAContext = createContext<HSAContextType | undefined>(undefined);
 export function HSAProvider({ children }: { children: ReactNode }) {
   const [hasHSA, setHasHSA] = useState(false);
   const [hsaOpenedDate, setHsaOpenedDate] = useState<string | null>(null);
-  const [userIntent, setUserIntent] = useState<'billing' | 'hsa' | 'both' | null>(null);
+  const [userIntent, setUserIntent] = useState<
+    "billing" | "hsa" | "both" | null
+  >(null);
   const [loading, setLoading] = useState(true);
 
   const refreshHSAStatus = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         setHasHSA(false);
         setHsaOpenedDate(null);
@@ -41,7 +51,8 @@ export function HSAProvider({ children }: { children: ReactNode }) {
         setUserIntent(null);
       } else {
         const date = profile?.hsa_opened_date || null;
-        const intent = profile?.user_intent as 'billing' | 'hsa' | 'both' | null || null;
+        const intent =
+          (profile?.user_intent as "billing" | "hsa" | "both" | null) || null;
         setHsaOpenedDate(date);
         setHasHSA(!!date);
         setUserIntent(intent);
@@ -60,7 +71,9 @@ export function HSAProvider({ children }: { children: ReactNode }) {
     refreshHSAStatus();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
       refreshHSAStatus();
     });
 
@@ -68,7 +81,9 @@ export function HSAProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <HSAContext.Provider value={{ hasHSA, hsaOpenedDate, userIntent, loading, refreshHSAStatus }}>
+    <HSAContext.Provider
+      value={{ hasHSA, hsaOpenedDate, userIntent, loading, refreshHSAStatus }}
+    >
       {children}
     </HSAContext.Provider>
   );

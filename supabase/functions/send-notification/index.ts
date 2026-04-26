@@ -5,18 +5,20 @@ import { z } from "https://esm.sh/zod@3.22.4";
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 const allowedOrigins = [
-  'https://wellth-ai.app',
-  'https://www.wellth-ai.app',
-  Deno.env.get('ALLOWED_ORIGIN'),
+  "https://wellth-ai.app",
+  "https://www.wellth-ai.app",
+  Deno.env.get("ALLOWED_ORIGIN"),
 ].filter(Boolean);
 
 function getCorsHeaders(requestOrigin: string | null) {
-  const origin = requestOrigin && allowedOrigins.includes(requestOrigin)
-    ? requestOrigin
-    : allowedOrigins[1];
+  const origin =
+    requestOrigin && allowedOrigins.includes(requestOrigin)
+      ? requestOrigin
+      : allowedOrigins[1];
   return {
     "Access-Control-Allow-Origin": origin as string,
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Credentials": "true",
   };
@@ -38,7 +40,7 @@ function buildReimbursementUpdateEmail(
   userName: string,
   status: string,
   totalAmount: number,
-  hsaProvider?: string
+  hsaProvider?: string,
 ): { subject: string; html: string } {
   const statusLabels: Record<string, string> = {
     pending: "Pending Review",
@@ -64,25 +66,29 @@ function buildReimbursementUpdateEmail(
 // ── Handler ───────────────────────────────────────────────────────────────────
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req.headers.get("origin"));
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS")
+    return new Response(null, { headers: corsHeaders });
 
   // 1. Authenticate
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!
+    Deno.env.get("SUPABASE_ANON_KEY")!,
   );
-  const { data: { user }, error: authError } = await supabase.auth.getUser(
-    authHeader.replace("Bearer ", "")
-  );
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
   if (authError || !user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
@@ -92,7 +98,8 @@ serve(async (req) => {
     const parsed = RequestSchema.safeParse(body);
     if (!parsed.success) {
       return new Response(JSON.stringify({ error: "Invalid request." }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -106,9 +113,13 @@ serve(async (req) => {
     const userName = user.user_metadata?.full_name || "there";
 
     if (!userEmail) {
-      return new Response(JSON.stringify({ error: "User email not available." }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "User email not available." }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     // 3. Build and send email based on notification type
@@ -121,7 +132,7 @@ serve(async (req) => {
         userName,
         payload.new_status,
         payload.total_amount,
-        payload.hsa_provider
+        payload.hsa_provider,
       ));
     }
 
@@ -135,11 +146,19 @@ serve(async (req) => {
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-
   } catch (error) {
-    console.error("[send-notification] Error:", error instanceof Error ? error.message : error);
-    return new Response(JSON.stringify({ error: "An unexpected error occurred. Please try again." }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error(
+      "[send-notification] Error:",
+      error instanceof Error ? error.message : error,
+    );
+    return new Response(
+      JSON.stringify({
+        error: "An unexpected error occurred. Please try again.",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 });

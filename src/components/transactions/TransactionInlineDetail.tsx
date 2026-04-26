@@ -7,7 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Save, X, FileText, DollarSign, Calendar, Tag, Link as LinkIcon } from "lucide-react";
+import {
+  Save,
+  X,
+  FileText,
+  DollarSign,
+  Calendar,
+  Tag,
+  Link as LinkIcon,
+} from "lucide-react";
 
 interface TransactionInlineDetailProps {
   transaction: {
@@ -34,7 +42,7 @@ interface TransactionInlineDetailProps {
 export function TransactionInlineDetail({
   transaction,
   onClose,
-  onUpdate
+  onUpdate,
 }: TransactionInlineDetailProps) {
   const [notes, setNotes] = useState(transaction.notes || "");
   const [saving, setSaving] = useState(false);
@@ -65,7 +73,9 @@ export function TransactionInlineDetail({
         .update({
           is_medical: !transaction.is_medical,
           is_hsa_eligible: !transaction.is_medical,
-          reconciliation_status: !transaction.is_medical ? "linked" : "unlinked"
+          reconciliation_status: !transaction.is_medical
+            ? "linked"
+            : "unlinked",
         })
         .eq("id", transaction.id);
 
@@ -73,7 +83,7 @@ export function TransactionInlineDetail({
       toast.success(
         transaction.is_medical
           ? "Unmarked as medical"
-          : "Marked as medical expense"
+          : "Marked as medical expense",
       );
       onUpdate();
     } catch (error) {
@@ -88,7 +98,7 @@ export function TransactionInlineDetail({
         .from("transactions")
         .update({
           reconciliation_status: "ignored",
-          is_medical: false
+          is_medical: false,
         })
         .eq("id", transaction.id);
 
@@ -113,11 +123,7 @@ export function TransactionInlineDetail({
               {transaction.vendor || "Unknown Vendor"}
             </p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-          >
+          <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -158,19 +164,26 @@ export function TransactionInlineDetail({
               <span>Status</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Badge variant={
-                transaction.reconciliation_status === "linked" ? "default" :
-                transaction.reconciliation_status === "ignored" ? "secondary" :
-                "outline"
-              }>
+              <Badge
+                variant={
+                  transaction.reconciliation_status === "linked"
+                    ? "default"
+                    : transaction.reconciliation_status === "ignored"
+                      ? "secondary"
+                      : "outline"
+                }
+              >
                 {transaction.reconciliation_status}
               </Badge>
               {transaction.payment_methods?.is_hsa_account && (
                 <Badge variant="success">Paid via HSA</Badge>
               )}
-              {transaction.is_hsa_eligible && !transaction.payment_methods?.is_hsa_account && (
-                <Badge className="bg-primary/10 text-primary">HSA Eligible</Badge>
-              )}
+              {transaction.is_hsa_eligible &&
+                !transaction.payment_methods?.is_hsa_account && (
+                  <Badge className="bg-primary/10 text-primary">
+                    HSA Eligible
+                  </Badge>
+                )}
             </div>
           </div>
         </div>
@@ -211,12 +224,9 @@ export function TransactionInlineDetail({
           >
             {transaction.is_medical ? "Unmark Medical" : "Mark as Medical"}
           </Button>
-          
+
           {transaction.reconciliation_status !== "ignored" && (
-            <Button
-              onClick={handleIgnore}
-              variant="ghost"
-            >
+            <Button onClick={handleIgnore} variant="ghost">
               Ignore Transaction
             </Button>
           )}

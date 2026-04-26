@@ -7,14 +7,20 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { logError } from "@/utils/errorHandler";
-import { getSuggestion, type Transaction as TransactionType, type Invoice } from "@/lib/transactionMatcher";
+import {
+  getSuggestion,
+  type Transaction as TransactionType,
+  type Invoice,
+} from "@/lib/transactionMatcher";
 import { Loader2, PartyPopper, ArrowLeft } from "lucide-react";
 import confetti from "canvas-confetti";
 
 export function ReviewQueue() {
   const [transactions, setTransactions] = useState<TransactionType[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [userPreferences, setUserPreferences] = useState<Array<{ vendor_pattern: string; is_medical: boolean }>>([]);
+  const [userPreferences, setUserPreferences] = useState<
+    Array<{ vendor_pattern: string; is_medical: boolean }>
+  >([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -28,7 +34,7 @@ export function ReviewQueue() {
   }, []);
 
   const checkOnboarding = () => {
-    const completed = localStorage.getItem('review_queue_onboarding_completed');
+    const completed = localStorage.getItem("review_queue_onboarding_completed");
     if (!completed) {
       setShowOnboarding(true);
     } else {
@@ -37,7 +43,7 @@ export function ReviewQueue() {
   };
 
   const handleCompleteOnboarding = () => {
-    localStorage.setItem('review_queue_onboarding_completed', 'true');
+    localStorage.setItem("review_queue_onboarding_completed", "true");
     setShowOnboarding(false);
     setHasCompletedOnboarding(true);
   };
@@ -45,18 +51,18 @@ export function ReviewQueue() {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (detailsOpen) return;
-      
-      if (e.key === 'm' || e.key === 'M') {
+
+      if (e.key === "m" || e.key === "M") {
         handleConfirmMedical();
-      } else if (e.key === 'n' || e.key === 'N') {
+      } else if (e.key === "n" || e.key === "N") {
         handleNotMedical();
-      } else if (e.key === 's' || e.key === 'S') {
+      } else if (e.key === "s" || e.key === "S") {
         handleSkip();
       }
     };
 
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
   }, [currentIndex, detailsOpen]);
 
   const fetchData = async () => {
@@ -65,25 +71,25 @@ export function ReviewQueue() {
 
       // Fetch unlinked transactions
       const { data: txData, error: txError } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('reconciliation_status', 'unlinked')
-        .order('transaction_date', { ascending: false });
+        .from("transactions")
+        .select("*")
+        .eq("reconciliation_status", "unlinked")
+        .order("transaction_date", { ascending: false });
 
       if (txError) throw txError;
 
       // Fetch user's invoices for matching
       const { data: invData, error: invError } = await supabase
-        .from('invoices')
-        .select('id, vendor, amount, date, invoice_date')
-        .is('is_reimbursed', false);
+        .from("invoices")
+        .select("id, vendor, amount, date, invoice_date")
+        .is("is_reimbursed", false);
 
       if (invError) throw invError;
 
       // Fetch user preferences
       const { data: prefData, error: prefError } = await supabase
-        .from('user_vendor_preferences')
-        .select('vendor_pattern, is_medical');
+        .from("user_vendor_preferences")
+        .select("vendor_pattern, is_medical");
 
       if (prefError) throw prefError;
 
@@ -91,8 +97,8 @@ export function ReviewQueue() {
       setInvoices(invData || []);
       setUserPreferences(prefData || []);
     } catch (error) {
-      logError('Error fetching data', error);
-      toast.error('Failed to load review queue');
+      logError("Error fetching data", error);
+      toast.error("Failed to load review queue");
     } finally {
       setLoading(false);
     }
@@ -100,34 +106,37 @@ export function ReviewQueue() {
 
   const savePreference = async (vendorPattern: string, isMedical: boolean) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase
-        .from('user_vendor_preferences')
-        .upsert({
-          user_id: user.id,
-          vendor_pattern: vendorPattern,
-          is_medical: isMedical,
-          times_confirmed: 1
-        });
+      const { error } = await supabase.from("user_vendor_preferences").upsert({
+        user_id: user.id,
+        vendor_pattern: vendorPattern,
+        is_medical: isMedical,
+        times_confirmed: 1,
+      });
 
       if (error) throw error;
-      
+
       // Update local state
-      setUserPreferences(prev => {
-        const existing = prev.find(p => p.vendor_pattern === vendorPattern);
+      setUserPreferences((prev) => {
+        const existing = prev.find((p) => p.vendor_pattern === vendorPattern);
         if (existing) {
-          return prev.map(p => 
-            p.vendor_pattern === vendorPattern 
+          return prev.map((p) =>
+            p.vendor_pattern === vendorPattern
               ? { ...p, is_medical: isMedical }
-              : p
+              : p,
           );
         }
-        return [...prev, { vendor_pattern: vendorPattern, is_medical: isMedical }];
+        return [
+          ...prev,
+          { vendor_pattern: vendorPattern, is_medical: isMedical },
+        ];
       });
     } catch (error) {
-      logError('Error saving preference', error);
+      logError("Error saving preference", error);
     }
   };
 
@@ -141,7 +150,7 @@ export function ReviewQueue() {
       const updates: any = {
         is_medical: true,
         is_hsa_eligible: true,
-        reconciliation_status: 'linked_to_invoice'
+        reconciliation_status: "linked_to_invoice",
       };
 
       if (suggestion.invoice) {
@@ -149,24 +158,24 @@ export function ReviewQueue() {
       }
 
       const { error } = await supabase
-        .from('transactions')
+        .from("transactions")
         .update(updates)
-        .eq('id', transaction.id);
+        .eq("id", transaction.id);
 
       if (error) throw error;
 
       // Save preference if requested
       if (rememberChoice && transaction.vendor) {
         await savePreference(transaction.vendor, true);
-        toast.success('Marked as medical and saved preference');
+        toast.success("Marked as medical and saved preference");
       } else {
-        toast.success('Marked as medical expense');
+        toast.success("Marked as medical expense");
       }
-      
+
       moveToNext();
     } catch (error) {
-      logError('Error updating transaction', error);
-      toast.error('Failed to update transaction');
+      logError("Error updating transaction", error);
+      toast.error("Failed to update transaction");
     }
   };
 
@@ -176,27 +185,27 @@ export function ReviewQueue() {
 
     try {
       const { error } = await supabase
-        .from('transactions')
+        .from("transactions")
         .update({
           is_medical: false,
-          reconciliation_status: 'ignored'
+          reconciliation_status: "ignored",
         })
-        .eq('id', transaction.id);
+        .eq("id", transaction.id);
 
       if (error) throw error;
 
       // Save preference if requested
       if (rememberChoice && transaction.vendor) {
         await savePreference(transaction.vendor, false);
-        toast.success('Marked as not medical and saved preference');
+        toast.success("Marked as not medical and saved preference");
       } else {
-        toast.success('Marked as not medical');
+        toast.success("Marked as not medical");
       }
-      
+
       moveToNext();
     } catch (error) {
-      logError('Error updating transaction', error);
-      toast.error('Failed to update transaction');
+      logError("Error updating transaction", error);
+      toast.error("Failed to update transaction");
     }
   };
 
@@ -206,9 +215,11 @@ export function ReviewQueue() {
 
   const moveToNext = () => {
     // Remove the current transaction from the list
-    const updatedTransactions = transactions.filter((_, idx) => idx !== currentIndex);
+    const updatedTransactions = transactions.filter(
+      (_, idx) => idx !== currentIndex,
+    );
     setTransactions(updatedTransactions);
-    
+
     // If there are more transactions and we're not at the end, stay at current index
     // Otherwise show completion if no more transactions
     if (updatedTransactions.length === 0) {
@@ -216,9 +227,9 @@ export function ReviewQueue() {
       confetti({
         particleCount: 100,
         spread: 70,
-        origin: { y: 0.6 }
+        origin: { y: 0.6 },
       });
-      
+
       // Refresh after celebration
       setTimeout(() => {
         fetchData();
@@ -266,11 +277,7 @@ export function ReviewQueue() {
         <p className="text-muted-foreground mt-2">
           No unlinked transactions to review
         </p>
-        <Button
-          variant="outline"
-          onClick={fetchData}
-          className="mt-4"
-        >
+        <Button variant="outline" onClick={fetchData} className="mt-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to All Transactions
         </Button>
@@ -279,68 +286,75 @@ export function ReviewQueue() {
   }
 
   const currentTransaction = transactions[currentIndex];
-  const suggestion = getSuggestion(currentTransaction, invoices, userPreferences);
+  const suggestion = getSuggestion(
+    currentTransaction,
+    invoices,
+    userPreferences,
+  );
   const progress = ((currentIndex + 1) / transactions.length) * 100;
 
   // Extend transaction with missing properties for dialog
-  const extendedTransaction = currentTransaction ? {
-    ...currentTransaction,
-    category: currentTransaction.category || 'uncategorized',
-    is_hsa_eligible: currentTransaction.is_hsa_eligible || false,
-    notes: currentTransaction.notes || null,
-    payment_method_id: currentTransaction.payment_method_id || null,
-    invoice_id: currentTransaction.invoice_id || null,
-    is_medical: currentTransaction.is_medical || false,
-    reconciliation_status: currentTransaction.reconciliation_status || 'unlinked'
-  } : null;
+  const extendedTransaction = currentTransaction
+    ? {
+        ...currentTransaction,
+        category: currentTransaction.category || "uncategorized",
+        is_hsa_eligible: currentTransaction.is_hsa_eligible || false,
+        notes: currentTransaction.notes || null,
+        payment_method_id: currentTransaction.payment_method_id || null,
+        invoice_id: currentTransaction.invoice_id || null,
+        is_medical: currentTransaction.is_medical || false,
+        reconciliation_status:
+          currentTransaction.reconciliation_status || "unlinked",
+      }
+    : null;
 
   return (
     <>
-      <OnboardingDialog 
-        open={showOnboarding} 
+      <OnboardingDialog
+        open={showOnboarding}
         onComplete={handleCompleteOnboarding}
       />
-      
+
       <div className="max-w-2xl mx-auto space-y-6">
-      {/* Progress */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-sm">
-          <span className="font-medium">Review Progress</span>
-          <span className="text-muted-foreground">
-            {currentIndex + 1} of {transactions.length}
-          </span>
+        {/* Progress */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-medium">Review Progress</span>
+            <span className="text-muted-foreground">
+              {currentIndex + 1} of {transactions.length}
+            </span>
+          </div>
+          <Progress value={progress} />
         </div>
-        <Progress value={progress} />
-      </div>
 
-      {/* Suggestion Card */}
-      <SuggestionCard
-        transaction={currentTransaction}
-        suggestion={suggestion}
-        onConfirmMedical={() => handleConfirmMedical()}
-        onNotMedical={() => handleNotMedical()}
-        onSkip={handleSkip}
-        onViewDetails={() => setDetailsOpen(true)}
-        onRememberChoice={(isMedical) => {
-          if (isMedical) {
-            handleConfirmMedical(true);
-          } else {
-            handleNotMedical(true);
-          }
-        }}
-      />
-
-      {/* Detail Dialog */}
-      {extendedTransaction && (
-        <TransactionDetailDialog
-          open={detailsOpen}
-          onOpenChange={setDetailsOpen}
-          transaction={extendedTransaction}
-          onUpdate={fetchData}
-          onLinkToInvoice={() => {}}
+        {/* Suggestion Card */}
+        <SuggestionCard
+          transaction={currentTransaction}
+          suggestion={suggestion}
+          onConfirmMedical={() => handleConfirmMedical()}
+          onNotMedical={() => handleNotMedical()}
+          onSkip={handleSkip}
+          onViewDetails={() => setDetailsOpen(true)}
+          onRememberChoice={(isMedical) => {
+            if (isMedical) {
+              handleConfirmMedical(true);
+            } else {
+              handleNotMedical(true);
+            }
+          }}
         />
-      )}
-    </div>
+
+        {/* Detail Dialog */}
+        {extendedTransaction && (
+          <TransactionDetailDialog
+            open={detailsOpen}
+            onOpenChange={setDetailsOpen}
+            transaction={extendedTransaction}
+            onUpdate={fetchData}
+            onLinkToInvoice={() => {}}
+          />
+        )}
+      </div>
     </>
   );
 }

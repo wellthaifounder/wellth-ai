@@ -4,11 +4,23 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { CheckCircle2, Upload, Paperclip } from "lucide-react";
@@ -29,7 +41,9 @@ import { logError } from "@/utils/errorHandler";
 const invoiceSchema = z.object({
   date: z.string().min(1, "Date is required"),
   vendor: z.string().trim().min(1, "Vendor is required").max(100),
-  totalAmount: z.number({ invalid_type_error: "Amount is required" }).positive("Amount must be greater than 0"),
+  totalAmount: z
+    .number({ invalid_type_error: "Amount is required" })
+    .positive("Amount must be greater than 0"),
   category: z.string().min(1, "Category is required"),
   notes: z.string().max(500).optional(),
   invoiceNumber: z.string().max(50).optional(),
@@ -38,8 +52,16 @@ const invoiceSchema = z.object({
 type InvoiceFormValues = z.infer<typeof invoiceSchema>;
 
 const HSA_ELIGIBLE_CATEGORIES = [
-  "Doctor Visit", "Prescription", "Dental", "Vision", "Medical Equipment",
-  "Lab Tests", "Hospital", "Physical Therapy", "Mental Health", "Other Medical",
+  "Doctor Visit",
+  "Prescription",
+  "Dental",
+  "Vision",
+  "Medical Equipment",
+  "Lab Tests",
+  "Hospital",
+  "Physical Therapy",
+  "Mental Health",
+  "Other Medical",
 ];
 
 interface Receipt {
@@ -93,11 +115,14 @@ const InvoiceEntry = () => {
   const [success, setSuccess] = useState(false);
   const [hasPaymentPlan, setHasPaymentPlan] = useState(false);
   const [showAttachDialog, setShowAttachDialog] = useState(false);
-  const [showLinkTransactionDialog, setShowLinkTransactionDialog] = useState(false);
+  const [showLinkTransactionDialog, setShowLinkTransactionDialog] =
+    useState(false);
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [selectedHSAAccount, setSelectedHSAAccount] = useState<string>("");
   const [isHsaEligible, setIsHsaEligible] = useState(false);
-  const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split("T")[0]);
+  const [invoiceDate, setInvoiceDate] = useState(
+    new Date().toISOString().split("T")[0],
+  );
   const [npiNumber, setNpiNumber] = useState("");
   const [insurancePlanType, setInsurancePlanType] = useState("");
   const [insurancePlanName, setInsurancePlanName] = useState("");
@@ -123,7 +148,7 @@ const InvoiceEntry = () => {
     if (isEditMode && id) {
       loadInvoice(id);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isEditMode]);
 
   // Auto-set HSA eligibility based on category selection (for new invoices)
@@ -174,7 +199,9 @@ const InvoiceEntry = () => {
 
         const { data: receiptsData } = await supabase
           .from("receipts")
-          .select("id, file_path, file_type, document_type, description, display_order, invoice_id")
+          .select(
+            "id, file_path, file_type, document_type, description, display_order, invoice_id",
+          )
           .eq("invoice_id", invoiceId)
           .order("display_order");
         if (receiptsData) setReceipts(receiptsData);
@@ -191,11 +218,17 @@ const InvoiceEntry = () => {
   const onSubmit = async (validatedData: InvoiceFormValues) => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const formattedDate = new Date(validatedData.date + "T00:00:00").toISOString().split("T")[0];
-      const formattedInvoiceDate = new Date(invoiceDate + "T00:00:00").toISOString().split("T")[0];
+      const formattedDate = new Date(validatedData.date + "T00:00:00")
+        .toISOString()
+        .split("T")[0];
+      const formattedInvoiceDate = new Date(invoiceDate + "T00:00:00")
+        .toISOString()
+        .split("T")[0];
 
       let expenseReport;
 
@@ -277,21 +310,25 @@ const InvoiceEntry = () => {
             .from("receipts")
             .upload(filePath, fileData.file);
           if (uploadError) throw uploadError;
-          const { error: receiptError } = await supabase.from("receipts").insert({
-            user_id: user.id,
-            invoice_id: expenseReport.id,
-            file_path: filePath,
-            file_type: fileData.file.type,
-            document_type: fileData.documentType,
-            description: fileData.description || null,
-            display_order: i,
-          });
+          const { error: receiptError } = await supabase
+            .from("receipts")
+            .insert({
+              user_id: user.id,
+              invoice_id: expenseReport.id,
+              file_path: filePath,
+              file_type: fileData.file.type,
+              document_type: fileData.documentType,
+              description: fileData.description || null,
+              display_order: i,
+            });
           if (receiptError) throw receiptError;
         }
       }
 
       setSuccess(true);
-      toast.success(isEditMode ? "Bill updated successfully!" : "Bill added successfully!");
+      toast.success(
+        isEditMode ? "Bill updated successfully!" : "Bill added successfully!",
+      );
       setTimeout(() => {
         setSuccess(false);
         navigate("/invoices");
@@ -309,7 +346,9 @@ const InvoiceEntry = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="max-w-md mx-auto text-center p-8">
           <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-4" />
-          <CardTitle className="mb-2">{isEditMode ? "Bill Updated!" : "Bill Added!"}</CardTitle>
+          <CardTitle className="mb-2">
+            {isEditMode ? "Bill Updated!" : "Bill Added!"}
+          </CardTitle>
           <CardDescription>Redirecting to bills...</CardDescription>
         </Card>
       </div>
@@ -320,22 +359,32 @@ const InvoiceEntry = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-          <button onClick={() => navigate("/dashboard")} className="hover:text-foreground">
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="hover:text-foreground"
+          >
             Dashboard
           </button>
           <span>/</span>
-          <button onClick={() => navigate("/invoices")} className="hover:text-foreground">
+          <button
+            onClick={() => navigate("/invoices")}
+            className="hover:text-foreground"
+          >
             Bills
           </button>
           <span>/</span>
-          <span className="text-foreground">{isEditMode ? "Edit Bill" : "Add Bill"}</span>
+          <span className="text-foreground">
+            {isEditMode ? "Edit Bill" : "Add Bill"}
+          </span>
         </div>
 
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
             <div className="flex items-start justify-between">
               <div>
-                <CardTitle>{isEditMode ? "Edit Bill" : "Add New Bill"}</CardTitle>
+                <CardTitle>
+                  {isEditMode ? "Edit Bill" : "Add New Bill"}
+                </CardTitle>
                 <CardDescription>
                   {isEditMode
                     ? "Update your bill details"
@@ -369,12 +418,14 @@ const InvoiceEntry = () => {
                         multiple
                         onChange={(e) => {
                           if (!e.target.files) return;
-                          const newFilesArray = Array.from(e.target.files).map((file) => ({
-                            file,
-                            documentType: "receipt" as const,
-                            description: "",
-                            id: Math.random().toString(36).substring(7),
-                          }));
+                          const newFilesArray = Array.from(e.target.files).map(
+                            (file) => ({
+                              file,
+                              documentType: "receipt" as const,
+                              description: "",
+                              id: Math.random().toString(36).substring(7),
+                            }),
+                          );
                           setNewFiles((prev) => [...prev, ...newFilesArray]);
                           e.target.value = "";
                         }}
@@ -384,7 +435,9 @@ const InvoiceEntry = () => {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => document.getElementById("file-upload")?.click()}
+                        onClick={() =>
+                          document.getElementById("file-upload")?.click()
+                        }
                         disabled={loading}
                         className="flex-1"
                       >
@@ -405,7 +458,8 @@ const InvoiceEntry = () => {
                   {newFiles.length > 0 && (
                     <div className="mt-2">
                       <Badge variant="secondary">
-                        {newFiles.length} file{newFiles.length !== 1 ? "s" : ""} selected
+                        {newFiles.length} file{newFiles.length !== 1 ? "s" : ""}{" "}
+                        selected
                       </Badge>
                     </div>
                   )}
@@ -428,7 +482,10 @@ const InvoiceEntry = () => {
               )}
 
               {!isEditMode && (
-                <MultiFileUpload onFilesChange={setNewFiles} disabled={loading} />
+                <MultiFileUpload
+                  onFilesChange={setNewFiles}
+                  disabled={loading}
+                />
               )}
 
               <PaymentPlanFields
@@ -436,11 +493,17 @@ const InvoiceEntry = () => {
                 onHasPaymentPlanChange={setHasPaymentPlan}
                 totalAmount={paymentPlanData.totalAmount}
                 onTotalAmountChange={(value) =>
-                  setPaymentPlanData((prev) => ({ ...prev, totalAmount: value }))
+                  setPaymentPlanData((prev) => ({
+                    ...prev,
+                    totalAmount: value,
+                  }))
                 }
                 installments={paymentPlanData.installments}
                 onInstallmentsChange={(value) =>
-                  setPaymentPlanData((prev) => ({ ...prev, installments: value }))
+                  setPaymentPlanData((prev) => ({
+                    ...prev,
+                    installments: value,
+                  }))
                 }
                 notes={paymentPlanData.notes}
                 onNotesChange={(value) =>
@@ -481,7 +544,9 @@ const InvoiceEntry = () => {
                   {...register("vendor")}
                 />
                 {errors.vendor && (
-                  <p className="text-sm text-destructive">{errors.vendor.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.vendor.message}
+                  </p>
                 )}
               </div>
 
@@ -507,7 +572,10 @@ const InvoiceEntry = () => {
                     name="category"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
@@ -522,7 +590,9 @@ const InvoiceEntry = () => {
                     )}
                   />
                   {errors.category && (
-                    <p className="text-sm text-destructive">{errors.category.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.category.message}
+                    </p>
                   )}
                 </div>
 
@@ -536,7 +606,9 @@ const InvoiceEntry = () => {
                     {...register("totalAmount", { valueAsNumber: true })}
                   />
                   {errors.totalAmount && (
-                    <p className="text-sm text-destructive">{errors.totalAmount.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.totalAmount.message}
+                    </p>
                   )}
                 </div>
               </div>
@@ -544,7 +616,10 @@ const InvoiceEntry = () => {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Insurance Plan Type (Optional)</Label>
-                  <Select value={insurancePlanType} onValueChange={setInsurancePlanType}>
+                  <Select
+                    value={insurancePlanType}
+                    onValueChange={setInsurancePlanType}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select plan type" />
                     </SelectTrigger>
@@ -561,13 +636,18 @@ const InvoiceEntry = () => {
 
                 <div className="space-y-2">
                   <Label>Network Status (Optional)</Label>
-                  <Select value={networkStatus} onValueChange={setNetworkStatus}>
+                  <Select
+                    value={networkStatus}
+                    onValueChange={setNetworkStatus}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select network status" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="In-Network">In-Network</SelectItem>
-                      <SelectItem value="Out-of-Network">Out-of-Network</SelectItem>
+                      <SelectItem value="Out-of-Network">
+                        Out-of-Network
+                      </SelectItem>
                       <SelectItem value="Unknown">Unknown</SelectItem>
                     </SelectContent>
                   </Select>
@@ -575,7 +655,9 @@ const InvoiceEntry = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="insurancePlanName">Insurance Plan Name (Optional)</Label>
+                <Label htmlFor="insurancePlanName">
+                  Insurance Plan Name (Optional)
+                </Label>
                 <Input
                   id="insurancePlanName"
                   placeholder="e.g., Blue Cross Blue Shield - Silver Plan"
@@ -633,8 +715,8 @@ const InvoiceEntry = () => {
                     ? "Updating..."
                     : "Adding..."
                   : isEditMode
-                  ? "Update Bill"
-                  : "Add Bill"}
+                    ? "Update Bill"
+                    : "Add Bill"}
               </Button>
             </form>
           </CardContent>

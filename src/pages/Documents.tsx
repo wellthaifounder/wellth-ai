@@ -2,7 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Upload, Search, FileText, Tag } from "lucide-react";
@@ -54,19 +60,23 @@ const Documents = () => {
   const loadReceipts = async () => {
     try {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
         .from("receipts")
-        .select(`
+        .select(
+          `
           *,
           collections (
             id,
             title,
             color
           )
-        `)
+        `,
+        )
         .eq("user_id", user.id)
         .order("uploaded_at", { ascending: false });
 
@@ -87,15 +97,19 @@ const Documents = () => {
       filtered = filtered.filter(
         (r) =>
           r.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          r.document_type.toLowerCase().includes(searchQuery.toLowerCase())
+          r.document_type.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
 
     if (selectedType !== "all") {
       if (selectedType === "unattached") {
-        filtered = filtered.filter((r) => !r.invoice_id && !r.payment_transaction_id);
+        filtered = filtered.filter(
+          (r) => !r.invoice_id && !r.payment_transaction_id,
+        );
       } else if (selectedType === "attached") {
-        filtered = filtered.filter((r) => r.invoice_id || r.payment_transaction_id);
+        filtered = filtered.filter(
+          (r) => r.invoice_id || r.payment_transaction_id,
+        );
       } else {
         filtered = filtered.filter((r) => r.document_type === selectedType);
       }
@@ -108,31 +122,31 @@ const Documents = () => {
     if (newFiles.length === 0) return;
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       for (let i = 0; i < newFiles.length; i++) {
         const fileData = newFiles[i];
-        const fileExt = fileData.file.name.split('.').pop();
+        const fileExt = fileData.file.name.split(".").pop();
         const timestamp = Date.now();
         const filePath = `${user.id}/unattached/${fileData.documentType}_${timestamp}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
-          .from('receipts')
+          .from("receipts")
           .upload(filePath, fileData.file);
 
         if (uploadError) throw uploadError;
 
-        const { error: receiptError } = await supabase
-          .from("receipts")
-          .insert({
-            user_id: user.id,
-            file_path: filePath,
-            file_type: fileData.file.type,
-            document_type: fileData.documentType,
-            description: fileData.description || null,
-            display_order: i,
-          });
+        const { error: receiptError } = await supabase.from("receipts").insert({
+          user_id: user.id,
+          file_path: filePath,
+          file_type: fileData.file.type,
+          document_type: fileData.documentType,
+          description: fileData.description || null,
+          display_order: i,
+        });
 
         if (receiptError) throw receiptError;
       }
@@ -154,7 +168,7 @@ const Documents = () => {
 
       // Delete from storage
       const { error: storageError } = await supabase.storage
-        .from('receipts')
+        .from("receipts")
         .remove([receipt.file_path]);
 
       if (storageError) throw storageError;
@@ -175,7 +189,13 @@ const Documents = () => {
     }
   };
 
-  const documentTypes = ["receipt", "invoice", "eob", "payment_confirmation", "medical_record"];
+  const documentTypes = [
+    "receipt",
+    "invoice",
+    "eob",
+    "payment_confirmation",
+    "medical_record",
+  ];
   const attachmentStatus = ["all", "attached", "unattached"];
 
   return (
@@ -205,7 +225,8 @@ const Documents = () => {
                 <MultiFileUpload onFilesChange={setNewFiles} disabled={false} />
                 {newFiles.length > 0 && (
                   <Button onClick={handleUpload} className="mt-4">
-                    Upload {newFiles.length} Document{newFiles.length > 1 ? 's' : ''}
+                    Upload {newFiles.length} Document
+                    {newFiles.length > 1 ? "s" : ""}
                   </Button>
                 )}
               </div>
@@ -246,7 +267,7 @@ const Documents = () => {
                     className="cursor-pointer"
                     onClick={() => setSelectedType(type)}
                   >
-                    {type.replace(/_/g, ' ')}
+                    {type.replace(/_/g, " ")}
                   </Badge>
                 ))}
               </div>

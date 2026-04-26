@@ -1,6 +1,7 @@
 # PATCH #5: Plaid Token Encryption - Setup Instructions
 
 ## Overview
+
 This patch encrypts Plaid access tokens at rest using AES-256-GCM encryption, addressing a CRITICAL security vulnerability (Issue #5).
 
 **Status:** ✅ Code implemented, ⚠️ Requires manual setup steps
@@ -26,16 +27,19 @@ This will output a base64-encoded 256-bit encryption key. **Save this key secure
 Add the encryption key to your environment variables:
 
 ### Local Development (.env.local)
+
 ```bash
 PLAID_ENCRYPTION_KEY=<your-generated-key>
 ```
 
 ### Supabase Edge Functions
+
 ```bash
 supabase secrets set PLAID_ENCRYPTION_KEY=<your-generated-key>
 ```
 
 ### Migration Function (One-time)
+
 ```bash
 # Generate a secure admin key for the migration function
 # This prevents unauthorized access to the migration endpoint
@@ -53,6 +57,7 @@ supabase db push
 ```
 
 This will:
+
 - Add `encrypted_access_token TEXT` column to `plaid_connections` table
 - Create an index for performance
 - Keep the old `access_token` column for rollback safety
@@ -64,11 +69,13 @@ This will:
 **⚠️ Only run this if you have existing Plaid connections in your database**
 
 Deploy the migration function:
+
 ```bash
 supabase functions deploy migrate-encrypt-tokens
 ```
 
 Run the migration (replace `<ADMIN_KEY>` with your `MIGRATION_ADMIN_KEY`):
+
 ```bash
 curl -X POST https://<your-project-ref>.supabase.co/functions/v1/migrate-encrypt-tokens \
   -H "Content-Type: application/json" \
@@ -77,6 +84,7 @@ curl -X POST https://<your-project-ref>.supabase.co/functions/v1/migrate-encrypt
 ```
 
 Expected response:
+
 ```json
 {
   "success": true,
@@ -124,12 +132,14 @@ Expected result: All rows should have `is_encrypted = true`.
 **⚠️ Only perform cleanup after 30 days of successful production use**
 
 ### 7.1 Delete Migration Function
+
 ```bash
 supabase functions delete migrate-encrypt-tokens
 rm -rf supabase/functions/migrate-encrypt-tokens
 ```
 
 ### 7.2 Remove Old Column (Irreversible)
+
 ```sql
 -- Make encrypted column required
 ALTER TABLE plaid_connections
@@ -141,6 +151,7 @@ DROP COLUMN access_token;
 ```
 
 ### 7.3 Remove Migration Admin Key
+
 ```bash
 supabase secrets unset MIGRATION_ADMIN_KEY
 ```
@@ -152,6 +163,7 @@ supabase secrets unset MIGRATION_ADMIN_KEY
 If issues arise, you can rollback:
 
 ### Immediate Rollback (Within 24 hours)
+
 ```bash
 # Revert edge functions to previous deployment
 supabase functions deploy plaid-exchange-token --no-verify-jwt
@@ -159,6 +171,7 @@ supabase functions deploy plaid-sync-transactions --no-verify-jwt
 ```
 
 ### Database Rollback
+
 ```sql
 -- Drop encrypted column
 ALTER TABLE plaid_connections DROP COLUMN encrypted_access_token;
@@ -191,6 +204,7 @@ ALTER TABLE plaid_connections DROP COLUMN encrypted_access_token;
 ## 📝 Files Modified
 
 **New Files:**
+
 - `supabase/functions/_shared/encryption.ts` (encryption utilities)
 - `supabase/functions/_shared/generate-encryption-key.ts` (key generator)
 - `supabase/migrations/20251202201215_encrypt_plaid_tokens.sql` (database migration)
@@ -198,6 +212,7 @@ ALTER TABLE plaid_connections DROP COLUMN encrypted_access_token;
 - `PATCH-5-SETUP-INSTRUCTIONS.md` (this file)
 
 **Modified Files:**
+
 - `supabase/functions/plaid-exchange-token/index.ts` (now encrypts tokens before storage)
 - `supabase/functions/plaid-sync-transactions/index.ts` (now decrypts tokens before use)
 
@@ -206,17 +221,22 @@ ALTER TABLE plaid_connections DROP COLUMN encrypted_access_token;
 ## ❓ Troubleshooting
 
 ### Error: "PLAID_ENCRYPTION_KEY environment variable not set"
+
 **Solution:** Ensure you've set the environment variable in Supabase secrets:
+
 ```bash
 supabase secrets set PLAID_ENCRYPTION_KEY=<your-key>
 ```
 
 ### Error: "Invalid encrypted token format"
+
 **Cause:** Token in database is not in expected `iv:ciphertext` format
 **Solution:** Re-run the migration function for that connection
 
 ### Error: "Failed to decrypt token"
+
 **Possible causes:**
+
 1. Wrong encryption key in environment
 2. Token was encrypted with a different key
 3. Database corruption
@@ -224,6 +244,7 @@ supabase secrets set PLAID_ENCRYPTION_KEY=<your-key>
 **Solution:** Check that `PLAID_ENCRYPTION_KEY` matches the key used during encryption
 
 ### New connections work but old ones fail
+
 **Cause:** Old tokens not yet migrated
 **Solution:** Run the migration function (Step 4)
 
@@ -232,6 +253,7 @@ supabase secrets set PLAID_ENCRYPTION_KEY=<your-key>
 ## 📊 Success Metrics
 
 After deployment, monitor:
+
 - ✅ Zero increase in Plaid API error rates
 - ✅ All new connections have `encrypted_access_token` populated
 - ✅ Transaction sync continues working for all users
@@ -242,6 +264,7 @@ After deployment, monitor:
 ## 🎯 Compliance Impact
 
 This patch addresses:
+
 - **HIPAA 45 CFR 164.312(a)(2)(iv):** Encryption of ePHI at rest ✅
 - **Issue #5 (CRITICAL):** Plaid tokens stored in plaintext ✅
 
@@ -252,6 +275,7 @@ This patch addresses:
 ## 📞 Support
 
 If you encounter issues during setup:
+
 1. Check Supabase edge function logs: `supabase functions logs`
 2. Verify environment variables: `supabase secrets list`
 3. Test encryption locally: Run `generate-encryption-key.ts` and test encryption utilities

@@ -3,7 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,21 +21,63 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, Calendar, Building2, FileText } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  Calendar,
+  Building2,
+  FileText,
+} from "lucide-react";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { logError } from "@/utils/errorHandler";
 
 const EVENT_TYPES = [
-  { value: "surgery", label: "Surgery", description: "Surgical procedures and related follow-ups" },
-  { value: "office_visit", label: "Office Visit", description: "Regular doctor appointments" },
-  { value: "emergency", label: "Emergency", description: "ER visits and urgent care" },
-  { value: "ongoing_treatment", label: "Ongoing Treatment", description: "Long-term care like physical therapy" },
-  { value: "lab_test", label: "Lab Test", description: "Blood work, biopsies, etc." },
+  {
+    value: "surgery",
+    label: "Surgery",
+    description: "Surgical procedures and related follow-ups",
+  },
+  {
+    value: "office_visit",
+    label: "Office Visit",
+    description: "Regular doctor appointments",
+  },
+  {
+    value: "emergency",
+    label: "Emergency",
+    description: "ER visits and urgent care",
+  },
+  {
+    value: "ongoing_treatment",
+    label: "Ongoing Treatment",
+    description: "Long-term care like physical therapy",
+  },
+  {
+    value: "lab_test",
+    label: "Lab Test",
+    description: "Blood work, biopsies, etc.",
+  },
   { value: "imaging", label: "Imaging", description: "X-rays, MRIs, CT scans" },
-  { value: "physical_therapy", label: "Physical Therapy", description: "PT sessions and rehabilitation" },
-  { value: "dental", label: "Dental", description: "Dental procedures and checkups" },
-  { value: "vision", label: "Vision", description: "Eye exams, glasses, contacts" },
-  { value: "prescription", label: "Prescription", description: "Medication costs" },
+  {
+    value: "physical_therapy",
+    label: "Physical Therapy",
+    description: "PT sessions and rehabilitation",
+  },
+  {
+    value: "dental",
+    label: "Dental",
+    description: "Dental procedures and checkups",
+  },
+  {
+    value: "vision",
+    label: "Vision",
+    description: "Eye exams, glasses, contacts",
+  },
+  {
+    value: "prescription",
+    label: "Prescription",
+    description: "Medication costs",
+  },
   { value: "other", label: "Other", description: "Any other medical expense" },
 ];
 
@@ -45,7 +93,9 @@ export default function NewMedicalEvent() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
@@ -100,8 +150,9 @@ export default function NewMedicalEvent() {
               New Medical Event
             </CardTitle>
             <CardDescription>
-              Create an event to group related bills, documents, and payments together.
-              Examples: "Shoulder Surgery - Jan 2026", "Physical Therapy Q1 2026"
+              Create an event to group related bills, documents, and payments
+              together. Examples: "Shoulder Surgery - Jan 2026", "Physical
+              Therapy Q1 2026"
             </CardDescription>
           </CardHeader>
 
@@ -116,7 +167,9 @@ export default function NewMedicalEvent() {
                   id="title"
                   placeholder="e.g., Shoulder Surgery - Jan 2026"
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
                   required
                 />
                 <p className="text-xs text-muted-foreground">
@@ -129,7 +182,9 @@ export default function NewMedicalEvent() {
                 <Label htmlFor="event_type">Event Type</Label>
                 <Select
                   value={formData.event_type}
-                  onValueChange={(value) => setFormData({ ...formData, event_type: value })}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, event_type: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -160,7 +215,9 @@ export default function NewMedicalEvent() {
                     id="event_date"
                     type="date"
                     value={formData.event_date}
-                    onChange={(e) => setFormData({ ...formData, event_date: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, event_date: e.target.value })
+                    }
                   />
                   <p className="text-xs text-muted-foreground">
                     Primary date of service
@@ -176,7 +233,12 @@ export default function NewMedicalEvent() {
                     id="primary_provider"
                     placeholder="e.g., City Hospital"
                     value={formData.primary_provider}
-                    onChange={(e) => setFormData({ ...formData, primary_provider: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        primary_provider: e.target.value,
+                      })
+                    }
                   />
                   <p className="text-xs text-muted-foreground">
                     Main healthcare provider
@@ -194,7 +256,9 @@ export default function NewMedicalEvent() {
                   id="description"
                   placeholder="Add any notes about this medical event..."
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   rows={3}
                 />
               </div>

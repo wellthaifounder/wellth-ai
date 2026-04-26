@@ -1,5 +1,11 @@
 import { Check, AlertCircle, Info } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -21,7 +27,12 @@ interface RequiredDocument {
   reason: string;
 }
 
-export function DocumentChecklist({ category, amount, receipts, hasPaymentPlan }: DocumentChecklistProps) {
+export function DocumentChecklist({
+  category,
+  amount,
+  receipts,
+  hasPaymentPlan,
+}: DocumentChecklistProps) {
   const getRequiredDocuments = (): RequiredDocument[] => {
     const docs: RequiredDocument[] = [];
 
@@ -91,7 +102,7 @@ export function DocumentChecklist({ category, amount, receipts, hasPaymentPlan }
   };
 
   const requiredDocs = getRequiredDocuments();
-  
+
   if (requiredDocs.length === 0) {
     return null;
   }
@@ -100,9 +111,14 @@ export function DocumentChecklist({ category, amount, receipts, hasPaymentPlan }
     return receipts.some((r) => r.document_type === type);
   };
 
-  const completedRequired = requiredDocs.filter((doc) => doc.required && hasDocument(doc.type)).length;
+  const completedRequired = requiredDocs.filter(
+    (doc) => doc.required && hasDocument(doc.type),
+  ).length;
   const totalRequired = requiredDocs.filter((doc) => doc.required).length;
-  const completionRate = totalRequired > 0 ? Math.round((completedRequired / totalRequired) * 100) : 100;
+  const completionRate =
+    totalRequired > 0
+      ? Math.round((completedRequired / totalRequired) * 100)
+      : 100;
 
   return (
     <Card>
@@ -110,7 +126,9 @@ export function DocumentChecklist({ category, amount, receipts, hasPaymentPlan }
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-lg">IRS Audit Documentation</CardTitle>
-            <CardDescription>Required documents for this expense</CardDescription>
+            <CardDescription>
+              Required documents for this expense
+            </CardDescription>
           </div>
           <Badge variant={completionRate === 100 ? "default" : "secondary"}>
             {completionRate}% Complete
@@ -124,7 +142,9 @@ export function DocumentChecklist({ category, amount, receipts, hasPaymentPlan }
             <div
               key={doc.type}
               className={`flex items-start gap-3 p-3 rounded-lg border ${
-                hasDoc ? "bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800" : "bg-card"
+                hasDoc
+                  ? "bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800"
+                  : "bg-card"
               }`}
             >
               <div className="mt-0.5">
@@ -138,14 +158,16 @@ export function DocumentChecklist({ category, amount, receipts, hasPaymentPlan }
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="font-medium text-sm">
-                    {doc.label}
-                  </p>
+                  <p className="font-medium text-sm">{doc.label}</p>
                   {doc.required && !hasDoc && (
-                    <Badge variant="destructive" className="text-xs">Required</Badge>
+                    <Badge variant="destructive" className="text-xs">
+                      Required
+                    </Badge>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">{doc.reason}</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {doc.reason}
+                </p>
               </div>
             </div>
           );
@@ -155,7 +177,9 @@ export function DocumentChecklist({ category, amount, receipts, hasPaymentPlan }
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              <strong>Payment Plan Detected:</strong> Upload the original bill now, then add payment receipts as you make each installment. You can only reimburse the amounts you've actually paid.
+              <strong>Payment Plan Detected:</strong> Upload the original bill
+              now, then add payment receipts as you make each installment. You
+              can only reimburse the amounts you've actually paid.
             </AlertDescription>
           </Alert>
         )}
@@ -164,7 +188,8 @@ export function DocumentChecklist({ category, amount, receipts, hasPaymentPlan }
           <Alert className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
             <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
             <AlertDescription className="text-green-800 dark:text-green-200">
-              <strong>Audit Ready!</strong> You have all required documentation for IRS compliance.
+              <strong>Audit Ready!</strong> You have all required documentation
+              for IRS compliance.
             </AlertDescription>
           </Alert>
         )}

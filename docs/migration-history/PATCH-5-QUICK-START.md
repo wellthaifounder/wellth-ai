@@ -1,6 +1,7 @@
 # PATCH #5 Quick Start Guide
 
 ## ✅ COMPLETED BY CLAUDE
+
 - [x] Created encryption utility module with AES-256-GCM
 - [x] Updated plaid-exchange-token to encrypt tokens
 - [x] Updated plaid-sync-transactions to decrypt tokens
@@ -12,7 +13,9 @@
 ## ⚠️ MANUAL STEPS REQUIRED (By You)
 
 ### Prerequisites
+
 Install Supabase CLI if not already installed:
+
 ```bash
 npm install -g supabase
 # OR
@@ -20,6 +23,7 @@ brew install supabase/tap/supabase
 ```
 
 ### Option 1: Run Automated Setup Script (Recommended)
+
 ```bash
 bash SETUP-PATCH-5.sh
 ```
@@ -31,6 +35,7 @@ This interactive script will guide you through all steps.
 ### Option 2: Manual Setup
 
 #### 1. Set Environment Variables
+
 ```bash
 # Login to Supabase
 supabase login
@@ -44,11 +49,13 @@ supabase secrets set MIGRATION_ADMIN_KEY="f6AJDVZV6vgM4RXEcy/2RRwLdNndA3lGSO95oT
 ```
 
 #### 2. Run Database Migration
+
 ```bash
 supabase db push
 ```
 
 #### 3. Deploy Edge Functions
+
 ```bash
 supabase functions deploy plaid-exchange-token
 supabase functions deploy plaid-sync-transactions
@@ -58,11 +65,13 @@ supabase functions deploy migrate-encrypt-tokens
 #### 4. Migrate Existing Tokens (If You Have Existing Plaid Connections)
 
 Check if you have unmigrated tokens:
+
 ```bash
 supabase db query "SELECT COUNT(*) FROM plaid_connections WHERE encrypted_access_token IS NULL;"
 ```
 
 If count > 0, run migration:
+
 ```bash
 # Get your project URL and anon key from Supabase dashboard
 curl -X POST https://YOUR_PROJECT.supabase.co/functions/v1/migrate-encrypt-tokens \
@@ -72,11 +81,13 @@ curl -X POST https://YOUR_PROJECT.supabase.co/functions/v1/migrate-encrypt-token
 ```
 
 Expected response:
+
 ```json
 {"success": true, "total": X, "encrypted": X, "errors": 0}
 ```
 
 #### 5. Verify Setup
+
 ```bash
 # Check logs for encryption messages
 supabase functions logs plaid-exchange-token
@@ -117,6 +128,7 @@ supabase functions logs plaid-exchange-token
 ## 📊 Files Created/Modified
 
 ### New Files
+
 - `supabase/functions/_shared/encryption.ts` - Encryption utilities
 - `supabase/functions/_shared/generate-encryption-key.ts` - Key generator
 - `supabase/migrations/20251202201215_encrypt_plaid_tokens.sql` - DB migration
@@ -127,6 +139,7 @@ supabase functions logs plaid-exchange-token
 - `PATCH-5-QUICK-START.md` - This file
 
 ### Modified Files
+
 - `supabase/functions/plaid-exchange-token/index.ts` - Added encryption
 - `supabase/functions/plaid-sync-transactions/index.ts` - Added decryption
 

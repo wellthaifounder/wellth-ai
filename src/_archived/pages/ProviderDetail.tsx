@@ -7,17 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Loader2, 
-  ArrowLeft, 
-  Building2, 
-  MapPin, 
-  Phone, 
+import {
+  Loader2,
+  ArrowLeft,
+  Building2,
+  MapPin,
+  Phone,
   Globe,
   TrendingUp,
   AlertTriangle,
   Star,
-  DollarSign
+  DollarSign,
 } from "lucide-react";
 import { ProviderReviewForm } from "@/components/bills/ProviderReviewForm";
 import { ProviderChargeComparison } from "@/components/bills/ProviderChargeComparison";
@@ -30,65 +30,65 @@ export default function ProviderDetail() {
   const navigate = useNavigate();
 
   const { data: provider, isLoading } = useQuery({
-    queryKey: ['provider', id],
+    queryKey: ["provider", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('providers')
-        .select('*')
-        .eq('id', id)
+        .from("providers")
+        .select("*")
+        .eq("id", id)
         .single();
 
       if (error) throw error;
       return data;
     },
-    enabled: !!id
+    enabled: !!id,
   });
 
   const { data: reviews } = useQuery({
-    queryKey: ['provider-reviews', id],
+    queryKey: ["provider-reviews", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('provider_reviews')
-        .select('*')
-        .eq('provider_id', id)
-        .order('created_at', { ascending: false });
+        .from("provider_reviews")
+        .select("*")
+        .eq("provider_id", id)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data;
     },
-    enabled: !!id
+    enabled: !!id,
   });
 
   const { data: chargeData } = useQuery({
-    queryKey: ['provider-charges', id],
+    queryKey: ["provider-charges", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('provider_charge_benchmarks')
-        .select('*')
-        .eq('provider_id', id)
-        .order('sample_size', { ascending: false })
+        .from("provider_charge_benchmarks")
+        .select("*")
+        .eq("provider_id", id)
+        .order("sample_size", { ascending: false })
         .limit(10);
 
       if (error) throw error;
       return data;
     },
-    enabled: !!id
+    enabled: !!id,
   });
 
   const { data: procedureInsights, isLoading: procedureLoading } = useQuery({
-    queryKey: ['procedure-insights', id],
+    queryKey: ["procedure-insights", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('procedure_insights')
-        .select('*')
-        .eq('provider_id', id)
-        .order('times_performed', { ascending: false })
+        .from("procedure_insights")
+        .select("*")
+        .eq("provider_id", id)
+        .order("times_performed", { ascending: false })
         .limit(10);
 
       if (error) throw error;
       return data;
     },
-    enabled: !!id
+    enabled: !!id,
   });
 
   if (isLoading) {
@@ -107,7 +107,7 @@ export default function ProviderDetail() {
         <div className="container mx-auto px-4 py-8">
           <Card className="p-8 text-center">
             <h2 className="text-2xl font-bold mb-2">Provider Not Found</h2>
-            <Button onClick={() => navigate('/providers')}>
+            <Button onClick={() => navigate("/providers")}>
               Back to Directory
             </Button>
           </Card>
@@ -127,7 +127,7 @@ export default function ProviderDetail() {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            onClick={() => navigate('/providers')}
+            onClick={() => navigate("/providers")}
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -161,9 +161,9 @@ export default function ProviderDetail() {
                     </span>
                   )}
                   {provider.website && (
-                    <a 
-                      href={provider.website} 
-                      target="_blank" 
+                    <a
+                      href={provider.website}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-1 hover:text-primary transition-colors"
                     >
@@ -172,7 +172,7 @@ export default function ProviderDetail() {
                     </a>
                   )}
                 </div>
-                
+
                 {/* Multi-dimensional Ratings */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="space-y-1">
@@ -180,35 +180,65 @@ export default function ProviderDetail() {
                       <Star className="h-4 w-4 text-amber-500" />
                       <span className="text-sm font-medium">Overall</span>
                     </div>
-                    <div className="text-2xl font-bold">{Number(provider.overall_rating || 0).toFixed(1)}</div>
-                    <Progress value={Number(provider.overall_rating || 0) * 20} className="h-1.5" />
+                    <div className="text-2xl font-bold">
+                      {Number(provider.overall_rating || 0).toFixed(1)}
+                    </div>
+                    <Progress
+                      value={Number(provider.overall_rating || 0) * 20}
+                      className="h-1.5"
+                    />
                   </div>
-                  
+
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <DollarSign className="h-4 w-4 text-green-600" />
-                      <span className="text-sm font-medium">Cost Transparency</span>
+                      <span className="text-sm font-medium">
+                        Cost Transparency
+                      </span>
                     </div>
-                    <div className="text-2xl font-bold">{Number(provider.cost_transparency_score || 0).toFixed(1)}</div>
-                    <Progress value={Number(provider.cost_transparency_score || 0) * 20} className="h-1.5" />
+                    <div className="text-2xl font-bold">
+                      {Number(provider.cost_transparency_score || 0).toFixed(1)}
+                    </div>
+                    <Progress
+                      value={Number(provider.cost_transparency_score || 0) * 20}
+                      className="h-1.5"
+                    />
                   </div>
-                  
+
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <TrendingUp className="h-4 w-4 text-blue-600" />
-                      <span className="text-sm font-medium">Billing Clarity</span>
+                      <span className="text-sm font-medium">
+                        Billing Clarity
+                      </span>
                     </div>
-                    <div className="text-2xl font-bold">{Number(provider.billing_clarity_score || 0).toFixed(1)}</div>
-                    <Progress value={Number(provider.billing_clarity_score || 0) * 20} className="h-1.5" />
+                    <div className="text-2xl font-bold">
+                      {Number(provider.billing_clarity_score || 0).toFixed(1)}
+                    </div>
+                    <Progress
+                      value={Number(provider.billing_clarity_score || 0) * 20}
+                      className="h-1.5"
+                    />
                   </div>
-                  
+
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4 text-purple-600" />
-                      <span className="text-sm font-medium">Payment Flexibility</span>
+                      <span className="text-sm font-medium">
+                        Payment Flexibility
+                      </span>
                     </div>
-                    <div className="text-2xl font-bold">{Number(provider.payment_flexibility_score || 0).toFixed(1)}</div>
-                    <Progress value={Number(provider.payment_flexibility_score || 0) * 20} className="h-1.5" />
+                    <div className="text-2xl font-bold">
+                      {Number(provider.payment_flexibility_score || 0).toFixed(
+                        1,
+                      )}
+                    </div>
+                    <Progress
+                      value={
+                        Number(provider.payment_flexibility_score || 0) * 20
+                      }
+                      className="h-1.5"
+                    />
                   </div>
                 </div>
               </div>
@@ -225,10 +255,15 @@ export default function ProviderDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={`text-3xl font-bold ${
-                isHighAccuracy ? 'text-green-600' : 
-                isLowAccuracy ? 'text-red-600' : 'text-orange-600'
-              }`}>
+              <div
+                className={`text-3xl font-bold ${
+                  isHighAccuracy
+                    ? "text-green-600"
+                    : isLowAccuracy
+                      ? "text-red-600"
+                      : "text-orange-600"
+                }`}
+              >
                 {accuracyScore.toFixed(1)}%
               </div>
               <Progress value={accuracyScore} className="h-2 mt-2" />
@@ -256,12 +291,17 @@ export default function ProviderDetail() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">
-                {provider.total_disputes_filed > 0 
-                  ? ((provider.disputes_won / provider.total_disputes_filed) * 100).toFixed(1)
-                  : '0'}%
+                {provider.total_disputes_filed > 0
+                  ? (
+                      (provider.disputes_won / provider.total_disputes_filed) *
+                      100
+                    ).toFixed(1)
+                  : "0"}
+                %
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                {provider.disputes_won} of {provider.total_disputes_filed} disputes won
+                {provider.disputes_won} of {provider.total_disputes_filed}{" "}
+                disputes won
               </p>
             </CardContent>
           </Card>
@@ -287,9 +327,13 @@ export default function ProviderDetail() {
               <div className="flex items-start gap-3">
                 <AlertTriangle className="h-6 w-6 text-destructive mt-1" />
                 <div>
-                  <h3 className="font-semibold text-destructive mb-1">Low Billing Accuracy</h3>
+                  <h3 className="font-semibold text-destructive mb-1">
+                    Low Billing Accuracy
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    This provider has a billing accuracy score below 70%. Consider extra scrutiny when reviewing bills from this provider.
+                    This provider has a billing accuracy score below 70%.
+                    Consider extra scrutiny when reviewing bills from this
+                    provider.
                   </p>
                 </div>
               </div>
@@ -302,7 +346,9 @@ export default function ProviderDetail() {
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="charges">Charge Comparison</TabsTrigger>
-            <TabsTrigger value="reviews">Reviews ({reviews?.length || 0})</TabsTrigger>
+            <TabsTrigger value="reviews">
+              Reviews ({reviews?.length || 0})
+            </TabsTrigger>
             <TabsTrigger value="history">Billing History</TabsTrigger>
           </TabsList>
 
@@ -323,7 +369,7 @@ export default function ProviderDetail() {
             />
 
             {/* Procedure Cost Insights */}
-            <ProcedureCostInsights 
+            <ProcedureCostInsights
               insights={procedureInsights || []}
               loading={procedureLoading}
             />
@@ -336,16 +382,28 @@ export default function ProviderDetail() {
               <CardContent>
                 <div className="grid gap-6 md:grid-cols-3">
                   <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">Bills Analyzed</p>
-                    <p className="text-2xl font-bold">{provider.total_bills_analyzed}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Bills Analyzed
+                    </p>
+                    <p className="text-2xl font-bold">
+                      {provider.total_bills_analyzed}
+                    </p>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">Disputes Filed</p>
-                    <p className="text-2xl font-bold">{provider.total_disputes_filed}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Disputes Filed
+                    </p>
+                    <p className="text-2xl font-bold">
+                      {provider.total_disputes_filed}
+                    </p>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">Disputes Won</p>
-                    <p className="text-2xl font-bold text-green-600">{provider.disputes_won}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Disputes Won
+                    </p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {provider.disputes_won}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -362,29 +420,49 @@ export default function ProviderDetail() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Overall Rating</span>
                       <div className="flex items-center gap-2">
-                        <Progress value={Number(provider.overall_rating) * 20} className="w-24 h-2" />
-                        <span className="font-semibold">{Number(provider.overall_rating).toFixed(1)}/5</span>
+                        <Progress
+                          value={Number(provider.overall_rating) * 20}
+                          className="w-24 h-2"
+                        />
+                        <span className="font-semibold">
+                          {Number(provider.overall_rating).toFixed(1)}/5
+                        </span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Cost Rating</span>
                       <div className="flex items-center gap-2">
-                        <Progress value={Number(provider.cost_rating) * 20} className="w-24 h-2" />
-                        <span className="font-semibold">{Number(provider.cost_rating).toFixed(1)}/5</span>
+                        <Progress
+                          value={Number(provider.cost_rating) * 20}
+                          className="w-24 h-2"
+                        />
+                        <span className="font-semibold">
+                          {Number(provider.cost_rating).toFixed(1)}/5
+                        </span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Accuracy Rating</span>
                       <div className="flex items-center gap-2">
-                        <Progress value={Number(provider.accuracy_rating) * 20} className="w-24 h-2" />
-                        <span className="font-semibold">{Number(provider.accuracy_rating).toFixed(1)}/5</span>
+                        <Progress
+                          value={Number(provider.accuracy_rating) * 20}
+                          className="w-24 h-2"
+                        />
+                        <span className="font-semibold">
+                          {Number(provider.accuracy_rating).toFixed(1)}/5
+                        </span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Response Rating</span>
                       <div className="flex items-center gap-2">
-                        <Progress value={Number(provider.response_rating) * 20} className="w-24 h-2" />
-                        <span className="font-semibold">{Number(provider.response_rating).toFixed(1)}/5</span>
+                        <Progress
+                          value={Number(provider.response_rating) * 20}
+                          className="w-24 h-2"
+                        />
+                        <span className="font-semibold">
+                          {Number(provider.response_rating).toFixed(1)}/5
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -394,7 +472,7 @@ export default function ProviderDetail() {
           </TabsContent>
 
           <TabsContent value="charges" className="space-y-6 mt-6">
-            <ProviderChargeComparison 
+            <ProviderChargeComparison
               providerId={provider.id}
               chargeData={chargeData || []}
             />
@@ -402,16 +480,18 @@ export default function ProviderDetail() {
 
           <TabsContent value="reviews" className="space-y-6 mt-6">
             <ProviderReviewForm providerId={provider.id} />
-            
+
             {reviews && reviews.length > 0 ? (
               <div className="space-y-4">
-                {reviews.map(review => (
+                {reviews.map((review) => (
                   <Card key={review.id}>
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-2">
                           <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
-                          <span className="font-semibold text-lg">{review.overall_experience_rating}/5</span>
+                          <span className="font-semibold text-lg">
+                            {review.overall_experience_rating}/5
+                          </span>
                         </div>
                         <span className="text-sm text-muted-foreground">
                           {new Date(review.created_at).toLocaleDateString()}
@@ -420,29 +500,47 @@ export default function ProviderDetail() {
 
                       <div className="grid grid-cols-3 gap-4 mb-4">
                         <div>
-                          <p className="text-xs text-muted-foreground">Billing Clarity</p>
-                          <p className="font-semibold">{review.billing_clarity_rating}/5</p>
+                          <p className="text-xs text-muted-foreground">
+                            Billing Clarity
+                          </p>
+                          <p className="font-semibold">
+                            {review.billing_clarity_rating}/5
+                          </p>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">Cost Transparency</p>
-                          <p className="font-semibold">{review.cost_transparency_rating}/5</p>
+                          <p className="text-xs text-muted-foreground">
+                            Cost Transparency
+                          </p>
+                          <p className="font-semibold">
+                            {review.cost_transparency_rating}/5
+                          </p>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">Payment Flexibility</p>
-                          <p className="font-semibold">{review.payment_flexibility_rating}/5</p>
+                          <p className="text-xs text-muted-foreground">
+                            Payment Flexibility
+                          </p>
+                          <p className="font-semibold">
+                            {review.payment_flexibility_rating}/5
+                          </p>
                         </div>
                       </div>
 
                       {review.review_text && (
-                        <p className="text-sm text-muted-foreground">{review.review_text}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {review.review_text}
+                        </p>
                       )}
 
                       {review.would_recommend !== null && (
-                        <Badge 
-                          variant={review.would_recommend ? "default" : "secondary"}
+                        <Badge
+                          variant={
+                            review.would_recommend ? "default" : "secondary"
+                          }
                           className="mt-3"
                         >
-                          {review.would_recommend ? "Would Recommend" : "Would Not Recommend"}
+                          {review.would_recommend
+                            ? "Would Recommend"
+                            : "Would Not Recommend"}
                         </Badge>
                       )}
                     </CardContent>
@@ -469,19 +567,27 @@ export default function ProviderDetail() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-muted/30 rounded">
                     <span className="text-sm">Total Bills Analyzed</span>
-                    <span className="font-semibold">{provider.total_bills_analyzed}</span>
+                    <span className="font-semibold">
+                      {provider.total_bills_analyzed}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-muted/30 rounded">
                     <span className="text-sm">Total Disputes</span>
-                    <span className="font-semibold">{provider.total_disputes_filed}</span>
+                    <span className="font-semibold">
+                      {provider.total_disputes_filed}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-green-500/10 rounded">
                     <span className="text-sm">Disputes Won</span>
-                    <span className="font-semibold text-green-600">{provider.disputes_won}</span>
+                    <span className="font-semibold text-green-600">
+                      {provider.disputes_won}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-red-500/10 rounded">
                     <span className="text-sm">Disputes Lost</span>
-                    <span className="font-semibold text-red-600">{provider.disputes_lost}</span>
+                    <span className="font-semibold text-red-600">
+                      {provider.disputes_lost}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-orange-500/10 rounded">
                     <span className="text-sm">Total Overcharges Found</span>

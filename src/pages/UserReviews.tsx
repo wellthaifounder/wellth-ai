@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -22,7 +28,9 @@ const UserReviews = () => {
   useEffect(() => {
     const fetchExistingReview = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user) {
           navigate("/auth");
           return;
@@ -69,7 +77,9 @@ const UserReviews = () => {
     setSubmitting(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       if (existingReview) {
@@ -79,7 +89,7 @@ const UserReviews = () => {
           .update({
             rating,
             review_text: reviewText,
-            moderation_status: 'pending',
+            moderation_status: "pending",
             moderated_by: null,
             moderated_at: null,
             moderation_notes: null,
@@ -88,19 +98,21 @@ const UserReviews = () => {
           .eq("id", existingReview.id);
 
         if (error) throw error;
-        toast.success("Review updated successfully! Our team will review it soon.");
+        toast.success(
+          "Review updated successfully! Our team will review it soon.",
+        );
       } else {
         // Create new review (moderation_status defaults to 'pending')
-        const { error } = await supabase
-          .from("reviews")
-          .insert({
-            user_id: user.id,
-            rating,
-            review_text: reviewText,
-          });
+        const { error } = await supabase.from("reviews").insert({
+          user_id: user.id,
+          rating,
+          review_text: reviewText,
+        });
 
         if (error) throw error;
-        toast.success("Review submitted successfully! Our team will review it soon.");
+        toast.success(
+          "Review submitted successfully! Our team will review it soon.",
+        );
       }
 
       // Refresh to show updated status
@@ -131,7 +143,8 @@ const UserReviews = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Share Your Experience</h1>
           <p className="text-muted-foreground">
-            Help others by sharing your experience with Wellth. Featured reviews appear on our homepage.
+            Help others by sharing your experience with Wellth. Featured reviews
+            appear on our homepage.
           </p>
         </div>
 
@@ -141,18 +154,22 @@ const UserReviews = () => {
               {existingReview ? "Update Your Review" : "Write a Review"}
             </CardTitle>
             <CardDescription>
-              {existingReview?.moderation_status === 'approved' && existingReview?.is_featured ? (
+              {existingReview?.moderation_status === "approved" &&
+              existingReview?.is_featured ? (
                 <span className="flex items-center gap-2 text-green-600">
                   <CheckCircle2 className="h-4 w-4" />
                   Your review is featured on our homepage!
                 </span>
-              ) : existingReview?.moderation_status === 'approved' ? (
+              ) : existingReview?.moderation_status === "approved" ? (
                 <span className="text-green-600">
                   Your review has been approved
                 </span>
-              ) : existingReview?.moderation_status === 'rejected' ? (
+              ) : existingReview?.moderation_status === "rejected" ? (
                 <span className="text-destructive">
-                  Your review was not approved. {existingReview.moderation_notes ? `Reason: ${existingReview.moderation_notes}` : ''}
+                  Your review was not approved.{" "}
+                  {existingReview.moderation_notes
+                    ? `Reason: ${existingReview.moderation_notes}`
+                    : ""}
                 </span>
               ) : existingReview ? (
                 "Your review is under review by our team"
@@ -215,10 +232,16 @@ const UserReviews = () => {
               <div className="flex gap-3">
                 <Button
                   type="submit"
-                  disabled={submitting || rating === 0 || reviewText.trim().length < 10}
+                  disabled={
+                    submitting || rating === 0 || reviewText.trim().length < 10
+                  }
                   className="flex-1"
                 >
-                  {submitting ? "Submitting..." : existingReview ? "Update Review" : "Submit Review"}
+                  {submitting
+                    ? "Submitting..."
+                    : existingReview
+                      ? "Update Review"
+                      : "Submit Review"}
                 </Button>
                 <Button
                   type="button"
@@ -236,9 +259,10 @@ const UserReviews = () => {
           <div className="mt-6 p-4 bg-muted/50 rounded-lg">
             <h3 className="font-medium mb-2">About Featured Reviews</h3>
             <p className="text-sm text-muted-foreground">
-              Our team reviews all submissions to ensure authenticity. Featured reviews are
-              selected based on helpfulness and detail. All reviews are displayed with only
-              the date and rating visible to protect your privacy.
+              Our team reviews all submissions to ensure authenticity. Featured
+              reviews are selected based on helpfulness and detail. All reviews
+              are displayed with only the date and rating visible to protect
+              your privacy.
             </p>
           </div>
         )}

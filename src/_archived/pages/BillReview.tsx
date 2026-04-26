@@ -5,7 +5,13 @@ import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowLeft, AlertTriangle, CheckCircle2, TrendingUp } from "lucide-react";
+import {
+  Loader2,
+  ArrowLeft,
+  AlertTriangle,
+  CheckCircle2,
+  TrendingUp,
+} from "lucide-react";
 import { BillErrorCard } from "@/components/bills/BillErrorCard";
 import { PriceBenchmarking } from "@/components/bills/PriceBenchmarking";
 import { ProviderPerformanceCard } from "@/components/bills/ProviderPerformanceCard";
@@ -18,11 +24,12 @@ export default function BillReview() {
 
   // Fetch bill review data
   const { data: billReview, isLoading: isLoadingReview } = useQuery({
-    queryKey: ['bill-review', id],
+    queryKey: ["bill-review", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('bill_reviews')
-        .select(`
+        .from("bill_reviews")
+        .select(
+          `
           *,
           invoices (
             id,
@@ -31,46 +38,47 @@ export default function BillReview() {
             date,
             invoice_number
           )
-        `)
-        .eq('id', id)
+        `,
+        )
+        .eq("id", id)
         .single();
 
       if (error) throw error;
       return data;
     },
-    enabled: !!id
+    enabled: !!id,
   });
 
   // Fetch errors
   const { data: errors, isLoading: isLoadingErrors } = useQuery({
-    queryKey: ['bill-errors', id],
+    queryKey: ["bill-errors", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('bill_errors')
-        .select('*')
-        .eq('bill_review_id', id)
-        .order('error_category', { ascending: true })
-        .order('potential_savings', { ascending: false });
+        .from("bill_errors")
+        .select("*")
+        .eq("bill_review_id", id)
+        .order("error_category", { ascending: true })
+        .order("potential_savings", { ascending: false });
 
       if (error) throw error;
       return data;
     },
-    enabled: !!id
+    enabled: !!id,
   });
 
   // Fetch provider data
   const { data: providerData } = useQuery({
-    queryKey: ['provider-for-bill', billReview?.invoices?.vendor],
+    queryKey: ["provider-for-bill", billReview?.invoices?.vendor],
     queryFn: async () => {
       if (!billReview?.invoices?.vendor) return null;
       const { data } = await supabase
-        .from('providers')
-        .select('*')
-        .ilike('name', billReview.invoices.vendor)
+        .from("providers")
+        .select("*")
+        .ilike("name", billReview.invoices.vendor)
         .maybeSingle();
       return data;
     },
-    enabled: !!billReview?.invoices?.vendor
+    enabled: !!billReview?.invoices?.vendor,
   });
 
   const handleStartDispute = () => {
@@ -80,19 +88,19 @@ export default function BillReview() {
 
   const handleMarkCorrect = async () => {
     if (!id) return;
-    
+
     try {
       const { error } = await supabase
-        .from('bill_reviews')
-        .update({ review_status: 'resolved' })
-        .eq('id', id);
+        .from("bill_reviews")
+        .update({ review_status: "resolved" })
+        .eq("id", id);
 
       if (error) throw error;
-      
+
       toast.success("Bill marked as correct");
-      navigate('/expenses');
+      navigate("/expenses");
     } catch (error) {
-      logError('Error updating bill review', error);
+      logError("Error updating bill review", error);
       toast.error("Failed to update bill status");
     }
   };
@@ -117,7 +125,7 @@ export default function BillReview() {
             <p className="text-muted-foreground mb-4">
               This bill review doesn't exist or you don't have access to it.
             </p>
-            <Button onClick={() => navigate('/expenses')}>
+            <Button onClick={() => navigate("/expenses")}>
               Back to Expenses
             </Button>
           </Card>
@@ -137,7 +145,7 @@ export default function BillReview() {
         <div className="flex items-center justify-between">
           <Button
             variant="ghost"
-            onClick={() => navigate('/expenses')}
+            onClick={() => navigate("/expenses")}
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -152,7 +160,8 @@ export default function BillReview() {
               <div>
                 <h1 className="text-3xl font-bold mb-2">Bill Review Results</h1>
                 <p className="text-muted-foreground">
-                  {invoice?.vendor} • {invoice?.invoice_number || 'No invoice #'}
+                  {invoice?.vendor} •{" "}
+                  {invoice?.invoice_number || "No invoice #"}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Bill Date: {new Date(invoice?.date).toLocaleDateString()}
@@ -162,7 +171,7 @@ export default function BillReview() {
                 variant={errorCount > 0 ? "destructive" : "default"}
                 className="text-lg px-4 py-2"
               >
-                {errorCount} {errorCount === 1 ? 'Issue' : 'Issues'} Found
+                {errorCount} {errorCount === 1 ? "Issue" : "Issues"} Found
               </Badge>
             </div>
 
@@ -201,7 +210,8 @@ export default function BillReview() {
                 <CheckCircle2 className="h-12 w-12 text-green-600 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Great News!</h3>
                 <p className="text-muted-foreground">
-                  We didn't find any obvious billing errors on this bill. Your charges appear correct.
+                  We didn't find any obvious billing errors on this bill. Your
+                  charges appear correct.
                 </p>
               </div>
             )}
@@ -223,7 +233,7 @@ export default function BillReview() {
         {providerData && <ProviderPerformanceCard provider={providerData} />}
 
         {/* Price Benchmarking */}
-        <PriceBenchmarking 
+        <PriceBenchmarking
           invoiceAmount={invoice?.amount || 0}
           category={invoice?.category}
         />
@@ -243,16 +253,20 @@ export default function BillReview() {
           <h3 className="text-lg font-semibold mb-3">What happens next?</h3>
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>
-              • <strong>Review the findings:</strong> Read through each identified issue carefully
+              • <strong>Review the findings:</strong> Read through each
+              identified issue carefully
             </p>
             <p>
-              • <strong>Start a dispute:</strong> Use our guided dispute wizard to challenge incorrect charges
+              • <strong>Start a dispute:</strong> Use our guided dispute wizard
+              to challenge incorrect charges
             </p>
             <p>
-              • <strong>Track progress:</strong> Monitor your dispute status and communications in one place
+              • <strong>Track progress:</strong> Monitor your dispute status and
+              communications in one place
             </p>
             <p>
-              • <strong>Save money:</strong> Most successful disputes result in significant savings
+              • <strong>Save money:</strong> Most successful disputes result in
+              significant savings
             </p>
           </div>
         </Card>

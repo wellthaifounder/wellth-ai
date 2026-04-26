@@ -1,6 +1,17 @@
 import { useState, useEffect } from "react";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +46,9 @@ export const NpiSelector = ({
   const [open, setOpen] = useState(false);
   const [providers, setProviders] = useState<NpiProvider[]>([]);
   const [searchQuery, setSearchQuery] = useState(extractedName);
-  const [selectedProvider, setSelectedProvider] = useState<NpiProvider | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<NpiProvider | null>(
+    null,
+  );
   const [customMode, setCustomMode] = useState(false);
   const [customName, setCustomName] = useState("");
 
@@ -70,10 +83,10 @@ export const NpiSelector = ({
 
   const handleCustom = () => {
     if (customName.trim()) {
-      onSelect(null, { 
-        id: "", 
-        npi_number: "", 
-        name: customName.trim() 
+      onSelect(null, {
+        id: "",
+        npi_number: "",
+        name: customName.trim(),
       });
       setCustomMode(false);
     }
@@ -168,15 +181,18 @@ export const NpiSelector = ({
                           "mr-2 h-4 w-4",
                           selectedProvider?.id === provider.id
                             ? "opacity-100"
-                            : "opacity-0"
+                            : "opacity-0",
                         )}
                       />
                       <div className="flex flex-col">
                         <span className="font-medium">{provider.name}</span>
                         <span className="text-xs text-muted-foreground">
-                          {provider.provider_type && `${provider.provider_type} • `}
+                          {provider.provider_type &&
+                            `${provider.provider_type} • `}
                           {provider.npi_number && `NPI: ${provider.npi_number}`}
-                          {provider.city && provider.state && ` • ${provider.city}, ${provider.state}`}
+                          {provider.city &&
+                            provider.state &&
+                            ` • ${provider.city}, ${provider.state}`}
                         </span>
                       </div>
                     </CommandItem>
@@ -189,8 +205,11 @@ export const NpiSelector = ({
       </Popover>
       {selectedProvider && (
         <p className="text-xs text-muted-foreground">
-          {selectedProvider.provider_type && `${selectedProvider.provider_type} `}
-          {selectedProvider.city && selectedProvider.state && `in ${selectedProvider.city}, ${selectedProvider.state}`}
+          {selectedProvider.provider_type &&
+            `${selectedProvider.provider_type} `}
+          {selectedProvider.city &&
+            selectedProvider.state &&
+            `in ${selectedProvider.city}, ${selectedProvider.state}`}
         </p>
       )}
     </div>

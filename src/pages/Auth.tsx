@@ -4,7 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WellthLogo } from "@/components/WellthLogo";
 import { toast } from "sonner";
@@ -15,7 +22,10 @@ import { UserIntentDialog } from "@/components/onboarding/UserIntentDialog";
 const signUpSchema = z.object({
   fullName: z.string().trim().min(1, "Name is required").max(100),
   email: z.string().trim().email("Invalid email address").max(255),
-  password: z.string().min(8, "Password must be at least 8 characters").max(100),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(100),
 });
 
 const signInSchema = z.object({
@@ -52,10 +62,12 @@ const Auth = () => {
   useEffect(() => {
     // Check if user is already logged in
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session) {
         // Check if this is a new signup that needs intent selection
-        const isNewSignup = sessionStorage.getItem('isNewSignup') === 'true';
+        const isNewSignup = sessionStorage.getItem("isNewSignup") === "true";
 
         if (isNewSignup) {
           // Show intent dialog for new users
@@ -69,10 +81,12 @@ const Auth = () => {
     checkUser();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && event === "SIGNED_IN") {
         // Check if this is a new signup
-        const isNewSignup = sessionStorage.getItem('isNewSignup') === 'true';
+        const isNewSignup = sessionStorage.getItem("isNewSignup") === "true";
 
         if (isNewSignup) {
           // Show intent dialog for new signups
@@ -89,13 +103,13 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const validated = signUpSchema.parse(signUpData);
       setLoading(true);
 
       // Mark this as a new sign-up (not an existing user signing in)
-      sessionStorage.setItem('isNewSignup', 'true');
+      sessionStorage.setItem("isNewSignup", "true");
 
       const { error } = await supabase.auth.signUp({
         email: validated.email,
@@ -156,9 +170,12 @@ const Auth = () => {
       const validated = resetSchema.parse({ email: resetEmail });
       setLoading(true);
 
-      const { error } = await supabase.auth.resetPasswordForEmail(validated.email, {
-        redirectTo: `${window.location.origin}/auth`,
-      });
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        validated.email,
+        {
+          redirectTo: `${window.location.origin}/auth`,
+        },
+      );
 
       if (error) throw error;
 
@@ -180,10 +197,10 @@ const Auth = () => {
     try {
       setLoading(true);
       // Mark as new signup for Google OAuth users
-      sessionStorage.setItem('isNewSignup', 'true');
+      sessionStorage.setItem("isNewSignup", "true");
 
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
         },
@@ -199,9 +216,9 @@ const Auth = () => {
     }
   };
 
-  const handleIntentComplete = (intent: 'billing' | 'hsa' | 'both') => {
+  const handleIntentComplete = (intent: "billing" | "hsa" | "both") => {
     // Clear the new signup flag
-    sessionStorage.removeItem('isNewSignup');
+    sessionStorage.removeItem("isNewSignup");
     // Navigate to dashboard
     navigate("/dashboard");
   };
@@ -211,10 +228,12 @@ const Auth = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
-          <div className="flex justify-center mb-4">
+            <div className="flex justify-center mb-4">
               <WellthLogo size="md" />
             </div>
-            <CardTitle className="text-2xl text-center font-heading">Reset Password</CardTitle>
+            <CardTitle className="text-2xl text-center font-heading">
+              Reset Password
+            </CardTitle>
             <CardDescription className="text-center">
               Enter your email to receive a password reset link
             </CardDescription>
@@ -266,7 +285,7 @@ const Auth = () => {
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
@@ -276,7 +295,9 @@ const Auth = () => {
                     type="email"
                     placeholder="name@example.com"
                     value={signInData.email}
-                    onChange={(e) => setSignInData({ ...signInData, email: e.target.value })}
+                    onChange={(e) =>
+                      setSignInData({ ...signInData, email: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -286,14 +307,16 @@ const Auth = () => {
                     id="signin-password"
                     type="password"
                     value={signInData.password}
-                    onChange={(e) => setSignInData({ ...signInData, password: e.target.value })}
+                    onChange={(e) =>
+                      setSignInData({ ...signInData, password: e.target.value })
+                    }
                     required
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Signing in..." : "Sign In"}
                 </Button>
-                
+
                 <div className="relative">
                   <Separator className="my-4" />
                   <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
@@ -328,7 +351,7 @@ const Auth = () => {
                   </svg>
                   Continue with Google
                 </Button>
-                
+
                 <Button
                   type="button"
                   variant="link"
@@ -349,7 +372,9 @@ const Auth = () => {
                     type="text"
                     placeholder="John Doe"
                     value={signUpData.fullName}
-                    onChange={(e) => setSignUpData({ ...signUpData, fullName: e.target.value })}
+                    onChange={(e) =>
+                      setSignUpData({ ...signUpData, fullName: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -360,7 +385,9 @@ const Auth = () => {
                     type="email"
                     placeholder="name@example.com"
                     value={signUpData.email}
-                    onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
+                    onChange={(e) =>
+                      setSignUpData({ ...signUpData, email: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -371,14 +398,16 @@ const Auth = () => {
                     type="password"
                     placeholder="Min. 8 characters"
                     value={signUpData.password}
-                    onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
+                    onChange={(e) =>
+                      setSignUpData({ ...signUpData, password: e.target.value })
+                    }
                     required
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Creating account..." : "Create Account"}
                 </Button>
-                
+
                 <div className="relative">
                   <Separator className="my-4" />
                   <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">

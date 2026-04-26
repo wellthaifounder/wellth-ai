@@ -15,7 +15,9 @@ type HSAEligibilityResult = {
  * Hook to determine HSA eligibility for a given bill date
  * Checks both new hsa_accounts table and legacy profiles.hsa_opened_date
  */
-export function useHSAEligibility(billDate: string | Date | null): HSAEligibilityResult & { isLoading: boolean } {
+export function useHSAEligibility(
+  billDate: string | Date | null,
+): HSAEligibilityResult & { isLoading: boolean } {
   const { data, isLoading } = useQuery({
     queryKey: ["hsa-eligibility", billDate],
     queryFn: async () => {
@@ -28,7 +30,9 @@ export function useHSAEligibility(billDate: string | Date | null): HSAEligibilit
         };
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         return {
           isEligible: false,
@@ -51,7 +55,7 @@ export function useHSAEligibility(billDate: string | Date | null): HSAEligibilit
       if (accounts && accounts.length > 0) {
         // Use new multi-account system
         const eligibleAccounts = getEligibleHSAAccounts(billDate, accounts);
-        
+
         if (eligibleAccounts.length === 0) {
           return {
             isEligible: false,
@@ -108,7 +112,7 @@ export function useHSAEligibility(billDate: string | Date | null): HSAEligibilit
       // Check if bill date is on or after HSA opened date
       const billDateObj = new Date(billDate);
       const hsaOpenedDateObj = new Date(profile.hsa_opened_date);
-      
+
       if (billDateObj >= hsaOpenedDateObj) {
         // Create a virtual account for legacy data
         const legacyAccount: HSAAccount = {

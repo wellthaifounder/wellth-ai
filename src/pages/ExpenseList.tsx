@@ -3,22 +3,56 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { WellthLogo } from "@/components/WellthLogo";
-import { ArrowLeft, Plus, Download, Trash2, Edit, Upload, FileText, FolderHeart } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  Download,
+  Trash2,
+  Edit,
+  Upload,
+  FileText,
+  FolderHeart,
+} from "lucide-react";
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 import { TableColumnHeader } from "@/components/ui/table-column-header";
 
 type Expense = Tables<"invoices">;
 
-interface DateFilter { from?: Date; to?: Date }
-interface AmountFilter { from?: number; to?: number }
+interface DateFilter {
+  from?: Date;
+  to?: Date;
+}
+interface AmountFilter {
+  from?: number;
+  to?: number;
+}
 
 type ExpenseWithRelations = Expense & {
   reimbursement_items?: Array<{
@@ -32,16 +66,18 @@ const ExpenseList = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  
+
   // Filters
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [vendorFilter, setVendorFilter] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilter | Date | null>(null);
   const [amountFilter, setAmountFilter] = useState<AmountFilter | null>(null);
-  
+
   // Sort
-  const [sortBy, setSortBy] = useState<"date" | "amount" | "vendor" | "category" | "status">("date");
+  const [sortBy, setSortBy] = useState<
+    "date" | "amount" | "vendor" | "category" | "status"
+  >("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [statusColumnFilter, setStatusColumnFilter] = useState("");
 
@@ -50,14 +86,16 @@ const ExpenseList = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("invoices")
-        .select(`
+        .select(
+          `
           *,
           reimbursement_items(
             reimbursement_request_id,
             reimbursement_requests(status)
           ),
           receipts(count)
-        `)
+        `,
+        )
         .order("date", { ascending: false });
       if (error) throw error;
       return (data || []) as ExpenseWithRelations[];
@@ -100,7 +138,7 @@ const ExpenseList = () => {
     if (selectedIds.size === filteredAndSortedExpenses.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(filteredAndSortedExpenses.map(e => e.id)));
+      setSelectedIds(new Set(filteredAndSortedExpenses.map((e) => e.id)));
     }
   };
 
@@ -115,25 +153,29 @@ const ExpenseList = () => {
   };
 
   const categories = useMemo(() => {
-    const cats = new Set(expenses.map(e => e.category));
+    const cats = new Set(expenses.map((e) => e.category));
     return Array.from(cats).sort();
   }, [expenses]);
 
   // Get unique values for autocomplete
   const uniqueVendors = useMemo(() => {
-    return Array.from(new Set(expenses.map(e => e.vendor))).sort();
+    return Array.from(new Set(expenses.map((e) => e.vendor))).sort();
   }, [expenses]);
 
   const uniqueCategories = useMemo(() => {
-    return Array.from(new Set(expenses.map(e => e.category))).sort();
+    return Array.from(new Set(expenses.map((e) => e.category))).sort();
   }, [expenses]);
 
   const uniqueStatuses = useMemo(() => {
     const statuses = new Set<string>();
-    expenses.forEach(exp => {
-      const reimbursementStatus = exp.reimbursement_items?.[0]?.reimbursement_requests?.status;
+    expenses.forEach((exp) => {
+      const reimbursementStatus =
+        exp.reimbursement_items?.[0]?.reimbursement_requests?.status;
       if (reimbursementStatus) {
-        statuses.add(reimbursementStatus.charAt(0).toUpperCase() + reimbursementStatus.slice(1));
+        statuses.add(
+          reimbursementStatus.charAt(0).toUpperCase() +
+            reimbursementStatus.slice(1),
+        );
       } else if (exp.is_hsa_eligible) {
         statuses.add("HSA Eligible");
       } else {
@@ -146,26 +188,31 @@ const ExpenseList = () => {
   // Get min and max amounts for the filter
   const { minAmount, maxAmount } = useMemo(() => {
     if (expenses.length === 0) return { minAmount: 0, maxAmount: 1000 };
-    const amounts = expenses.map(e => Number(e.amount));
+    const amounts = expenses.map((e) => Number(e.amount));
     return {
       minAmount: Math.min(...amounts),
-      maxAmount: Math.max(...amounts)
+      maxAmount: Math.max(...amounts),
     };
   }, [expenses]);
 
   const filteredAndSortedExpenses = useMemo(() => {
-    let filtered = expenses.filter(exp => {
+    let filtered = expenses.filter((exp) => {
       // Category filter
-      if (categoryFilter !== "all" && exp.category !== categoryFilter) return false;
-      
+      if (categoryFilter !== "all" && exp.category !== categoryFilter)
+        return false;
+
       // Status filter
       if (statusFilter === "hsa" && !exp.is_hsa_eligible) return false;
       if (statusFilter === "reimbursed" && !exp.is_reimbursed) return false;
       if (statusFilter === "pending" && exp.is_reimbursed) return false;
-      
+
       // Vendor filter
-      if (vendorFilter && !exp.vendor.toLowerCase().includes(vendorFilter.toLowerCase())) return false;
-      
+      if (
+        vendorFilter &&
+        !exp.vendor.toLowerCase().includes(vendorFilter.toLowerCase())
+      )
+        return false;
+
       // Date filter
       if (dateFilter) {
         const expDate = new Date(exp.date);
@@ -175,24 +222,31 @@ const ExpenseList = () => {
           if (expDate < from || expDate > to) return false;
         } else if (dateFilter instanceof Date) {
           const filterDate = new Date(dateFilter);
-          if (expDate.toDateString() !== filterDate.toDateString()) return false;
+          if (expDate.toDateString() !== filterDate.toDateString())
+            return false;
         }
       }
-      
+
       // Amount filter
       if (amountFilter) {
         const amount = Number(exp.amount);
-        if (amountFilter.from !== undefined && amount < amountFilter.from) return false;
-        if (amountFilter.to !== undefined && amount > amountFilter.to) return false;
+        if (amountFilter.from !== undefined && amount < amountFilter.from)
+          return false;
+        if (amountFilter.to !== undefined && amount > amountFilter.to)
+          return false;
       }
-      
+
       // Status column filter
       if (statusColumnFilter) {
-        const reimbursementStatus = exp.reimbursement_items?.[0]?.reimbursement_requests?.status;
-        const status = reimbursementStatus || (exp.is_hsa_eligible ? "hsa-eligible" : "not-submitted");
-        if (!status.toLowerCase().includes(statusColumnFilter.toLowerCase())) return false;
+        const reimbursementStatus =
+          exp.reimbursement_items?.[0]?.reimbursement_requests?.status;
+        const status =
+          reimbursementStatus ||
+          (exp.is_hsa_eligible ? "hsa-eligible" : "not-submitted");
+        if (!status.toLowerCase().includes(statusColumnFilter.toLowerCase()))
+          return false;
       }
-      
+
       return true;
     });
 
@@ -208,38 +262,60 @@ const ExpenseList = () => {
       } else if (sortBy === "category") {
         comparison = a.category.localeCompare(b.category);
       } else if (sortBy === "status") {
-        const statusA = a.reimbursement_items?.[0]?.reimbursement_requests?.status || (a.is_hsa_eligible ? "hsa-eligible" : "not-submitted");
-        const statusB = b.reimbursement_items?.[0]?.reimbursement_requests?.status || (b.is_hsa_eligible ? "hsa-eligible" : "not-submitted");
+        const statusA =
+          a.reimbursement_items?.[0]?.reimbursement_requests?.status ||
+          (a.is_hsa_eligible ? "hsa-eligible" : "not-submitted");
+        const statusB =
+          b.reimbursement_items?.[0]?.reimbursement_requests?.status ||
+          (b.is_hsa_eligible ? "hsa-eligible" : "not-submitted");
         comparison = statusA.localeCompare(statusB);
       }
       return sortOrder === "asc" ? comparison : -comparison;
     });
 
     return filtered;
-  }, [expenses, categoryFilter, statusFilter, vendorFilter, dateFilter, amountFilter, statusColumnFilter, sortBy, sortOrder]);
+  }, [
+    expenses,
+    categoryFilter,
+    statusFilter,
+    vendorFilter,
+    dateFilter,
+    amountFilter,
+    statusColumnFilter,
+    sortBy,
+    sortOrder,
+  ]);
 
   const exportToCSV = () => {
-    const headers = ["Date", "Vendor", "Category", "Amount", "HSA Eligible", "Reimbursed", "Notes"];
-    const rows = expenses.map(exp => [
+    const headers = [
+      "Date",
+      "Vendor",
+      "Category",
+      "Amount",
+      "HSA Eligible",
+      "Reimbursed",
+      "Notes",
+    ];
+    const rows = expenses.map((exp) => [
       exp.date,
       exp.vendor,
       exp.category,
       exp.amount,
       exp.is_hsa_eligible ? "Yes" : "No",
       exp.is_reimbursed ? "Yes" : "No",
-      exp.notes || ""
+      exp.notes || "",
     ]);
 
     const csv = [
       headers.join(","),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
     ].join("\n");
 
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `expenses-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `expenses-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     toast.success("Exported to CSV");
   };
@@ -258,7 +334,7 @@ const ExpenseList = () => {
       <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center gap-4">
-            <button 
+            <button
               onClick={() => navigate("/dashboard")}
               className="hover:opacity-80 transition-opacity"
             >
@@ -275,7 +351,11 @@ const ExpenseList = () => {
           </Button>
           <div className="flex gap-2">
             {selectedIds.size > 0 && (
-              <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleBulkDelete}
+              >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete ({selectedIds.size})
               </Button>
@@ -284,7 +364,10 @@ const ExpenseList = () => {
               <Download className="h-4 w-4 mr-2" />
               Export CSV
             </Button>
-            <Button variant="outline" onClick={() => navigate("/expenses/import")}>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/expenses/import")}
+            >
               <Upload className="h-4 w-4 mr-2" />
               Bulk Import
             </Button>
@@ -305,7 +388,8 @@ const ExpenseList = () => {
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2">Your Expenses</h1>
           <p className="text-muted-foreground">
-            Track and manage all your medical and healthcare expenses in one place
+            Track and manage all your medical and healthcare expenses in one
+            place
           </p>
         </div>
 
@@ -313,7 +397,8 @@ const ExpenseList = () => {
           <CardHeader>
             <CardTitle>All Expenses</CardTitle>
             <CardDescription>
-              Showing {filteredAndSortedExpenses.length} of {expenses.length} expense(s)
+              Showing {filteredAndSortedExpenses.length} of {expenses.length}{" "}
+              expense(s)
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -329,14 +414,19 @@ const ExpenseList = () => {
               <>
                 {/* Quick Filters */}
                 <div className="mb-6 grid gap-4 md:grid-cols-2">
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <Select
+                    value={categoryFilter}
+                    onValueChange={setCategoryFilter}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="All Categories" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>
-                      {categories.map(cat => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -358,7 +448,11 @@ const ExpenseList = () => {
                     <TableRow>
                       <TableHead className="w-12">
                         <Checkbox
-                          checked={selectedIds.size === filteredAndSortedExpenses.length && filteredAndSortedExpenses.length > 0}
+                          checked={
+                            selectedIds.size ===
+                              filteredAndSortedExpenses.length &&
+                            filteredAndSortedExpenses.length > 0
+                          }
                           onCheckedChange={toggleSelectAll}
                         />
                       </TableHead>
@@ -404,7 +498,9 @@ const ExpenseList = () => {
                             setSortBy("category");
                             setSortOrder(direction);
                           }}
-                          onFilter={(value) => setCategoryFilter(value === "" ? "all" : value)}
+                          onFilter={(value) =>
+                            setCategoryFilter(value === "" ? "all" : value)
+                          }
                         />
                       </TableHead>
                       <TableHead>
@@ -435,7 +531,9 @@ const ExpenseList = () => {
                             setSortBy("status");
                             setSortOrder(direction);
                           }}
-                          onFilter={(value) => setStatusColumnFilter(value || "")}
+                          onFilter={(value) =>
+                            setStatusColumnFilter(value || "")
+                          }
                           filterValue={statusColumnFilter}
                         />
                       </TableHead>
@@ -451,19 +549,23 @@ const ExpenseList = () => {
                             onCheckedChange={() => toggleSelect(expense.id)}
                           />
                         </TableCell>
-                        <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          {new Date(expense.date).toLocaleDateString()}
+                        </TableCell>
                         <TableCell>{expense.vendor}</TableCell>
                         <TableCell>{expense.category}</TableCell>
-                         <TableCell>
-                           <div className="flex items-center gap-2">
-                             <span>${Number(expense.amount).toFixed(2)}</span>
-                             {expense.receipts?.[0]?.count > 0 && (
-                               <Button 
-                                 variant="ghost" 
-                                 size="sm"
-                                 onClick={() => navigate(`/invoice/${expense.id}`)}
-                                 className="flex items-center gap-1"
-                               >
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span>${Number(expense.amount).toFixed(2)}</span>
+                            {expense.receipts?.[0]?.count > 0 && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  navigate(`/invoice/${expense.id}`)
+                                }
+                                className="flex items-center gap-1"
+                              >
                                 <FileText className="h-3 w-3" />
                                 {expense.receipts[0].count}
                               </Button>
@@ -472,22 +574,35 @@ const ExpenseList = () => {
                         </TableCell>
                         <TableCell>
                           {(() => {
-                            const reimbursementStatus = expense.reimbursement_items?.[0]?.reimbursement_requests?.status;
+                            const reimbursementStatus =
+                              expense.reimbursement_items?.[0]
+                                ?.reimbursement_requests?.status;
                             if (reimbursementStatus) {
                               return (
-                                <Badge variant={
-                                  reimbursementStatus === "approved" ? "default" :
-                                  reimbursementStatus === "submitted" ? "secondary" :
-                                  reimbursementStatus === "denied" ? "destructive" : "outline"
-                                }>
-                                  {reimbursementStatus.charAt(0).toUpperCase() + reimbursementStatus.slice(1)}
+                                <Badge
+                                  variant={
+                                    reimbursementStatus === "approved"
+                                      ? "default"
+                                      : reimbursementStatus === "submitted"
+                                        ? "secondary"
+                                        : reimbursementStatus === "denied"
+                                          ? "destructive"
+                                          : "outline"
+                                  }
+                                >
+                                  {reimbursementStatus.charAt(0).toUpperCase() +
+                                    reimbursementStatus.slice(1)}
                                 </Badge>
                               );
                             }
                             if (expense.is_hsa_eligible) {
-                              return <Badge variant="secondary">HSA Eligible</Badge>;
+                              return (
+                                <Badge variant="secondary">HSA Eligible</Badge>
+                              );
                             }
-                            return <Badge variant="outline">Not Submitted</Badge>;
+                            return (
+                              <Badge variant="outline">Not Submitted</Badge>
+                            );
                           })()}
                         </TableCell>
                         <TableCell className="text-right">

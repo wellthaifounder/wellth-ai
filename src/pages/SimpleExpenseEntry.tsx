@@ -2,10 +2,22 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle2, Upload } from "lucide-react";
 import { z } from "zod";
@@ -29,7 +41,7 @@ const HSA_ELIGIBLE_CATEGORIES = [
   "Hospital",
   "Physical Therapy",
   "Mental Health",
-  "Other Medical"
+  "Other Medical",
 ];
 
 const SimpleExpenseEntry = () => {
@@ -38,7 +50,7 @@ const SimpleExpenseEntry = () => {
   const [success, setSuccess] = useState(false);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split("T")[0],
     vendor: "",
     amount: "",
     category: "",
@@ -60,12 +72,16 @@ const SimpleExpenseEntry = () => {
         amount: parseFloat(formData.amount),
       });
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const isHsaEligible = HSA_ELIGIBLE_CATEGORIES.includes(validatedData.category);
-      const dateObj = new Date(validatedData.date + 'T00:00:00');
-      const formattedDate = dateObj.toISOString().split('T')[0];
+      const isHsaEligible = HSA_ELIGIBLE_CATEGORIES.includes(
+        validatedData.category,
+      );
+      const dateObj = new Date(validatedData.date + "T00:00:00");
+      const formattedDate = dateObj.toISOString().split("T")[0];
 
       const { data: invoice, error: invoiceError } = await supabase
         .from("invoices")
@@ -77,7 +93,7 @@ const SimpleExpenseEntry = () => {
           category: validatedData.category,
           is_hsa_eligible: isHsaEligible,
           is_reimbursed: false,
-          complexity_level: 'simple',
+          complexity_level: "simple",
           medical_incident_id: null,
         })
         .select()
@@ -86,33 +102,31 @@ const SimpleExpenseEntry = () => {
       if (invoiceError) throw invoiceError;
 
       if (receiptFile && invoice) {
-        const fileExt = receiptFile.name.split('.').pop();
+        const fileExt = receiptFile.name.split(".").pop();
         const timestamp = Date.now();
         const filePath = `${user.id}/${invoice.id}/receipt_${timestamp}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
-          .from('receipts')
+          .from("receipts")
           .upload(filePath, receiptFile);
 
         if (uploadError) throw uploadError;
 
-        const { error: receiptError } = await supabase
-          .from("receipts")
-          .insert({
-            user_id: user.id,
-            invoice_id: invoice.id,
-            file_path: filePath,
-            file_type: receiptFile.type,
-            document_type: 'receipt',
-            display_order: 0,
-          });
+        const { error: receiptError } = await supabase.from("receipts").insert({
+          user_id: user.id,
+          invoice_id: invoice.id,
+          file_path: filePath,
+          file_type: receiptFile.type,
+          document_type: "receipt",
+          display_order: 0,
+        });
 
         if (receiptError) throw receiptError;
       }
 
       setSuccess(true);
       toast.success("Bill added successfully!");
-      
+
       setTimeout(() => {
         navigate("/invoices");
       }, 2000);
@@ -134,9 +148,7 @@ const SimpleExpenseEntry = () => {
         <Card className="max-w-md mx-auto text-center p-8">
           <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-4" />
           <CardTitle className="mb-2">Bill Added!</CardTitle>
-          <CardDescription>
-            Redirecting to bills...
-          </CardDescription>
+          <CardDescription>Redirecting to bills...</CardDescription>
         </Card>
       </div>
     );
@@ -147,7 +159,7 @@ const SimpleExpenseEntry = () => {
       <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center gap-4">
-            <button 
+            <button
               onClick={() => navigate("/dashboard")}
               className="hover:opacity-80 transition-opacity"
             >
@@ -158,7 +170,11 @@ const SimpleExpenseEntry = () => {
       </nav>
 
       <div className="container mx-auto px-4 py-8">
-        <Button variant="ghost" onClick={() => navigate("/expenses/new")} className="mb-6">
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/expenses/new")}
+          className="mb-6"
+        >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Selection
         </Button>
@@ -185,7 +201,9 @@ const SimpleExpenseEntry = () => {
                   <label htmlFor="receipt" className="cursor-pointer">
                     <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                     <p className="text-sm text-muted-foreground">
-                      {receiptFile ? receiptFile.name : "Click to upload receipt"}
+                      {receiptFile
+                        ? receiptFile.name
+                        : "Click to upload receipt"}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Supports images and PDFs
@@ -201,7 +219,9 @@ const SimpleExpenseEntry = () => {
                     id="date"
                     type="date"
                     value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, date: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -214,7 +234,9 @@ const SimpleExpenseEntry = () => {
                     step="0.01"
                     placeholder="0.00"
                     value={formData.amount}
-                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, amount: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -226,7 +248,9 @@ const SimpleExpenseEntry = () => {
                   id="vendor"
                   placeholder="e.g., CVS Pharmacy, Dr. Smith"
                   value={formData.vendor}
-                  onChange={(e) => setFormData({ ...formData, vendor: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, vendor: e.target.value })
+                  }
                   required
                   maxLength={100}
                 />
@@ -236,7 +260,9 @@ const SimpleExpenseEntry = () => {
                 <Label htmlFor="category">Category</Label>
                 <Select
                   value={formData.category}
-                  onValueChange={(value) => setFormData({ ...formData, category: value })}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, category: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a category" />

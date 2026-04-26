@@ -15,44 +15,46 @@ export default function BillDispute() {
 
   // Fetch invoice and related bill review
   const { data: invoice, isLoading } = useQuery({
-    queryKey: ['invoice-for-dispute', id],
+    queryKey: ["invoice-for-dispute", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('invoices')
-        .select(`
+        .from("invoices")
+        .select(
+          `
           *,
           bill_reviews (
             id,
             total_potential_savings,
             confidence_score
           )
-        `)
-        .eq('id', id)
+        `,
+        )
+        .eq("id", id)
         .single();
 
       if (error) throw error;
       return data;
     },
-    enabled: !!id
+    enabled: !!id,
   });
 
   // Fetch bill errors if there's a review
   const billReviewId = (invoice?.bill_reviews as any)?.[0]?.id;
-  
+
   const { data: errors } = useQuery({
-    queryKey: ['bill-errors-for-dispute', billReviewId],
+    queryKey: ["bill-errors-for-dispute", billReviewId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('bill_errors')
-        .select('*')
-        .eq('bill_review_id', billReviewId)
-        .eq('status', 'identified')
-        .order('potential_savings', { ascending: false });
+        .from("bill_errors")
+        .select("*")
+        .eq("bill_review_id", billReviewId)
+        .eq("status", "identified")
+        .order("potential_savings", { ascending: false });
 
       if (error) throw error;
       return data;
     },
-    enabled: !!billReviewId
+    enabled: !!billReviewId,
   });
 
   if (isLoading) {
@@ -74,7 +76,7 @@ export default function BillDispute() {
             <p className="text-muted-foreground mb-4">
               This invoice doesn't exist or you don't have access to it.
             </p>
-            <Button onClick={() => navigate('/expenses')}>
+            <Button onClick={() => navigate("/expenses")}>
               Back to Expenses
             </Button>
           </Card>
@@ -107,7 +109,7 @@ export default function BillDispute() {
         </div>
 
         {/* Dispute Wizard */}
-        <DisputeWizard 
+        <DisputeWizard
           invoice={invoice}
           errors={errors || []}
           billReviewId={billReviewId}

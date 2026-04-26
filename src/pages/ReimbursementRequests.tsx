@@ -2,10 +2,29 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { FileText, Eye } from "lucide-react";
 import { toast } from "sonner";
@@ -26,14 +45,16 @@ const ReimbursementRequests = () => {
   const navigate = useNavigate();
   const [requests, setRequests] = useState<ReimbursementRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Filters
   const [statusFilter, setStatusFilter] = useState("all");
   const [providerFilter, setProviderFilter] = useState("");
   const [dateFilter, setDateFilter] = useState<any>(null);
   const [amountFilter, setAmountFilter] = useState("");
   const [statusColumnFilter, setStatusColumnFilter] = useState("");
-  const [sortBy, setSortBy] = useState<"date" | "amount" | "provider" | "status">("date");
+  const [sortBy, setSortBy] = useState<
+    "date" | "amount" | "provider" | "status"
+  >("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
@@ -59,20 +80,33 @@ const ReimbursementRequests = () => {
 
   // Get unique values for autocomplete
   const uniqueProviders = useMemo(() => {
-    return Array.from(new Set(requests.map(r => r.hsa_provider).filter(Boolean) as string[])).sort();
+    return Array.from(
+      new Set(requests.map((r) => r.hsa_provider).filter(Boolean) as string[]),
+    ).sort();
   }, [requests]);
 
   const uniqueStatuses = useMemo(() => {
-    return Array.from(new Set(requests.map(r => r.status.charAt(0).toUpperCase() + r.status.slice(1)))).sort();
+    return Array.from(
+      new Set(
+        requests.map(
+          (r) => r.status.charAt(0).toUpperCase() + r.status.slice(1),
+        ),
+      ),
+    ).sort();
   }, [requests]);
 
   const filteredAndSortedRequests = useMemo(() => {
-    let filtered = requests.filter(req => {
+    let filtered = requests.filter((req) => {
       if (statusFilter !== "all" && req.status !== statusFilter) return false;
-      
+
       // Provider filter
-      if (providerFilter && req.hsa_provider && !req.hsa_provider.toLowerCase().includes(providerFilter.toLowerCase())) return false;
-      
+      if (
+        providerFilter &&
+        req.hsa_provider &&
+        !req.hsa_provider.toLowerCase().includes(providerFilter.toLowerCase())
+      )
+        return false;
+
       // Date filter
       if (dateFilter) {
         const reqDate = new Date(req.submitted_at || req.created_at);
@@ -82,23 +116,30 @@ const ReimbursementRequests = () => {
           if (reqDate < from || reqDate > to) return false;
         } else if (dateFilter instanceof Date) {
           const filterDate = new Date(dateFilter);
-          if (reqDate.toDateString() !== filterDate.toDateString()) return false;
+          if (reqDate.toDateString() !== filterDate.toDateString())
+            return false;
         }
       }
-      
+
       // Amount filter
-      if (amountFilter && !req.total_amount.toString().includes(amountFilter)) return false;
-      
+      if (amountFilter && !req.total_amount.toString().includes(amountFilter))
+        return false;
+
       // Status column filter
-      if (statusColumnFilter && !req.status.toLowerCase().includes(statusColumnFilter.toLowerCase())) return false;
-      
+      if (
+        statusColumnFilter &&
+        !req.status.toLowerCase().includes(statusColumnFilter.toLowerCase())
+      )
+        return false;
+
       return true;
     });
 
     filtered.sort((a, b) => {
       let comparison = 0;
       if (sortBy === "date") {
-        comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        comparison =
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       } else if (sortBy === "amount") {
         comparison = Number(a.total_amount) - Number(b.total_amount);
       } else if (sortBy === "provider") {
@@ -110,7 +151,16 @@ const ReimbursementRequests = () => {
     });
 
     return filtered;
-  }, [requests, statusFilter, providerFilter, dateFilter, amountFilter, statusColumnFilter, sortBy, sortOrder]);
+  }, [
+    requests,
+    statusFilter,
+    providerFilter,
+    dateFilter,
+    amountFilter,
+    statusColumnFilter,
+    sortBy,
+    sortOrder,
+  ]);
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive"> = {
@@ -134,12 +184,12 @@ const ReimbursementRequests = () => {
   return (
     <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
-
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold mb-2">Reimbursement Requests</h1>
             <p className="text-muted-foreground">
-              Track and manage your HSA reimbursement submissions and their status
+              Track and manage your HSA reimbursement submissions and their
+              status
             </p>
           </div>
           <Button onClick={() => navigate("/hsa-reimbursement")}>
@@ -152,14 +202,17 @@ const ReimbursementRequests = () => {
           <CardHeader>
             <CardTitle>All Requests</CardTitle>
             <CardDescription>
-              Showing {filteredAndSortedRequests.length} of {requests.length} request(s)
+              Showing {filteredAndSortedRequests.length} of {requests.length}{" "}
+              request(s)
             </CardDescription>
           </CardHeader>
           <CardContent>
             {requests.length === 0 ? (
               <div className="text-center py-12">
                 <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">No reimbursement requests yet</p>
+                <p className="text-muted-foreground mb-4">
+                  No reimbursement requests yet
+                </p>
                 <Button onClick={() => navigate("/hsa-reimbursement")}>
                   <FileText className="h-4 w-4 mr-2" />
                   Create First Request
@@ -242,7 +295,9 @@ const ReimbursementRequests = () => {
                             setSortBy("status");
                             setSortOrder(direction);
                           }}
-                          onFilter={(value) => setStatusColumnFilter(value || "")}
+                          onFilter={(value) =>
+                            setStatusColumnFilter(value || "")
+                          }
                           filterValue={statusColumnFilter}
                         />
                       </TableHead>
@@ -253,16 +308,22 @@ const ReimbursementRequests = () => {
                     {filteredAndSortedRequests.map((request) => (
                       <TableRow key={request.id}>
                         <TableCell>
-                          {new Date(request.submitted_at || request.created_at).toLocaleDateString()}
+                          {new Date(
+                            request.submitted_at || request.created_at,
+                          ).toLocaleDateString()}
                         </TableCell>
                         <TableCell>{request.hsa_provider || "N/A"}</TableCell>
-                        <TableCell>${Number(request.total_amount).toFixed(2)}</TableCell>
+                        <TableCell>
+                          ${Number(request.total_amount).toFixed(2)}
+                        </TableCell>
                         <TableCell>{getStatusBadge(request.status)}</TableCell>
                         <TableCell className="text-right">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => navigate(`/reimbursement/${request.id}`)}
+                            onClick={() =>
+                              navigate(`/reimbursement/${request.id}`)
+                            }
                           >
                             <Eye className="h-4 w-4" />
                           </Button>

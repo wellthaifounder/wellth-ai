@@ -11,6 +11,7 @@ Before you begin, ensure you have the following installed and configured:
 ### Required Software
 
 1. **Node.js 18+** and **npm**
+
    ```bash
    # Check versions
    node --version  # Should be v18.0.0 or higher
@@ -18,6 +19,7 @@ Before you begin, ensure you have the following installed and configured:
    ```
 
    **Install with nvm (recommended):**
+
    ```bash
    # Install nvm
    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
@@ -28,6 +30,7 @@ Before you begin, ensure you have the following installed and configured:
    ```
 
 2. **Git**
+
    ```bash
    git --version  # Should be v2.0.0 or higher
    ```
@@ -87,6 +90,7 @@ npm list --depth=0
 ```
 
 **Expected output:** List of ~70+ dependencies including:
+
 - react@18.3.1
 - @supabase/supabase-js@2.58.0
 - @stripe/stripe-js@8.1.0
@@ -107,6 +111,7 @@ cp .env.example .env
 Open `.env` in your text editor and replace all placeholder values. See [Environment Variables Guide](environment-variables.md) for detailed explanations.
 
 **Minimum Required Variables:**
+
 ```bash
 # Supabase
 VITE_SUPABASE_URL=https://your-project-ref.supabase.co
@@ -156,6 +161,7 @@ npx supabase link --project-ref your-project-ref
 ```
 
 **Find your project ref:**
+
 - Go to https://app.supabase.com/project/_/settings/general
 - Look for "Reference ID" or check your Project URL: `https://[project-ref].supabase.co`
 
@@ -173,6 +179,7 @@ npx supabase db push
 ```
 
 **What this does:**
+
 - Creates all database tables (20+ tables)
 - Sets up Row Level Security policies (40+ policies)
 - Creates database functions and triggers
@@ -188,6 +195,7 @@ npx supabase db diff
 ```
 
 Or visit your Supabase project:
+
 - Go to https://app.supabase.com/project/your-project-ref/editor
 - Verify you see tables like: profiles, expenses, invoices, hsa_accounts, etc.
 
@@ -241,6 +249,7 @@ npm run dev
 ```
 
 **Expected output:**
+
 ```
 VITE v5.4.19  ready in 1234 ms
 
@@ -263,6 +272,7 @@ VITE v5.4.19  ready in 1234 ms
 ### Check Database Connection
 
 After signing in:
+
 - You should see the Dashboard page
 - No console errors related to Supabase
 - Your user profile should be created automatically
@@ -297,6 +307,7 @@ Use this checklist to verify everything is set up correctly:
 **Symptoms:** Errors during `npm install`
 
 **Solutions:**
+
 ```bash
 # Clear npm cache
 npm cache clean --force
@@ -313,6 +324,7 @@ npm install
 **Symptoms:** Frontend can't reach Supabase, CORS errors
 
 **Solutions:**
+
 1. Verify `VITE_SUPABASE_URL` in .env is correct
 2. Verify `VITE_SUPABASE_ANON_KEY` in .env is correct
 3. Check Supabase project is running (not paused)
@@ -328,13 +340,16 @@ curl https://your-project-ref.supabase.co/rest/v1/
 **Symptoms:** `npx supabase db push` fails
 
 **Solutions:**
+
 1. Check you're linked to correct project:
+
    ```bash
    npx supabase projects list
    npx supabase link --project-ref correct-project-ref
    ```
 
 2. Reset database (⚠️ destroys all data):
+
    ```bash
    npx supabase db reset
    ```
@@ -346,12 +361,15 @@ curl https://your-project-ref.supabase.co/rest/v1/
 **Symptoms:** API calls to edge functions return 404
 
 **Solutions:**
+
 1. Ensure functions are deployed:
+
    ```bash
    npx supabase functions list
    ```
 
 2. Deploy missing functions:
+
    ```bash
    npx supabase functions deploy function-name
    ```
@@ -363,8 +381,9 @@ curl https://your-project-ref.supabase.co/rest/v1/
 **Symptoms:** Subscription or bank connection fails
 
 **Solutions:**
+
 1. Verify API keys in .env are correct
-2. Check you're using TEST keys (pk_test_..., sk_test_...)
+2. Check you're using TEST keys (pk*test*..., sk*test*...)
 3. Verify Supabase secrets are set:
    ```bash
    npx supabase secrets list
@@ -376,6 +395,7 @@ curl https://your-project-ref.supabase.co/rest/v1/
 **Symptoms:** Vite can't start because port is occupied
 
 **Solutions:**
+
 ```bash
 # Kill process using port 5173
 lsof -ti:5173 | xargs kill -9
@@ -389,6 +409,7 @@ npm run dev -- --port 3000
 **Symptoms:** Can't sign up or sign in
 
 **Solutions:**
+
 1. Verify Supabase Auth is enabled in dashboard
 2. Check email confirmation is disabled for development:
    - Go to: https://app.supabase.com/project/_/auth/settings

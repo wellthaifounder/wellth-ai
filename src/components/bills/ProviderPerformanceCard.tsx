@@ -16,7 +16,9 @@ interface ProviderPerformanceCardProps {
   };
 }
 
-export function ProviderPerformanceCard({ provider }: ProviderPerformanceCardProps) {
+export function ProviderPerformanceCard({
+  provider,
+}: ProviderPerformanceCardProps) {
   const accuracyScore = Number(provider.billing_accuracy_score);
   const isHighAccuracy = accuracyScore >= 90;
   const isLowAccuracy = accuracyScore < 70;
@@ -42,7 +44,9 @@ export function ProviderPerformanceCard({ provider }: ProviderPerformanceCardPro
           {provider.overall_rating > 0 && (
             <div className="flex items-center gap-1">
               <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-              <span className="font-semibold">{Number(provider.overall_rating).toFixed(1)}</span>
+              <span className="font-semibold">
+                {Number(provider.overall_rating).toFixed(1)}
+              </span>
             </div>
           )}
         </div>
@@ -51,17 +55,24 @@ export function ProviderPerformanceCard({ provider }: ProviderPerformanceCardPro
         {/* Accuracy Score */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Billing Accuracy</span>
+            <span className="text-sm text-muted-foreground">
+              Billing Accuracy
+            </span>
             <div className="flex items-center gap-2">
               {isHighAccuracy ? (
                 <TrendingUp className="h-4 w-4 text-green-600" />
               ) : isLowAccuracy ? (
                 <AlertTriangle className="h-4 w-4 text-red-600" />
               ) : null}
-              <span className={`font-bold ${
-                isHighAccuracy ? 'text-green-600' : 
-                isLowAccuracy ? 'text-red-600' : 'text-orange-600'
-              }`}>
+              <span
+                className={`font-bold ${
+                  isHighAccuracy
+                    ? "text-green-600"
+                    : isLowAccuracy
+                      ? "text-red-600"
+                      : "text-orange-600"
+                }`}
+              >
                 {accuracyScore.toFixed(1)}%
               </span>
             </div>
@@ -89,7 +100,6 @@ export function ProviderPerformanceCard({ provider }: ProviderPerformanceCardPro
             Low Billing Accuracy - Review Bills Carefully
           </Badge>
         )}
-
       </CardContent>
     </Card>
   );

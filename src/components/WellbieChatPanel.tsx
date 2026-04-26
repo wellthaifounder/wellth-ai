@@ -2,7 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import { WellbieAvatar } from "./WellbieAvatar";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
-import { X, Minimize2, Send, MessageSquarePlus, Trash2, Menu, Paperclip, FileText, Loader2 } from "lucide-react";
+import {
+  X,
+  Minimize2,
+  Send,
+  MessageSquarePlus,
+  Trash2,
+  Menu,
+  Paperclip,
+  FileText,
+  Loader2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocation } from "react-router-dom";
 import { ScrollArea } from "./ui/scroll-area";
@@ -27,7 +37,7 @@ type Conversation = {
 type FileAttachment = {
   file: File;
   preview?: string;
-  status: 'pending' | 'uploading' | 'analyzing' | 'complete' | 'error';
+  status: "pending" | "uploading" | "analyzing" | "complete" | "error";
   error?: string;
 };
 
@@ -73,7 +83,13 @@ export const WellbieChatPanel = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const location = useLocation();
 
-  const ALLOWED_FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  const ALLOWED_FILE_TYPES = [
+    "application/pdf",
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+  ];
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
   const quickActions = quickActionsByPage[location.pathname] || [
@@ -87,8 +103,11 @@ export const WellbieChatPanel = ({
 
   const handleSend = () => {
     if (input.trim() || attachments.length > 0) {
-      const files = attachments.map(a => a.file);
-      onSendMessage(input || "I'm uploading a medical bill for analysis.", files.length > 0 ? files : undefined);
+      const files = attachments.map((a) => a.file);
+      onSendMessage(
+        input || "I'm uploading a medical bill for analysis.",
+        files.length > 0 ? files : undefined,
+      );
       setInput("");
       setAttachments([]);
     }
@@ -97,7 +116,7 @@ export const WellbieChatPanel = ({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
 
-    const validFiles = files.filter(file => {
+    const validFiles = files.filter((file) => {
       if (!ALLOWED_FILE_TYPES.includes(file.type)) {
         logError(`File type ${file.type} not allowed`, null);
         return false;
@@ -109,22 +128,24 @@ export const WellbieChatPanel = ({
       return true;
     });
 
-    const newAttachments: FileAttachment[] = validFiles.map(file => ({
+    const newAttachments: FileAttachment[] = validFiles.map((file) => ({
       file,
-      preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
-      status: 'pending'
+      preview: file.type.startsWith("image/")
+        ? URL.createObjectURL(file)
+        : undefined,
+      status: "pending",
     }));
 
-    setAttachments(prev => [...prev, ...newAttachments]);
+    setAttachments((prev) => [...prev, ...newAttachments]);
 
     // Reset input so same file can be selected again
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
   const removeAttachment = (index: number) => {
-    setAttachments(prev => {
+    setAttachments((prev) => {
       const attachment = prev[index];
       if (attachment.preview) {
         URL.revokeObjectURL(attachment.preview);
@@ -139,7 +160,11 @@ export const WellbieChatPanel = ({
 
   const ConversationsList = () => (
     <div className="space-y-2">
-      <Button onClick={onStartNew} variant="outline" className="w-full justify-start gap-2">
+      <Button
+        onClick={onStartNew}
+        variant="outline"
+        className="w-full justify-start gap-2"
+      >
         <MessageSquarePlus className="h-4 w-4" />
         New Conversation
       </Button>
@@ -150,7 +175,7 @@ export const WellbieChatPanel = ({
               key={conv.id}
               className={cn(
                 "group flex items-center justify-between p-2 rounded-md cursor-pointer hover:bg-accent",
-                currentConversationId === conv.id && "bg-accent"
+                currentConversationId === conv.id && "bg-accent",
               )}
             >
               <button
@@ -187,7 +212,11 @@ export const WellbieChatPanel = ({
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 sm:h-10 sm:w-10">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0 h-8 w-8 sm:h-10 sm:w-10"
+              >
                 <Menu className="h-4 w-4" />
               </Button>
             </SheetTrigger>
@@ -200,17 +229,36 @@ export const WellbieChatPanel = ({
               </div>
             </SheetContent>
           </Sheet>
-          <WellbieAvatar size="sm" animate={isLoading} state={isLoading ? "thinking" : "default"} className="shrink-0" />
+          <WellbieAvatar
+            size="sm"
+            animate={isLoading}
+            state={isLoading ? "thinking" : "default"}
+            className="shrink-0"
+          />
           <div className="min-w-0">
-            <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">Wellbie</h3>
-            <p className="text-xs text-muted-foreground hidden sm:block">Your HSA strategy guide</p>
+            <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">
+              Wellbie
+            </h3>
+            <p className="text-xs text-muted-foreground hidden sm:block">
+              Your HSA strategy guide
+            </p>
           </div>
         </div>
         <div className="flex gap-1 sm:gap-2 shrink-0">
-          <Button variant="ghost" size="icon" onClick={onMinimize} className="h-8 w-8 sm:h-10 sm:w-10">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onMinimize}
+            className="h-8 w-8 sm:h-10 sm:w-10"
+          >
             <Minimize2 className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 sm:h-10 sm:w-10">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="h-8 w-8 sm:h-10 sm:w-10"
+          >
             <X className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
@@ -223,7 +271,8 @@ export const WellbieChatPanel = ({
             <div className="text-center py-4 sm:py-8">
               <WellbieAvatar size="lg" className="mx-auto mb-3 sm:mb-4" />
               <p className="text-muted-foreground mb-3 sm:mb-4 text-xs sm:text-sm px-2">
-                Hi! I'm Wellbie. Ask me anything about HSA strategies, expense tracking, or tax optimization!
+                Hi! I'm Wellbie. Ask me anything about HSA strategies, expense
+                tracking, or tax optimization!
               </p>
               <div className="flex flex-wrap gap-1 sm:gap-2 justify-center px-2">
                 {quickActions.map((action) => (
@@ -246,7 +295,7 @@ export const WellbieChatPanel = ({
               key={i}
               className={cn(
                 "flex gap-2 sm:gap-3",
-                message.role === "user" ? "justify-end" : "justify-start"
+                message.role === "user" ? "justify-end" : "justify-start",
               )}
             >
               {message.role === "assistant" && (
@@ -257,7 +306,7 @@ export const WellbieChatPanel = ({
                   "max-w-[85%] sm:max-w-[80%] rounded-lg px-3 py-2 whitespace-pre-wrap text-xs sm:text-sm",
                   message.role === "user"
                     ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-foreground"
+                    : "bg-muted text-foreground",
                 )}
               >
                 {message.content}
@@ -314,7 +363,8 @@ export const WellbieChatPanel = ({
                 <div className="text-xs truncate max-w-[120px]">
                   {attachment.file.name}
                 </div>
-                {attachment.status === 'uploading' || attachment.status === 'analyzing' ? (
+                {attachment.status === "uploading" ||
+                attachment.status === "analyzing" ? (
                   <Loader2 className="h-3 w-3 animate-spin text-primary" />
                 ) : (
                   <button
@@ -361,7 +411,11 @@ export const WellbieChatPanel = ({
                 handleSend();
               }
             }}
-            placeholder={attachments.length > 0 ? "Add a note about your bill..." : "Ask Wellbie anything..."}
+            placeholder={
+              attachments.length > 0
+                ? "Add a note about your bill..."
+                : "Ask Wellbie anything..."
+            }
             className="min-h-[50px] sm:min-h-[60px] resize-none text-xs sm:text-sm"
             disabled={isLoading}
           />
@@ -371,7 +425,11 @@ export const WellbieChatPanel = ({
             size="icon"
             className="shrink-0 h-[50px] w-[50px] sm:h-[60px] sm:w-[60px]"
           >
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </div>

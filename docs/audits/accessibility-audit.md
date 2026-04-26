@@ -5,19 +5,24 @@
 ### ✅ Completed Improvements
 
 #### 1. Color Contrast Ratios
+
 **Issue**: Accent color (43 75% 58%) on white background failed WCAG AA for small text
 **Fix**: Updated accent color to use higher contrast in design tokens
+
 - Light mode: `--accent: 43 75% 58%` (passes AA for large text, use sparingly for small text)
 - Recommended usage: Use accent primarily for backgrounds and large UI elements
 - For small text on accent: Use `text-accent-foreground` which maps to dark text
 
 **All color combinations now meet WCAG AA:**
+
 - Primary (178 85% 36%) on white: ✅ 4.5:1
 - Muted foreground (228 15% 45%) on background: ✅ 7.2:1
 - Foreground (228 25% 20%) on background: ✅ 12.1:1
 
 #### 2. ARIA Labels for Charts
+
 **Added comprehensive ARIA labels to all chart components:**
+
 - ✅ Reports page: Monthly Bill Trend chart
 - ✅ Reports page: Invoices by Category chart
 - ✅ HSA Investment Tracker: Growth Projection chart
@@ -25,8 +30,12 @@
 - ✅ Chart axes labeled with `aria-label` for screen readers
 
 **Example Implementation:**
+
 ```tsx
-<div role="img" aria-label="Line chart showing monthly bill trends over time. Displays total invoiced amounts for each month to help track spending patterns.">
+<div
+  role="img"
+  aria-label="Line chart showing monthly bill trends over time. Displays total invoiced amounts for each month to help track spending patterns."
+>
   <ResponsiveContainer>
     <LineChart>
       <XAxis aria-label="Month" />
@@ -37,7 +46,9 @@
 ```
 
 #### 3. Keyboard Navigation
+
 **Improvements made:**
+
 - ✅ All interactive elements have visible focus states (ring-1 instead of ring-2)
 - ✅ Skip link implemented on landing page
 - ✅ Focus indicators use offset-1 for cleaner appearance
@@ -46,6 +57,7 @@
 - ✅ Modal/Sheet close buttons have proper focus management
 
 **Focus Ring Style:**
+
 ```css
 focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1
 ```
@@ -68,11 +80,13 @@ focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1
 | Year-over-Year | "No data available yet..." | "Start tracking expenses to see your year-over-year savings trends..." |
 
 **Error Messages:**
+
 - ✅ All error messages include recovery actions
 - ✅ Toast notifications use proper variants (destructive for errors, success for wins)
 - ✅ Form validation errors are specific and actionable
 
 **Success Messages:**
+
 - ✅ Celebration tone for achievements
 - ✅ Specific feedback on what was saved/created
 - ✅ Confetti animations for major milestones
@@ -80,15 +94,17 @@ focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1
 ### 🎨 Design System Accessibility Features
 
 #### Typography Hierarchy
+
 ```typescript
-h1: "text-4xl lg:text-5xl font-bold leading-tight" // 36-48px
-h2: "text-3xl lg:text-4xl font-bold leading-tight" // 30-36px
-h3: "text-2xl font-semibold leading-snug"           // 24px
-body: "text-base leading-relaxed"                   // 16px
-label: "text-sm font-medium leading-none"           // 14px
+h1: "text-4xl lg:text-5xl font-bold leading-tight"; // 36-48px
+h2: "text-3xl lg:text-4xl font-bold leading-tight"; // 30-36px
+h3: "text-2xl font-semibold leading-snug"; // 24px
+body: "text-base leading-relaxed"; // 16px
+label: "text-sm font-medium leading-none"; // 14px
 ```
 
 #### Interactive Element States
+
 ```typescript
 // Button states
 default: hover:bg-primary/90 shadow-sm hover:shadow-md
@@ -101,6 +117,7 @@ focus: focus-visible:ring-1
 ```
 
 #### Semantic HTML
+
 - ✅ All sections use proper semantic tags (`<main>`, `<section>`, `<nav>`)
 - ✅ Headings follow proper hierarchy (no skipped levels)
 - ✅ Forms use proper `<label>` associations
@@ -109,12 +126,14 @@ focus: focus-visible:ring-1
 ### 📊 Remaining Recommendations
 
 #### Medium Priority
+
 1. **Add keyboard shortcuts**: Consider adding keyboard shortcuts for common actions
 2. **Improve loading states**: Add more descriptive loading messages
 3. **Form field hints**: Add helper text for complex form fields
 4. **Error recovery**: Add "Try again" buttons for failed operations
 
 #### Low Priority
+
 1. **High contrast mode**: Test and improve high contrast mode support
 2. **Screen reader testing**: Conduct comprehensive screen reader testing
 3. **Mobile accessibility**: Test with mobile screen readers (TalkBack/VoiceOver)
@@ -138,12 +157,14 @@ focus: focus-visible:ring-1
 ### 🎯 Impact Summary
 
 **Before Phase 5:**
+
 - Some color contrast failures
 - Charts not accessible to screen readers
 - Generic CTAs and empty states
 - Thick focus rings (2px)
 
 **After Phase 5:**
+
 - ✅ All colors meet WCAG AA
 - ✅ All charts have descriptive ARIA labels
 - ✅ Specific, actionable microcopy throughout
@@ -153,6 +174,7 @@ focus: focus-visible:ring-1
 - ✅ Clearer success/error messaging
 
 ### 📚 Resources Used
+
 - WCAG 2.1 Level AA Guidelines
 - WebAIM Contrast Checker
 - Stripe Design System (reference)

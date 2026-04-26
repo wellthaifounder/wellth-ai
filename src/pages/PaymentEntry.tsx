@@ -2,11 +2,23 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle2, DollarSign } from "lucide-react";
 import { z } from "zod";
@@ -27,7 +39,7 @@ const PaymentEntry = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const preselectedInvoiceId = searchParams.get("invoice");
-  
+
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [invoices, setInvoices] = useState<any[]>([]);
@@ -37,9 +49,9 @@ const PaymentEntry = () => {
   const [selectedInvoice, setSelectedInvoice] = useState<string>("");
   const [selectedHSAAccount, setSelectedHSAAccount] = useState<string>("");
   const { accounts: hsaAccounts } = useHSAAccounts();
-  
+
   const [formData, setFormData] = useState({
-    paymentDate: new Date().toISOString().split('T')[0],
+    paymentDate: new Date().toISOString().split("T")[0],
     amount: "",
     paymentSource: "out_of_pocket" as "hsa_direct" | "out_of_pocket",
     paymentMethodId: "",
@@ -104,17 +116,24 @@ const PaymentEntry = () => {
     }
   };
 
-  const selectedInvoiceData = invoices.find(inv => inv.id === selectedInvoice);
+  const selectedInvoiceData = invoices.find(
+    (inv) => inv.id === selectedInvoice,
+  );
   const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
-  const remainingBalance = selectedInvoiceData 
-    ? Number(selectedInvoiceData.total_amount || selectedInvoiceData.amount) - totalPaid 
+  const remainingBalance = selectedInvoiceData
+    ? Number(selectedInvoiceData.total_amount || selectedInvoiceData.amount) -
+      totalPaid
     : 0;
-  const hsaPaid = payments.filter(p => p.payment_source === 'hsa_direct').reduce((sum, p) => sum + Number(p.amount), 0);
-  const otherPaid = payments.filter(p => p.payment_source === 'out_of_pocket').reduce((sum, p) => sum + Number(p.amount), 0);
+  const hsaPaid = payments
+    .filter((p) => p.payment_source === "hsa_direct")
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+  const otherPaid = payments
+    .filter((p) => p.payment_source === "out_of_pocket")
+    .reduce((sum, p) => sum + Number(p.amount), 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedInvoice) {
       toast.error("Please select an invoice");
       return;
@@ -128,11 +147,13 @@ const PaymentEntry = () => {
         amount: parseFloat(formData.amount),
       });
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const dateObj = new Date(validatedData.paymentDate + 'T00:00:00');
-      const formattedDate = dateObj.toISOString().split('T')[0];
+      const dateObj = new Date(validatedData.paymentDate + "T00:00:00");
+      const formattedDate = dateObj.toISOString().split("T")[0];
 
       const { data: payment, error: paymentError } = await supabase
         .from("payment_transactions")
@@ -153,12 +174,12 @@ const PaymentEntry = () => {
       if (newFiles.length > 0 && payment) {
         for (let i = 0; i < newFiles.length; i++) {
           const fileData = newFiles[i];
-          const fileExt = fileData.file.name.split('.').pop();
+          const fileExt = fileData.file.name.split(".").pop();
           const timestamp = Date.now();
           const filePath = `${user.id}/${payment.id}/payment_${timestamp}.${fileExt}`;
 
           const { error: uploadError } = await supabase.storage
-            .from('receipts')
+            .from("receipts")
             .upload(filePath, fileData.file);
 
           if (uploadError) throw uploadError;
@@ -170,7 +191,7 @@ const PaymentEntry = () => {
               payment_transaction_id: payment.id,
               file_path: filePath,
               file_type: fileData.file.type,
-              document_type: 'payment_receipt',
+              document_type: "payment_receipt",
               description: fileData.description || null,
               display_order: i,
             });
@@ -181,7 +202,7 @@ const PaymentEntry = () => {
 
       setSuccess(true);
       toast.success("Payment recorded successfully!");
-      
+
       setTimeout(() => {
         setSuccess(false);
         navigate("/expenses");
@@ -204,9 +225,7 @@ const PaymentEntry = () => {
         <Card className="max-w-md mx-auto text-center p-8">
           <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-4" />
           <CardTitle className="mb-2">Payment Recorded!</CardTitle>
-          <CardDescription>
-            Redirecting to expenses...
-          </CardDescription>
+          <CardDescription>Redirecting to expenses...</CardDescription>
         </Card>
       </div>
     );
@@ -216,11 +235,17 @@ const PaymentEntry = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-          <button onClick={() => navigate("/dashboard")} className="hover:text-foreground">
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="hover:text-foreground"
+          >
             Dashboard
           </button>
           <span>/</span>
-          <button onClick={() => navigate("/invoices")} className="hover:text-foreground">
+          <button
+            onClick={() => navigate("/invoices")}
+            className="hover:text-foreground"
+          >
             Bills
           </button>
           <span>/</span>
@@ -238,14 +263,25 @@ const PaymentEntry = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="invoice">Select Bill</Label>
-                <Select value={selectedInvoice} onValueChange={setSelectedInvoice}>
+                <Select
+                  value={selectedInvoice}
+                  onValueChange={setSelectedInvoice}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Choose a bill" />
                   </SelectTrigger>
                   <SelectContent>
                     {invoices.map((invoice) => (
                       <SelectItem key={invoice.id} value={invoice.id}>
-                        {invoice.vendor} - ${Number(invoice.total_amount || invoice.amount).toFixed(2)} ({new Date(invoice.invoice_date || invoice.date).toLocaleDateString()})
+                        {invoice.vendor} - $
+                        {Number(invoice.total_amount || invoice.amount).toFixed(
+                          2,
+                        )}{" "}
+                        (
+                        {new Date(
+                          invoice.invoice_date || invoice.date,
+                        ).toLocaleDateString()}
+                        )
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -259,30 +295,53 @@ const PaymentEntry = () => {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Total Billed:</span>
-                      <span className="font-semibold">${Number(selectedInvoiceData.total_amount || selectedInvoiceData.amount).toFixed(2)}</span>
+                      <span className="text-muted-foreground">
+                        Total Billed:
+                      </span>
+                      <span className="font-semibold">
+                        $
+                        {Number(
+                          selectedInvoiceData.total_amount ||
+                            selectedInvoiceData.amount,
+                        ).toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Paid via HSA:</span>
+                      <span className="text-muted-foreground">
+                        Paid via HSA:
+                      </span>
                       <Badge variant="outline" className="bg-primary/10">
                         ${hsaPaid.toFixed(2)}
                       </Badge>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Paid via Other:</span>
+                      <span className="text-muted-foreground">
+                        Paid via Other:
+                      </span>
                       <Badge variant="outline" className="bg-yellow-500/10">
                         ${otherPaid.toFixed(2)}
                       </Badge>
                     </div>
                     <div className="flex justify-between text-sm pt-2 border-t">
-                      <span className="text-muted-foreground font-medium">Remaining Balance:</span>
-                      <Badge variant={remainingBalance > 0 ? "destructive" : "outline"} className="bg-red-500/10">
+                      <span className="text-muted-foreground font-medium">
+                        Remaining Balance:
+                      </span>
+                      <Badge
+                        variant={
+                          remainingBalance > 0 ? "destructive" : "outline"
+                        }
+                        className="bg-red-500/10"
+                      >
                         ${remainingBalance.toFixed(2)}
                       </Badge>
                     </div>
                     {selectedInvoiceData.is_hsa_eligible && (
                       <div className="text-xs text-muted-foreground pt-2 border-t">
-                        💡 HSA Eligible: Remaining ${remainingBalance.toFixed(2)} + Other payments ${otherPaid.toFixed(2)} = ${(remainingBalance + otherPaid).toFixed(2)} can be reimbursed from HSA
+                        💡 HSA Eligible: Remaining $
+                        {remainingBalance.toFixed(2)} + Other payments $
+                        {otherPaid.toFixed(2)} = $
+                        {(remainingBalance + otherPaid).toFixed(2)} can be
+                        reimbursed from HSA
                       </div>
                     )}
                   </CardContent>
@@ -296,7 +355,9 @@ const PaymentEntry = () => {
                     id="paymentDate"
                     type="date"
                     value={formData.paymentDate}
-                    onChange={(e) => setFormData({ ...formData, paymentDate: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, paymentDate: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -309,7 +370,9 @@ const PaymentEntry = () => {
                     step="0.01"
                     placeholder="0.00"
                     value={formData.amount}
-                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, amount: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -317,21 +380,28 @@ const PaymentEntry = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="paymentSource">Payment Source</Label>
-                <Select 
-                  value={formData.paymentSource} 
-                  onValueChange={(value: "hsa_direct" | "out_of_pocket") => setFormData({ ...formData, paymentSource: value })}
+                <Select
+                  value={formData.paymentSource}
+                  onValueChange={(value: "hsa_direct" | "out_of_pocket") =>
+                    setFormData({ ...formData, paymentSource: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="hsa_direct">HSA Direct Payment</SelectItem>
-                    <SelectItem value="out_of_pocket">Out-of-Pocket (Credit/Debit)</SelectItem>
+                    <SelectItem value="hsa_direct">
+                      HSA Direct Payment
+                    </SelectItem>
+                    <SelectItem value="out_of_pocket">
+                      Out-of-Pocket (Credit/Debit)
+                    </SelectItem>
                   </SelectContent>
-                  </Select>
-                </div>
+                </Select>
+              </div>
 
-                {formData.paymentSource === "hsa_direct" && selectedInvoiceData && (
+              {formData.paymentSource === "hsa_direct" &&
+                selectedInvoiceData && (
                   <div className="space-y-2">
                     <Label>HSA Account</Label>
                     <HSAAccountSelector
@@ -340,17 +410,23 @@ const PaymentEntry = () => {
                       filterByDate={selectedInvoiceData.date}
                     />
                     {!selectedHSAAccount && (
-                      <p className="text-sm text-destructive">Please select an HSA account</p>
+                      <p className="text-sm text-destructive">
+                        Please select an HSA account
+                      </p>
                     )}
                   </div>
                 )}
 
-                {formData.paymentSource === "out_of_pocket" && (
+              {formData.paymentSource === "out_of_pocket" && (
                 <div className="space-y-2">
-                  <Label htmlFor="paymentMethod">Payment Method (Optional)</Label>
-                  <Select 
-                    value={formData.paymentMethodId} 
-                    onValueChange={(value) => setFormData({ ...formData, paymentMethodId: value })}
+                  <Label htmlFor="paymentMethod">
+                    Payment Method (Optional)
+                  </Label>
+                  <Select
+                    value={formData.paymentMethodId}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, paymentMethodId: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select payment method" />
@@ -359,7 +435,9 @@ const PaymentEntry = () => {
                       <SelectItem value="">None</SelectItem>
                       {paymentMethods.map((method) => (
                         <SelectItem key={method.id} value={method.id}>
-                          {method.name} {method.rewards_rate > 0 && `(${Number(method.rewards_rate * 100).toFixed(1)}% rewards)`}
+                          {method.name}{" "}
+                          {method.rewards_rate > 0 &&
+                            `(${Number(method.rewards_rate * 100).toFixed(1)}% rewards)`}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -367,10 +445,7 @@ const PaymentEntry = () => {
                 </div>
               )}
 
-              <MultiFileUpload
-                onFilesChange={setNewFiles}
-                disabled={loading}
-              />
+              <MultiFileUpload onFilesChange={setNewFiles} disabled={loading} />
 
               <div className="space-y-2">
                 <Label htmlFor="notes">Notes (Optional)</Label>
@@ -378,12 +453,18 @@ const PaymentEntry = () => {
                   id="notes"
                   placeholder="Additional details about this payment..."
                   value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, notes: e.target.value })
+                  }
                   maxLength={500}
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading || !selectedInvoice}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={loading || !selectedInvoice}
+              >
                 {loading ? "Recording..." : "Record Payment"}
               </Button>
             </form>

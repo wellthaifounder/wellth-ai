@@ -1,6 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 
@@ -15,7 +19,16 @@ interface ActionCardProps {
   buttonText?: string;
 }
 
-export function ActionCard({ icon, title, count, children, actions, defaultOpen = false, headerContent, buttonText = 'Show all' }: ActionCardProps) {
+export function ActionCard({
+  icon,
+  title,
+  count,
+  children,
+  actions,
+  defaultOpen = false,
+  headerContent,
+  buttonText = "Show all",
+}: ActionCardProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
@@ -30,23 +43,19 @@ export function ActionCard({ icon, title, count, children, actions, defaultOpen 
           </div>
           {actions}
         </div>
-        {headerContent && (
-          <div className="mt-4">
-            {headerContent}
-          </div>
-        )}
+        {headerContent && <div className="mt-4">{headerContent}</div>}
       </CardHeader>
       <CardContent>
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <CollapsibleTrigger asChild>
             <Button variant="ghost" className="w-full justify-between">
-              <span>{isOpen ? 'Hide details' : buttonText}</span>
-              <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+              <span>{isOpen ? "Hide details" : buttonText}</span>
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
+              />
             </Button>
           </CollapsibleTrigger>
-          <CollapsibleContent className="pt-4">
-            {children}
-          </CollapsibleContent>
+          <CollapsibleContent className="pt-4">{children}</CollapsibleContent>
         </Collapsible>
       </CardContent>
     </Card>

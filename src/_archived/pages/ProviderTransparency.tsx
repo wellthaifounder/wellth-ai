@@ -1,11 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Award, TrendingUp, Users, DollarSign, MapPin, AlertTriangle } from "lucide-react";
+import {
+  Award,
+  TrendingUp,
+  Users,
+  DollarSign,
+  MapPin,
+  AlertTriangle,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function ProviderTransparency() {
@@ -65,7 +78,11 @@ export default function ProviderTransparency() {
         .select("savings_achieved")
         .not("savings_achieved", "is", null);
 
-      const totalSavings = savingsData?.reduce((sum, row) => sum + (row.savings_achieved || 0), 0) || 0;
+      const totalSavings =
+        savingsData?.reduce(
+          (sum, row) => sum + (row.savings_achieved || 0),
+          0,
+        ) || 0;
 
       return {
         totalProviders: totalProviders || 0,
@@ -85,10 +102,13 @@ export default function ProviderTransparency() {
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Award className="h-8 w-8 text-primary" />
-            <h1 className="text-4xl font-bold">Provider Transparency Dashboard</h1>
+            <h1 className="text-4xl font-bold">
+              Provider Transparency Dashboard
+            </h1>
           </div>
           <p className="text-lg text-muted-foreground">
-            Discover healthcare providers with fair pricing, accurate billing, and transparent practices — powered by real patient data.
+            Discover healthcare providers with fair pricing, accurate billing,
+            and transparent practices — powered by real patient data.
           </p>
         </div>
 
@@ -96,28 +116,36 @@ export default function ProviderTransparency() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Providers Analyzed</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Providers Analyzed
+              </CardTitle>
               <MapPin className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               {statsLoading ? (
                 <Skeleton className="h-8 w-20" />
               ) : (
-                <div className="text-2xl font-bold">{statsData?.totalProviders || 0}</div>
+                <div className="text-2xl font-bold">
+                  {statsData?.totalProviders || 0}
+                </div>
               )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Verified Reviews</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Verified Reviews
+              </CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               {statsLoading ? (
                 <Skeleton className="h-8 w-20" />
               ) : (
-                <div className="text-2xl font-bold">{statsData?.verifiedReviews || 0}</div>
+                <div className="text-2xl font-bold">
+                  {statsData?.verifiedReviews || 0}
+                </div>
               )}
               <p className="text-xs text-muted-foreground">
                 of {statsData?.totalReviews || 0} total
@@ -127,7 +155,9 @@ export default function ProviderTransparency() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Community Savings</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Community Savings
+              </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -144,7 +174,9 @@ export default function ProviderTransparency() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg Transparency</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Avg Transparency
+              </CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -154,8 +186,10 @@ export default function ProviderTransparency() {
                 <div className="text-2xl font-bold">
                   {topProvidersData && topProvidersData.length > 0
                     ? (
-                        topProvidersData.reduce((sum, p) => sum + (p.transparency_score || 0), 0) /
-                        topProvidersData.length
+                        topProvidersData.reduce(
+                          (sum, p) => sum + (p.transparency_score || 0),
+                          0,
+                        ) / topProvidersData.length
                       ).toFixed(0)
                     : "N/A"}
                 </div>
@@ -170,7 +204,8 @@ export default function ProviderTransparency() {
           <CardHeader>
             <CardTitle>Top 10 Most Transparent Providers</CardTitle>
             <CardDescription>
-              Healthcare providers with the highest transparency scores based on billing accuracy, fair pricing, and patient feedback
+              Healthcare providers with the highest transparency scores based on
+              billing accuracy, fair pricing, and patient feedback
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -184,12 +219,18 @@ export default function ProviderTransparency() {
               <div className="text-center py-8 text-muted-foreground">
                 <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No provider data available yet.</p>
-                <p className="text-sm mt-2">Upload bills to start building provider transparency insights.</p>
+                <p className="text-sm mt-2">
+                  Upload bills to start building provider transparency insights.
+                </p>
               </div>
             ) : (
               <div className="space-y-4">
                 {topProvidersData.map((provider, index) => (
-                  <Card key={provider.id} className="hover:border-primary transition-colors cursor-pointer" onClick={() => navigate(`/providers/${provider.id}`)}>
+                  <Card
+                    key={provider.id}
+                    className="hover:border-primary transition-colors cursor-pointer"
+                    onClick={() => navigate(`/providers/${provider.id}`)}
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-3 flex-1">
@@ -197,13 +238,19 @@ export default function ProviderTransparency() {
                             {index + 1}
                           </div>
                           <div className="flex-1">
-                            <h3 className="font-semibold text-lg">{provider.name}</h3>
+                            <h3 className="font-semibold text-lg">
+                              {provider.name}
+                            </h3>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                               {provider.provider_type && (
-                                <Badge variant="outline">{provider.provider_type}</Badge>
+                                <Badge variant="outline">
+                                  {provider.provider_type}
+                                </Badge>
                               )}
                               {provider.city && provider.state && (
-                                <span>{provider.city}, {provider.state}</span>
+                                <span>
+                                  {provider.city}, {provider.state}
+                                </span>
                               )}
                             </div>
                           </div>
@@ -212,10 +259,13 @@ export default function ProviderTransparency() {
                           <div className="text-2xl font-bold text-primary">
                             {provider.transparency_score?.toFixed(0) || "N/A"}
                           </div>
-                          <p className="text-xs text-muted-foreground">Transparency</p>
+                          <p className="text-xs text-muted-foreground">
+                            Transparency
+                          </p>
                           {provider.billing_accuracy_score && (
                             <p className="text-xs text-muted-foreground mt-1">
-                              {provider.billing_accuracy_score.toFixed(0)}% accuracy
+                              {provider.billing_accuracy_score.toFixed(0)}%
+                              accuracy
                             </p>
                           )}
                         </div>
@@ -229,42 +279,64 @@ export default function ProviderTransparency() {
         </Card>
 
         {/* Common Overcharge Trends */}
-        {metricsData?.common_overcharge_trends && Array.isArray(metricsData.common_overcharge_trends) && metricsData.common_overcharge_trends.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Common Overcharge Trends</CardTitle>
-              <CardDescription>
-                Procedures and services with the most frequent billing discrepancies
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {metricsData.common_overcharge_trends.map((trend: any, index: number) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">{trend.procedure_name || trend.category}</p>
-                      <p className="text-sm text-muted-foreground">{trend.description}</p>
-                    </div>
-                    <Badge variant="destructive">{trend.frequency || trend.count} cases</Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {metricsData?.common_overcharge_trends &&
+          Array.isArray(metricsData.common_overcharge_trends) &&
+          metricsData.common_overcharge_trends.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Common Overcharge Trends</CardTitle>
+                <CardDescription>
+                  Procedures and services with the most frequent billing
+                  discrepancies
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {metricsData.common_overcharge_trends.map(
+                    (trend: any, index: number) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
+                        <div>
+                          <p className="font-medium">
+                            {trend.procedure_name || trend.category}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {trend.description}
+                          </p>
+                        </div>
+                        <Badge variant="destructive">
+                          {trend.frequency || trend.count} cases
+                        </Badge>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
         {/* CTA Section */}
         <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
           <CardContent className="p-8 text-center space-y-4">
-            <h2 className="text-2xl font-bold">Help Build Healthcare Transparency</h2>
+            <h2 className="text-2xl font-bold">
+              Help Build Healthcare Transparency
+            </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Upload your medical bills to contribute to our community database. Your anonymized data helps others understand fair pricing and identify billing errors.
+              Upload your medical bills to contribute to our community database.
+              Your anonymized data helps others understand fair pricing and
+              identify billing errors.
             </p>
             <div className="flex gap-4 justify-center">
               <Button size="lg" onClick={() => navigate("/bills/upload")}>
                 Upload a Bill
               </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate("/providers")}>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => navigate("/providers")}
+              >
                 Browse Providers
               </Button>
             </div>

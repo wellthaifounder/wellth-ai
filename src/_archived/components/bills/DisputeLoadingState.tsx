@@ -6,7 +6,9 @@ interface DisputeLoadingStateProps {
   message?: string;
 }
 
-export const DisputeLoadingState = ({ message = "Loading dispute details..." }: DisputeLoadingStateProps) => {
+export const DisputeLoadingState = ({
+  message = "Loading dispute details...",
+}: DisputeLoadingStateProps) => {
   return (
     <div className="space-y-6">
       {/* Header Loading */}

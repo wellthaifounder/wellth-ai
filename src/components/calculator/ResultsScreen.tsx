@@ -68,20 +68,20 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
     }
 
     try {
-      const { error } = await supabase.functions.invoke('send-nurture-email', {
+      const { error } = await supabase.functions.invoke("send-nurture-email", {
         body: {
           email,
           estimatedSavings: savings.total,
           calculatorData: data,
           sequenceDay: 0,
-        }
+        },
       });
 
       if (error) throw error;
 
       sessionStorage.setItem("leadEmail", email);
-      sessionStorage.setItem('calculatorData', JSON.stringify(data));
-      sessionStorage.setItem('estimatedSavings', savings.total.toString());
+      sessionStorage.setItem("calculatorData", JSON.stringify(data));
+      sessionStorage.setItem("estimatedSavings", savings.total.toString());
       toast.success("Savings breakdown sent to your email!");
     } catch (error) {
       toast.error("Something went wrong. Please try again.");
@@ -89,14 +89,21 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
   };
 
   const personalizedMessage = getPersonalizedMessage(data);
-  const accountLabel = data.accountType === "hsa" ? "HSA" : data.accountType === "fsa" ? "FSA" : "HSA/FSA";
+  const accountLabel =
+    data.accountType === "hsa"
+      ? "HSA"
+      : data.accountType === "fsa"
+        ? "FSA"
+        : "HSA/FSA";
 
   return (
     <div className="space-y-8">
       {/* Big Savings Number */}
       <div className="space-y-4 rounded-2xl bg-card p-8 shadow-lg text-center">
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-2">
-          <span className="text-sm font-semibold text-primary">Your Estimated Savings</span>
+          <span className="text-sm font-semibold text-primary">
+            Your Estimated Savings
+          </span>
         </div>
         <div className="rounded-xl bg-primary/10 p-8">
           <div className="text-5xl font-bold text-primary">
@@ -106,9 +113,7 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
             potential annual savings with {accountLabel} optimization
           </div>
         </div>
-        <p className="text-sm text-muted-foreground">
-          {personalizedMessage}
-        </p>
+        <p className="text-sm text-muted-foreground">{personalizedMessage}</p>
       </div>
 
       {/* Transparent Math Breakdown */}
@@ -119,7 +124,9 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
           <div className="rounded-lg border border-border p-4 space-y-2">
             <div className="flex justify-between items-center">
               <span className="font-medium">Tax Savings</span>
-              <span className="font-bold text-green-600">${savings.taxSavings.toLocaleString()}/year</span>
+              <span className="font-bold text-green-600">
+                ${savings.taxSavings.toLocaleString()}/year
+              </span>
             </div>
             <div className="text-sm text-muted-foreground font-mono bg-muted/50 rounded px-3 py-1.5">
               {savings.formulas.taxLabel}
@@ -134,7 +141,9 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
             <div className="rounded-lg border border-border p-4 space-y-2">
               <div className="flex justify-between items-center">
                 <span className="font-medium">Projected Investment Growth</span>
-                <span className="font-bold">${savings.investmentGrowth.toLocaleString()}</span>
+                <span className="font-bold">
+                  ${savings.investmentGrowth.toLocaleString()}
+                </span>
               </div>
               <div className="text-sm text-muted-foreground font-mono bg-muted/50 rounded px-3 py-1.5">
                 {savings.formulas.growthLabel}
@@ -163,8 +172,11 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
       <div className="space-y-3 rounded-2xl bg-card p-8 shadow-lg">
         <Button
           onClick={() => {
-            sessionStorage.setItem('calculatorData', JSON.stringify(data));
-            sessionStorage.setItem('estimatedSavings', savings.total.toString());
+            sessionStorage.setItem("calculatorData", JSON.stringify(data));
+            sessionStorage.setItem(
+              "estimatedSavings",
+              savings.total.toString(),
+            );
             navigate("/auth");
           }}
           size="lg"
@@ -185,7 +197,8 @@ export const ResultsScreen = ({ data }: ResultsScreenProps) => {
             <DialogHeader>
               <DialogTitle>Get Your Savings Breakdown</DialogTitle>
               <DialogDescription>
-                We'll send a detailed breakdown of your ${savings.total.toLocaleString()} estimated savings.
+                We'll send a detailed breakdown of your $
+                {savings.total.toLocaleString()} estimated savings.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">

@@ -3,6 +3,7 @@
 ## Subscription Tiers
 
 ### Starter (Free)
+
 - **Price:** Free forever
 - **Features:**
   - Up to 50 bills/month
@@ -17,6 +18,7 @@
   - Single bank account connection
 
 ### Plus ($19/month)
+
 - **Price:** $19/month ($15/month annual)
 - **Stripe Price ID:** `price_1SO9iP2Oq7FyVuCtXz38UjCM`
 - **Stripe Product ID:** `prod_TKpNCQqHfKXoYn`
@@ -40,6 +42,7 @@
   - Bulk actions
 
 ### Premium ($49/month)
+
 - **Price:** $49/month ($39/month annual)
 - **Stripe Price ID:** `price_1SO9jA2Oq7FyVuCtc2WjHtZd`
 - **Stripe Product ID:** `prod_TKpNCAxMltV8zl`
@@ -61,8 +64,10 @@
 ### Analytics Page
 
 #### Advanced Analytics (Plus+)
+
 **Location:** `/analytics` > Insights Tab
 **Components Locked:**
+
 - HSA Investment Tracker
 - Reimbursement Timing Optimizer
 - Rewards Optimization Dashboard
@@ -70,6 +75,7 @@
 - Payment Strategy Timeline
 
 **Implementation:**
+
 ```tsx
 <FeatureGate
   requiredTier="plus"
@@ -81,12 +87,15 @@
 ```
 
 #### Benchmarking (Plus+)
+
 **Location:** `/analytics` > Benchmarks Tab
 **Components Locked:**
+
 - Industry benchmarking comparisons
 - Performance metrics vs. averages
 
 **Implementation:**
+
 ```tsx
 <FeatureGate
   requiredTier="plus"
@@ -98,13 +107,16 @@
 ```
 
 #### AI-Powered Insights (Premium Only)
+
 **Location:** `/analytics` > AI Analysis Tab
 **Components Locked:**
+
 - AI-generated personalized insights
 - Actionable recommendations
 - Predictive analytics
 
 **Implementation:**
+
 ```tsx
 <FeatureGate
   requiredTier="premium"
@@ -137,6 +149,7 @@
 ### React Context
 
 **SubscriptionContext** provides:
+
 - `tier: 'free' | 'plus' | 'premium'`
 - `isSubscribed: boolean`
 - `subscriptionEnd: string | null`
@@ -155,22 +168,27 @@
 ## Future Feature Gates (TODO)
 
 ### Receipt OCR (Plus+)
+
 - Automatic data extraction from receipts
 - Smart categorization suggestions
 
 ### Unlimited Expenses (Plus+)
+
 - Remove 50 expense/month limit for free users
 - Show warning at 40 expenses with upgrade prompt
 
 ### Auto-submit Reimbursements (Premium)
+
 - Automatic HSA reimbursement submission
 - Integration with HSA providers
 
 ### Tax Optimization Reports (Premium)
+
 - Advanced tax strategy recommendations
 - Multi-year tax planning
 
 ### API Access (Premium)
+
 - REST API for programmatic access
 - Webhook notifications
 

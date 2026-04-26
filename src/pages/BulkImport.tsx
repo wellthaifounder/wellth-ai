@@ -2,12 +2,31 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Upload, Download, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Upload,
+  Download,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import { WellthLogo } from "@/components/WellthLogo";
 import { z } from "zod";
 import { logError } from "@/utils/errorHandler";
@@ -22,7 +41,7 @@ const HSA_ELIGIBLE_CATEGORIES = [
   "Hospital",
   "Physical Therapy",
   "Mental Health",
-  "Other Medical"
+  "Other Medical",
 ];
 
 interface ImportRow {
@@ -36,7 +55,9 @@ interface ImportRow {
 }
 
 const expenseRowSchema = z.object({
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD format"),
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD format"),
   vendor: z.string().trim().min(1, "Vendor required").max(100),
   amount: z.string().regex(/^\d+\.?\d{0,2}$/, "Invalid amount format"),
   category: z.string().min(1, "Category required"),
@@ -55,7 +76,7 @@ const BulkImport = () => {
 2024-01-15,CVS Pharmacy,45.99,Prescription,Monthly medication
 2024-01-20,Dr. Smith,150.00,Doctor Visit,Annual checkup
 2024-02-01,LensCrafters,299.99,Vision,New glasses`;
-    
+
     const blob = new Blob([template], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -69,21 +90,26 @@ const BulkImport = () => {
     const lines = text.trim().split("\n");
     if (lines.length < 2) return [];
 
-    const headers = lines[0].toLowerCase().split(",").map(h => h.trim());
+    const headers = lines[0]
+      .toLowerCase()
+      .split(",")
+      .map((h) => h.trim());
     const requiredHeaders = ["date", "vendor", "amount", "category"];
-    
-    const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+
+    const missingHeaders = requiredHeaders.filter((h) => !headers.includes(h));
     if (missingHeaders.length > 0) {
       toast.error(`Missing required columns: ${missingHeaders.join(", ")}`);
       return [];
     }
 
     const rows: ImportRow[] = [];
-    
+
     for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(",").map(v => v.trim().replace(/^"|"$/g, ""));
+      const values = lines[i]
+        .split(",")
+        .map((v) => v.trim().replace(/^"|"$/g, ""));
       const row: any = {};
-      
+
       headers.forEach((header, index) => {
         row[header] = values[index] || "";
       });
@@ -93,7 +119,7 @@ const BulkImport = () => {
         expenseRowSchema.parse(row);
       } catch (error) {
         if (error instanceof z.ZodError) {
-          errors.push(...error.errors.map(e => e.message));
+          errors.push(...error.errors.map((e) => e.message));
         }
       }
 
@@ -122,26 +148,28 @@ const BulkImport = () => {
 
     setFile(selectedFile);
     const reader = new FileReader();
-    
+
     reader.onload = (event) => {
       const text = event.target?.result as string;
       const parsed = parseCSV(text);
       setPreviewData(parsed);
-      
-      const validCount = parsed.filter(r => r.valid).length;
-      toast.success(`Loaded ${validCount} valid row(s) from ${parsed.length} total`);
+
+      const validCount = parsed.filter((r) => r.valid).length;
+      toast.success(
+        `Loaded ${validCount} valid row(s) from ${parsed.length} total`,
+      );
     };
-    
+
     reader.onerror = () => {
       toast.error("Failed to read file");
     };
-    
+
     reader.readAsText(selectedFile);
   };
 
   const handleImport = async () => {
-    const validRows = previewData.filter(r => r.valid);
-    
+    const validRows = previewData.filter((r) => r.valid);
+
     if (validRows.length === 0) {
       toast.error("No valid rows to import");
       return;
@@ -149,10 +177,12 @@ const BulkImport = () => {
 
     setImporting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const expenses = validRows.map(row => ({
+      const expenses = validRows.map((row) => ({
         user_id: user.id,
         date: row.date,
         vendor: row.vendor,
@@ -163,15 +193,13 @@ const BulkImport = () => {
         is_reimbursed: false,
       }));
 
-      const { error } = await supabase
-        .from("invoices")
-        .insert(expenses);
+      const { error } = await supabase.from("invoices").insert(expenses);
 
       if (error) throw error;
 
       setImported(true);
       toast.success(`Successfully imported ${validRows.length} expense(s)!`);
-      
+
       setTimeout(() => {
         navigate("/expenses");
       }, 2000);
@@ -189,9 +217,7 @@ const BulkImport = () => {
         <Card className="max-w-md mx-auto text-center p-8">
           <CheckCircle2 className="h-16 w-16 text-primary mx-auto mb-4" />
           <CardTitle className="mb-2">Import Complete!</CardTitle>
-          <CardDescription>
-            Redirecting to expenses...
-          </CardDescription>
+          <CardDescription>Redirecting to expenses...</CardDescription>
         </Card>
       </div>
     );
@@ -202,7 +228,7 @@ const BulkImport = () => {
       <nav className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center gap-4">
-            <button 
+            <button
               onClick={() => navigate("/dashboard")}
               className="hover:opacity-80 transition-opacity"
             >
@@ -233,7 +259,7 @@ const BulkImport = () => {
                 <Download className="h-4 w-4 mr-2" />
                 Download Template
               </Button>
-              
+
               <div className="flex-1">
                 <Input
                   id="csv-file"
@@ -245,7 +271,7 @@ const BulkImport = () => {
                 <Button
                   type="button"
                   variant="default"
-                  onClick={() => document.getElementById('csv-file')?.click()}
+                  onClick={() => document.getElementById("csv-file")?.click()}
                   className="w-full"
                 >
                   <Upload className="h-4 w-4 mr-2" />
@@ -257,13 +283,15 @@ const BulkImport = () => {
             {previewData.length > 0 && (
               <>
                 <div className="space-y-2">
-                  <h3 className="font-semibold">Preview ({previewData.length} rows)</h3>
+                  <h3 className="font-semibold">
+                    Preview ({previewData.length} rows)
+                  </h3>
                   <div className="flex gap-4 text-sm">
                     <Badge variant="default">
-                      {previewData.filter(r => r.valid).length} Valid
+                      {previewData.filter((r) => r.valid).length} Valid
                     </Badge>
                     <Badge variant="destructive">
-                      {previewData.filter(r => !r.valid).length} Errors
+                      {previewData.filter((r) => !r.valid).length} Errors
                     </Badge>
                   </div>
                 </div>
@@ -282,7 +310,10 @@ const BulkImport = () => {
                     </TableHeader>
                     <TableBody>
                       {previewData.map((row, index) => (
-                        <TableRow key={index} className={!row.valid ? "bg-destructive/10" : ""}>
+                        <TableRow
+                          key={index}
+                          className={!row.valid ? "bg-destructive/10" : ""}
+                        >
                           <TableCell>
                             {row.valid ? (
                               <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -310,11 +341,15 @@ const BulkImport = () => {
 
                 <Button
                   onClick={handleImport}
-                  disabled={importing || previewData.filter(r => r.valid).length === 0}
+                  disabled={
+                    importing || previewData.filter((r) => r.valid).length === 0
+                  }
                   className="w-full"
                   size="lg"
                 >
-                  {importing ? "Importing..." : `Import ${previewData.filter(r => r.valid).length} Expense(s)`}
+                  {importing
+                    ? "Importing..."
+                    : `Import ${previewData.filter((r) => r.valid).length} Expense(s)`}
                 </Button>
               </>
             )}

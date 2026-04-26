@@ -14,7 +14,7 @@ export function cn(...inputs: ClassValue[]) {
 export function formatCurrency(
   amount: number,
   currency: string = "USD",
-  options?: Intl.NumberFormatOptions
+  options?: Intl.NumberFormatOptions,
 ): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",

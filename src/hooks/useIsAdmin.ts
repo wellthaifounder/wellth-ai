@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { logError } from '@/utils/errorHandler';
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { logError } from "@/utils/errorHandler";
 
 export const useIsAdmin = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -9,8 +9,10 @@ export const useIsAdmin = () => {
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
         if (!user) {
           setIsAdmin(false);
           setLoading(false);
@@ -18,14 +20,14 @@ export const useIsAdmin = () => {
         }
 
         const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', user.id)
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", user.id)
           .single();
 
         setIsAdmin(profile?.is_admin || false);
       } catch (error) {
-        logError('Error checking admin status', error);
+        logError("Error checking admin status", error);
         setIsAdmin(false);
       } finally {
         setLoading(false);
@@ -34,7 +36,9 @@ export const useIsAdmin = () => {
 
     checkAdminStatus();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
       checkAdminStatus();
     });
 

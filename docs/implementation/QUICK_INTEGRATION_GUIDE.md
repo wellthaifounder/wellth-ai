@@ -81,14 +81,17 @@ After AI analysis completes:
 ```typescript
 // When analysis results come back
 analytics.track({
-  type: 'bill_analyzed',
+  type: "bill_analyzed",
   value: potentialSavings,
-  metadata: { bill_id: billId }
+  metadata: { bill_id: billId },
 });
 
 // Track time to first value
-const sessionStart = localStorage.getItem('session_start') || Date.now();
-analytics.trackTimeToFirstValue('bill_analyzed', Date.now() - Number(sessionStart));
+const sessionStart = localStorage.getItem("session_start") || Date.now();
+analytics.trackTimeToFirstValue(
+  "bill_analyzed",
+  Date.now() - Number(sessionStart),
+);
 ```
 
 ### C. Onboarding Tracking
@@ -100,18 +103,18 @@ import { analytics } from "@/lib/analytics";
 
 // When component mounts for first-time users
 useEffect(() => {
-  const hasSeenOnboarding = localStorage.getItem('onboarding_started');
+  const hasSeenOnboarding = localStorage.getItem("onboarding_started");
   if (!hasSeenOnboarding) {
     analytics.trackOnboardingStarted();
-    localStorage.setItem('onboarding_started', Date.now().toString());
+    localStorage.setItem("onboarding_started", Date.now().toString());
   }
 }, []);
 
 // When user uploads first bill
-analytics.trackOnboardingStepCompleted('first_bill_uploaded', 1);
+analytics.trackOnboardingStepCompleted("first_bill_uploaded", 1);
 
 // When user completes setup
-const onboardingStart = localStorage.getItem('onboarding_started');
+const onboardingStart = localStorage.getItem("onboarding_started");
 analytics.trackOnboardingCompleted(Date.now() - Number(onboardingStart));
 ```
 
@@ -132,7 +135,10 @@ In `src/pages/PrePurchaseDecision.tsx`:
 const calculatorStart = Date.now(); // Set when form opens
 
 // When results displayed
-analytics.trackTimeToFirstValue('calculator_result', Date.now() - calculatorStart);
+analytics.trackTimeToFirstValue(
+  "calculator_result",
+  Date.now() - calculatorStart,
+);
 ```
 
 ## Step 4: Test Locally (5 minutes)
@@ -175,11 +181,11 @@ npm install posthog-js
 
 ```typescript
 // In src/main.tsx or App.tsx
-import posthog from 'posthog-js';
+import posthog from "posthog-js";
 
 if (import.meta.env.PROD) {
-  posthog.init('YOUR_API_KEY', {
-    api_host: 'https://app.posthog.com'
+  posthog.init("YOUR_API_KEY", {
+    api_host: "https://app.posthog.com",
   });
 }
 ```
@@ -222,18 +228,22 @@ After deploying:
 ## Troubleshooting
 
 ### "analytics_events table doesn't exist"
+
 → Run Step 1 SQL migration
 
 ### Insurance dialog doesn't save
+
 → Check `user_profiles.insurance_plan` column exists
 → Verify RLS policies allow inserts
 
 ### Analytics not tracking
+
 → Check browser console for errors
 → Verify Supabase connection
 → Check RLS policy allows inserts with `user_id IS NULL`
 
 ### Progress bar not showing
+
 → Check if user has existing bills (may auto-complete onboarding)
 → Verify queries in `OnboardingProgressBar.tsx` are working
 

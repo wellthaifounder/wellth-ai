@@ -31,7 +31,10 @@ interface AnalyticsSettingsProps {
   onUpdate: (assumptions: AnalyticsAssumptions) => void;
 }
 
-export const AnalyticsSettings = ({ assumptions, onUpdate }: AnalyticsSettingsProps) => {
+export const AnalyticsSettings = ({
+  assumptions,
+  onUpdate,
+}: AnalyticsSettingsProps) => {
   const [open, setOpen] = useState(false);
   const [localAssumptions, setLocalAssumptions] = useState(assumptions);
 
@@ -145,7 +148,8 @@ export const AnalyticsSettings = ({ assumptions, onUpdate }: AnalyticsSettingsPr
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              Estimate your tax bracket during retirement or future career changes
+              Estimate your tax bracket during retirement or future career
+              changes
             </p>
           </div>
 

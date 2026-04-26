@@ -1,5 +1,18 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, CheckCircle, TrendingUp } from "lucide-react";
 
@@ -20,17 +33,43 @@ interface ProcedureCostInsightsProps {
   loading?: boolean;
 }
 
-export function ProcedureCostInsights({ insights, loading }: ProcedureCostInsightsProps) {
+export function ProcedureCostInsights({
+  insights,
+  loading,
+}: ProcedureCostInsightsProps) {
   const getFairPriceBadge = (indicator?: string) => {
     switch (indicator) {
-      case 'below_average':
-        return <Badge variant="default" className="bg-green-600"><CheckCircle className="h-3 w-3 mr-1" />Below Average</Badge>;
-      case 'average':
-        return <Badge variant="secondary"><CheckCircle className="h-3 w-3 mr-1" />Fair</Badge>;
-      case 'above_average':
-        return <Badge variant="outline" className="border-yellow-600 text-yellow-600"><TrendingUp className="h-3 w-3 mr-1" />Above Average</Badge>;
-      case 'significantly_high':
-        return <Badge variant="destructive"><AlertCircle className="h-3 w-3 mr-1" />High</Badge>;
+      case "below_average":
+        return (
+          <Badge variant="default" className="bg-green-600">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Below Average
+          </Badge>
+        );
+      case "average":
+        return (
+          <Badge variant="secondary">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Fair
+          </Badge>
+        );
+      case "above_average":
+        return (
+          <Badge
+            variant="outline"
+            className="border-yellow-600 text-yellow-600"
+          >
+            <TrendingUp className="h-3 w-3 mr-1" />
+            Above Average
+          </Badge>
+        );
+      case "significantly_high":
+        return (
+          <Badge variant="destructive">
+            <AlertCircle className="h-3 w-3 mr-1" />
+            High
+          </Badge>
+        );
       default:
         return <Badge variant="secondary">Unknown</Badge>;
     }
@@ -56,7 +95,8 @@ export function ProcedureCostInsights({ insights, loading }: ProcedureCostInsigh
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Procedure cost insights will appear here once billing data is analyzed.
+            Procedure cost insights will appear here once billing data is
+            analyzed.
           </p>
         </CardContent>
       </Card>
@@ -90,10 +130,14 @@ export function ProcedureCostInsights({ insights, loading }: ProcedureCostInsigh
                   <TableCell className="font-medium">
                     {insight.procedure_name}
                     {insight.procedure_category && (
-                      <div className="text-xs text-muted-foreground">{insight.procedure_category}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {insight.procedure_category}
+                      </div>
                     )}
                   </TableCell>
-                  <TableCell className="font-mono text-sm">{insight.cpt_code}</TableCell>
+                  <TableCell className="font-mono text-sm">
+                    {insight.cpt_code}
+                  </TableCell>
                   <TableCell className="text-right font-semibold">
                     ${insight.average_patient_cost.toFixed(2)}
                     {insight.median_patient_cost && (
@@ -103,15 +147,16 @@ export function ProcedureCostInsights({ insights, loading }: ProcedureCostInsigh
                     )}
                   </TableCell>
                   <TableCell className="text-right text-muted-foreground">
-                    {insight.typical_insurance_payment 
+                    {insight.typical_insurance_payment
                       ? `$${insight.typical_insurance_payment.toFixed(2)}`
-                      : '—'}
+                      : "—"}
                   </TableCell>
                   <TableCell className="text-center">
                     {getFairPriceBadge(insight.fair_price_indicator)}
                   </TableCell>
                   <TableCell className="text-center text-sm text-muted-foreground">
-                    {insight.times_performed} bill{insight.times_performed !== 1 ? 's' : ''}
+                    {insight.times_performed} bill
+                    {insight.times_performed !== 1 ? "s" : ""}
                   </TableCell>
                 </TableRow>
               ))}
@@ -119,8 +164,9 @@ export function ProcedureCostInsights({ insights, loading }: ProcedureCostInsigh
           </Table>
         </div>
         <p className="text-xs text-muted-foreground mt-4">
-          * Costs shown are average out-of-pocket amounts based on anonymized patient bills. 
-          Your actual cost may vary based on insurance coverage and specific treatment.
+          * Costs shown are average out-of-pocket amounts based on anonymized
+          patient bills. Your actual cost may vary based on insurance coverage
+          and specific treatment.
         </p>
       </CardContent>
     </Card>

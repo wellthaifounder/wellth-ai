@@ -5,6 +5,7 @@
 ### Task 11: Insurance Plan Onboarding ✅
 
 **Database Schema:**
+
 - ✅ Added `insurance_plan` JSONB column to `profiles` table
 - ✅ Added `is_admin` BOOLEAN column to `profiles` table
 - ✅ Created helper functions:
@@ -12,6 +13,7 @@
   - `calculate_deductible_remaining(user_id)` - Calculates remaining deductible
 
 **React Components Created:**
+
 1. **`InsurancePlanDialog.tsx`** ([src/components/onboarding/InsurancePlanDialog.tsx](src/components/onboarding/InsurancePlanDialog.tsx))
    - Full-featured insurance plan collection form
    - Supports all major carriers (Aetna, BCBS, Cigna, UnitedHealthcare, etc.)
@@ -31,6 +33,7 @@
    - ✅ **Integrated into Dashboard** (line 381 in Dashboard.tsx)
 
 **Insurance Plan Data Structure:**
+
 ```json
 {
   "carrier": "Aetna",
@@ -48,6 +51,7 @@
 ### Task 12: Analytics Tracking for 8 Core KPIs ✅
 
 **Database Schema:**
+
 - ✅ Created `analytics_events` table with:
   - `id` (UUID primary key)
   - `user_id` (references auth.users)
@@ -65,29 +69,34 @@
 Updated [src/lib/analytics.ts](src/lib/analytics.ts) with KPI tracking methods:
 
 **KPI #1: Onboarding Completion Rate**
+
 ```typescript
 analytics.trackOnboardingStarted();
-analytics.trackOnboardingStepCompleted('first_bill_uploaded', 1);
+analytics.trackOnboardingStepCompleted("first_bill_uploaded", 1);
 analytics.trackOnboardingCompleted(durationMs);
 ```
 
 **KPI #2: Time to First Value (TTFV)**
+
 ```typescript
-analytics.trackTimeToFirstValue('bill_analyzed', durationMs);
-analytics.trackTimeToFirstValue('calculator_result', durationMs);
+analytics.trackTimeToFirstValue("bill_analyzed", durationMs);
+analytics.trackTimeToFirstValue("calculator_result", durationMs);
 ```
 
 **KPI #3: Bill Analysis → Dispute Conversion**
+
 ```typescript
 analytics.trackDisputeConversion(billAmount, disputeAmount);
 ```
 
 **KPI #6: Free → Plus Conversion**
+
 ```typescript
-analytics.trackSubscriptionConversion('free', 'plus');
+analytics.trackSubscriptionConversion("free", "plus");
 ```
 
 All events are:
+
 - ✅ Logged to console in dev mode
 - ✅ Stored in `analytics_events` database table
 - ✅ Ready for integration with external services (Google Analytics, Mixpanel, PostHog)
@@ -97,6 +106,7 @@ All events are:
 ## Files Created/Modified
 
 ### Created Files:
+
 1. ✅ [src/components/onboarding/InsurancePlanDialog.tsx](src/components/onboarding/InsurancePlanDialog.tsx) - Insurance form dialog
 2. ✅ [src/hooks/useInsurancePlan.ts](src/hooks/useInsurancePlan.ts) - Insurance data hook
 3. ✅ [src/components/dashboard/InsurancePlanPrompt.tsx](src/components/dashboard/InsurancePlanPrompt.tsx) - Dashboard widget
@@ -109,6 +119,7 @@ All events are:
 10. ✅ [SUPABASE_CONNECTION_TROUBLESHOOTING.md](SUPABASE_CONNECTION_TROUBLESHOOTING.md) - Connection help
 
 ### Modified Files:
+
 1. ✅ [src/lib/analytics.ts](src/lib/analytics.ts) - Added KPI tracking methods
 2. ✅ [src/pages/Dashboard.tsx](src/pages/Dashboard.tsx) - Added InsurancePlanPrompt import & component
 
@@ -121,6 +132,7 @@ All events are:
 Migration file used: [SAFE_MIGRATION.sql](SAFE_MIGRATION.sql)
 
 **What was created:**
+
 - ✅ `analytics_events` table
 - ✅ `profiles.insurance_plan` column (JSONB)
 - ✅ `profiles.is_admin` column (BOOLEAN)
@@ -135,6 +147,7 @@ Run queries in [VERIFY_MIGRATION.sql](VERIFY_MIGRATION.sql) to confirm all objec
 ## Testing Checklist
 
 ### ✅ Insurance Plan Feature
+
 - [ ] Navigate to Dashboard
 - [ ] See "Add Your Insurance Plan" prompt
 - [ ] Click "Add Insurance Plan"
@@ -148,6 +161,7 @@ Run queries in [VERIFY_MIGRATION.sql](VERIFY_MIGRATION.sql) to confirm all objec
 - [ ] Verify dashboard now shows insurance summary card with progress
 
 ### ✅ Analytics Tracking
+
 - [ ] Open browser console
 - [ ] Navigate around the app
 - [ ] Look for `Analytics (dev):` logs in console
@@ -155,6 +169,7 @@ Run queries in [VERIFY_MIGRATION.sql](VERIFY_MIGRATION.sql) to confirm all objec
 - [ ] Verify events are being logged to database
 
 ### ✅ Database Verification
+
 Run these queries in Supabase SQL Editor:
 
 ```sql
@@ -185,6 +200,7 @@ WHERE id = auth.uid();
 ## Next Steps (Optional Enhancements)
 
 ### For Beta Launch:
+
 1. **Add analytics tracking calls** to key user flows:
    - Bill upload → `analytics.billUpload(amount, category)`
    - Bill analysis complete → `analytics.trackTimeToFirstValue('bill_analyzed', durationMs)`
@@ -204,6 +220,7 @@ WHERE id = auth.uid();
    - Display metrics in admin panel
 
 ### For Future Phases:
+
 - **EOB (Explanation of Benefits) parsing** - Extract claim data from insurance EOBs
 - **Insurance API integrations** - Auto-fetch deductible/OOP progress from carriers
 - **Cost estimation** - Predict out-of-pocket costs based on insurance plan
@@ -234,6 +251,7 @@ If you encounter any issues:
 ✅ **All 12 high-priority tasks from the comprehensive product review plan are now complete!**
 
 **What you have:**
+
 - ✅ Insurance plan collection system (MVP, no external APIs needed)
 - ✅ Analytics foundation with 8 core KPI tracking methods
 - ✅ Database schema updated and migrated
@@ -243,6 +261,7 @@ If you encounter any issues:
 **Ready for beta testing!** 🚀
 
 The app now tracks user insurance plans and analytics events, providing the foundation for:
+
 - Personalized cost estimates
 - Better onboarding metrics
 - Product-market fit validation

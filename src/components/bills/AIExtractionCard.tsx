@@ -96,7 +96,7 @@ function EditableField({
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(
-    data?.value !== null && data?.value !== undefined ? String(data.value) : ""
+    data?.value !== null && data?.value !== undefined ? String(data.value) : "",
   );
   const config = FIELD_CONFIG[field];
   const Icon = config.icon;
@@ -115,13 +115,14 @@ function EditableField({
     setEditValue(
       data?.value !== null && data?.value !== undefined
         ? String(data.value)
-        : ""
+        : "",
     );
     setIsEditing(false);
   };
 
   const displayValue = () => {
-    if (data?.value === null || data?.value === undefined) return "Not detected";
+    if (data?.value === null || data?.value === undefined)
+      return "Not detected";
     if (field === "total_amount") {
       return `$${Number(data.value).toFixed(2)}`;
     }
@@ -134,23 +135,39 @@ function EditableField({
         "flex items-center gap-3 p-3 rounded-lg border transition-colors",
         needsVerification
           ? "bg-yellow-50 border-yellow-200"
-          : "bg-background border-border"
+          : "bg-background border-border",
       )}
     >
-      <div className={cn("p-2 rounded-lg", needsVerification ? "bg-yellow-100" : "bg-muted")}>
-        <Icon className={cn("h-4 w-4", needsVerification ? "text-yellow-600" : "text-muted-foreground")} />
+      <div
+        className={cn(
+          "p-2 rounded-lg",
+          needsVerification ? "bg-yellow-100" : "bg-muted",
+        )}
+      >
+        <Icon
+          className={cn(
+            "h-4 w-4",
+            needsVerification ? "text-yellow-600" : "text-muted-foreground",
+          )}
+        />
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <Label className="text-xs text-muted-foreground">{config.label}</Label>
-          {data && <ConfidenceIndicator confidence={data.confidence} size="sm" />}
+          <Label className="text-xs text-muted-foreground">
+            {config.label}
+          </Label>
+          {data && (
+            <ConfidenceIndicator confidence={data.confidence} size="sm" />
+          )}
         </div>
 
         {isEditing ? (
           <div className="flex items-center gap-2">
             {config.prefix && (
-              <span className="text-sm text-muted-foreground">{config.prefix}</span>
+              <span className="text-sm text-muted-foreground">
+                {config.prefix}
+              </span>
             )}
             <Input
               type={config.type}
@@ -159,10 +176,20 @@ function EditableField({
               className="h-8 text-sm"
               autoFocus
             />
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={handleSave}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              onClick={handleSave}
+            >
               <Check className="h-4 w-4 text-green-600" />
             </Button>
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={handleCancel}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              onClick={handleCancel}
+            >
               <X className="h-4 w-4 text-red-500" />
             </Button>
           </div>
@@ -171,7 +198,7 @@ function EditableField({
             <span
               className={cn(
                 "text-sm font-medium truncate",
-                !data?.value && "text-muted-foreground italic"
+                !data?.value && "text-muted-foreground italic",
               )}
             >
               {displayValue()}
@@ -191,7 +218,10 @@ function EditableField({
       </div>
 
       {needsVerification && (
-        <Badge variant="outline" className="bg-yellow-100 text-yellow-700 border-yellow-300 text-xs">
+        <Badge
+          variant="outline"
+          className="bg-yellow-100 text-yellow-700 border-yellow-300 text-xs"
+        >
           Verify
         </Badge>
       )}
@@ -208,7 +238,7 @@ export function AIExtractionCard({
   isEditable = true,
 }: AIExtractionCardProps) {
   const fieldsNeedingVerification = Object.entries(metadata).filter(
-    ([, data]) => data && data.confidence < 0.9
+    ([, data]) => data && data.confidence < 0.9,
   );
 
   return (
@@ -226,7 +256,7 @@ export function AIExtractionCard({
                 ? "bg-green-100 text-green-700 hover:bg-green-100"
                 : overallConfidence >= 0.7
                   ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-100"
-                  : "bg-red-100 text-red-700 hover:bg-red-100"
+                  : "bg-red-100 text-red-700 hover:bg-red-100",
             )}
           >
             {Math.round(overallConfidence * 100)}% confident
@@ -267,12 +297,14 @@ export function AIExtractionCard({
                   field={field}
                   data={metadata[field]}
                   onUpdate={
-                    onFieldUpdate ? (value) => onFieldUpdate(field, value) : undefined
+                    onFieldUpdate
+                      ? (value) => onFieldUpdate(field, value)
+                      : undefined
                   }
                   isEditable={isEditable}
                 />
               </div>
-            )
+            ),
           )}
         </div>
 

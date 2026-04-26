@@ -14,7 +14,11 @@ type ToastFunction = (message: string, options?: any) => void;
 /**
  * Log error securely (development only)
  */
-export const logError = (message: string, error?: unknown, context?: Record<string, any>) => {
+export const logError = (
+  message: string,
+  error?: unknown,
+  context?: Record<string, any>,
+) => {
   if (import.meta.env.DEV) {
     console.error(`[${new Date().toISOString()}] ${message}`, error, context);
   }
@@ -34,7 +38,7 @@ export const handleError = (
   error: unknown,
   context: string,
   toast?: ToastFunction,
-  userMessage?: string
+  userMessage?: string,
 ) => {
   const errorId = crypto.randomUUID().substring(0, 8);
   const defaultMessage = "An error occurred. Please try again.";
@@ -59,7 +63,7 @@ export const withErrorHandling = async <T>(
   operation: () => Promise<T>,
   context: string,
   toast?: ToastFunction,
-  errorMessage?: string
+  errorMessage?: string,
 ): Promise<T | null> => {
   try {
     return await operation();
@@ -77,12 +81,15 @@ export const sanitizeErrorMessage = (error: unknown): string => {
   if (error instanceof Error) {
     // Remove file paths, URLs, and other sensitive info
     return error.message
-      .replace(/https?:\/\/[^\s]+/g, '[URL]')
-      .replace(/\/[^\s]+\.(ts|tsx|js|jsx)/g, '[FILE]')
-      .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[SSN]') // SSN pattern
-      .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[EMAIL]');
+      .replace(/https?:\/\/[^\s]+/g, "[URL]")
+      .replace(/\/[^\s]+\.(ts|tsx|js|jsx)/g, "[FILE]")
+      .replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[SSN]") // SSN pattern
+      .replace(
+        /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
+        "[EMAIL]",
+      );
   }
-  return 'An unexpected error occurred';
+  return "An unexpected error occurred";
 };
 
 /**
@@ -96,42 +103,65 @@ export const sanitizeErrorMessage = (error: unknown): string => {
  * - Any unique identifying number or code
  */
 export const sanitizePHI = (text: string): string => {
-  if (!text || typeof text !== 'string') return text;
+  if (!text || typeof text !== "string") return text;
 
-  return text
-    // Social Security Numbers (XXX-XX-XXXX or XXXXXXXXX)
-    .replace(/\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/g, '[SSN-REDACTED]')
+  return (
+    text
+      // Social Security Numbers (XXX-XX-XXXX or XXXXXXXXX)
+      .replace(/\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/g, "[SSN-REDACTED]")
 
-    // Medical Record Numbers (MRN patterns)
-    .replace(/\b(MRN|mrn|Medical Record|Patient ID)[\s:]*[\w-]+/gi, '[MRN-REDACTED]')
+      // Medical Record Numbers (MRN patterns)
+      .replace(
+        /\b(MRN|mrn|Medical Record|Patient ID)[\s:]*[\w-]+/gi,
+        "[MRN-REDACTED]",
+      )
 
-    // Account/Invoice numbers that might contain patient identifiers
-    .replace(/\b(Account|Acct|Invoice|Bill)[\s#:]*[\w-]{6,}/gi, '[ACCOUNT-REDACTED]')
+      // Account/Invoice numbers that might contain patient identifiers
+      .replace(
+        /\b(Account|Acct|Invoice|Bill)[\s#:]*[\w-]{6,}/gi,
+        "[ACCOUNT-REDACTED]",
+      )
 
-    // Phone numbers (various formats)
-    .replace(/\b(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g, '[PHONE-REDACTED]')
+      // Phone numbers (various formats)
+      .replace(
+        /\b(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g,
+        "[PHONE-REDACTED]",
+      )
 
-    // Email addresses
-    .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/gi, '[EMAIL-REDACTED]')
+      // Email addresses
+      .replace(
+        /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/gi,
+        "[EMAIL-REDACTED]",
+      )
 
-    // Dates of birth (various formats)
-    .replace(/\b(DOB|Date of Birth|Birth Date)[\s:]*\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/gi, '[DOB-REDACTED]')
+      // Dates of birth (various formats)
+      .replace(
+        /\b(DOB|Date of Birth|Birth Date)[\s:]*\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/gi,
+        "[DOB-REDACTED]",
+      )
 
-    // Insurance/Health Plan numbers
-    .replace(/\b(Policy|Member|Subscriber|Group)[\s#:]*[\w-]{6,}/gi, '[INSURANCE-REDACTED]')
+      // Insurance/Health Plan numbers
+      .replace(
+        /\b(Policy|Member|Subscriber|Group)[\s#:]*[\w-]{6,}/gi,
+        "[INSURANCE-REDACTED]",
+      )
 
-    // IP addresses
-    .replace(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g, '[IP-REDACTED]')
+      // IP addresses
+      .replace(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g, "[IP-REDACTED]")
 
-    // URLs with patient data
-    .replace(/https?:\/\/[^\s]+/g, '[URL-REDACTED]')
+      // URLs with patient data
+      .replace(/https?:\/\/[^\s]+/g, "[URL-REDACTED]")
 
-    // File paths that might contain patient names
-    .replace(/[A-Za-z]:\\[^\s]+/g, '[PATH-REDACTED]')
-    .replace(/\/[a-z]+\/[^\s]+/gi, '[PATH-REDACTED]')
+      // File paths that might contain patient names
+      .replace(/[A-Za-z]:\\[^\s]+/g, "[PATH-REDACTED]")
+      .replace(/\/[a-z]+\/[^\s]+/gi, "[PATH-REDACTED]")
 
-    // Names following common prefixes
-    .replace(/\b(Patient|Name|Mr\.|Mrs\.|Ms\.|Dr\.)\s+[A-Z][a-z]+(\s+[A-Z][a-z]+)*/g, '[NAME-REDACTED]');
+      // Names following common prefixes
+      .replace(
+        /\b(Patient|Name|Mr\.|Mrs\.|Ms\.|Dr\.)\s+[A-Z][a-z]+(\s+[A-Z][a-z]+)*/g,
+        "[NAME-REDACTED]",
+      )
+  );
 };
 
 /**
@@ -142,10 +172,14 @@ export const safeLog = (message: string, data?: unknown) => {
   if (import.meta.env.DEV) {
     const sanitizedMessage = sanitizePHI(message);
     if (data) {
-      const sanitizedData = typeof data === 'string'
-        ? sanitizePHI(data)
-        : JSON.parse(sanitizePHI(JSON.stringify(data)));
-      console.log(`[${new Date().toISOString()}] ${sanitizedMessage}`, sanitizedData);
+      const sanitizedData =
+        typeof data === "string"
+          ? sanitizePHI(data)
+          : JSON.parse(sanitizePHI(JSON.stringify(data)));
+      console.log(
+        `[${new Date().toISOString()}] ${sanitizedMessage}`,
+        sanitizedData,
+      );
     } else {
       console.log(`[${new Date().toISOString()}] ${sanitizedMessage}`);
     }
@@ -157,7 +191,7 @@ export const safeLog = (message: string, data?: unknown) => {
  * Returns true if PHI patterns are detected
  */
 export const containsPHI = (value: string): boolean => {
-  if (!value || typeof value !== 'string') return false;
+  if (!value || typeof value !== "string") return false;
 
   const phiPatterns = [
     /\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/, // SSN
@@ -165,5 +199,5 @@ export const containsPHI = (value: string): boolean => {
     /\b(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/, // Phone
   ];
 
-  return phiPatterns.some(pattern => pattern.test(value));
+  return phiPatterns.some((pattern) => pattern.test(value));
 };

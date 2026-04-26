@@ -4,7 +4,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Eye, Download, Edit, Trash2, FileText, Link2, FolderOpen, Unlink } from "lucide-react";
+import {
+  Eye,
+  Download,
+  Edit,
+  Trash2,
+  FileText,
+  Link2,
+  FolderOpen,
+  Unlink,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { logError } from "@/utils/errorHandler";
@@ -32,14 +41,19 @@ interface DocumentCardProps {
   onLinkToCollection?: () => void;
 }
 
-export const DocumentCard = ({ receipt, onEdit, onDelete, onLinkToCollection }: DocumentCardProps) => {
+export const DocumentCard = ({
+  receipt,
+  onEdit,
+  onDelete,
+  onLinkToCollection,
+}: DocumentCardProps) => {
   const [viewUrl, setViewUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
   const handleView = async () => {
     try {
       const { data, error } = await supabase.storage
-        .from('receipts')
+        .from("receipts")
         .createSignedUrl(receipt.file_path, 3600);
 
       if (error) throw error;
@@ -54,15 +68,15 @@ export const DocumentCard = ({ receipt, onEdit, onDelete, onLinkToCollection }: 
   const handleDownload = async () => {
     try {
       const { data, error } = await supabase.storage
-        .from('receipts')
+        .from("receipts")
         .download(receipt.file_path);
 
       if (error) throw error;
 
       const url = URL.createObjectURL(data);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = receipt.file_path.split('/').pop() || 'document';
+      a.download = receipt.file_path.split("/").pop() || "document";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -75,7 +89,7 @@ export const DocumentCard = ({ receipt, onEdit, onDelete, onLinkToCollection }: 
     }
   };
 
-  const isImage = receipt.file_type.startsWith('image/');
+  const isImage = receipt.file_type.startsWith("image/");
   const isAttached = receipt.invoice_id || receipt.payment_transaction_id;
   const hasCollection = receipt.collection_id && receipt.collections;
   const isOrphaned = !isAttached && !hasCollection;
@@ -89,7 +103,7 @@ export const DocumentCard = ({ receipt, onEdit, onDelete, onLinkToCollection }: 
               <div className="flex items-center gap-2 mb-2">
                 <FileText className="h-4 w-4 text-muted-foreground" />
                 <Badge variant="secondary" className="text-xs">
-                  {receipt.document_type.replace(/_/g, ' ')}
+                  {receipt.document_type.replace(/_/g, " ")}
                 </Badge>
               </div>
               {receipt.description && (
@@ -124,7 +138,7 @@ export const DocumentCard = ({ receipt, onEdit, onDelete, onLinkToCollection }: 
           {isAttached && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 p-2 rounded">
               <Link2 className="h-3 w-3" />
-              <span>Attached to {receipt.invoice_id ? 'bill' : 'payment'}</span>
+              <span>Attached to {receipt.invoice_id ? "bill" : "payment"}</span>
             </div>
           )}
 
@@ -142,7 +156,12 @@ export const DocumentCard = ({ receipt, onEdit, onDelete, onLinkToCollection }: 
           )}
 
           <div className="flex gap-2 pt-2 border-t">
-            <Button variant="outline" size="sm" onClick={handleView} className="flex-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleView}
+              className="flex-1"
+            >
               <Eye className="h-3 w-3 mr-1" />
               View
             </Button>
@@ -166,13 +185,20 @@ export const DocumentCard = ({ receipt, onEdit, onDelete, onLinkToCollection }: 
 
       <Dialog open={showPreview} onOpenChange={setShowPreview}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
-          {viewUrl && (
-            isImage ? (
-              <img src={viewUrl} alt="Document preview" className="w-full h-auto" />
+          {viewUrl &&
+            (isImage ? (
+              <img
+                src={viewUrl}
+                alt="Document preview"
+                className="w-full h-auto"
+              />
             ) : (
-              <iframe src={viewUrl} className="w-full h-[80vh]" title="Document preview" />
-            )
-          )}
+              <iframe
+                src={viewUrl}
+                className="w-full h-[80vh]"
+                title="Document preview"
+              />
+            ))}
         </DialogContent>
       </Dialog>
     </>

@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
-import { EmbeddedCheckoutProvider, EmbeddedCheckout as StripeEmbeddedCheckout } from "@stripe/react-stripe-js";
+import {
+  EmbeddedCheckoutProvider,
+  EmbeddedCheckout as StripeEmbeddedCheckout,
+} from "@stripe/react-stripe-js";
 import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
@@ -13,13 +16,16 @@ const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 
 const stripePromise = loadStripe(stripeKey || "");
 
-export const EmbeddedCheckout = ({ clientSecret, onComplete }: EmbeddedCheckoutProps) => {
+export const EmbeddedCheckout = ({
+  clientSecret,
+  onComplete,
+}: EmbeddedCheckoutProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!stripeKey) {
-      setError('Stripe configuration error. Please contact support.');
+      setError("Stripe configuration error. Please contact support.");
       setIsLoading(false);
       return;
     }
@@ -46,7 +52,9 @@ export const EmbeddedCheckout = ({ clientSecret, onComplete }: EmbeddedCheckoutP
       <Card className="flex min-h-[400px] items-center justify-center p-8">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Loading secure checkout...</p>
+          <p className="text-sm text-muted-foreground">
+            Loading secure checkout...
+          </p>
         </div>
       </Card>
     );

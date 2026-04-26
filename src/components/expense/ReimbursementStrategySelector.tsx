@@ -1,17 +1,31 @@
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InfoIcon, TrendingUp, Calendar, CreditCard } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { getDefaultReimbursementDate, getReimbursementStrategyLabel } from "@/lib/vaultCalculations";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  getDefaultReimbursementDate,
+  getReimbursementStrategyLabel,
+} from "@/lib/vaultCalculations";
 
 interface ReimbursementStrategySelectorProps {
   enabled: boolean;
   onEnabledChange: (enabled: boolean) => void;
-  strategy: 'immediate' | 'medium' | 'vault';
-  onStrategyChange: (strategy: 'immediate' | 'medium' | 'vault') => void;
+  strategy: "immediate" | "medium" | "vault";
+  onStrategyChange: (strategy: "immediate" | "medium" | "vault") => void;
   plannedDate: string;
   onPlannedDateChange: (date: string) => void;
   reminderDate: string;
@@ -38,7 +52,9 @@ export function ReimbursementStrategySelector({
   onNotesChange,
   expenseDate,
 }: ReimbursementStrategySelectorProps) {
-  const handleStrategyChange = (newStrategy: 'immediate' | 'medium' | 'vault') => {
+  const handleStrategyChange = (
+    newStrategy: "immediate" | "medium" | "vault",
+  ) => {
     onStrategyChange(newStrategy);
     // Auto-set planned date based on strategy
     const defaultDate = getDefaultReimbursementDate(newStrategy, expenseDate);
@@ -53,16 +69,25 @@ export function ReimbursementStrategySelector({
           checked={enabled}
           onCheckedChange={(checked) => onEnabledChange(checked as boolean)}
         />
-        <Label htmlFor="use-strategy" className="flex items-center gap-2 cursor-pointer">
+        <Label
+          htmlFor="use-strategy"
+          className="flex items-center gap-2 cursor-pointer"
+        >
           <TrendingUp className="h-4 w-4 text-primary" />
-          <span>I'm using the "pay with rewards card, reimburse later" strategy</span>
+          <span>
+            I'm using the "pay with rewards card, reimburse later" strategy
+          </span>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <InfoIcon className="h-4 w-4 text-muted-foreground" />
               </TooltipTrigger>
               <TooltipContent className="max-w-sm">
-                <p>This strategy lets you pay with a rewards card, then reimburse from your HSA later to maximize investment growth while earning rewards.</p>
+                <p>
+                  This strategy lets you pay with a rewards card, then reimburse
+                  from your HSA later to maximize investment growth while
+                  earning rewards.
+                </p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -73,7 +98,12 @@ export function ReimbursementStrategySelector({
         <div className="ml-6 space-y-4 bg-muted/30 p-4 rounded-lg">
           <div className="space-y-2">
             <Label htmlFor="strategy">Reimbursement Strategy</Label>
-            <Select value={strategy} onValueChange={(value) => handleStrategyChange(value as 'immediate' | 'medium' | 'vault')}>
+            <Select
+              value={strategy}
+              onValueChange={(value) =>
+                handleStrategyChange(value as "immediate" | "medium" | "vault")
+              }
+            >
               <SelectTrigger id="strategy">
                 <SelectValue />
               </SelectTrigger>
@@ -81,19 +111,25 @@ export function ReimbursementStrategySelector({
                 <SelectItem value="immediate">
                   <div className="flex flex-col">
                     <span>Immediate</span>
-                    <span className="text-xs text-muted-foreground">Reimburse within 1 year</span>
+                    <span className="text-xs text-muted-foreground">
+                      Reimburse within 1 year
+                    </span>
                   </div>
                 </SelectItem>
                 <SelectItem value="medium">
                   <div className="flex flex-col">
                     <span>Medium-term</span>
-                    <span className="text-xs text-muted-foreground">Reimburse in 1-3 years</span>
+                    <span className="text-xs text-muted-foreground">
+                      Reimburse in 1-3 years
+                    </span>
                   </div>
                 </SelectItem>
                 <SelectItem value="vault">
                   <div className="flex flex-col">
                     <span>💎 Long-term Vault</span>
-                    <span className="text-xs text-muted-foreground">Reimburse in 3+ years for maximum growth</span>
+                    <span className="text-xs text-muted-foreground">
+                      Reimburse in 3+ years for maximum growth
+                    </span>
                   </div>
                 </SelectItem>
               </SelectContent>
@@ -116,7 +152,10 @@ export function ReimbursementStrategySelector({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="reminder-date" className="flex items-center gap-1">
+              <Label
+                htmlFor="reminder-date"
+                className="flex items-center gap-1"
+              >
                 <Calendar className="h-3 w-3" />
                 Remind me on (optional)
               </Label>
@@ -141,7 +180,9 @@ export function ReimbursementStrategySelector({
               min="0"
               max="36"
               value={cardPayoffMonths}
-              onChange={(e) => onCardPayoffMonthsChange(parseInt(e.target.value) || 0)}
+              onChange={(e) =>
+                onCardPayoffMonthsChange(parseInt(e.target.value) || 0)
+              }
               placeholder="e.g., 12 for 12-month 0% APR"
             />
             <p className="text-xs text-muted-foreground">
@@ -150,7 +191,9 @@ export function ReimbursementStrategySelector({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="investment-notes">Investment strategy notes (optional)</Label>
+            <Label htmlFor="investment-notes">
+              Investment strategy notes (optional)
+            </Label>
             <Textarea
               id="investment-notes"
               value={notes}
@@ -166,7 +209,8 @@ export function ReimbursementStrategySelector({
               Important Reminder
             </p>
             <p className="text-xs text-yellow-800 dark:text-yellow-200 mt-1">
-              Make sure to pay off your credit card before interest kicks in! Keep all receipts for HSA reimbursement.
+              Make sure to pay off your credit card before interest kicks in!
+              Keep all receipts for HSA reimbursement.
             </p>
           </div>
         </div>

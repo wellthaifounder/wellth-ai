@@ -10,13 +10,13 @@ export function calculateProgress(
   hasConnectedBank: boolean,
   expenseCount: number,
   unreviewedTransactions: number,
-  reimbursementCount: number
+  reimbursementCount: number,
 ): UserProgress {
   const steps = [
     hasConnectedBank,
     expenseCount > 0,
     unreviewedTransactions === 0 && expenseCount > 0,
-    reimbursementCount > 0
+    reimbursementCount > 0,
   ];
 
   const completedSteps = steps.filter(Boolean).length;
@@ -27,14 +27,14 @@ export function calculateProgress(
     hasAddedFirstExpense: expenseCount > 0,
     hasReviewedTransactions: unreviewedTransactions === 0 && expenseCount > 0,
     hasCreatedReimbursement: reimbursementCount > 0,
-    completionPercentage
+    completionPercentage,
   };
 }
 
 export interface ProgressStep {
   id: number;
   title: string;
-  status: 'completed' | 'active' | 'upcoming';
+  status: "completed" | "active" | "upcoming";
 }
 
 export function getProgressSteps(progress: UserProgress): ProgressStep[] {
@@ -42,25 +42,34 @@ export function getProgressSteps(progress: UserProgress): ProgressStep[] {
     {
       id: 1,
       title: "Connect Bank",
-      status: progress.hasConnectedBank ? 'completed' : 'active'
+      status: progress.hasConnectedBank ? "completed" : "active",
     },
     {
       id: 2,
       title: "Add Expenses",
-      status: progress.hasAddedFirstExpense ? 'completed' : 
-              progress.hasConnectedBank ? 'active' : 'upcoming'
+      status: progress.hasAddedFirstExpense
+        ? "completed"
+        : progress.hasConnectedBank
+          ? "active"
+          : "upcoming",
     },
     {
       id: 3,
       title: "Review Transactions",
-      status: progress.hasReviewedTransactions ? 'completed' :
-              progress.hasAddedFirstExpense ? 'active' : 'upcoming'
+      status: progress.hasReviewedTransactions
+        ? "completed"
+        : progress.hasAddedFirstExpense
+          ? "active"
+          : "upcoming",
     },
     {
       id: 4,
       title: "Track Your Wins",
-      status: progress.hasCreatedReimbursement ? 'completed' :
-              progress.hasReviewedTransactions ? 'active' : 'upcoming'
-    }
+      status: progress.hasCreatedReimbursement
+        ? "completed"
+        : progress.hasReviewedTransactions
+          ? "active"
+          : "upcoming",
+    },
   ];
 }

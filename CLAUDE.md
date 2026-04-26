@@ -11,6 +11,7 @@ For third-party security questionnaires (e.g., Plaid, Stripe partner reviews), u
 ## Project Overview
 
 **Wellth.ai** is a HIPAA-relevant healthcare expense management platform that helps users:
+
 - Track HSA/FSA accounts and transactions
 - Scan and categorize medical receipts via AI OCR
 - Connect bank accounts via Plaid to auto-import medical transactions
@@ -26,12 +27,12 @@ Wellth.ai handles Protected Health Information (PHI) and Protected Financial Inf
 
 ### Data Classification
 
-| Class | Definition | Examples | Required Controls |
-|-------|-----------|---------|------------------|
-| **PHI** | Protected Health Information | Diagnoses, treatment dates, provider names linked to a person, EOB data | Never log; never return verbatim to client; encrypt at rest |
-| **PFI** | Protected Financial Information | Plaid access tokens, Stripe customer IDs, bank account numbers | AES-256-GCM encryption at rest; edge functions only |
-| **PII** | Personally Identifiable | Name, email, user ID | Auth-gated; RLS enforced on every query |
-| **Public** | No sensitivity | Hospital pricing tables, HSA contribution limits | No special controls required |
+| Class      | Definition                      | Examples                                                                | Required Controls                                           |
+| ---------- | ------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------- |
+| **PHI**    | Protected Health Information    | Diagnoses, treatment dates, provider names linked to a person, EOB data | Never log; never return verbatim to client; encrypt at rest |
+| **PFI**    | Protected Financial Information | Plaid access tokens, Stripe customer IDs, bank account numbers          | AES-256-GCM encryption at rest; edge functions only         |
+| **PII**    | Personally Identifiable         | Name, email, user ID                                                    | Auth-gated; RLS enforced on every query                     |
+| **Public** | No sensitivity                  | Hospital pricing tables, HSA contribution limits                        | No special controls required                                |
 
 ---
 
@@ -56,18 +57,20 @@ import { z } from "https://esm.sh/zod@3.22.4";
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 const allowedOrigins = [
-  'https://wellth-ai.app',
-  'https://www.wellth-ai.app',
-  Deno.env.get('ALLOWED_ORIGIN'),
+  "https://wellth-ai.app",
+  "https://www.wellth-ai.app",
+  Deno.env.get("ALLOWED_ORIGIN"),
 ].filter(Boolean);
 
 function getCorsHeaders(requestOrigin: string | null) {
-  const origin = requestOrigin && allowedOrigins.includes(requestOrigin)
-    ? requestOrigin
-    : allowedOrigins[1]; // default to www
+  const origin =
+    requestOrigin && allowedOrigins.includes(requestOrigin)
+      ? requestOrigin
+      : allowedOrigins[1]; // default to www
   return {
     "Access-Control-Allow-Origin": origin,
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Credentials": "true",
   };
@@ -81,20 +84,29 @@ const RequestSchema = z.object({
 // ── Handler ───────────────────────────────────────────────────────────────────
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req.headers.get("origin"));
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS")
+    return new Response(null, { headers: corsHeaders });
 
   // 1. Authenticate
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!);
-  const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+  );
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
   if (authError || !user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
@@ -104,7 +116,8 @@ serve(async (req) => {
     const parsed = RequestSchema.safeParse(body);
     if (!parsed.success) {
       return new Response(JSON.stringify({ error: "Invalid request." }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -113,13 +126,21 @@ serve(async (req) => {
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-
   } catch (error) {
     // 4. Generic error — never leak internal details to client
-    console.error("[FUNCTION-NAME] Error:", error instanceof Error ? error.message : error);
-    return new Response(JSON.stringify({ error: "An unexpected error occurred. Please try again." }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error(
+      "[FUNCTION-NAME] Error:",
+      error instanceof Error ? error.message : error,
+    );
+    return new Response(
+      JSON.stringify({
+        error: "An unexpected error occurred. Please try again.",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 });
 ```
@@ -151,20 +172,21 @@ serve(async (req) => {
 
 ## Secrets & Key Management
 
-| Secret | Where it lives | Notes |
-|--------|---------------|-------|
-| `VITE_SUPABASE_URL` | Vercel env vars | Public — safe to expose |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Vercel env vars | Anon key — safe to expose |
-| `VITE_STRIPE_PUBLISHABLE_KEY` | Vercel env vars | Publishable key — safe to expose |
-| `STRIPE_SECRET_KEY` | Supabase Edge Function Secrets | Never in frontend or Vercel |
-| `PLAID_CLIENT_ID` | Supabase Edge Function Secrets | Never in frontend |
-| `PLAID_SECRET` | Supabase Edge Function Secrets | Never in frontend |
-| `PLAID_ENCRYPTION_KEY` | Supabase Edge Function Secrets | 32-byte hex key; rotate on compromise |
-| `SUPABASE_SERVICE_ROLE_KEY` | Auto-injected by Supabase | Never commit; never expose to frontend |
+| Secret                          | Where it lives                 | Notes                                  |
+| ------------------------------- | ------------------------------ | -------------------------------------- |
+| `VITE_SUPABASE_URL`             | Vercel env vars                | Public — safe to expose                |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Vercel env vars                | Anon key — safe to expose              |
+| `VITE_STRIPE_PUBLISHABLE_KEY`   | Vercel env vars                | Publishable key — safe to expose       |
+| `STRIPE_SECRET_KEY`             | Supabase Edge Function Secrets | Never in frontend or Vercel            |
+| `PLAID_CLIENT_ID`               | Supabase Edge Function Secrets | Never in frontend                      |
+| `PLAID_SECRET`                  | Supabase Edge Function Secrets | Never in frontend                      |
+| `PLAID_ENCRYPTION_KEY`          | Supabase Edge Function Secrets | 32-byte hex key; rotate on compromise  |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Auto-injected by Supabase      | Never commit; never expose to frontend |
 
 **Rotation schedule:** Rotate all API keys every 90 days. Rotate immediately on suspected compromise.
 
 **If a secret is accidentally committed:**
+
 1. Rotate the key immediately in the provider dashboard
 2. Then remove it from git history: `git filter-branch` or BFG Repo Cleaner
 3. Force-push the cleaned history
@@ -187,12 +209,14 @@ If a security incident is suspected (unauthorized data access, leaked credential
 ## Architecture Rules
 
 ### Data Fetching
+
 - Use React Query for ALL data fetching (5-minute stale time default)
 - Never use `SELECT *` — always specify columns explicitly
 - Avoid N+1 queries — use `.in()` filter for batch fetching
 - Pagination limit: 500–1000 items max per query
 
 ### Component Structure
+
 - Components live in `src/components/{domain}/` (bills, dashboard, hsa, etc.)
 - Pages live in `src/pages/`
 - Use existing shadcn/ui components from `src/components/ui/`
@@ -207,19 +231,23 @@ All IRS dollar limits (HSA contributions, HDHP thresholds, FSA limits) are centr
 **Rule: Never hardcode IRS limit values elsewhere in the codebase.** Always import from `regulatoryLimits.ts`.
 
 ```typescript
-import { HSA_LIMITS_2025, FSA_LIMITS_2025, CURRENT_TAX_YEAR } from "@/lib/regulatoryLimits";
+import {
+  HSA_LIMITS_2025,
+  FSA_LIMITS_2025,
+  CURRENT_TAX_YEAR,
+} from "@/lib/regulatoryLimits";
 ```
 
 ### Current 2025 IRS Limits (tax year 2025)
 
-| Limit | Self-only | Family |
-|-------|-----------|--------|
-| HSA contribution | $4,300 | $8,550 |
-| HSA catch-up (age 55+) | +$1,000 | +$1,000 |
-| HDHP min deductible | $1,650 | $3,300 |
-| HDHP max out-of-pocket | $8,300 | $16,600 |
-| FSA contribution | $3,300 | — |
-| FSA carryover (if allowed) | $660 | — |
+| Limit                      | Self-only | Family  |
+| -------------------------- | --------- | ------- |
+| HSA contribution           | $4,300    | $8,550  |
+| HSA catch-up (age 55+)     | +$1,000   | +$1,000 |
+| HDHP min deductible        | $1,650    | $3,300  |
+| HDHP max out-of-pocket     | $8,300    | $16,600 |
+| FSA contribution           | $3,300    | —       |
+| FSA carryover (if allowed) | $660      | —       |
 
 ### 2025 Regulatory Rulings (from IRS Publication 969)
 
@@ -231,6 +259,7 @@ import { HSA_LIMITS_2025, FSA_LIMITS_2025, CURRENT_TAX_YEAR } from "@/lib/regula
 ### Annual Update Checklist (every January)
 
 When the IRS publishes new limits (typically November/December):
+
 1. Update `src/lib/regulatoryLimits.ts` — add a new year constant object and update the `_CURRENT` aliases
 2. Update `CURRENT_TAX_YEAR` in the same file
 3. Review `supabase/functions/wellbie-chat/index.ts` system prompt for stale limit references
@@ -241,6 +270,7 @@ When the IRS publishes new limits (typically November/December):
 ## Code Patterns
 
 ### Forms
+
 ```typescript
 // Always use React Hook Form + Zod
 import { useForm } from "react-hook-form";
@@ -252,18 +282,20 @@ const form = useForm({ resolver: zodResolver(schema) });
 ```
 
 ### Data Fetching
+
 ```typescript
 // Always use React Query hooks
 import { useQuery } from "@tanstack/react-query";
 
 const { data, isLoading } = useQuery({
-  queryKey: ['resource', id],
-  queryFn: () => supabase.from('table').select('col1, col2').eq('id', id),
+  queryKey: ["resource", id],
+  queryFn: () => supabase.from("table").select("col1, col2").eq("id", id),
   staleTime: 5 * 60 * 1000, // 5 minutes
 });
 ```
 
 ### Error Handling
+
 ```typescript
 // Frontend: use safeLog for anything that might contain user/health data
 import { safeLog } from "@/utils/errorHandler";
@@ -282,24 +314,25 @@ safeLog('Operation failed', error); // PHI-safe, dev-only logging
 
 ## File Locations
 
-| Purpose | Location |
-|---------|----------|
-| Edge Functions | `supabase/functions/{function-name}/index.ts` |
-| Migrations | `supabase/migrations/YYYYMMDD_description.sql` |
-| Auto-generated Types | `src/integrations/supabase/types.ts` |
-| React Components | `src/components/{domain}/` |
-| Pages | `src/pages/` |
-| Custom Hooks | `src/hooks/` |
-| Contexts | `src/contexts/` |
-| UI Components | `src/components/ui/` (shadcn) |
-| PHI Error Handler | `src/utils/errorHandler.ts` |
-| Plaid Encryption | `supabase/functions/_shared/encryption.ts` |
+| Purpose              | Location                                       |
+| -------------------- | ---------------------------------------------- |
+| Edge Functions       | `supabase/functions/{function-name}/index.ts`  |
+| Migrations           | `supabase/migrations/YYYYMMDD_description.sql` |
+| Auto-generated Types | `src/integrations/supabase/types.ts`           |
+| React Components     | `src/components/{domain}/`                     |
+| Pages                | `src/pages/`                                   |
+| Custom Hooks         | `src/hooks/`                                   |
+| Contexts             | `src/contexts/`                                |
+| UI Components        | `src/components/ui/` (shadcn)                  |
+| PHI Error Handler    | `src/utils/errorHandler.ts`                    |
+| Plaid Encryption     | `supabase/functions/_shared/encryption.ts`     |
 
 ---
 
 ## Testing & Verification
 
 Before committing any changes:
+
 1. `npm run build` — must pass with zero errors
 2. Check TypeScript errors in modified files
 3. Verify no PHI in error messages or console output
@@ -312,11 +345,11 @@ Before committing any changes:
 
 ## Subscription Tiers
 
-| Tier | Price | Key Features |
-|------|-------|--------------|
-| Free | $0 | Basic tracking, receipt scanning |
-| Plus | $9.99/mo | AI bill review, unlimited HSA accounts |
-| Premium | $19.99/mo | Priority support, custom reports, API |
+| Tier    | Price     | Key Features                           |
+| ------- | --------- | -------------------------------------- |
+| Free    | $0        | Basic tracking, receipt scanning       |
+| Plus    | $9.99/mo  | AI bill review, unlimited HSA accounts |
+| Premium | $19.99/mo | Priority support, custom reports, API  |
 
 Check subscription with `useSubscription()` hook from `src/contexts/SubscriptionContext.tsx`.
 
@@ -334,21 +367,25 @@ Check subscription with `useSubscription()` hook from `src/contexts/Subscription
 ## Lessons Learned
 
 ### 2026-03-24
+
 **Issue:** `manualChunks` in `vite.config.ts` created a circular dependency between `react-vendor` and `ui-vendor` chunks, causing `React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED` to be undefined at runtime → blank page in production.
 **Fix:** Remove `manualChunks` entirely. Let Vite's default chunking algorithm handle splitting — it avoids circular dependencies automatically.
 
 ### 2026-03-24
+
 **Issue:** PWA service worker cached old broken bundle. After deploying a fix, users (including incognito after OAuth redirect) still got the old crash because the old SW served cached assets.
 **Fix:** After any bundle-breaking deploy, instruct users to: DevTools → Application → Service Workers → Unregister → hard refresh. For prevention, consider adding `skipWaiting: true` to workbox config so new SW activates immediately.
 
 ### 2026-03-24
+
 **Issue:** `react-router-dom` was upgraded from v6 to v7 during a security audit. v7 has breaking changes with the `<BrowserRouter>/<Routes>/<Route>` JSX API, causing a blank page.
 **Fix:** Stay on `react-router-dom@^6.x`. Do not upgrade to v7 without a full migration of `App.tsx` routing patterns.
 
 ### 2026-03-24
+
 **Issue:** All edge functions had `CORS: Deno.env.get('ALLOWED_ORIGIN') || 'https://wellth.ai'` — a static string fallback. The live site is `https://www.wellth-ai.app` (different origin), causing CORS failures on all edge function calls.
 **Fix:** Use `getCorsHeaders(req.headers.get('origin'))` with a whitelist array containing both `https://wellth-ai.app` and `https://www.wellth-ai.app`. See the canonical edge function template above.
 
 ---
 
-*Last updated: 2026-03-24*
+_Last updated: 2026-03-24_

@@ -5,7 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, CheckCircle2, AlertCircle, Shield, Phone, Mail } from "lucide-react";
+import {
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  Shield,
+  Phone,
+  Mail,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { logError } from "@/utils/errorHandler";
@@ -16,18 +23,18 @@ interface InsuranceVerificationProps {
   onVerificationComplete?: (data: any) => void;
 }
 
-export function InsuranceVerification({ 
-  insuranceCompany, 
+export function InsuranceVerification({
+  insuranceCompany,
   claimNumber,
-  onVerificationComplete 
+  onVerificationComplete,
 }: InsuranceVerificationProps) {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationData, setVerificationData] = useState<any>(null);
   const [formData, setFormData] = useState({
-    insuranceCompany: insuranceCompany || '',
-    claimNumber: claimNumber || '',
-    policyNumber: '',
-    dateOfService: ''
+    insuranceCompany: insuranceCompany || "",
+    claimNumber: claimNumber || "",
+    policyNumber: "",
+    dateOfService: "",
   });
 
   const handleVerify = async () => {
@@ -40,7 +47,7 @@ export function InsuranceVerification({
 
     try {
       // Simulate verification (in production, this would call an insurance verification API)
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       const mockVerification = {
         verified: true,
@@ -52,15 +59,15 @@ export function InsuranceVerification({
         outOfPocketMax: 6000,
         outOfPocketRemaining: Math.floor(Math.random() * 3000),
         priorAuthRequired: Math.random() > 0.7,
-        networkStatus: Math.random() > 0.3 ? 'in-network' : 'out-of-network',
-        verifiedAt: new Date().toISOString()
+        networkStatus: Math.random() > 0.3 ? "in-network" : "out-of-network",
+        verifiedAt: new Date().toISOString(),
       };
 
       setVerificationData(mockVerification);
       onVerificationComplete?.(mockVerification);
       toast.success("Insurance verified successfully");
     } catch (error) {
-      logError('Verification error', error);
+      logError("Verification error", error);
       toast.error("Failed to verify insurance");
     } finally {
       setIsVerifying(false);
@@ -86,7 +93,9 @@ export function InsuranceVerification({
             <Input
               id="insuranceCompany"
               value={formData.insuranceCompany}
-              onChange={(e) => setFormData({ ...formData, insuranceCompany: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, insuranceCompany: e.target.value })
+              }
               placeholder="e.g., Blue Cross Blue Shield"
             />
           </div>
@@ -96,7 +105,9 @@ export function InsuranceVerification({
             <Input
               id="policyNumber"
               value={formData.policyNumber}
-              onChange={(e) => setFormData({ ...formData, policyNumber: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, policyNumber: e.target.value })
+              }
               placeholder="e.g., ABC123456789"
             />
           </div>
@@ -106,7 +117,9 @@ export function InsuranceVerification({
             <Input
               id="claimNumber"
               value={formData.claimNumber}
-              onChange={(e) => setFormData({ ...formData, claimNumber: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, claimNumber: e.target.value })
+              }
               placeholder="Optional"
             />
           </div>
@@ -117,14 +130,18 @@ export function InsuranceVerification({
               id="dateOfService"
               type="date"
               value={formData.dateOfService}
-              onChange={(e) => setFormData({ ...formData, dateOfService: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, dateOfService: e.target.value })
+              }
             />
           </div>
         </div>
 
-        <Button 
+        <Button
           onClick={handleVerify}
-          disabled={isVerifying || !formData.insuranceCompany || !formData.policyNumber}
+          disabled={
+            isVerifying || !formData.insuranceCompany || !formData.policyNumber
+          }
           className="w-full"
         >
           {isVerifying ? (
@@ -154,15 +171,29 @@ export function InsuranceVerification({
             {/* Coverage Status */}
             <div className="grid gap-4 md:grid-cols-2">
               <div className="p-4 bg-muted/50 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">Coverage Status</p>
-                <Badge variant={verificationData.coverageActive ? "default" : "destructive"}>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Coverage Status
+                </p>
+                <Badge
+                  variant={
+                    verificationData.coverageActive ? "default" : "destructive"
+                  }
+                >
                   {verificationData.coverageActive ? "Active" : "Inactive"}
                 </Badge>
               </div>
 
               <div className="p-4 bg-muted/50 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">Network Status</p>
-                <Badge variant={verificationData.networkStatus === 'in-network' ? "default" : "secondary"}>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Network Status
+                </p>
+                <Badge
+                  variant={
+                    verificationData.networkStatus === "in-network"
+                      ? "default"
+                      : "secondary"
+                  }
+                >
                   {verificationData.networkStatus}
                 </Badge>
               </div>
@@ -171,26 +202,34 @@ export function InsuranceVerification({
             {/* Financial Details */}
             <div className="space-y-3">
               <h4 className="font-semibold">Financial Details</h4>
-              
+
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="flex justify-between p-3 bg-muted/30 rounded">
                   <span className="text-sm">Deductible Remaining</span>
-                  <span className="font-semibold">${verificationData.deductibleRemaining}</span>
+                  <span className="font-semibold">
+                    ${verificationData.deductibleRemaining}
+                  </span>
                 </div>
 
                 <div className="flex justify-between p-3 bg-muted/30 rounded">
                   <span className="text-sm">Copay Amount</span>
-                  <span className="font-semibold">${verificationData.copayAmount}</span>
+                  <span className="font-semibold">
+                    ${verificationData.copayAmount}
+                  </span>
                 </div>
 
                 <div className="flex justify-between p-3 bg-muted/30 rounded">
                   <span className="text-sm">Coinsurance Rate</span>
-                  <span className="font-semibold">{verificationData.coinsuranceRate}%</span>
+                  <span className="font-semibold">
+                    {verificationData.coinsuranceRate}%
+                  </span>
                 </div>
 
                 <div className="flex justify-between p-3 bg-muted/30 rounded">
                   <span className="text-sm">Out-of-Pocket Remaining</span>
-                  <span className="font-semibold">${verificationData.outOfPocketRemaining}</span>
+                  <span className="font-semibold">
+                    ${verificationData.outOfPocketRemaining}
+                  </span>
                 </div>
               </div>
             </div>
@@ -200,32 +239,40 @@ export function InsuranceVerification({
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Prior Authorization Required:</strong> This procedure may require prior authorization from your insurance company.
+                  <strong>Prior Authorization Required:</strong> This procedure
+                  may require prior authorization from your insurance company.
                 </AlertDescription>
               </Alert>
             )}
 
-            {verificationData.networkStatus === 'out-of-network' && (
+            {verificationData.networkStatus === "out-of-network" && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Out-of-Network Provider:</strong> This provider is out-of-network. You may have higher out-of-pocket costs.
+                  <strong>Out-of-Network Provider:</strong> This provider is
+                  out-of-network. You may have higher out-of-pocket costs.
                 </AlertDescription>
               </Alert>
             )}
 
             {/* Contact Information */}
             <div className="p-4 bg-muted/50 rounded-lg space-y-2">
-              <p className="font-semibold text-sm">Need to Contact Your Insurance?</p>
+              <p className="font-semibold text-sm">
+                Need to Contact Your Insurance?
+              </p>
               <div className="flex flex-col gap-2 text-sm">
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Member Services:</span>
+                  <span className="text-muted-foreground">
+                    Member Services:
+                  </span>
                   <span className="font-medium">1-800-INSURANCE</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Claims Department:</span>
+                  <span className="text-muted-foreground">
+                    Claims Department:
+                  </span>
                   <span className="font-medium">claims@insurance.com</span>
                 </div>
               </div>
@@ -238,8 +285,13 @@ export function InsuranceVerification({
           <p className="font-semibold">About Insurance Verification</p>
           <ul className="space-y-1 text-muted-foreground list-disc list-inside">
             <li>Verification confirms your current coverage and benefits</li>
-            <li>Benefits shown are estimates and subject to actual claim processing</li>
-            <li>Always call your insurance for the most accurate information</li>
+            <li>
+              Benefits shown are estimates and subject to actual claim
+              processing
+            </li>
+            <li>
+              Always call your insurance for the most accurate information
+            </li>
             <li>Keep your verification reference number for disputes</li>
           </ul>
         </div>

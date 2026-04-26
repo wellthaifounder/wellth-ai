@@ -30,7 +30,10 @@ export function FeatureTooltip({
 }: FeatureTooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
-  const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const [coords, setCoords] = useState<{ top: number; left: number }>({
+    top: 0,
+    left: 0,
+  });
 
   useLayoutEffect(() => {
     if (!show) return;
@@ -41,16 +44,28 @@ export function FeatureTooltip({
       const offset = 8;
       switch (position) {
         case "top":
-          setCoords({ top: rect.top - offset, left: rect.left + rect.width / 2 });
+          setCoords({
+            top: rect.top - offset,
+            left: rect.left + rect.width / 2,
+          });
           break;
         case "left":
-          setCoords({ top: rect.top + rect.height / 2, left: rect.left - offset });
+          setCoords({
+            top: rect.top + rect.height / 2,
+            left: rect.left - offset,
+          });
           break;
         case "right":
-          setCoords({ top: rect.top + rect.height / 2, left: rect.right + offset });
+          setCoords({
+            top: rect.top + rect.height / 2,
+            left: rect.right + offset,
+          });
           break;
         default:
-          setCoords({ top: rect.bottom + offset, left: rect.left + rect.width / 2 });
+          setCoords({
+            top: rect.bottom + offset,
+            left: rect.left + rect.width / 2,
+          });
       }
     };
     updatePosition();
@@ -88,14 +103,14 @@ export function FeatureTooltip({
               position === "bottom" && "-translate-x-1/2",
               position === "top" && "-translate-x-1/2 -translate-y-full",
               position === "left" && "-translate-x-full -translate-y-1/2",
-              position === "right" && "-translate-y-1/2"
+              position === "right" && "-translate-y-1/2",
             )}
             style={{ top: coords.top, left: coords.left }}
           >
             <Card
               className={cn(
                 "relative w-80 p-4 shadow-lg border-2 border-primary/50 bg-background",
-                className
+                className,
               )}
             >
               <button
@@ -110,8 +125,12 @@ export function FeatureTooltip({
                 <div className="flex items-start gap-2">
                   <span className="text-2xl">✨</span>
                   <div>
-                    <h3 className="font-semibold text-lg leading-tight">{title}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{description}</p>
+                    <h3 className="font-semibold text-lg leading-tight">
+                      {title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {description}
+                    </p>
                   </div>
                 </div>
 
@@ -144,15 +163,19 @@ export function FeatureTooltip({
               <div
                 className={cn(
                   "absolute w-3 h-3 bg-background border-primary/50 rotate-45",
-                  position === "bottom" && "top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-l-2",
-                  position === "top" && "bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 border-b-2 border-r-2",
-                  position === "left" && "right-0 top-1/2 translate-x-1/2 -translate-y-1/2 border-t-2 border-r-2",
-                  position === "right" && "left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 border-b-2 border-l-2"
+                  position === "bottom" &&
+                    "top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 border-t-2 border-l-2",
+                  position === "top" &&
+                    "bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 border-b-2 border-r-2",
+                  position === "left" &&
+                    "right-0 top-1/2 translate-x-1/2 -translate-y-1/2 border-t-2 border-r-2",
+                  position === "right" &&
+                    "left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 border-b-2 border-l-2",
                 )}
               />
             </Card>
           </div>,
-          document.body
+          document.body,
         )}
     </div>
   );

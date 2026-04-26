@@ -38,34 +38,40 @@ Before contributing, ensure you have:
 ### Development Setup
 
 1. **Fork the repository**
+
    ```bash
    # Navigate to https://github.com/wellthaifounder/claude-supabase-starter
    # Click "Fork" button
    ```
 
 2. **Clone your fork**
+
    ```bash
    git clone https://github.com/YOUR_USERNAME/claude-supabase-starter.git
    cd wellth-ai
    ```
 
 3. **Add upstream remote**
+
    ```bash
    git remote add upstream https://github.com/wellthaifounder/claude-supabase-starter.git
    ```
 
 4. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 5. **Set up environment**
+
    ```bash
    cp .env.example .env
    # Edit .env with your development credentials
    ```
 
 6. **Run migrations**
+
    ```bash
    npx supabase link --project-ref your-test-project-ref
    npx supabase db push
@@ -101,6 +107,7 @@ type(scope): description
 ```
 
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -112,6 +119,7 @@ type(scope): description
 - `chore`: Maintenance tasks
 
 **Examples:**
+
 ```bash
 feat(transactions): add bulk import from CSV
 fix(bills): resolve duplicate bill detection issue
@@ -247,16 +255,21 @@ export function Component({ userId }: Props) {
 **Always use error sanitization utilities:**
 
 ```typescript
-import { handleError, logError } from '@/utils/errorHandler';
+import { handleError, logError } from "@/utils/errorHandler";
 
 try {
   await riskyOperation();
 } catch (error) {
   // Development logging only, no PHI in production
-  logError('Operation failed', error, { context: 'specific-operation' });
+  logError("Operation failed", error, { context: "specific-operation" });
 
   // User-facing generic message
-  handleError(error, 'specific-operation', toast, 'Failed to complete operation');
+  handleError(
+    error,
+    "specific-operation",
+    toast,
+    "Failed to complete operation",
+  );
 }
 ```
 
@@ -272,14 +285,12 @@ try {
 ```typescript
 // Good - Explicit user check
 const { data } = await supabase
-  .from('expenses')
-  .select('*')
-  .eq('user_id', user.id);  // Explicit ownership check
+  .from("expenses")
+  .select("*")
+  .eq("user_id", user.id); // Explicit ownership check
 
 // Still safe (RLS enforces), but explicit is better
-const { data } = await supabase
-  .from('expenses')
-  .select('*');
+const { data } = await supabase.from("expenses").select("*");
 ```
 
 ## Testing Requirements
@@ -316,6 +327,7 @@ npm run test:coverage # Coverage report
 ### Before Submitting
 
 1. **Ensure tests pass**
+
    ```bash
    npm run lint
    npm run build
@@ -338,24 +350,29 @@ Use this template for all pull requests:
 
 ```markdown
 ## Description
+
 [Brief description of changes]
 
 ## Type of Change
+
 - [ ] Bug fix (non-breaking change fixing an issue)
 - [ ] New feature (non-breaking change adding functionality)
 - [ ] Breaking change (fix or feature causing existing functionality to change)
 - [ ] Documentation update
 
 ## Related Issues
+
 Fixes #[issue number]
 
 ## Testing
+
 - [ ] Unit tests added/updated
 - [ ] Integration tests added/updated
 - [ ] Accessibility tested
 - [ ] Manual testing completed
 
 ## Security Checklist
+
 - [ ] No secrets committed
 - [ ] Input validation added
 - [ ] Error sanitization implemented
@@ -363,11 +380,13 @@ Fixes #[issue number]
 - [ ] No PHI in logs
 
 ## Documentation
+
 - [ ] Code comments added
 - [ ] docs/ updated
 - [ ] CHANGELOG.md updated
 
 ## Screenshots (if applicable)
+
 [Add screenshots]
 ```
 
@@ -410,12 +429,14 @@ Fixes #[issue number]
 Use this checklist when reviewing PRs:
 
 ### Functionality
+
 - [ ] Code works as described
 - [ ] No unintended side effects
 - [ ] Edge cases handled
 - [ ] Error handling implemented
 
 ### Code Quality
+
 - [ ] Follows coding standards
 - [ ] No code duplication
 - [ ] Functions are focused and small
@@ -423,11 +444,13 @@ Use this checklist when reviewing PRs:
 - [ ] Comments explain "why" not "what"
 
 ### Testing
+
 - [ ] Tests added for new code
 - [ ] All tests pass
 - [ ] Coverage maintained or improved
 
 ### Security
+
 - [ ] No secrets in code
 - [ ] Input validation present
 - [ ] Error messages sanitized
@@ -435,18 +458,21 @@ Use this checklist when reviewing PRs:
 - [ ] No PHI exposure
 
 ### Performance
+
 - [ ] No N+1 queries
 - [ ] Database queries optimized
 - [ ] Proper caching implemented
 - [ ] No unnecessary re-renders
 
 ### Accessibility
+
 - [ ] Keyboard navigation works
 - [ ] ARIA labels present
 - [ ] Color contrast sufficient
 - [ ] Screen reader friendly
 
 ### Documentation
+
 - [ ] Code comments added
 - [ ] docs/ updated
 - [ ] CHANGELOG.md updated

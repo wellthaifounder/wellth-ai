@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus, Award } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
@@ -32,16 +38,35 @@ const BENCHMARKS = {
 };
 
 export const Benchmarking = ({ userStats }: BenchmarkingProps) => {
-  const getPerformanceLevel = (value: number, benchmark: typeof BENCHMARKS.savingsRate) => {
-    if (value >= benchmark.excellent) return { level: "Excellent", color: "text-green-600", icon: Award };
-    if (value >= benchmark.good) return { level: "Good", color: "text-primary", icon: TrendingUp };
-    if (value >= benchmark.average) return { level: "Average", color: "text-orange-600", icon: Minus };
-    return { level: "Below Average", color: "text-destructive", icon: TrendingDown };
+  const getPerformanceLevel = (
+    value: number,
+    benchmark: typeof BENCHMARKS.savingsRate,
+  ) => {
+    if (value >= benchmark.excellent)
+      return { level: "Excellent", color: "text-green-600", icon: Award };
+    if (value >= benchmark.good)
+      return { level: "Good", color: "text-primary", icon: TrendingUp };
+    if (value >= benchmark.average)
+      return { level: "Average", color: "text-orange-600", icon: Minus };
+    return {
+      level: "Below Average",
+      color: "text-destructive",
+      icon: TrendingDown,
+    };
   };
 
-  const savingsPerf = getPerformanceLevel(userStats.savingsRate, BENCHMARKS.savingsRate);
-  const rewardsPerf = getPerformanceLevel(userStats.rewardsRate, BENCHMARKS.rewardsRate);
-  const hsaPerf = getPerformanceLevel(userStats.hsaUtilization, BENCHMARKS.hsaUtilization);
+  const savingsPerf = getPerformanceLevel(
+    userStats.savingsRate,
+    BENCHMARKS.savingsRate,
+  );
+  const rewardsPerf = getPerformanceLevel(
+    userStats.rewardsRate,
+    BENCHMARKS.rewardsRate,
+  );
+  const hsaPerf = getPerformanceLevel(
+    userStats.hsaUtilization,
+    BENCHMARKS.hsaUtilization,
+  );
 
   const benchmarks = [
     {
@@ -90,8 +115,11 @@ export const Benchmarking = ({ userStats }: BenchmarkingProps) => {
       <CardContent className="space-y-6">
         {benchmarks.map((item) => {
           const Icon = item.performance.icon;
-          const progressValue = Math.min((item.userValue / item.excellentTarget) * 100, 100);
-          
+          const progressValue = Math.min(
+            (item.userValue / item.excellentTarget) * 100,
+            100,
+          );
+
           return (
             <div key={item.metric} className="space-y-3">
               <div className="flex items-start justify-between">
@@ -103,24 +131,37 @@ export const Benchmarking = ({ userStats }: BenchmarkingProps) => {
                       {item.performance.level}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {item.description}
+                  </p>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-semibold">
-                    Your Score: {item.userValue.toFixed(1)}{item.unit}
+                    Your Score: {item.userValue.toFixed(1)}
+                    {item.unit}
                   </span>
                   <span className="text-muted-foreground">
-                    Target: {item.excellentTarget}{item.unit}
+                    Target: {item.excellentTarget}
+                    {item.unit}
                   </span>
                 </div>
                 <Progress value={progressValue} className="h-2" />
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Below Avg: &lt;{item.benchmark}{item.unit}</span>
-                  <span>Good: {item.goodTarget}{item.unit}</span>
-                  <span>Excellent: {item.excellentTarget}{item.unit}+</span>
+                  <span>
+                    Below Avg: &lt;{item.benchmark}
+                    {item.unit}
+                  </span>
+                  <span>
+                    Good: {item.goodTarget}
+                    {item.unit}
+                  </span>
+                  <span>
+                    Excellent: {item.excellentTarget}
+                    {item.unit}+
+                  </span>
                 </div>
               </div>
 
@@ -128,11 +169,11 @@ export const Benchmarking = ({ userStats }: BenchmarkingProps) => {
                 <div className="bg-muted/50 p-3 rounded-lg text-sm">
                   <p className="font-medium mb-1">💡 Improvement Tip:</p>
                   <p className="text-muted-foreground">
-                    {item.metric === "Savings Rate" && 
+                    {item.metric === "Savings Rate" &&
                       "Increase HSA contributions and use higher rewards cards for medical expenses."}
-                    {item.metric === "Rewards Optimization" && 
+                    {item.metric === "Rewards Optimization" &&
                       "Switch to cards with higher rewards rates (2-5%) for medical spending."}
-                    {item.metric === "HSA Utilization" && 
+                    {item.metric === "HSA Utilization" &&
                       "Track all HSA-eligible expenses, even if you don't plan to reimburse immediately."}
                   </p>
                 </div>
@@ -144,8 +185,10 @@ export const Benchmarking = ({ userStats }: BenchmarkingProps) => {
         <div className="pt-4 border-t">
           <h4 className="font-semibold text-sm mb-2">Benchmark Methodology</h4>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Benchmarks are based on optimal HSA and rewards strategies. "Excellent" performers maximize tax-advantaged 
-            accounts, delay reimbursements for investment growth, and use premium rewards cards strategically.
+            Benchmarks are based on optimal HSA and rewards strategies.
+            "Excellent" performers maximize tax-advantaged accounts, delay
+            reimbursements for investment growth, and use premium rewards cards
+            strategically.
           </p>
         </div>
       </CardContent>

@@ -10,6 +10,7 @@ Successfully archived the AI-powered bill review and dispute management feature 
 ## Changes Made
 
 ### ✅ Frontend Code (Complete)
+
 1. **App.tsx** - Removed bill review route imports, redirected old routes to `/bills`
 2. **Bills.tsx** - Simplified to basic bill list view, removed:
    - Bill review queries and state
@@ -32,7 +33,9 @@ Successfully archived the AI-powered bill review and dispute management feature 
    - Error display components
 
 ### ✅ Files Archived (Complete)
+
 **Pages moved to `src/_archived/pages/`:**
+
 - BillReviews.tsx
 - BillReview.tsx
 - BillDispute.tsx
@@ -40,21 +43,26 @@ Successfully archived the AI-powered bill review and dispute management feature 
 - DisputeDetail.tsx
 
 **Components moved to `src/_archived/components/bills/`:**
+
 - BillReviewCard.tsx
 - DisputeWizard.tsx
 
 **Edge Function moved to `supabase/functions/_archived/`:**
+
 - analyze-medical-bill/
 
 ### ⏳ Database Migration (Pending)
+
 **File:** `supabase/migrations/20260125_archive_bill_review_feature.sql`
 
 **What it will drop:**
+
 - 6 tables: `bill_reviews`, `bill_errors`, `bill_disputes`, `dispute_documents`, `dispute_communications`, `cpt_code_reference`
 - 8 enum types: `bill_review_status`, `bill_error_type`, `bill_error_category`, `bill_error_status`, `dispute_status`, `document_type`, `communication_type`, `communication_direction`
 - 3 triggers: `update_bill_reviews_updated_at`, `update_bill_disputes_updated_at`, `update_cpt_code_reference_updated_at`
 
 **To apply:**
+
 1. Go to Supabase Dashboard → SQL Editor
 2. Copy/paste contents of `supabase/migrations/20260125_archive_bill_review_feature.sql`
 3. Click "Run"

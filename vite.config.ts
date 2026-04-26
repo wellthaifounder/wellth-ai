@@ -19,7 +19,8 @@ export default defineConfig(({ mode }) => ({
       manifest: {
         name: "Wellth.ai - HSA & Healthcare Financial Manager",
         short_name: "Wellth",
-        description: "Optimize medical spending, maximize HSA benefits and credit card rewards with AI-powered insights",
+        description:
+          "Optimize medical spending, maximize HSA benefits and credit card rewards with AI-powered insights",
         theme_color: "#14b8a6",
         background_color: "#ffffff",
         display: "standalone",

@@ -10,31 +10,61 @@ export const Footer = () => {
               <WellthLogo size="sm" showTagline />
             </div>
             <p className="mb-4 text-sm text-muted-foreground">
-              Your healthcare expense companion. Track medical spending, organize by episode of care, and maximize your HSA and FSA savings.
+              Your healthcare expense companion. Track medical spending,
+              organize by episode of care, and maximize your HSA and FSA
+              savings.
             </p>
             <p className="text-xs text-muted-foreground">
               © 2025 Wellth.ai. All rights reserved.
             </p>
           </div>
-          
+
           <div>
-            <h3 className="mb-4 text-sm font-semibold" id="footer-product">Product</h3>
+            <h3 className="mb-4 text-sm font-semibold" id="footer-product">
+              Product
+            </h3>
             <nav aria-labelledby="footer-product">
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="/#features" className="hover:text-foreground">Features</a></li>
-                <li><a href="/#pricing" className="hover:text-foreground">Pricing</a></li>
-                <li><a href="/#how-it-works" className="hover:text-foreground">How It Works</a></li>
+                <li>
+                  <a href="/#features" className="hover:text-foreground">
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a href="/#pricing" className="hover:text-foreground">
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a href="/#how-it-works" className="hover:text-foreground">
+                    How It Works
+                  </a>
+                </li>
               </ul>
             </nav>
           </div>
-          
+
           <div>
-            <h3 className="mb-4 text-sm font-semibold" id="footer-resources">Resources</h3>
+            <h3 className="mb-4 text-sm font-semibold" id="footer-resources">
+              Resources
+            </h3>
             <nav aria-labelledby="footer-resources">
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="/hsa-eligibility" className="hover:text-foreground">HSA Guide</a></li>
-                <li><a href="/calculator" className="hover:text-foreground">Savings Calculator</a></li>
-                <li><a href="/auth" className="hover:text-foreground">Sign In</a></li>
+                <li>
+                  <a href="/hsa-eligibility" className="hover:text-foreground">
+                    HSA Guide
+                  </a>
+                </li>
+                <li>
+                  <a href="/calculator" className="hover:text-foreground">
+                    Savings Calculator
+                  </a>
+                </li>
+                <li>
+                  <a href="/auth" className="hover:text-foreground">
+                    Sign In
+                  </a>
+                </li>
               </ul>
             </nav>
           </div>

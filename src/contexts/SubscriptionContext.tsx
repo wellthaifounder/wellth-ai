@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { safeLog, logError } from '@/utils/errorHandler';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { safeLog, logError } from "@/utils/errorHandler";
 
-type SubscriptionTier = 'free' | 'plus' | 'premium';
+type SubscriptionTier = "free" | "plus" | "premium";
 
 interface SubscriptionContextType {
   tier: SubscriptionTier;
@@ -12,16 +12,20 @@ interface SubscriptionContextType {
   loading: boolean;
   refreshSubscription: () => Promise<void>;
   checkFeatureAccess: (requiredTier: SubscriptionTier) => boolean;
-  createCheckoutSession: (tier: 'plus' | 'premium') => Promise<void>;
+  createCheckoutSession: (tier: "plus" | "premium") => Promise<void>;
   openCustomerPortal: () => Promise<void>;
 }
 
-const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
+const SubscriptionContext = createContext<SubscriptionContextType | undefined>(
+  undefined,
+);
 
 const TIER_HIERARCHY = { free: 0, plus: 1, premium: 2 };
 
-export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [tier, setTier] = useState<SubscriptionTier>('free');
+export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [tier, setTier] = useState<SubscriptionTier>("free");
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,25 +33,28 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const refreshSubscription = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
-        setTier('free');
+        setTier("free");
         setIsSubscribed(false);
         setSubscriptionEnd(null);
         setLoading(false);
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('check-subscription');
-      
+      const { data, error } =
+        await supabase.functions.invoke("check-subscription");
+
       if (error) throw error;
 
-      setTier(data.tier || 'free');
+      setTier(data.tier || "free");
       setIsSubscribed(data.subscribed || false);
       setSubscriptionEnd(data.subscription_end || null);
     } catch (error) {
-      safeLog('Error checking subscription', error);
-      setTier('free');
+      safeLog("Error checking subscription", error);
+      setTier("free");
       setIsSubscribed(false);
     } finally {
       setLoading(false);
@@ -58,42 +65,46 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     return TIER_HIERARCHY[tier] >= TIER_HIERARCHY[requiredTier];
   };
 
-  const createCheckoutSession = async (checkoutTier: 'plus' | 'premium') => {
+  const createCheckoutSession = async (checkoutTier: "plus" | "premium") => {
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { tier: checkoutTier },
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "create-checkout",
+        {
+          body: { tier: checkoutTier },
+        },
+      );
 
       if (error) throw error;
 
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.open(data.url, "_blank");
       }
     } catch (error) {
-      safeLog('Error creating checkout session', error);
+      safeLog("Error creating checkout session", error);
       toast({
-        title: 'Error',
-        description: 'Failed to start checkout. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to start checkout. Please try again.",
+        variant: "destructive",
       });
     }
   };
 
   const openCustomerPortal = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('customer-portal');
+      const { data, error } =
+        await supabase.functions.invoke("customer-portal");
 
       if (error) throw error;
 
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.open(data.url, "_blank");
       }
     } catch (error) {
-      logError('Error opening customer portal', error);
+      logError("Error opening customer portal", error);
       toast({
-        title: 'Error',
-        description: 'Failed to open billing portal. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to open billing portal. Please try again.",
+        variant: "destructive",
       });
     }
   };
@@ -101,11 +112,13 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   useEffect(() => {
     refreshSubscription();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         setTimeout(() => refreshSubscription(), 0);
       } else {
-        setTier('free');
+        setTier("free");
         setIsSubscribed(false);
         setSubscriptionEnd(null);
       }
@@ -141,7 +154,9 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 export const useSubscription = () => {
   const context = useContext(SubscriptionContext);
   if (context === undefined) {
-    throw new Error('useSubscription must be used within a SubscriptionProvider');
+    throw new Error(
+      "useSubscription must be used within a SubscriptionProvider",
+    );
   }
   return context;
 };

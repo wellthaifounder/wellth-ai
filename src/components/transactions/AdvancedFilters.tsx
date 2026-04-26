@@ -2,9 +2,19 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CalendarIcon, Filter, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -27,7 +37,10 @@ type AdvancedFiltersProps = {
   activeFilters: FilterCriteria;
 };
 
-export function AdvancedFilters({ onFilterChange, activeFilters }: AdvancedFiltersProps) {
+export function AdvancedFilters({
+  onFilterChange,
+  activeFilters,
+}: AdvancedFiltersProps) {
   const [open, setOpen] = useState(false);
   const [filters, setFilters] = useState<FilterCriteria>(activeFilters);
   const { accounts } = useHSAAccounts();
@@ -45,8 +58,11 @@ export function AdvancedFilters({ onFilterChange, activeFilters }: AdvancedFilte
     onFilterChange(emptyFilters);
   };
 
-  const updateFilter = <K extends keyof FilterCriteria>(key: K, value: FilterCriteria[K]) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+  const updateFilter = <K extends keyof FilterCriteria>(
+    key: K,
+    value: FilterCriteria[K],
+  ) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   return (
@@ -79,7 +95,9 @@ export function AdvancedFilters({ onFilterChange, activeFilters }: AdvancedFilte
             <Label>Amount</Label>
             <Select
               value={filters.amountOperator || ""}
-              onValueChange={(value: any) => updateFilter("amountOperator", value)}
+              onValueChange={(value: any) =>
+                updateFilter("amountOperator", value)
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select condition" />
@@ -98,14 +116,18 @@ export function AdvancedFilters({ onFilterChange, activeFilters }: AdvancedFilte
                   type="number"
                   placeholder="Min amount"
                   value={filters.amountMin || ""}
-                  onChange={(e) => updateFilter("amountMin", parseFloat(e.target.value))}
+                  onChange={(e) =>
+                    updateFilter("amountMin", parseFloat(e.target.value))
+                  }
                 />
                 {filters.amountOperator === "between" && (
                   <Input
                     type="number"
                     placeholder="Max amount"
                     value={filters.amountMax || ""}
-                    onChange={(e) => updateFilter("amountMax", parseFloat(e.target.value))}
+                    onChange={(e) =>
+                      updateFilter("amountMax", parseFloat(e.target.value))
+                    }
                   />
                 )}
               </div>
@@ -117,7 +139,9 @@ export function AdvancedFilters({ onFilterChange, activeFilters }: AdvancedFilte
             <Label>Date</Label>
             <Select
               value={filters.dateOperator || ""}
-              onValueChange={(value: any) => updateFilter("dateOperator", value)}
+              onValueChange={(value: any) =>
+                updateFilter("dateOperator", value)
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select condition" />
@@ -138,14 +162,19 @@ export function AdvancedFilters({ onFilterChange, activeFilters }: AdvancedFilte
                       variant="outline"
                       className={cn(
                         "w-full justify-start text-left font-normal",
-                        !filters.dateStart && "text-muted-foreground"
+                        !filters.dateStart && "text-muted-foreground",
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {filters.dateStart ? format(filters.dateStart, "PPP") : "Start date"}
+                      {filters.dateStart
+                        ? format(filters.dateStart, "PPP")
+                        : "Start date"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+                  <PopoverContent
+                    className="w-auto p-0 pointer-events-auto"
+                    align="start"
+                  >
                     <Calendar
                       mode="single"
                       selected={filters.dateStart}
@@ -163,14 +192,19 @@ export function AdvancedFilters({ onFilterChange, activeFilters }: AdvancedFilte
                         variant="outline"
                         className={cn(
                           "w-full justify-start text-left font-normal",
-                          !filters.dateEnd && "text-muted-foreground"
+                          !filters.dateEnd && "text-muted-foreground",
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {filters.dateEnd ? format(filters.dateEnd, "PPP") : "End date"}
+                        {filters.dateEnd
+                          ? format(filters.dateEnd, "PPP")
+                          : "End date"}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+                    <PopoverContent
+                      className="w-auto p-0 pointer-events-auto"
+                      align="start"
+                    >
                       <Calendar
                         mode="single"
                         selected={filters.dateEnd}
@@ -190,7 +224,9 @@ export function AdvancedFilters({ onFilterChange, activeFilters }: AdvancedFilte
             <Label>HSA Eligible</Label>
             <Select
               value={filters.isHsaEligible || "all"}
-              onValueChange={(value: any) => updateFilter("isHsaEligible", value)}
+              onValueChange={(value: any) =>
+                updateFilter("isHsaEligible", value)
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="All transactions" />
@@ -209,7 +245,12 @@ export function AdvancedFilters({ onFilterChange, activeFilters }: AdvancedFilte
               <Label>HSA Account</Label>
               <Select
                 value={filters.hsaAccountId || "all"}
-                onValueChange={(value: any) => updateFilter("hsaAccountId", value === "all" ? undefined : value)}
+                onValueChange={(value: any) =>
+                  updateFilter(
+                    "hsaAccountId",
+                    value === "all" ? undefined : value,
+                  )
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All accounts" />
@@ -219,7 +260,9 @@ export function AdvancedFilters({ onFilterChange, activeFilters }: AdvancedFilte
                   {accounts.map((account) => (
                     <SelectItem key={account.id} value={account.id}>
                       <div className="flex flex-col">
-                        <span className="font-medium">{account.account_name}</span>
+                        <span className="font-medium">
+                          {account.account_name}
+                        </span>
                         <span className="text-xs text-muted-foreground">
                           {formatHSAAccountDateRange(account)}
                         </span>

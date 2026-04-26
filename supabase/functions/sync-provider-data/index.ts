@@ -1,37 +1,39 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://wellth.ai',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Credentials': 'true',
+  "Access-Control-Allow-Origin":
+    Deno.env.get("ALLOWED_ORIGIN") || "https://wellth.ai",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Credentials": "true",
 };
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
     const { invoiceId, billReviewId } = await req.json();
 
-    console.log('Syncing provider data for invoice:', invoiceId);
+    console.log("Syncing provider data for invoice:", invoiceId);
 
     // Get invoice details
     const { data: invoice, error: invoiceError } = await supabaseClient
-      .from('invoices')
-      .select('*')
-      .eq('id', invoiceId)
+      .from("invoices")
+      .select("*")
+      .eq("id", invoiceId)
       .single();
 
     if (invoiceError || !invoice) {
-      throw new Error('Invoice not found');
+      throw new Error("Invoice not found");
     }
 
     // Get bill review details if provided
@@ -39,9 +41,9 @@ Deno.serve(async (req) => {
     let errors = [];
     if (billReviewId) {
       const { data: reviewData, error: reviewError } = await supabaseClient
-        .from('bill_reviews')
-        .select('*')
-        .eq('id', billReviewId)
+        .from("bill_reviews")
+        .select("*")
+        .eq("id", billReviewId)
         .single();
 
       if (!reviewError && reviewData) {
@@ -49,9 +51,9 @@ Deno.serve(async (req) => {
 
         // Get errors
         const { data: errorsData } = await supabaseClient
-          .from('bill_errors')
-          .select('*')
-          .eq('bill_review_id', billReviewId);
+          .from("bill_errors")
+          .select("*")
+          .eq("bill_review_id", billReviewId);
 
         errors = errorsData || [];
       }
@@ -60,9 +62,9 @@ Deno.serve(async (req) => {
     // Find or create provider
     let provider;
     const { data: existingProvider } = await supabaseClient
-      .from('providers')
-      .select('*')
-      .ilike('name', invoice.vendor)
+      .from("providers")
+      .select("*")
+      .ilike("name", invoice.vendor)
       .single();
 
     if (existingProvider) {
@@ -70,12 +72,12 @@ Deno.serve(async (req) => {
     } else {
       // Create new provider
       const { data: newProvider, error: providerError } = await supabaseClient
-        .from('providers')
+        .from("providers")
         .insert({
           name: invoice.vendor,
-          provider_type: 'unknown',
+          provider_type: "unknown",
           total_bills_analyzed: 0,
-          billing_accuracy_score: 100
+          billing_accuracy_score: 100,
         })
         .select()
         .single();
@@ -89,7 +91,7 @@ Deno.serve(async (req) => {
     const errorsFound = errors.length;
 
     const { error: billError } = await supabaseClient
-      .from('provider_bills')
+      .from("provider_bills")
       .upsert({
         provider_id: provider.id,
         invoice_id: invoiceId,
@@ -97,34 +99,35 @@ Deno.serve(async (req) => {
         bill_amount: invoice.amount,
         errors_found: errorsFound,
         overcharge_amount: overchargeAmount,
-        was_disputed: false
+        was_disputed: false,
       });
 
     if (billError) throw billError;
 
-    console.log('Provider data synced successfully');
+    console.log("Provider data synced successfully");
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        provider_id: provider.id 
+      JSON.stringify({
+        success: true,
+        provider_id: provider.id,
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
-      }
+      },
     );
   } catch (error) {
-    console.error('Error in sync-provider-data:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error("Error in sync-provider-data:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     return new Response(
-      JSON.stringify({ 
-        error: errorMessage 
+      JSON.stringify({
+        error: errorMessage,
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,
-      }
+      },
     );
   }
 });

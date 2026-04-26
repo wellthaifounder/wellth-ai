@@ -17,7 +17,7 @@ async function getEncryptionKey(): Promise<CryptoKey> {
   }
 
   // Decode base64 key
-  const keyData = Uint8Array.from(atob(keyString), c => c.charCodeAt(0));
+  const keyData = Uint8Array.from(atob(keyString), (c) => c.charCodeAt(0));
 
   if (keyData.length !== 32) {
     throw new Error("PLAID_ENCRYPTION_KEY must be 32 bytes (256 bits)");
@@ -29,7 +29,7 @@ async function getEncryptionKey(): Promise<CryptoKey> {
     keyData,
     { name: ALGORITHM, length: KEY_LENGTH },
     false,
-    ["encrypt", "decrypt"]
+    ["encrypt", "decrypt"],
   );
 }
 
@@ -52,12 +52,14 @@ export async function encryptPlaidToken(plaintext: string): Promise<string> {
   const ciphertext = await crypto.subtle.encrypt(
     { name: ALGORITHM, iv },
     key,
-    data
+    data,
   );
 
   // Format: base64(iv):base64(ciphertext)
   const ivB64 = btoa(String.fromCharCode(...iv));
-  const ciphertextB64 = btoa(String.fromCharCode(...new Uint8Array(ciphertext)));
+  const ciphertextB64 = btoa(
+    String.fromCharCode(...new Uint8Array(ciphertext)),
+  );
 
   return `${ivB64}:${ciphertextB64}`;
 }
@@ -81,18 +83,22 @@ export async function decryptPlaidToken(encrypted: string): Promise<string> {
   const [ivB64, ciphertextB64] = parts;
 
   if (!ivB64 || !ciphertextB64) {
-    throw new Error("Invalid encrypted token format (missing iv or ciphertext)");
+    throw new Error(
+      "Invalid encrypted token format (missing iv or ciphertext)",
+    );
   }
 
   // Decode base64
-  const iv = Uint8Array.from(atob(ivB64), c => c.charCodeAt(0));
-  const ciphertext = Uint8Array.from(atob(ciphertextB64), c => c.charCodeAt(0));
+  const iv = Uint8Array.from(atob(ivB64), (c) => c.charCodeAt(0));
+  const ciphertext = Uint8Array.from(atob(ciphertextB64), (c) =>
+    c.charCodeAt(0),
+  );
 
   // Decrypt
   const decrypted = await crypto.subtle.decrypt(
     { name: ALGORITHM, iv },
     key,
-    ciphertext
+    ciphertext,
   );
 
   // Decode bytes to string

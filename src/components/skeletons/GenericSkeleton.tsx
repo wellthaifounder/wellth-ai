@@ -11,10 +11,10 @@ interface GenericSkeletonProps {
  * Generic skeleton loader for content areas
  * Use instead of spinners for better UX
  */
-export const GenericSkeleton = ({ 
-  rows = 3, 
+export const GenericSkeleton = ({
+  rows = 3,
   showHeader = true,
-  className = "" 
+  className = "",
 }: GenericSkeletonProps) => {
   return (
     <Card className={className}>

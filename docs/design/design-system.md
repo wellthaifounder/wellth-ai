@@ -3,6 +3,7 @@
 **Version 1.0** | Complete Implementation Reference
 
 ## Table of Contents
+
 1. [Overview](#overview)
 2. [Color System](#color-system)
 3. [Typography](#typography)
@@ -26,6 +27,7 @@
 The Wellth.ai design system is built on semantic tokens using HSL color values, ensuring consistency across light and dark modes. All design tokens are defined in `src/index.css` and exposed through `tailwind.config.ts`.
 
 ### Core Principles
+
 - **Semantic Tokens Only**: Never use direct colors like `text-white` or `bg-gray-500`
 - **HSL Color Format**: All colors use HSL for better theme manipulation
 - **Mobile-First**: All components are responsive by default
@@ -41,109 +43,109 @@ The Wellth.ai design system is built on semantic tokens using HSL color values, 
 All colors are defined in `src/index.css` and automatically adapt to light/dark mode.
 
 #### Primary Colors
+
 ```css
 /* Use these for main brand elements */
---primary: 178 85% 36%           /* Main teal brand color */
---primary-foreground: 0 0% 100%  /* Text on primary */
+--primary: 178 85% 36% /* Main teal brand color */ --primary-foreground: 0 0%
+  100% /* Text on primary */;
 ```
 
 **Usage:**
+
 ```jsx
-<Button className="bg-primary text-primary-foreground">
-  Primary Action
-</Button>
+<Button className="bg-primary text-primary-foreground">Primary Action</Button>
 ```
 
 #### Background & Foreground
+
 ```css
---background: 0 0% 100%          /* Main background */
---foreground: 222.2 84% 4.9%     /* Main text color */
+--background: 0 0% 100% /* Main background */ --foreground: 222.2 84% 4.9%
+  /* Main text color */;
 ```
 
 **Usage:**
+
 ```jsx
-<div className="bg-background text-foreground">
-  Main content area
-</div>
+<div className="bg-background text-foreground">Main content area</div>
 ```
 
 #### Secondary Colors
+
 ```css
---secondary: 210 40% 96.1%       /* Secondary UI elements */
---secondary-foreground: 222.2 47.4% 11.2%
+--secondary: 210 40% 96.1% /* Secondary UI elements */
+  --secondary-foreground: 222.2 47.4% 11.2%;
 ```
 
 **Usage:**
+
 ```jsx
-<Button variant="secondary">
-  Secondary Action
-</Button>
+<Button variant="secondary">Secondary Action</Button>
 ```
 
 #### Accent Colors
+
 ```css
---accent: 210 40% 96.1%          /* Accent highlights */
---accent-foreground: 222.2 47.4% 11.2%
+--accent: 210 40% 96.1% /* Accent highlights */ --accent-foreground: 222.2 47.4%
+  11.2%;
 ```
 
 **Usage:**
+
 ```jsx
-<div className="bg-accent text-accent-foreground">
-  Highlighted section
-</div>
+<div className="bg-accent text-accent-foreground">Highlighted section</div>
 ```
 
 #### Muted Colors
+
 ```css
---muted: 210 40% 96.1%           /* Subdued backgrounds */
---muted-foreground: 215.4 16.3% 46.9%  /* Subdued text */
+--muted: 210 40% 96.1% /* Subdued backgrounds */ --muted-foreground: 215.4 16.3%
+  46.9% /* Subdued text */;
 ```
 
 **Usage:**
+
 ```jsx
-<p className="text-muted-foreground">
-  Secondary information
-</p>
+<p className="text-muted-foreground">Secondary information</p>
 ```
 
 #### Semantic States
+
 ```css
---success: 142 71% 45%           /* Success states */
---success-foreground: 0 0% 100%
---destructive: 0 84.2% 60.2%     /* Error/danger states */
---destructive-foreground: 0 0% 100%
+--success: 142 71% 45% /* Success states */ --success-foreground: 0 0% 100%
+  --destructive: 0 84.2% 60.2% /* Error/danger states */
+  --destructive-foreground: 0 0% 100%;
 ```
 
 **Usage:**
+
 ```jsx
-<Alert className="bg-success text-success-foreground">
-  Success message
-</Alert>
+<Alert className="bg-success text-success-foreground">Success message</Alert>
 ```
 
 #### UI Elements
+
 ```css
---border: 214.3 31.8% 91.4%      /* Border color */
---input: 214.3 31.8% 91.4%       /* Input borders */
---ring: 222.2 84% 4.9%           /* Focus ring */
+--border: 214.3 31.8% 91.4% /* Border color */ --input: 214.3 31.8% 91.4%
+  /* Input borders */ --ring: 222.2 84% 4.9% /* Focus ring */;
 ```
 
 **Usage:**
+
 ```jsx
 <Input className="border-border focus:ring-ring" />
 ```
 
 #### Chart Colors
+
 ```css
 /* Used for data visualization */
---chart-1: 178 85% 36%   /* Primary teal */
---chart-2: 228 36% 50%   /* Navy blue */
---chart-3: 43 75% 58%    /* Gold accent */
---chart-4: 122 39% 49%   /* Success green */
---chart-5: 357 79% 59%   /* Alert red */
+--chart-1: 178 85% 36% /* Primary teal */ --chart-2: 228 36% 50% /* Navy blue */
+  --chart-3: 43 75% 58% /* Gold accent */ --chart-4: 122 39% 49%
+  /* Success green */ --chart-5: 357 79% 59% /* Alert red */;
 ```
 
 **Usage:**
+
 ```jsx
 <Line stroke="hsl(var(--chart-1))" />
 ```
@@ -154,25 +156,25 @@ All semantic tokens are exposed as Tailwind utilities:
 
 ```jsx
 // Backgrounds
-className="bg-primary"
-className="bg-secondary"
-className="bg-accent"
-className="bg-muted"
-className="bg-card"
+className = "bg-primary";
+className = "bg-secondary";
+className = "bg-accent";
+className = "bg-muted";
+className = "bg-card";
 
 // Text colors
-className="text-foreground"
-className="text-primary"
-className="text-muted-foreground"
-className="text-success"
+className = "text-foreground";
+className = "text-primary";
+className = "text-muted-foreground";
+className = "text-success";
 
 // Borders
-className="border-border"
-className="border-input"
+className = "border-border";
+className = "border-input";
 
 // Charts
-className="bg-chart-1"
-className="text-chart-2"
+className = "bg-chart-1";
+className = "text-chart-2";
 ```
 
 ---
@@ -189,6 +191,7 @@ fontFamily: {
 ```
 
 **Usage:**
+
 ```jsx
 <h1 className="font-heading">Main Heading</h1>
 <p className="font-sans">Body text</p>
@@ -213,6 +216,7 @@ fontSize: {
 ```
 
 **Usage:**
+
 ```jsx
 <h1 className="text-4xl font-heading">Page Title</h1>
 <h2 className="text-2xl font-heading">Section Title</h2>
@@ -235,15 +239,15 @@ lineHeight: {
 
 ### Typography Scale Best Practices
 
-| Element | Size | Weight | Usage |
-|---------|------|--------|-------|
-| Page Title | `text-4xl` or `text-5xl` | `font-bold` | Main page heading |
-| Section Title | `text-2xl` or `text-3xl` | `font-semibold` | Section headings |
-| Card Title | `text-lg` or `text-xl` | `font-semibold` | Card headings |
-| Body Text | `text-base` | `font-normal` | Paragraphs, content |
-| Helper Text | `text-sm` | `font-normal` | Descriptions, hints |
-| Labels | `text-sm` | `font-medium` | Form labels |
-| Micro Copy | `text-xs` | `font-medium` | Badges, tags |
+| Element       | Size                     | Weight          | Usage               |
+| ------------- | ------------------------ | --------------- | ------------------- |
+| Page Title    | `text-4xl` or `text-5xl` | `font-bold`     | Main page heading   |
+| Section Title | `text-2xl` or `text-3xl` | `font-semibold` | Section headings    |
+| Card Title    | `text-lg` or `text-xl`   | `font-semibold` | Card headings       |
+| Body Text     | `text-base`              | `font-normal`   | Paragraphs, content |
+| Helper Text   | `text-sm`                | `font-normal`   | Descriptions, hints |
+| Labels        | `text-sm`                | `font-medium`   | Form labels         |
+| Micro Copy    | `text-xs`                | `font-medium`   | Badges, tags        |
 
 ---
 
@@ -270,6 +274,7 @@ spacing: {
 ### Layout Patterns
 
 #### Card Spacing
+
 ```jsx
 <Card className="p-6 space-y-4">
   {/* 24px padding, 16px vertical spacing */}
@@ -277,6 +282,7 @@ spacing: {
 ```
 
 #### Dashboard Grid
+
 ```jsx
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
   {/* Responsive grid with 24px gaps */}
@@ -284,6 +290,7 @@ spacing: {
 ```
 
 #### Form Layout
+
 ```jsx
 <form className="space-y-6">
   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -293,6 +300,7 @@ spacing: {
 ```
 
 #### Section Spacing
+
 ```jsx
 <section className="py-10 px-4">
   {/* 64px vertical padding, 16px horizontal */}
@@ -330,16 +338,17 @@ boxShadow: {
 
 ### Elevation Guidelines
 
-| Level | Shadow | Use Case |
-|-------|--------|----------|
-| 0 | `shadow-none` | Flat elements, inline content |
-| 1 | `shadow-xs` | Subtle borders, minimal lift |
-| 2 | `shadow-sm` | Cards, inputs (default) |
-| 3 | `shadow-md` | Raised cards, hover states |
-| 4 | `shadow-lg` | Modals, dropdowns, popovers |
-| 5 | `shadow-xl` | High-priority modals, notifications |
+| Level | Shadow        | Use Case                            |
+| ----- | ------------- | ----------------------------------- |
+| 0     | `shadow-none` | Flat elements, inline content       |
+| 1     | `shadow-xs`   | Subtle borders, minimal lift        |
+| 2     | `shadow-sm`   | Cards, inputs (default)             |
+| 3     | `shadow-md`   | Raised cards, hover states          |
+| 4     | `shadow-lg`   | Modals, dropdowns, popovers         |
+| 5     | `shadow-xl`   | High-priority modals, notifications |
 
 **Usage:**
+
 ```jsx
 <Card className="shadow-sm hover:shadow-md transition-shadow">
   Hover to elevate
@@ -366,16 +375,17 @@ borderRadius: {
 
 ### Usage Guidelines
 
-| Element | Radius | Example |
-|---------|--------|---------|
-| Buttons | `rounded-md` | Primary actions |
-| Cards | `rounded-lg` | Content containers |
-| Inputs | `rounded-md` | Form fields |
-| Badges | `rounded-full` | Status indicators |
-| Modals | `rounded-xl` | Dialogs, overlays |
-| Avatars | `rounded-full` | Profile images |
+| Element | Radius         | Example            |
+| ------- | -------------- | ------------------ |
+| Buttons | `rounded-md`   | Primary actions    |
+| Cards   | `rounded-lg`   | Content containers |
+| Inputs  | `rounded-md`   | Form fields        |
+| Badges  | `rounded-full` | Status indicators  |
+| Modals  | `rounded-xl`   | Dialogs, overlays  |
+| Avatars | `rounded-full` | Profile images     |
 
 **Usage:**
+
 ```jsx
 <Button className="rounded-md">Default Button</Button>
 <Card className="rounded-lg">Content Card</Card>
@@ -392,17 +402,23 @@ Defined in CSS and exposed as Tailwind utilities:
 
 ```css
 /* Light Mode */
---gradient-hero: linear-gradient(135deg, 
-  hsl(var(--primary)) 0%, 
-  hsl(var(--primary) / 0.8) 100%);
+--gradient-hero: linear-gradient(
+  135deg,
+  hsl(var(--primary)) 0%,
+  hsl(var(--primary) / 0.8) 100%
+);
 
---gradient-card: linear-gradient(135deg, 
-  hsl(var(--card)) 0%, 
-  hsl(var(--muted)) 100%);
+--gradient-card: linear-gradient(
+  135deg,
+  hsl(var(--card)) 0%,
+  hsl(var(--muted)) 100%
+);
 
---gradient-accent: linear-gradient(135deg, 
-  hsl(var(--accent)) 0%, 
-  hsl(var(--primary) / 0.1) 100%);
+--gradient-accent: linear-gradient(
+  135deg,
+  hsl(var(--accent)) 0%,
+  hsl(var(--primary) / 0.1) 100%
+);
 ```
 
 ### Usage
@@ -429,9 +445,12 @@ Defined in CSS and exposed as Tailwind utilities:
 For one-off gradients, use inline styles with semantic tokens:
 
 ```jsx
-<div style={{
-  background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--chart-1)))'
-}}>
+<div
+  style={{
+    background:
+      "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--chart-1)))",
+  }}
+>
   Custom gradient
 </div>
 ```
@@ -444,15 +463,15 @@ For one-off gradients, use inline styles with semantic tokens:
 
 ```typescript
 // Default transitions
-className="transition-colors"      // Color changes
-className="transition-transform"   // Scale, rotate
-className="transition-shadow"      // Shadow changes
-className="transition-all"         // All properties
+className = "transition-colors"; // Color changes
+className = "transition-transform"; // Scale, rotate
+className = "transition-shadow"; // Shadow changes
+className = "transition-all"; // All properties
 
 // Duration modifiers
-className="duration-150"  // Fast (150ms)
-className="duration-200"  // Default (200ms)
-className="duration-300"  // Smooth (300ms)
+className = "duration-150"; // Fast (150ms)
+className = "duration-200"; // Default (200ms)
+className = "duration-300"; // Smooth (300ms)
 ```
 
 ### Hover States
@@ -477,9 +496,7 @@ className="duration-300"  // Smooth (300ms)
 ### Active States
 
 ```jsx
-<Button className="active:scale-95 transition-transform">
-  Press Effect
-</Button>
+<Button className="active:scale-95 transition-transform">Press Effect</Button>
 ```
 
 ### Focus States
@@ -495,7 +512,7 @@ Use the skeleton component for loading states:
 ```jsx
 import { Skeleton } from "@/components/ui/skeleton";
 
-<Skeleton className="h-20 w-full" />
+<Skeleton className="h-20 w-full" />;
 ```
 
 ### Confetti Celebrations
@@ -541,26 +558,38 @@ import { Button } from "@/components/ui/button";
 ### Card Patterns
 
 ```jsx
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 
 <Card className="shadow-sm hover:shadow-md transition-shadow">
   <CardHeader>
     <CardTitle>Card Title</CardTitle>
     <CardDescription>Supporting text</CardDescription>
   </CardHeader>
-  <CardContent>
-    Main content area
-  </CardContent>
+  <CardContent>Main content area</CardContent>
   <CardFooter>
     <Button>Action</Button>
   </CardFooter>
-</Card>
+</Card>;
 ```
 
 ### Form Patterns
 
 ```jsx
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
 <Form {...form}>
@@ -581,25 +610,29 @@ import { Input } from "@/components/ui/input";
       />
     </div>
   </form>
-</Form>
+</Form>;
 ```
 
 ### Modal Patterns
 
 ```jsx
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 <Dialog open={open} onOpenChange={setOpen}>
   <DialogContent className="rounded-xl">
     <DialogHeader>
       <DialogTitle>Dialog Title</DialogTitle>
-      <DialogDescription>
-        Supporting description text
-      </DialogDescription>
+      <DialogDescription>Supporting description text</DialogDescription>
     </DialogHeader>
     {/* Dialog content */}
   </DialogContent>
-</Dialog>
+</Dialog>;
 ```
 
 ### Toast Notifications
@@ -625,86 +658,78 @@ toast({
 All charts should use semantic color tokens:
 
 ```jsx
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
 
-<div 
-  role="img" 
+<div
+  role="img"
   aria-label="Descriptive chart label explaining what the chart shows"
 >
   <LineChart data={data}>
-    <CartesianGrid 
-      strokeDasharray="3 3" 
-      stroke="hsl(var(--border))" 
-      opacity={0.3} 
+    <CartesianGrid
+      strokeDasharray="3 3"
+      stroke="hsl(var(--border))"
+      opacity={0.3}
     />
-    <XAxis 
-      dataKey="name" 
+    <XAxis
+      dataKey="name"
       stroke="hsl(var(--muted-foreground))"
       aria-label="X axis label"
     />
-    <YAxis 
-      stroke="hsl(var(--muted-foreground))"
-      aria-label="Y axis label"
-    />
+    <YAxis stroke="hsl(var(--muted-foreground))" aria-label="Y axis label" />
     <Tooltip
       contentStyle={{
-        backgroundColor: 'hsl(var(--popover))',
-        border: '1px solid hsl(var(--border))',
-        borderRadius: 'var(--radius)',
-        boxShadow: 'var(--shadow-lg)',
+        backgroundColor: "hsl(var(--popover))",
+        border: "1px solid hsl(var(--border))",
+        borderRadius: "var(--radius)",
+        boxShadow: "var(--shadow-lg)",
       }}
-      labelStyle={{ color: 'hsl(var(--popover-foreground))' }}
+      labelStyle={{ color: "hsl(var(--popover-foreground))" }}
     />
-    <Legend 
-      wrapperStyle={{ paddingTop: '20px' }}
-    />
-    <Line 
-      type="monotone" 
-      dataKey="value" 
-      stroke="hsl(var(--chart-1))" 
+    <Legend wrapperStyle={{ paddingTop: "20px" }} />
+    <Line
+      type="monotone"
+      dataKey="value"
+      stroke="hsl(var(--chart-1))"
       strokeWidth={2}
-      dot={{ fill: 'hsl(var(--chart-1))', r: 4 }}
+      dot={{ fill: "hsl(var(--chart-1))", r: 4 }}
       activeDot={{ r: 6 }}
     />
   </LineChart>
-</div>
+</div>;
 ```
 
 ### Chart Color Usage
 
 Use chart tokens in order for consistency:
 
-| Data Series | Token | Color |
-|-------------|-------|-------|
-| Primary data | `--chart-1` | Teal |
-| Secondary data | `--chart-2` | Navy |
-| Tertiary data | `--chart-3` | Gold |
+| Data Series     | Token       | Color |
+| --------------- | ----------- | ----- |
+| Primary data    | `--chart-1` | Teal  |
+| Secondary data  | `--chart-2` | Navy  |
+| Tertiary data   | `--chart-3` | Gold  |
 | Success metrics | `--chart-4` | Green |
-| Alert metrics | `--chart-5` | Red |
+| Alert metrics   | `--chart-5` | Red   |
 
 ### Bar Charts
 
 ```jsx
-<Bar 
-  dataKey="value" 
-  fill="hsl(var(--chart-1))" 
-  radius={[8, 8, 0, 0]}
-/>
+<Bar dataKey="value" fill="hsl(var(--chart-1))" radius={[8, 8, 0, 0]} />
 ```
 
 ### Pie Charts
 
 ```jsx
-<Pie
-  data={data}
-  fill="hsl(var(--chart-1))"
-  dataKey="value"
->
+<Pie data={data} fill="hsl(var(--chart-1))" dataKey="value">
   {data.map((entry, index) => (
-    <Cell 
-      key={`cell-${index}`} 
-      fill={`hsl(var(--chart-${(index % 5) + 1}))`} 
-    />
+    <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${(index % 5) + 1}))`} />
   ))}
 </Pie>
 ```
@@ -712,6 +737,7 @@ Use chart tokens in order for consistency:
 ### Chart Accessibility
 
 Every chart must include:
+
 1. **Container ARIA label**: Describes the chart's purpose
 2. **Axis labels**: Identifies what each axis represents
 3. **Legend**: Clear labels for all data series
@@ -732,7 +758,7 @@ import {
   TableBody,
   TableHead,
   TableRow,
-  TableCell
+  TableCell,
 } from "@/components/ui/table";
 
 <Table>
@@ -752,7 +778,7 @@ import {
       </TableCell>
     </TableRow>
   </TableBody>
-</Table>
+</Table>;
 ```
 
 ### Table Features
@@ -784,15 +810,16 @@ Located in `src/lib/utils.ts`:
 ```typescript
 import { formatCurrency } from "@/lib/utils";
 
-formatCurrency(1234.56)  // "$1,234.56"
-formatCurrency(1234.56, 'EUR')  // "€1,234.56"
-formatCurrency(1234.567, 'USD', { maximumFractionDigits: 3 })  // "$1,234.567"
+formatCurrency(1234.56); // "$1,234.56"
+formatCurrency(1234.56, "EUR"); // "€1,234.56"
+formatCurrency(1234.567, "USD", { maximumFractionDigits: 3 }); // "$1,234.567"
 ```
 
 **Function signature:**
+
 ```typescript
 formatCurrency(
-  amount: number, 
+  amount: number,
   currency: string = 'USD',
   options?: Intl.NumberFormatOptions
 ): string
@@ -803,12 +830,13 @@ formatCurrency(
 ```typescript
 import { formatNumber } from "@/lib/utils";
 
-formatNumber(1234567)      // "1,234,567"
-formatNumber(1234.5, 2)    // "1,234.50"
-formatNumber(1234.567, 1)  // "1,234.6"
+formatNumber(1234567); // "1,234,567"
+formatNumber(1234.5, 2); // "1,234.50"
+formatNumber(1234.567, 1); // "1,234.6"
 ```
 
 **Function signature:**
+
 ```typescript
 formatNumber(num: number, decimals: number = 0): string
 ```
@@ -818,12 +846,13 @@ formatNumber(num: number, decimals: number = 0): string
 ```typescript
 import { formatPercent } from "@/lib/utils";
 
-formatPercent(45.678)       // "46%"
-formatPercent(45.678, 1)    // "45.7%"
-formatPercent(0.4567, 2)    // "0.46%"
+formatPercent(45.678); // "46%"
+formatPercent(45.678, 1); // "45.7%"
+formatPercent(0.4567, 2); // "0.46%"
 ```
 
 **Function signature:**
+
 ```typescript
 formatPercent(num: number, decimals: number = 0): string
 ```
@@ -833,12 +862,13 @@ formatPercent(num: number, decimals: number = 0): string
 ```typescript
 import { formatCompactNumber } from "@/lib/utils";
 
-formatCompactNumber(1500)      // "1.5K"
-formatCompactNumber(1500000)   // "1.5M"
-formatCompactNumber(1500000000) // "1.5B"
+formatCompactNumber(1500); // "1.5K"
+formatCompactNumber(1500000); // "1.5M"
+formatCompactNumber(1500000000); // "1.5B"
 ```
 
 **Function signature:**
+
 ```typescript
 formatCompactNumber(num: number): string
 ```
@@ -858,6 +888,7 @@ formatCompactNumber(num: number): string
 ### Color Contrast
 
 All color combinations meet WCAG AA standards:
+
 - **Normal text**: 4.5:1 minimum contrast ratio
 - **Large text**: 3:1 minimum contrast ratio
 - **UI components**: 3:1 minimum contrast ratio
@@ -873,7 +904,7 @@ All interactive elements must be keyboard accessible:
 </Button>
 
 // Good: Keyboard-accessible card
-<Card 
+<Card
   tabIndex={0}
   className="focus-visible:ring-2 focus-visible:ring-ring"
   onKeyDown={(e) => {
@@ -889,9 +920,10 @@ All interactive elements must be keyboard accessible:
 ### ARIA Labels
 
 #### Charts
+
 ```jsx
-<div 
-  role="img" 
+<div
+  role="img"
   aria-label="Line chart showing monthly expense trends from January to December, with values ranging from $500 to $2000"
 >
   <LineChart>
@@ -902,6 +934,7 @@ All interactive elements must be keyboard accessible:
 ```
 
 #### Forms
+
 ```jsx
 <FormField
   name="email"
@@ -909,12 +942,12 @@ All interactive elements must be keyboard accessible:
     <FormItem>
       <FormLabel htmlFor="email">Email Address</FormLabel>
       <FormControl>
-        <Input 
+        <Input
           id="email"
           type="email"
           aria-required="true"
           aria-describedby="email-error"
-          {...field} 
+          {...field}
         />
       </FormControl>
       <FormMessage id="email-error" />
@@ -924,6 +957,7 @@ All interactive elements must be keyboard accessible:
 ```
 
 #### Buttons
+
 ```jsx
 <Button aria-label="Close dialog">
   <X className="h-4 w-4" />
@@ -958,46 +992,51 @@ All interactive elements must be keyboard accessible:
 ### DO ✅
 
 1. **Use Semantic Tokens**
+
    ```jsx
    // ✅ Good
    <div className="bg-primary text-primary-foreground">
-   
+
    // ❌ Bad
    <div className="bg-teal-600 text-white">
    ```
 
 2. **Use Design System Utilities**
+
    ```jsx
    // ✅ Good
    <div className="p-6 space-y-4 rounded-lg shadow-sm">
-   
+
    // ❌ Bad
    <div className="p-[24px] space-y-[16px] rounded-[12px]" style={{boxShadow: '0 1px 3px rgba(0,0,0,0.1)'}}>
    ```
 
 3. **Format Numbers Consistently**
+
    ```jsx
    // ✅ Good
    {formatCurrency(amount)}
-   
+
    // ❌ Bad
    ${amount.toFixed(2)}
    ```
 
 4. **Create Component Variants**
+
    ```jsx
    // ✅ Good
    <Button variant="premium">Upgrade</Button>
-   
+
    // ❌ Bad
    <Button className="bg-gradient-to-r from-primary to-primary-glow text-white shadow-lg">
    ```
 
 5. **Use Responsive Patterns**
+
    ```jsx
    // ✅ Good
    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-   
+
    // ❌ Bad
    <div className="grid grid-cols-3 gap-6">
    ```
@@ -1005,23 +1044,26 @@ All interactive elements must be keyboard accessible:
 ### DON'T ❌
 
 1. **Don't Use Direct Colors**
+
    ```jsx
    // ❌ Never
-   className="text-white bg-black"
-   className="text-gray-500"
-   className="bg-teal-600"
+   className = "text-white bg-black";
+   className = "text-gray-500";
+   className = "bg-teal-600";
    ```
 
 2. **Don't Use Arbitrary Values**
+
    ```jsx
    // ❌ Avoid
-   className="p-[23px] text-[17px] rounded-[13px]"
-   
+   className = "p-[23px] text-[17px] rounded-[13px]";
+
    // ✅ Use design system values
-   className="p-6 text-lg rounded-lg"
+   className = "p-6 text-lg rounded-lg";
    ```
 
 3. **Don't Inline Complex Styles**
+
    ```jsx
    // ❌ Bad
    <div style={{
@@ -1029,24 +1071,26 @@ All interactive elements must be keyboard accessible:
      padding: '24px',
      borderRadius: '12px'
    }}>
-   
+
    // ✅ Good
    <div className="bg-gradient-hero p-6 rounded-lg">
    ```
 
 4. **Don't Skip Accessibility**
+
    ```jsx
    // ❌ Bad
    <div onClick={handleClick}>Click me</div>
-   
+
    // ✅ Good
    <Button onClick={handleClick}>Click me</Button>
    ```
 
 5. **Don't Create Monolithic Components**
+
    ```jsx
    // ❌ Bad: 500-line component
-   
+
    // ✅ Good: Break into smaller, focused components
    <Dashboard>
      <DashboardHeader />
@@ -1081,19 +1125,34 @@ src/components/
 
 ```typescript
 // Backgrounds
-bg-background, bg-card, bg-muted, bg-accent, bg-primary, bg-secondary
+(bg - background,
+  bg - card,
+  bg - muted,
+  bg - accent,
+  bg - primary,
+  bg - secondary);
 
 // Text
-text-foreground, text-muted-foreground, text-primary, text-secondary
+(text - foreground,
+  text - muted - foreground,
+  text - primary,
+  text - secondary);
 
 // Borders
-border-border, border-input
+(border - border, border - input);
 
 // States
-bg-success, bg-destructive, text-success-foreground, text-destructive-foreground
+(bg - success,
+  bg - destructive,
+  text - success - foreground,
+  text - destructive - foreground);
 
 // Charts
-bg-chart-1, bg-chart-2, bg-chart-3, bg-chart-4, bg-chart-5
+(bg - chart - 1,
+  bg - chart - 2,
+  bg - chart - 3,
+  bg - chart - 4,
+  bg - chart - 5);
 ```
 
 ### Spacing Quick List
@@ -1146,13 +1205,18 @@ font-sans, font-heading
 
 ```typescript
 // Number formatting
-import { formatCurrency, formatNumber, formatPercent, formatCompactNumber } from "@/lib/utils";
+import {
+  formatCurrency,
+  formatNumber,
+  formatPercent,
+  formatCompactNumber,
+} from "@/lib/utils";
 
 // Usage
-formatCurrency(1234.56)     // "$1,234.56"
-formatNumber(1234567, 2)    // "1,234,567.00"
-formatPercent(45.5, 1)      // "45.5%"
-formatCompactNumber(1500000) // "1.5M"
+formatCurrency(1234.56); // "$1,234.56"
+formatNumber(1234567, 2); // "1,234,567.00"
+formatPercent(45.5, 1); // "45.5%"
+formatCompactNumber(1500000); // "1.5M"
 ```
 
 ---
@@ -1160,6 +1224,7 @@ formatCompactNumber(1500000) // "1.5M"
 ## Version History
 
 ### Version 1.0 (Current)
+
 - Complete 6-phase implementation
 - Gap fixes for chart colors and gradients
 - Comprehensive accessibility audit
@@ -1170,8 +1235,9 @@ formatCompactNumber(1500000) // "1.5M"
 ### Implementation Status
 
 ✅ **Completed:**
+
 - Phase 1: Foundation & Colors
-- Phase 2: Typography & Spacing  
+- Phase 2: Typography & Spacing
 - Phase 3: Components & Interactions
 - Phase 4: Animation & Delight
 - Phase 5: Accessibility & Polish
@@ -1181,6 +1247,7 @@ formatCompactNumber(1500000) // "1.5M"
 ### Maintenance
 
 This design system is maintained as part of the Wellth.ai codebase. For updates:
+
 1. Update tokens in `src/index.css`
 2. Expose in `tailwind.config.ts`
 3. Document changes in this file

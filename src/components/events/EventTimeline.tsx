@@ -29,11 +29,22 @@ interface EventTimelineProps {
   onItemClick?: (item: TimelineItem) => void;
 }
 
-const TYPE_CONFIG: Record<TimelineItemType, { icon: typeof FileText; color: string; bgColor: string }> = {
+const TYPE_CONFIG: Record<
+  TimelineItemType,
+  { icon: typeof FileText; color: string; bgColor: string }
+> = {
   invoice: { icon: Receipt, color: "text-blue-600", bgColor: "bg-blue-100" },
-  payment: { icon: CreditCard, color: "text-green-600", bgColor: "bg-green-100" },
+  payment: {
+    icon: CreditCard,
+    color: "text-green-600",
+    bgColor: "bg-green-100",
+  },
   document: { icon: FileText, color: "text-gray-600", bgColor: "bg-gray-100" },
-  dispute: { icon: AlertTriangle, color: "text-orange-600", bgColor: "bg-orange-100" },
+  dispute: {
+    icon: AlertTriangle,
+    color: "text-orange-600",
+    bgColor: "bg-orange-100",
+  },
 };
 
 const DOCUMENT_TYPE_ICONS: Record<string, typeof FileText> = {
@@ -47,7 +58,7 @@ const DOCUMENT_TYPE_ICONS: Record<string, typeof FileText> = {
 export function EventTimeline({ items, onItemClick }: EventTimelineProps) {
   // Sort items by date, newest first
   const sortedItems = [...items].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
 
   if (items.length === 0) {
@@ -55,7 +66,9 @@ export function EventTimeline({ items, onItemClick }: EventTimelineProps) {
       <div className="text-center py-8 text-muted-foreground">
         <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
         <p>No items yet</p>
-        <p className="text-sm">Upload documents or add invoices to see them here</p>
+        <p className="text-sm">
+          Upload documents or add invoices to see them here
+        </p>
       </div>
     );
   }
@@ -76,7 +89,8 @@ export function EventTimeline({ items, onItemClick }: EventTimelineProps) {
             key={`${item.type}-${item.id}`}
             className={cn(
               "relative flex gap-4 pl-10",
-              onItemClick && "cursor-pointer hover:bg-muted/50 -mx-2 px-2 py-2 rounded-lg"
+              onItemClick &&
+                "cursor-pointer hover:bg-muted/50 -mx-2 px-2 py-2 rounded-lg",
             )}
             onClick={() => onItemClick?.(item)}
           >
@@ -84,7 +98,7 @@ export function EventTimeline({ items, onItemClick }: EventTimelineProps) {
             <div
               className={cn(
                 "absolute left-2 w-5 h-5 rounded-full flex items-center justify-center",
-                config.bgColor
+                config.bgColor,
               )}
             >
               <Icon className={cn("h-3 w-3", config.color)} />
@@ -106,10 +120,11 @@ export function EventTimeline({ items, onItemClick }: EventTimelineProps) {
                     <p
                       className={cn(
                         "font-semibold",
-                        item.type === "payment" ? "text-green-600" : ""
+                        item.type === "payment" ? "text-green-600" : "",
                       )}
                     >
-                      {item.type === "payment" ? "-" : ""}${item.amount.toFixed(2)}
+                      {item.type === "payment" ? "-" : ""}$
+                      {item.amount.toFixed(2)}
                     </p>
                   )}
                   <p className="text-xs text-muted-foreground">

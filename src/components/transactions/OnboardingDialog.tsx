@@ -60,7 +60,8 @@ export function OnboardingDialog({ open, onComplete }: OnboardingDialogProps) {
               <div className="text-center space-y-2">
                 <h3 className="font-semibold text-lg">Smart Suggestions</h3>
                 <p className="text-sm text-muted-foreground">
-                  We analyze each transaction and suggest whether it's a medical expense based on:
+                  We analyze each transaction and suggest whether it's a medical
+                  expense based on:
                 </p>
                 <ul className="text-sm text-muted-foreground space-y-1 text-left max-w-sm mx-auto">
                   <li>• Vendor name matching (CVS, Walgreens, etc.)</li>
@@ -80,21 +81,28 @@ export function OnboardingDialog({ open, onComplete }: OnboardingDialogProps) {
               <div className="text-center space-y-2">
                 <h3 className="font-semibold text-lg">Keyboard Shortcuts</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Review transactions at lightning speed with keyboard shortcuts:
+                  Review transactions at lightning speed with keyboard
+                  shortcuts:
                 </p>
               </div>
               <div className="space-y-3 max-w-sm mx-auto">
                 <Card className="p-3 flex items-center justify-between">
                   <span className="text-sm">Mark as Medical</span>
-                  <kbd className="px-3 py-1.5 bg-muted rounded font-mono text-sm">M</kbd>
+                  <kbd className="px-3 py-1.5 bg-muted rounded font-mono text-sm">
+                    M
+                  </kbd>
                 </Card>
                 <Card className="p-3 flex items-center justify-between">
                   <span className="text-sm">Not Medical</span>
-                  <kbd className="px-3 py-1.5 bg-muted rounded font-mono text-sm">N</kbd>
+                  <kbd className="px-3 py-1.5 bg-muted rounded font-mono text-sm">
+                    N
+                  </kbd>
                 </Card>
                 <Card className="p-3 flex items-center justify-between">
                   <span className="text-sm">Skip for Now</span>
-                  <kbd className="px-3 py-1.5 bg-muted rounded font-mono text-sm">S</kbd>
+                  <kbd className="px-3 py-1.5 bg-muted rounded font-mono text-sm">
+                    S
+                  </kbd>
                 </Card>
               </div>
             </div>
@@ -106,7 +114,9 @@ export function OnboardingDialog({ open, onComplete }: OnboardingDialogProps) {
                 <CheckCircle2 className="h-16 w-16 text-primary" />
               </div>
               <div className="text-center space-y-2">
-                <h3 className="font-semibold text-lg">It Gets Smarter Over Time</h3>
+                <h3 className="font-semibold text-lg">
+                  It Gets Smarter Over Time
+                </h3>
                 <p className="text-sm text-muted-foreground">
                   Every time you categorize a transaction, our system learns:
                 </p>
@@ -131,8 +141,8 @@ export function OnboardingDialog({ open, onComplete }: OnboardingDialogProps) {
                   i + 1 === step
                     ? "bg-primary w-6"
                     : i + 1 < step
-                    ? "bg-primary/50"
-                    : "bg-muted"
+                      ? "bg-primary/50"
+                      : "bg-muted"
                 }`}
               />
             ))}

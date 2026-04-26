@@ -1,9 +1,21 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Shield, DollarSign } from "lucide-react";
@@ -24,7 +36,7 @@ const INSURANCE_CARRIERS = [
   "UnitedHealthcare",
   "Medicare",
   "Medicaid",
-  "Other"
+  "Other",
 ];
 
 const PLAN_TYPES = [
@@ -33,10 +45,14 @@ const PLAN_TYPES = [
   { value: "epo", label: "EPO (Exclusive Provider Organization)" },
   { value: "pos", label: "POS (Point of Service)" },
   { value: "hdhp", label: "HDHP (High Deductible Health Plan)" },
-  { value: "other", label: "Other/Not Sure" }
+  { value: "other", label: "Other/Not Sure" },
 ];
 
-export function InsurancePlanDialog({ open, onOpenChange, onSuccess }: InsurancePlanDialogProps) {
+export function InsurancePlanDialog({
+  open,
+  onOpenChange,
+  onSuccess,
+}: InsurancePlanDialogProps) {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     carrier: "",
@@ -44,7 +60,7 @@ export function InsurancePlanDialog({ open, onOpenChange, onSuccess }: Insurance
     deductible: "",
     deductibleMet: "",
     outOfPocketMax: "",
-    outOfPocketMet: ""
+    outOfPocketMet: "",
   });
 
   const handleSave = async () => {
@@ -55,7 +71,9 @@ export function InsurancePlanDialog({ open, onOpenChange, onSuccess }: Insurance
 
     setSaving(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         toast.error("Please sign in to save your insurance information");
         return;
@@ -63,20 +81,28 @@ export function InsurancePlanDialog({ open, onOpenChange, onSuccess }: Insurance
 
       // Save to profiles table (insurance_plan JSONB column)
       const { error } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update({
           insurance_plan: {
             carrier: formData.carrier,
             plan_type: formData.planType,
-            deductible: formData.deductible ? parseFloat(formData.deductible) : null,
-            deductible_met: formData.deductibleMet ? parseFloat(formData.deductibleMet) : null,
-            out_of_pocket_max: formData.outOfPocketMax ? parseFloat(formData.outOfPocketMax) : null,
-            out_of_pocket_met: formData.outOfPocketMet ? parseFloat(formData.outOfPocketMet) : null,
-            updated_at: new Date().toISOString()
+            deductible: formData.deductible
+              ? parseFloat(formData.deductible)
+              : null,
+            deductible_met: formData.deductibleMet
+              ? parseFloat(formData.deductibleMet)
+              : null,
+            out_of_pocket_max: formData.outOfPocketMax
+              ? parseFloat(formData.outOfPocketMax)
+              : null,
+            out_of_pocket_met: formData.outOfPocketMet
+              ? parseFloat(formData.outOfPocketMet)
+              : null,
+            updated_at: new Date().toISOString(),
           },
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', user.id);
+        .eq("id", user.id);
 
       if (error) throw error;
 
@@ -91,13 +117,22 @@ export function InsurancePlanDialog({ open, onOpenChange, onSuccess }: Insurance
     }
   };
 
-  const deductibleRemaining = formData.deductible && formData.deductibleMet
-    ? Math.max(0, parseFloat(formData.deductible) - parseFloat(formData.deductibleMet))
-    : null;
+  const deductibleRemaining =
+    formData.deductible && formData.deductibleMet
+      ? Math.max(
+          0,
+          parseFloat(formData.deductible) - parseFloat(formData.deductibleMet),
+        )
+      : null;
 
-  const oopRemaining = formData.outOfPocketMax && formData.outOfPocketMet
-    ? Math.max(0, parseFloat(formData.outOfPocketMax) - parseFloat(formData.outOfPocketMet))
-    : null;
+  const oopRemaining =
+    formData.outOfPocketMax && formData.outOfPocketMet
+      ? Math.max(
+          0,
+          parseFloat(formData.outOfPocketMax) -
+            parseFloat(formData.outOfPocketMet),
+        )
+      : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -108,8 +143,8 @@ export function InsurancePlanDialog({ open, onOpenChange, onSuccess }: Insurance
             Add Your Insurance Plan
           </DialogTitle>
           <DialogDescription>
-            Help us provide personalized cost estimates and identify savings opportunities.
-            This information is encrypted and never shared.
+            Help us provide personalized cost estimates and identify savings
+            opportunities. This information is encrypted and never shared.
           </DialogDescription>
         </DialogHeader>
 
@@ -117,7 +152,12 @@ export function InsurancePlanDialog({ open, onOpenChange, onSuccess }: Insurance
           {/* Insurance Carrier */}
           <div className="space-y-2">
             <Label htmlFor="carrier">Insurance Carrier *</Label>
-            <Select value={formData.carrier} onValueChange={(value) => setFormData({ ...formData, carrier: value })}>
+            <Select
+              value={formData.carrier}
+              onValueChange={(value) =>
+                setFormData({ ...formData, carrier: value })
+              }
+            >
               <SelectTrigger id="carrier">
                 <SelectValue placeholder="Select your insurance carrier" />
               </SelectTrigger>
@@ -134,7 +174,12 @@ export function InsurancePlanDialog({ open, onOpenChange, onSuccess }: Insurance
           {/* Plan Type */}
           <div className="space-y-2">
             <Label htmlFor="planType">Plan Type *</Label>
-            <Select value={formData.planType} onValueChange={(value) => setFormData({ ...formData, planType: value })}>
+            <Select
+              value={formData.planType}
+              onValueChange={(value) =>
+                setFormData({ ...formData, planType: value })
+              }
+            >
               <SelectTrigger id="planType">
                 <SelectValue placeholder="Select your plan type" />
               </SelectTrigger>
@@ -155,9 +200,12 @@ export function InsurancePlanDialog({ open, onOpenChange, onSuccess }: Insurance
           </div>
 
           <div className="border-t pt-4">
-            <h3 className="text-sm font-semibold mb-3">Deductible & Out-of-Pocket (Optional)</h3>
+            <h3 className="text-sm font-semibold mb-3">
+              Deductible & Out-of-Pocket (Optional)
+            </h3>
             <p className="text-xs text-muted-foreground mb-4">
-              Adding this helps us show how close you are to meeting your deductible.
+              Adding this helps us show how close you are to meeting your
+              deductible.
             </p>
 
             <div className="grid grid-cols-2 gap-4">
@@ -170,7 +218,9 @@ export function InsurancePlanDialog({ open, onOpenChange, onSuccess }: Insurance
                   step="0.01"
                   placeholder="e.g., 3000"
                   value={formData.deductible}
-                  onChange={(e) => setFormData({ ...formData, deductible: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, deductible: e.target.value })
+                  }
                 />
               </div>
 
@@ -183,7 +233,9 @@ export function InsurancePlanDialog({ open, onOpenChange, onSuccess }: Insurance
                   step="0.01"
                   placeholder="e.g., 1500"
                   value={formData.deductibleMet}
-                  onChange={(e) => setFormData({ ...formData, deductibleMet: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, deductibleMet: e.target.value })
+                  }
                 />
               </div>
 
@@ -196,7 +248,9 @@ export function InsurancePlanDialog({ open, onOpenChange, onSuccess }: Insurance
                   step="0.01"
                   placeholder="e.g., 8000"
                   value={formData.outOfPocketMax}
-                  onChange={(e) => setFormData({ ...formData, outOfPocketMax: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, outOfPocketMax: e.target.value })
+                  }
                 />
               </div>
 
@@ -209,7 +263,9 @@ export function InsurancePlanDialog({ open, onOpenChange, onSuccess }: Insurance
                   step="0.01"
                   placeholder="e.g., 2000"
                   value={formData.outOfPocketMet}
-                  onChange={(e) => setFormData({ ...formData, outOfPocketMet: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, outOfPocketMet: e.target.value })
+                  }
                 />
               </div>
             </div>
@@ -219,7 +275,9 @@ export function InsurancePlanDialog({ open, onOpenChange, onSuccess }: Insurance
               <div className="mt-4 p-3 bg-accent/10 rounded-lg space-y-2">
                 {deductibleRemaining !== null && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Deductible Remaining:</span>
+                    <span className="text-muted-foreground">
+                      Deductible Remaining:
+                    </span>
                     <span className="font-semibold">
                       ${deductibleRemaining.toFixed(2)}
                       {deductibleRemaining === 0 && " ✓"}
@@ -228,7 +286,9 @@ export function InsurancePlanDialog({ open, onOpenChange, onSuccess }: Insurance
                 )}
                 {oopRemaining !== null && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Out-of-Pocket Remaining:</span>
+                    <span className="text-muted-foreground">
+                      Out-of-Pocket Remaining:
+                    </span>
                     <span className="font-semibold">
                       ${oopRemaining.toFixed(2)}
                       {oopRemaining === 0 && " ✓"}

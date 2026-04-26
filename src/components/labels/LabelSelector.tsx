@@ -1,8 +1,18 @@
 import { useState, useEffect } from "react";
 import { Check, Plus, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
 import { supabase } from "@/integrations/supabase/client";
 import { CreateLabelDialog } from "./CreateLabelDialog";
 import { LabelBadge } from "./LabelBadge";
@@ -16,11 +26,11 @@ interface LabelSelectorProps {
   onLabelsChange: (labels: any[]) => void;
 }
 
-export const LabelSelector = ({ 
-  resourceId, 
-  resourceType, 
-  selectedLabels, 
-  onLabelsChange 
+export const LabelSelector = ({
+  resourceId,
+  resourceType,
+  selectedLabels,
+  onLabelsChange,
 }: LabelSelectorProps) => {
   const [open, setOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -58,14 +68,17 @@ export const LabelSelector = ({
 
       const { data, error } = await supabase
         .from(table)
-        .select(`
+        .select(
+          `
           label_id,
           labels (*)
-        `)
+        `,
+        )
         .eq(column, resourceId);
 
       if (error) throw error;
-      const labels = data?.map((item: any) => item.labels).filter(Boolean) || [];
+      const labels =
+        data?.map((item: any) => item.labels).filter(Boolean) || [];
       onLabelsChange(labels);
     } catch (error) {
       logError("Error fetching resource labels", error);
@@ -99,12 +112,10 @@ export const LabelSelector = ({
         toast.success(`Removed label "${label.name}"`);
       } else {
         // Add label
-        const { error } = await supabase
-          .from(table)
-          .insert({
-            [column]: resourceId,
-            label_id: label.id,
-          });
+        const { error } = await supabase.from(table).insert({
+          [column]: resourceId,
+          label_id: label.id,
+        });
 
         if (error) throw error;
 
@@ -165,7 +176,9 @@ export const LabelSelector = ({
             </CommandEmpty>
             <CommandGroup>
               {availableLabels.map((label) => {
-                const isSelected = selectedLabels.some((l) => l.id === label.id);
+                const isSelected = selectedLabels.some(
+                  (l) => l.id === label.id,
+                );
                 return (
                   <CommandItem
                     key={label.id}

@@ -12,10 +12,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export const TaxPackageExport = () => {
-  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+  const [selectedYear, setSelectedYear] = useState<string>(
+    new Date().getFullYear().toString(),
+  );
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Generate list of available years (current year and 5 years back)
@@ -43,7 +51,7 @@ export const TaxPackageExport = () => {
       }
 
       // Fetch receipts for these invoices
-      const invoiceIds = invoices.map(inv => inv.id);
+      const invoiceIds = invoices.map((inv) => inv.id);
       const { data: receipts, error: receiptsError } = await supabase
         .from("receipts")
         .select("*")
@@ -91,7 +99,8 @@ export const TaxPackageExport = () => {
           <div className="flex-1">
             <CardTitle className="text-lg">IRS Tax Package</CardTitle>
             <CardDescription className="mt-1.5">
-              Generate an IRS-ready report with all HSA-eligible expenses and Form 8889 helper worksheet
+              Generate an IRS-ready report with all HSA-eligible expenses and
+              Form 8889 helper worksheet
             </CardDescription>
           </div>
         </div>
@@ -146,7 +155,9 @@ export const TaxPackageExport = () => {
           size="lg"
         >
           <Download className="h-4 w-4 mr-2" />
-          {isGenerating ? "Generating..." : `Download ${selectedYear} Tax Package`}
+          {isGenerating
+            ? "Generating..."
+            : `Download ${selectedYear} Tax Package`}
         </Button>
 
         <p className="text-xs text-muted-foreground text-center">

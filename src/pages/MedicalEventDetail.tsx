@@ -3,7 +3,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -114,7 +120,9 @@ export default function MedicalEventDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("invoices")
-        .select("id, vendor, amount, total_amount, date, category, is_hsa_eligible, user_responsibility_amount")
+        .select(
+          "id, vendor, amount, total_amount, date, category, is_hsa_eligible, user_responsibility_amount",
+        )
         .eq("medical_event_id", id)
         .order("date", { ascending: false });
 
@@ -180,8 +188,10 @@ export default function MedicalEventDetail() {
   });
 
   // Calculate totals
-  const calculatedBalance = (event?.total_billed || 0) - (event?.total_paid || 0);
-  const displayBalance = event?.user_responsibility_override ?? calculatedBalance;
+  const calculatedBalance =
+    (event?.total_billed || 0) - (event?.total_paid || 0);
+  const displayBalance =
+    event?.user_responsibility_override ?? calculatedBalance;
   const paymentProgress = event?.total_billed
     ? Math.min(((event?.total_paid || 0) / event.total_billed) * 100, 100)
     : 0;
@@ -229,7 +239,9 @@ export default function MedicalEventDetail() {
         <div className="container mx-auto px-4 py-8 text-center">
           <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <h2 className="text-xl font-semibold mb-2">Event Not Found</h2>
-          <Button onClick={() => navigate("/medical-events")}>Back to Events</Button>
+          <Button onClick={() => navigate("/medical-events")}>
+            Back to Events
+          </Button>
         </div>
       </AuthenticatedLayout>
     );
@@ -241,7 +253,11 @@ export default function MedicalEventDetail() {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <Button variant="ghost" onClick={() => navigate("/medical-events")} className="mb-2">
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/medical-events")}
+              className="mb-2"
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Events
             </Button>
@@ -266,7 +282,10 @@ export default function MedicalEventDetail() {
           </div>
 
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate(`/bills/new?eventId=${id}`)}>
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/bills/new?eventId=${id}`)}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Bill
             </Button>
@@ -283,9 +302,13 @@ export default function MedicalEventDetail() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-2">
                 <Receipt className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Total Billed</span>
+                <span className="text-sm text-muted-foreground">
+                  Total Billed
+                </span>
               </div>
-              <p className="text-2xl font-bold">${event.total_billed.toFixed(2)}</p>
+              <p className="text-2xl font-bold">
+                ${event.total_billed.toFixed(2)}
+              </p>
             </CardContent>
           </Card>
 
@@ -293,9 +316,13 @@ export default function MedicalEventDetail() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-2">
                 <CreditCard className="h-4 w-4 text-green-600" />
-                <span className="text-sm text-muted-foreground">Total Paid</span>
+                <span className="text-sm text-muted-foreground">
+                  Total Paid
+                </span>
               </div>
-              <p className="text-2xl font-bold text-green-600">${event.total_paid.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-green-600">
+                ${event.total_paid.toFixed(2)}
+              </p>
             </CardContent>
           </Card>
 
@@ -304,7 +331,9 @@ export default function MedicalEventDetail() {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-destructive" />
-                  <span className="text-sm text-muted-foreground">Outstanding</span>
+                  <span className="text-sm text-muted-foreground">
+                    Outstanding
+                  </span>
                 </div>
                 <Button
                   variant="ghost"
@@ -338,7 +367,9 @@ export default function MedicalEventDetail() {
                 </div>
               ) : (
                 <>
-                  <p className="text-2xl font-bold text-destructive">${displayBalance.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-destructive">
+                    ${displayBalance.toFixed(2)}
+                  </p>
                   {event.user_responsibility_override !== null && (
                     <p className="text-xs text-muted-foreground">
                       Calculated: ${calculatedBalance.toFixed(2)}
@@ -353,9 +384,13 @@ export default function MedicalEventDetail() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle2 className="h-4 w-4 text-primary" />
-                <span className="text-sm text-muted-foreground">HSA Eligible</span>
+                <span className="text-sm text-muted-foreground">
+                  HSA Eligible
+                </span>
               </div>
-              <p className="text-2xl font-bold text-primary">${event.hsa_eligible_amount.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-primary">
+                ${event.hsa_eligible_amount.toFixed(2)}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -396,7 +431,9 @@ export default function MedicalEventDetail() {
             <Card>
               <CardHeader>
                 <CardTitle>Activity Timeline</CardTitle>
-                <CardDescription>All bills, payments, and documents related to this event</CardDescription>
+                <CardDescription>
+                  All bills, payments, and documents related to this event
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <EventTimeline
@@ -416,7 +453,10 @@ export default function MedicalEventDetail() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Linked Bills</CardTitle>
-                  <Button size="sm" onClick={() => navigate(`/bills/new?eventId=${id}`)}>
+                  <Button
+                    size="sm"
+                    onClick={() => navigate(`/bills/new?eventId=${id}`)}
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Bill
                   </Button>
@@ -440,15 +480,21 @@ export default function MedicalEventDetail() {
                           <div>
                             <p className="font-medium">{invoice.vendor}</p>
                             <p className="text-sm text-muted-foreground">
-                              {invoice.category} • {format(new Date(invoice.date), "MMM d, yyyy")}
+                              {invoice.category} •{" "}
+                              {format(new Date(invoice.date), "MMM d, yyyy")}
                             </p>
                           </div>
                           <div className="text-right">
                             <p className="font-semibold">
-                              ${(invoice.total_amount || invoice.amount).toFixed(2)}
+                              $
+                              {(invoice.total_amount || invoice.amount).toFixed(
+                                2,
+                              )}
                             </p>
                             {invoice.is_hsa_eligible && (
-                              <Badge variant="secondary" className="text-xs">HSA</Badge>
+                              <Badge variant="secondary" className="text-xs">
+                                HSA
+                              </Badge>
                             )}
                           </div>
                         </div>
@@ -465,7 +511,10 @@ export default function MedicalEventDetail() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Linked Documents</CardTitle>
-                  <Button size="sm" onClick={() => navigate(`/documents?eventId=${id}`)}>
+                  <Button
+                    size="sm"
+                    onClick={() => navigate(`/documents?eventId=${id}`)}
+                  >
                     <Upload className="h-4 w-4 mr-2" />
                     Upload
                   </Button>
@@ -486,14 +535,20 @@ export default function MedicalEventDetail() {
                             <FileText className="h-5 w-5 text-muted-foreground" />
                             <div>
                               <p className="font-medium">
-                                {doc.description || doc.document_type.replace(/_/g, " ")}
+                                {doc.description ||
+                                  doc.document_type.replace(/_/g, " ")}
                               </p>
                               <p className="text-sm text-muted-foreground">
-                                {format(new Date(doc.uploaded_at), "MMM d, yyyy")}
+                                {format(
+                                  new Date(doc.uploaded_at),
+                                  "MMM d, yyyy",
+                                )}
                               </p>
                             </div>
                           </div>
-                          <Badge variant="outline">{doc.document_type.replace(/_/g, " ")}</Badge>
+                          <Badge variant="outline">
+                            {doc.document_type.replace(/_/g, " ")}
+                          </Badge>
                         </div>
                       </div>
                     ))}
@@ -520,9 +575,14 @@ export default function MedicalEventDetail() {
                       <div key={payment.id} className="p-4 border rounded-lg">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="font-medium">{payment.payment_source}</p>
+                            <p className="font-medium">
+                              {payment.payment_source}
+                            </p>
                             <p className="text-sm text-muted-foreground">
-                              {format(new Date(payment.payment_date), "MMM d, yyyy")}
+                              {format(
+                                new Date(payment.payment_date),
+                                "MMM d, yyyy",
+                              )}
                             </p>
                           </div>
                           <p className="font-semibold text-green-600">

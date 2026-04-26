@@ -9,6 +9,7 @@ This is a network connectivity issue, not a SQL syntax error. The SQL is now cor
 ## Quick Fixes (Try These First)
 
 ### 1. Check Internet Connection
+
 ```bash
 # Test if you can reach Supabase
 ping api.supabase.com
@@ -18,17 +19,20 @@ https://supabase.com
 ```
 
 ### 2. Check Supabase Dashboard
+
 - Go to https://supabase.com/dashboard
 - Can you access your project?
 - Is your project paused or suspended?
 
 ### 3. Try Different Network
+
 - Disable VPN (if using one)
 - Try different WiFi network
 - Try mobile hotspot
 - Check if firewall is blocking Supabase
 
 ### 4. Clear Browser Cache
+
 ```
 Ctrl + Shift + Delete → Clear cache
 Or try Incognito/Private browsing
@@ -58,28 +62,33 @@ npm install -g supabase
 ```
 
 **Option 2: With Scoop (alternative)**
+
 ```bash
 scoop install supabase
 ```
 
 ### Login to Supabase
+
 ```bash
 supabase login
 ```
 
 ### Link to Your Project
+
 ```bash
 cd /c/Users/Owen/OneDrive/Documents/VSCode/wellth-ai
 supabase link --project-ref YOUR_PROJECT_REF
 ```
 
 To find your project ref:
+
 - Go to Supabase Dashboard
 - Project Settings → General → Reference ID
 
 ### Run the Migration
 
 **Option A: Create migration directory and push (RECOMMENDED)**
+
 ```bash
 # Create migrations directory if it doesn't exist
 mkdir -p supabase/migrations
@@ -92,6 +101,7 @@ npx supabase db push
 ```
 
 **Option B: Use psql directly with the file**
+
 ```bash
 # Use the connection string to execute the file
 psql "postgresql://postgres:[YOUR-PASSWORD]@db.fzmdfhdfvayaalhogskm.supabase.co:5432/postgres" -f CORRECTED_MIGRATION.sql
@@ -136,37 +146,42 @@ psql "postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:54
 If you need to test RIGHT NOW and can't wait for connectivity, create tables manually via Supabase Dashboard:
 
 ### 1. Create `analytics_events` table
+
 **Supabase Dashboard → Database → Tables → New Table**
 
-| Column Name | Type | Default | Nullable |
-|-------------|------|---------|----------|
-| id | uuid | gen_random_uuid() | NO |
-| user_id | uuid | - | YES |
-| event_name | text | - | NO |
-| event_properties | jsonb | '{}'::jsonb | NO |
-| created_at | timestamptz | now() | NO |
+| Column Name      | Type        | Default           | Nullable |
+| ---------------- | ----------- | ----------------- | -------- |
+| id               | uuid        | gen_random_uuid() | NO       |
+| user_id          | uuid        | -                 | YES      |
+| event_name       | text        | -                 | NO       |
+| event_properties | jsonb       | '{}'::jsonb       | NO       |
+| created_at       | timestamptz | now()             | NO       |
 
 **Foreign Keys:**
+
 - user_id → auth.users(id) ON DELETE CASCADE
 
 **Indexes:**
+
 - idx_analytics_events_user_id on (user_id)
 - idx_analytics_events_event_name on (event_name)
 - idx_analytics_events_created_at on (created_at)
 
 **RLS Policies:**
 Enable RLS, then add:
+
 1. "Users can view own analytics events" - SELECT - `auth.uid() = user_id`
 2. "Users can insert own analytics events" - INSERT - `auth.uid() = user_id OR user_id IS NULL`
 3. "Admins can view all analytics events" - SELECT - `EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true)`
 
 ### 2. Add columns to `profiles` table
+
 **Supabase Dashboard → Database → Tables → profiles → Add Column**
 
-| Column Name | Type | Default | Nullable |
-|-------------|------|---------|----------|
-| insurance_plan | jsonb | NULL | YES |
-| is_admin | boolean | false | YES |
+| Column Name    | Type    | Default | Nullable |
+| -------------- | ------- | ------- | -------- |
+| insurance_plan | jsonb   | NULL    | YES      |
+| is_admin       | boolean | false   | YES      |
 
 ---
 
@@ -181,6 +196,7 @@ Is there an ongoing incident?
 ## Contact Supabase Support
 
 If issue persists:
+
 1. Go to https://supabase.com/dashboard/support
 2. Include:
    - Error message: "Failed to fetch (api.supabase.com)"
@@ -211,6 +227,7 @@ npm run dev
 ```
 
 Check browser console for:
+
 ```
 Analytics (dev): { type: 'page_view', ... }
 ```
@@ -222,14 +239,17 @@ This confirms the code is working, just waiting for database connection.
 ## Most Likely Cause
 
 **Network/ISP blocking Supabase**
+
 - Some corporate networks block cloud databases
 - Try from home WiFi vs work network
 - Try mobile hotspot
 
 **Supabase project paused**
+
 - Free tier projects pause after inactivity
 - Go to dashboard and click "Resume" if needed
 
 **Browser extension blocking**
+
 - Ad blockers, privacy extensions may block API calls
 - Try disabling extensions or use Incognito mode

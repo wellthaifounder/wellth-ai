@@ -25,13 +25,18 @@ interface ProviderChargeComparisonProps {
   chargeData: ChargeData[];
 }
 
-export function ProviderChargeComparison({ providerId, chargeData }: ProviderChargeComparisonProps) {
+export function ProviderChargeComparison({
+  providerId,
+  chargeData,
+}: ProviderChargeComparisonProps) {
   if (!chargeData || chargeData.length === 0) {
     return (
       <Card>
         <CardContent className="pt-12 pb-12 text-center">
           <DollarSign className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Charge Data Available</h3>
+          <h3 className="text-lg font-semibold mb-2">
+            No Charge Data Available
+          </h3>
           <p className="text-muted-foreground">
             Charge comparisons will appear here as bills are analyzed
           </p>
@@ -69,7 +74,7 @@ export function ProviderChargeComparison({ providerId, chargeData }: ProviderCha
               return (
                 <TableRow key={charge.cpt_code}>
                   <TableCell className="font-medium max-w-[200px]">
-                    {charge.procedure_name || 'Medical Procedure'}
+                    {charge.procedure_name || "Medical Procedure"}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">{charge.cpt_code}</Badge>
@@ -83,15 +88,23 @@ export function ProviderChargeComparison({ providerId, chargeData }: ProviderCha
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
                       {isHigher ? (
-                        <TrendingUp className={`h-4 w-4 ${isSignificant ? 'text-red-600' : 'text-orange-600'}`} />
+                        <TrendingUp
+                          className={`h-4 w-4 ${isSignificant ? "text-red-600" : "text-orange-600"}`}
+                        />
                       ) : (
                         <TrendingDown className="h-4 w-4 text-green-600" />
                       )}
-                      <span className={`font-semibold ${
-                        isSignificant && isHigher ? 'text-red-600' : 
-                        isHigher ? 'text-orange-600' : 'text-green-600'
-                      }`}>
-                        {isHigher ? '+' : ''}{variance.toFixed(1)}%
+                      <span
+                        className={`font-semibold ${
+                          isSignificant && isHigher
+                            ? "text-red-600"
+                            : isHigher
+                              ? "text-orange-600"
+                              : "text-green-600"
+                        }`}
+                      >
+                        {isHigher ? "+" : ""}
+                        {variance.toFixed(1)}%
                       </span>
                     </div>
                   </TableCell>
@@ -107,9 +120,18 @@ export function ProviderChargeComparison({ providerId, chargeData }: ProviderCha
         <div className="mt-6 p-4 bg-muted/50 rounded-lg text-sm space-y-2">
           <p className="font-semibold">Understanding Charge Variances</p>
           <ul className="space-y-1 text-muted-foreground list-disc list-inside">
-            <li><strong className="text-green-600">Green (negative %)</strong>: Provider charges less than Medicare rates</li>
-            <li><strong className="text-orange-600">Orange (0-25%)</strong>: Typical markup, within normal range</li>
-            <li><strong className="text-red-600">Red (&gt;25%)</strong>: Significant markup, may warrant scrutiny</li>
+            <li>
+              <strong className="text-green-600">Green (negative %)</strong>:
+              Provider charges less than Medicare rates
+            </li>
+            <li>
+              <strong className="text-orange-600">Orange (0-25%)</strong>:
+              Typical markup, within normal range
+            </li>
+            <li>
+              <strong className="text-red-600">Red (&gt;25%)</strong>:
+              Significant markup, may warrant scrutiny
+            </li>
           </ul>
         </div>
       </CardContent>

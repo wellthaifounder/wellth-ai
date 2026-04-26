@@ -42,7 +42,9 @@ export async function streamWellbieChat({
   const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/wellbie-chat`;
 
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session?.access_token) {
       throw new Error("Invalid or expired session");
     }
@@ -57,7 +59,9 @@ export async function streamWellbieChat({
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+      const errorData = await response
+        .json()
+        .catch(() => ({ error: "Unknown error" }));
       throw new Error(errorData.error || `HTTP ${response.status}`);
     }
 
@@ -93,7 +97,9 @@ export async function streamWellbieChat({
 
         try {
           const parsed = JSON.parse(jsonStr);
-          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+          const content = parsed.choices?.[0]?.delta?.content as
+            | string
+            | undefined;
           if (content) onDelta(content);
         } catch {
           textBuffer = line + "\n" + textBuffer;
@@ -111,9 +117,13 @@ export async function streamWellbieChat({
         if (jsonStr === "[DONE]") continue;
         try {
           const parsed = JSON.parse(jsonStr);
-          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+          const content = parsed.choices?.[0]?.delta?.content as
+            | string
+            | undefined;
           if (content) onDelta(content);
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
     }
 

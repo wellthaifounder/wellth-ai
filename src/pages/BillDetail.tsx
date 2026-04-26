@@ -3,11 +3,27 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, FileText, AlertTriangle, CreditCard, Scale, Upload, Link2, CheckCircle2, Plus } from "lucide-react";
+import {
+  ArrowLeft,
+  FileText,
+  AlertTriangle,
+  CreditCard,
+  Scale,
+  Upload,
+  Link2,
+  CheckCircle2,
+  Plus,
+} from "lucide-react";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { logError } from "@/utils/errorHandler";
 import { BillErrorCard } from "@/components/bills/BillErrorCard";
@@ -19,7 +35,13 @@ import { LinkTransactionDialog } from "@/components/bills/LinkTransactionDialog"
 import { calculateHSAEligibility } from "@/lib/hsaCalculations";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useHSA } from "@/contexts/HSAContext";
@@ -51,20 +73,21 @@ const HSA_ELIGIBLE_CATEGORIES = [
   "Hospital",
   "Physical Therapy",
   "Mental Health",
-  "Other Medical"
+  "Other Medical",
 ];
 
 export default function BillDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { hasHSA } = useHSA();
-  const isNewBill = id === 'new';
+  const isNewBill = id === "new";
   const [activeTab, setActiveTab] = useState("overview");
   const [newFiles, setNewFiles] = useState<UploadedFile[]>([]);
-  const [showLinkTransactionDialog, setShowLinkTransactionDialog] = useState(false);
+  const [showLinkTransactionDialog, setShowLinkTransactionDialog] =
+    useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [formData, setFormData] = useState({
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split("T")[0],
     vendor: "",
     totalAmount: "",
     category: "",
@@ -74,18 +97,25 @@ export default function BillDetail() {
   });
 
   // Fetch bill data
-  const { data: bill, isLoading, refetch } = useQuery({
-    queryKey: ['bill', id],
+  const {
+    data: bill,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["bill", id],
     queryFn: async () => {
       if (isNewBill) return null;
 
       // Get current user for ownership verification
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
-        .from('invoices')
-        .select(`
+        .from("invoices")
+        .select(
+          `
           *,
           payment_transactions (
             id,
@@ -95,50 +125,51 @@ export default function BillDetail() {
             is_reimbursed,
             reimbursed_date
           )
-        `)
-        .eq('id', id)
-        .eq('user_id', user.id) // Explicit ownership check
+        `,
+        )
+        .eq("id", id)
+        .eq("user_id", user.id) // Explicit ownership check
         .single();
 
       if (error) throw error;
-      if (!data) throw new Error('Bill not found or access denied');
+      if (!data) throw new Error("Bill not found or access denied");
       return data;
     },
-    enabled: !isNewBill && !!id
+    enabled: !isNewBill && !!id,
   });
 
   // Fetch receipts/documents
   const { data: receipts, refetch: refetchReceipts } = useQuery({
-    queryKey: ['receipts', id],
+    queryKey: ["receipts", id],
     queryFn: async () => {
       if (isNewBill) return [];
       const { data, error } = await supabase
-        .from('receipts')
-        .select('*')
-        .eq('invoice_id', id)
-        .order('display_order');
-      
+        .from("receipts")
+        .select("*")
+        .eq("invoice_id", id)
+        .order("display_order");
+
       if (error) throw error;
       return data || [];
     },
-    enabled: !isNewBill && !!id
+    enabled: !isNewBill && !!id,
   });
 
   // Bill review feature archived - removed error fetching
 
   // Fetch provider data
   const { data: providerData } = useQuery({
-    queryKey: ['provider-for-bill', bill?.vendor],
+    queryKey: ["provider-for-bill", bill?.vendor],
     queryFn: async () => {
       if (!bill?.vendor) return null;
       const { data } = await supabase
-        .from('providers')
-        .select('*')
-        .ilike('name', bill.vendor)
+        .from("providers")
+        .select("*")
+        .ilike("name", bill.vendor)
         .maybeSingle();
       return data;
     },
-    enabled: !!bill?.vendor
+    enabled: !!bill?.vendor,
   });
 
   // Bill review feature archived - removed AI analysis function
@@ -149,7 +180,8 @@ export default function BillDetail() {
       setFormData({
         date: bill.date,
         vendor: bill.vendor,
-        totalAmount: bill.total_amount?.toString() || bill.amount?.toString() || "",
+        totalAmount:
+          bill.total_amount?.toString() || bill.amount?.toString() || "",
         category: bill.category,
         notes: bill.notes || "",
         invoiceNumber: bill.invoice_number || "",
@@ -162,13 +194,15 @@ export default function BillDetail() {
   useEffect(() => {
     if (isNewBill && formData.category) {
       const isEligible = HSA_ELIGIBLE_CATEGORIES.includes(formData.category);
-      setFormData(prev => ({ ...prev, isHsaEligible: isEligible }));
+      setFormData((prev) => ({ ...prev, isHsaEligible: isEligible }));
     }
   }, [formData.category, isNewBill]);
 
   const handleSaveBill = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const amount = parseFloat(formData.totalAmount);
@@ -193,21 +227,21 @@ export default function BillDetail() {
 
       if (isNewBill) {
         const { data, error } = await supabase
-          .from('invoices')
+          .from("invoices")
           .insert(billData)
           .select()
           .single();
 
         if (error) throw error;
         billId = data.id;
-        
+
         toast.success("Bill created successfully!");
         navigate(`/bills/${billId}`);
       } else {
         const { error } = await supabase
-          .from('invoices')
+          .from("invoices")
           .update(billData)
-          .eq('id', id);
+          .eq("id", id);
 
         if (error) throw error;
         toast.success("Bill updated successfully!");
@@ -217,21 +251,21 @@ export default function BillDetail() {
       // Upload new files if any
       if (newFiles.length > 0 && billId) {
         const uploadedReceipts: { id: string; document_type: string }[] = [];
-        
+
         for (let i = 0; i < newFiles.length; i++) {
           const fileData = newFiles[i];
-          const fileExt = fileData.file.name.split('.').pop();
+          const fileExt = fileData.file.name.split(".").pop();
           const timestamp = Date.now();
           const filePath = `${user.id}/${billId}/${fileData.documentType}_${timestamp}.${fileExt}`;
 
           const { error: uploadError } = await supabase.storage
-            .from('receipts')
+            .from("receipts")
             .upload(filePath, fileData.file);
 
           if (uploadError) throw uploadError;
 
           const { data: receiptData, error: receiptError } = await supabase
-            .from('receipts')
+            .from("receipts")
             .insert({
               user_id: user.id,
               invoice_id: billId,
@@ -247,15 +281,15 @@ export default function BillDetail() {
           if (receiptError) throw receiptError;
           if (receiptData) uploadedReceipts.push(receiptData);
         }
-        
+
         setNewFiles([]);
         refetchReceipts();
-        
+
         // Trigger AI review if medical bill or EOB was uploaded
         const billOrEOBReceipt = uploadedReceipts.find(
-          r => r.document_type === 'bill' || r.document_type === 'eob'
+          (r) => r.document_type === "bill" || r.document_type === "eob",
         );
-        
+
         // Bill review feature archived - removed AI analysis trigger
       }
     } catch (error) {
@@ -276,12 +310,16 @@ export default function BillDetail() {
     );
   }
 
-  const breakdown = bill ? calculateHSAEligibility(bill, (bill.payment_transactions || []) as BillPayment[]) : null;
+  const breakdown = bill
+    ? calculateHSAEligibility(
+        bill,
+        (bill.payment_transactions || []) as BillPayment[],
+      )
+    : null;
   // Bill review feature archived - removed review and errorCount
 
   return (
     <AuthenticatedLayout>
-
       <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-6xl">
         <div className="mb-6">
           <Button variant="ghost" onClick={() => navigate("/bills")}>
@@ -292,12 +330,12 @@ export default function BillDetail() {
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">
-            {isNewBill ? 'Add New Bill' : 'Bill Details'}
+            {isNewBill ? "Add New Bill" : "Bill Details"}
           </h1>
           <p className="text-muted-foreground">
             {isNewBill
-              ? 'Upload medical bills and documentation to start tracking this expense'
-              : 'View and manage bill information, payments, and documentation'}
+              ? "Upload medical bills and documentation to start tracking this expense"
+              : "View and manage bill information, payments, and documentation"}
           </p>
         </div>
 
@@ -307,10 +345,16 @@ export default function BillDetail() {
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="text-2xl">
-                    {isNewBill ? "Add New Bill" : bill?.vendor || "Bill Details"}
+                    {isNewBill
+                      ? "Add New Bill"
+                      : bill?.vendor || "Bill Details"}
                   </CardTitle>
                   <CardDescription>
-                    {isNewBill ? "Track your medical bill and manage payments" : (bill?.invoice_number ? `Bill #${bill.invoice_number}` : "No bill number")}
+                    {isNewBill
+                      ? "Track your medical bill and manage payments"
+                      : bill?.invoice_number
+                        ? `Bill #${bill.invoice_number}`
+                        : "No bill number"}
                   </CardDescription>
                 </div>
                 {/* Bill review feature archived - removed review badge */}
@@ -344,17 +388,26 @@ export default function BillDetail() {
                         id="date"
                         type="date"
                         value={formData.date}
-                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, date: e.target.value })
+                        }
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="invoiceNumber">Bill Number (Optional)</Label>
+                      <Label htmlFor="invoiceNumber">
+                        Bill Number (Optional)
+                      </Label>
                       <Input
                         id="invoiceNumber"
                         placeholder="e.g., INV-12345"
                         value={formData.invoiceNumber}
-                        onChange={(e) => setFormData({ ...formData, invoiceNumber: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            invoiceNumber: e.target.value,
+                          })
+                        }
                       />
                     </div>
                   </div>
@@ -365,7 +418,9 @@ export default function BillDetail() {
                       id="vendor"
                       placeholder="e.g., City Hospital"
                       value={formData.vendor}
-                      onChange={(e) => setFormData({ ...formData, vendor: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, vendor: e.target.value })
+                      }
                       required
                     />
                   </div>
@@ -375,7 +430,9 @@ export default function BillDetail() {
                       <Label htmlFor="category">Category</Label>
                       <Select
                         value={formData.category}
-                        onValueChange={(value) => setFormData({ ...formData, category: value })}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, category: value })
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a category" />
@@ -398,7 +455,12 @@ export default function BillDetail() {
                         step="0.01"
                         placeholder="0.00"
                         value={formData.totalAmount}
-                        onChange={(e) => setFormData({ ...formData, totalAmount: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            totalAmount: e.target.value,
+                          })
+                        }
                         required
                       />
                     </div>
@@ -408,7 +470,9 @@ export default function BillDetail() {
                     <Switch
                       id="hsaEligible"
                       checked={formData.isHsaEligible}
-                      onCheckedChange={(checked) => setFormData({ ...formData, isHsaEligible: checked })}
+                      onCheckedChange={(checked) =>
+                        setFormData({ ...formData, isHsaEligible: checked })
+                      }
                     />
                     <Label htmlFor="hsaEligible">HSA Eligible</Label>
                   </div>
@@ -419,37 +483,55 @@ export default function BillDetail() {
                       id="notes"
                       placeholder="Additional notes..."
                       value={formData.notes}
-                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, notes: e.target.value })
+                      }
                       rows={4}
                     />
                   </div>
 
                   {/* Show HSA upgrade prompt for non-HSA users when expense is HSA-eligible */}
-                  {!hasHSA && formData.isHsaEligible && formData.totalAmount && (
-                    <HSAUpgradePrompt
-                      expenseAmount={parseFloat(formData.totalAmount)}
-                      context="bill-detail"
-                      variant="compact"
-                    />
-                  )}
+                  {!hasHSA &&
+                    formData.isHsaEligible &&
+                    formData.totalAmount && (
+                      <HSAUpgradePrompt
+                        expenseAmount={parseFloat(formData.totalAmount)}
+                        context="bill-detail"
+                        variant="compact"
+                      />
+                    )}
 
                   {!isNewBill && breakdown && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted rounded-lg">
                       <div>
-                        <p className="text-sm text-muted-foreground">Total Billed</p>
-                        <p className="text-lg font-semibold">${breakdown.totalInvoiced.toFixed(2)}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Total Billed
+                        </p>
+                        <p className="text-lg font-semibold">
+                          ${breakdown.totalInvoiced.toFixed(2)}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Paid via HSA</p>
-                        <p className="text-lg font-semibold text-green-600">${breakdown.paidViaHSA.toFixed(2)}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Paid via HSA
+                        </p>
+                        <p className="text-lg font-semibold text-green-600">
+                          ${breakdown.paidViaHSA.toFixed(2)}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Paid Other</p>
-                        <p className="text-lg font-semibold">${breakdown.paidViaOther.toFixed(2)}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Paid Other
+                        </p>
+                        <p className="text-lg font-semibold">
+                          ${breakdown.paidViaOther.toFixed(2)}
+                        </p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Unpaid</p>
-                        <p className="text-lg font-semibold text-red-600">${breakdown.unpaidBalance.toFixed(2)}</p>
+                        <p className="text-lg font-semibold text-red-600">
+                          ${breakdown.unpaidBalance.toFixed(2)}
+                        </p>
                       </div>
                     </div>
                   )}
@@ -458,7 +540,10 @@ export default function BillDetail() {
                     <Button onClick={handleSaveBill}>
                       {isNewBill ? "Create Bill" : "Save Changes"}
                     </Button>
-                    <Button variant="outline" onClick={() => navigate("/bills")}>
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate("/bills")}
+                    >
                       Cancel
                     </Button>
                   </div>
@@ -473,13 +558,14 @@ export default function BillDetail() {
                         <div>
                           <p className="font-medium">AI Analysis in Progress</p>
                           <p className="text-sm text-muted-foreground">
-                            Analyzing your bill for potential errors and overcharges. This may take up to 30 seconds.
+                            Analyzing your bill for potential errors and
+                            overcharges. This may take up to 30 seconds.
                           </p>
                         </div>
                       </div>
                     </div>
                   )}
-                  
+
                   {!isNewBill && receipts && receipts.length > 0 && (
                     <div className="space-y-2">
                       <Label>Existing Documents</Label>
@@ -495,15 +581,21 @@ export default function BillDetail() {
                   <div className="space-y-2">
                     <Label>Upload New Documents</Label>
                     <p className="text-sm text-muted-foreground">
-                      Upload your medical bill, EOB (Explanation of Benefits), or any supporting documentation.
+                      Upload your medical bill, EOB (Explanation of Benefits),
+                      or any supporting documentation.
                     </p>
                     <MultiFileUpload
                       onFilesChange={setNewFiles}
                       disabled={isAnalyzing}
                     />
                     {newFiles.length > 0 && (
-                      <Button onClick={handleSaveBill} className="mt-4" disabled={isAnalyzing}>
-                        Upload {newFiles.length} Document{newFiles.length !== 1 ? 's' : ''}
+                      <Button
+                        onClick={handleSaveBill}
+                        className="mt-4"
+                        disabled={isAnalyzing}
+                      >
+                        Upload {newFiles.length} Document
+                        {newFiles.length !== 1 ? "s" : ""}
                       </Button>
                     )}
                   </div>
@@ -516,7 +608,9 @@ export default function BillDetail() {
                   <TabsContent value="payments" className="space-y-6 mt-6">
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold">Payment History</h3>
+                        <h3 className="text-lg font-semibold">
+                          Payment History
+                        </h3>
                         <div className="flex gap-2">
                           <Button
                             variant="outline"
@@ -526,36 +620,53 @@ export default function BillDetail() {
                             <Link2 className="h-4 w-4 mr-2" />
                             Link Transaction
                           </Button>
-                          <Button size="sm" onClick={() => navigate(`/payment/new?invoice=${id}`)}>
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              navigate(`/payment/new?invoice=${id}`)
+                            }
+                          >
                             <Plus className="h-4 w-4 mr-2" />
                             Add Payment
                           </Button>
                         </div>
                       </div>
 
-                      {bill?.payment_transactions && bill.payment_transactions.length > 0 ? (
+                      {bill?.payment_transactions &&
+                      bill.payment_transactions.length > 0 ? (
                         <div className="space-y-2">
-                          {bill.payment_transactions.map((payment: BillPayment) => (
-                            <Card key={payment.id}>
-                              <CardContent className="pt-6">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <p className="font-medium">${payment.amount.toFixed(2)}</p>
-                                    <p className="text-sm text-muted-foreground">
-                                      {payment.payment_source} • {new Date(payment.payment_date).toLocaleDateString()}
-                                    </p>
+                          {bill.payment_transactions.map(
+                            (payment: BillPayment) => (
+                              <Card key={payment.id}>
+                                <CardContent className="pt-6">
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <p className="font-medium">
+                                        ${payment.amount.toFixed(2)}
+                                      </p>
+                                      <p className="text-sm text-muted-foreground">
+                                        {payment.payment_source} •{" "}
+                                        {new Date(
+                                          payment.payment_date,
+                                        ).toLocaleDateString()}
+                                      </p>
+                                    </div>
+                                    {payment.is_reimbursed && (
+                                      <Badge variant="default">
+                                        Reimbursed
+                                      </Badge>
+                                    )}
                                   </div>
-                                  {payment.is_reimbursed && (
-                                    <Badge variant="default">Reimbursed</Badge>
-                                  )}
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
+                                </CardContent>
+                              </Card>
+                            ),
+                          )}
                         </div>
                       ) : (
                         <div className="text-center py-12">
-                          <p className="text-muted-foreground">No payments recorded yet</p>
+                          <p className="text-muted-foreground">
+                            No payments recorded yet
+                          </p>
                         </div>
                       )}
                     </div>

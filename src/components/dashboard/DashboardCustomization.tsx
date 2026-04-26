@@ -10,7 +10,10 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Settings, Eye, EyeOff, RotateCcw } from "lucide-react";
-import { useDashboardLayout, DASHBOARD_CARDS } from "@/contexts/DashboardLayoutContext";
+import {
+  useDashboardLayout,
+  DASHBOARD_CARDS,
+} from "@/contexts/DashboardLayoutContext";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 
@@ -19,27 +22,44 @@ interface DashboardCustomizationProps {
   hasHSA: boolean;
 }
 
-export function DashboardCustomization({ currentTab, hasHSA }: DashboardCustomizationProps) {
-  const { visibleCards, toggleCardVisibility, resetLayout, isCardVisible } = useDashboardLayout();
+export function DashboardCustomization({
+  currentTab,
+  hasHSA,
+}: DashboardCustomizationProps) {
+  const { visibleCards, toggleCardVisibility, resetLayout, isCardVisible } =
+    useDashboardLayout();
 
   const getCategoryTitle = (category: string) => {
     switch (category) {
-      case "overview": return "Overview";
-      case "bills": return "Bill Intelligence";
-      case "hsa": return "HSA & Money";
-      case "transactions": return "Transactions";
-      default: return category;
+      case "overview":
+        return "Overview";
+      case "bills":
+        return "Bill Intelligence";
+      case "hsa":
+        return "HSA & Money";
+      case "transactions":
+        return "Transactions";
+      default:
+        return category;
     }
   };
 
-  const categories = ["overview", "bills", ...(hasHSA ? ["hsa"] : []), "transactions"] as const;
-  const currentCategory = currentTab as typeof categories[number];
+  const categories = [
+    "overview",
+    "bills",
+    ...(hasHSA ? ["hsa"] : []),
+    "transactions",
+  ] as const;
+  const currentCategory = currentTab as (typeof categories)[number];
 
-  const cardsForCategory = DASHBOARD_CARDS.filter(card => 
-    card.category === currentCategory && (card.category !== "hsa" || hasHSA)
+  const cardsForCategory = DASHBOARD_CARDS.filter(
+    (card) =>
+      card.category === currentCategory && (card.category !== "hsa" || hasHSA),
   );
 
-  const visibleCount = cardsForCategory.filter(card => isCardVisible(card.id)).length;
+  const visibleCount = cardsForCategory.filter((card) =>
+    isCardVisible(card.id),
+  ).length;
 
   return (
     <Sheet>
@@ -56,7 +76,8 @@ export function DashboardCustomization({ currentTab, hasHSA }: DashboardCustomiz
             Dashboard Customization
           </SheetTitle>
           <SheetDescription>
-            Show or hide cards to personalize your {getCategoryTitle(currentCategory)} view
+            Show or hide cards to personalize your{" "}
+            {getCategoryTitle(currentCategory)} view
           </SheetDescription>
         </SheetHeader>
 
@@ -65,7 +86,9 @@ export function DashboardCustomization({ currentTab, hasHSA }: DashboardCustomiz
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold">Visible Cards</h3>
-                <Badge variant="secondary">{visibleCount}/{cardsForCategory.length}</Badge>
+                <Badge variant="secondary">
+                  {visibleCount}/{cardsForCategory.length}
+                </Badge>
               </div>
               <p className="text-sm text-muted-foreground">
                 {getCategoryTitle(currentCategory)} tab

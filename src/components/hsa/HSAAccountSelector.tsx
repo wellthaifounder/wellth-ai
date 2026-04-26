@@ -29,15 +29,21 @@ export function HSAAccountSelector({
   const { accounts, isLoading } = useHSAAccounts();
 
   // Filter to only show active accounts and by date if provided
-  let filteredAccounts = accounts.filter((acc) => acc.is_active && !acc.closed_date);
-  
+  let filteredAccounts = accounts.filter(
+    (acc) => acc.is_active && !acc.closed_date,
+  );
+
   if (filterByDate) {
     const expenseDate = new Date(filterByDate);
-    filteredAccounts = filteredAccounts.filter(account => {
+    filteredAccounts = filteredAccounts.filter((account) => {
       const openedDate = new Date(account.opened_date);
-      const closedDate = account.closed_date ? new Date(account.closed_date) : null;
-      
-      return expenseDate >= openedDate && (!closedDate || expenseDate <= closedDate);
+      const closedDate = account.closed_date
+        ? new Date(account.closed_date)
+        : null;
+
+      return (
+        expenseDate >= openedDate && (!closedDate || expenseDate <= closedDate)
+      );
     });
   }
 
@@ -63,11 +69,7 @@ export function HSAAccountSelector({
   }
 
   return (
-    <Select
-      value={value}
-      onValueChange={onValueChange}
-      disabled={disabled}
-    >
+    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
       <SelectTrigger>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

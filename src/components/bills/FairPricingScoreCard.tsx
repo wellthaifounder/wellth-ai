@@ -1,7 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Info, TrendingDown, TrendingUp, Minus } from "lucide-react";
 
 interface FairPricingScoreCardProps {
@@ -10,10 +15,10 @@ interface FairPricingScoreCardProps {
   lastUpdated?: string | null;
 }
 
-export function FairPricingScoreCard({ 
-  score, 
+export function FairPricingScoreCard({
+  score,
   regionalPercentile,
-  lastUpdated 
+  lastUpdated,
 }: FairPricingScoreCardProps) {
   if (score === null) {
     return (
@@ -27,7 +32,11 @@ export function FairPricingScoreCard({
                   <Info className="h-4 w-4 text-muted-foreground" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Fair Pricing Score measures how a provider's charges compare to regional averages. Higher scores indicate more competitive pricing.</p>
+                  <p>
+                    Fair Pricing Score measures how a provider's charges compare
+                    to regional averages. Higher scores indicate more
+                    competitive pricing.
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -58,8 +67,10 @@ export function FairPricingScoreCard({
 
   const getPercentileIcon = () => {
     if (!regionalPercentile) return <Minus className="h-4 w-4" />;
-    if (regionalPercentile < 50) return <TrendingDown className="h-4 w-4 text-green-600" />;
-    if (regionalPercentile > 50) return <TrendingUp className="h-4 w-4 text-orange-600" />;
+    if (regionalPercentile < 50)
+      return <TrendingDown className="h-4 w-4 text-green-600" />;
+    if (regionalPercentile > 50)
+      return <TrendingUp className="h-4 w-4 text-orange-600" />;
     return <Minus className="h-4 w-4" />;
   };
 
@@ -74,7 +85,11 @@ export function FairPricingScoreCard({
                 <Info className="h-4 w-4 text-muted-foreground" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p>Fair Pricing Score measures how a provider's charges compare to regional averages. 100 = at regional median, higher scores indicate better pricing.</p>
+                <p>
+                  Fair Pricing Score measures how a provider's charges compare
+                  to regional averages. 100 = at regional median, higher scores
+                  indicate better pricing.
+                </p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

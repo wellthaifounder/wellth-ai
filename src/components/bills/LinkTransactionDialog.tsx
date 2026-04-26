@@ -17,7 +17,10 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Loader2, Search } from "lucide-react";
 import { logError } from "@/utils/errorHandler";
-import { AdvancedFilters, type FilterCriteria } from "@/components/transactions/AdvancedFilters";
+import {
+  AdvancedFilters,
+  type FilterCriteria,
+} from "@/components/transactions/AdvancedFilters";
 
 interface Transaction {
   id: string;
@@ -46,7 +49,9 @@ interface Invoice {
   date: string;
 }
 
-type DisplayTransaction = (Transaction | LinkedTransaction) & { isLinked: boolean };
+type DisplayTransaction = (Transaction | LinkedTransaction) & {
+  isLinked: boolean;
+};
 
 interface LinkTransactionDialogProps {
   open: boolean;
@@ -62,7 +67,9 @@ export function LinkTransactionDialog({
   onSuccess,
 }: LinkTransactionDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [allTransactions, setAllTransactions] = useState<DisplayTransaction[]>([]);
+  const [allTransactions, setAllTransactions] = useState<DisplayTransaction[]>(
+    [],
+  );
   const [toggling, setToggling] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [advancedFilters, setAdvancedFilters] = useState<FilterCriteria>({});
@@ -80,13 +87,16 @@ export function LinkTransactionDialog({
   const fetchTransactions = async () => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       // Fetch linked transactions for this invoice
       const { data: linkedPayments, error: linkedError } = await supabase
         .from("payment_transactions")
-        .select(`
+        .select(
+          `
           id,
           transaction_id,
           payment_source,
@@ -103,15 +113,16 @@ export function LinkTransactionDialog({
               is_hsa_account
             )
           )
-        `)
+        `,
+        )
         .eq("invoice_id", invoice?.id)
         .not("transaction_id", "is", null);
 
       if (linkedError) throw linkedError;
 
       const linked: LinkedTransaction[] = (linkedPayments || [])
-        .filter(pt => pt.transactions)
-        .map(pt => ({
+        .filter((pt) => pt.transactions)
+        .map((pt) => ({
           ...(pt.transactions as Transaction),
           payment_transaction_id: pt.id,
           payment_source: pt.payment_source,
@@ -123,20 +134,23 @@ export function LinkTransactionDialog({
         .select("transaction_id")
         .not("transaction_id", "is", null);
 
-      const linkedIds = allLinkedTransactions?.map(pt => pt.transaction_id) || [];
+      const linkedIds =
+        allLinkedTransactions?.map((pt) => pt.transaction_id) || [];
 
       // Fetch unlinked transactions
       const query = supabase
         .from("transactions")
-        .select(`
+        .select(
+          `
           *,
           payment_methods (
             is_hsa_account
           )
-        `)
+        `,
+        )
         .eq("user_id", user.id)
         .is("invoice_id", null)
-        .order("transaction_date", { ascending: false});
+        .order("transaction_date", { ascending: false });
 
       if (linkedIds.length > 0) {
         query.not("id", "in", `(${linkedIds.join(",")})`);
@@ -145,11 +159,11 @@ export function LinkTransactionDialog({
       const { data, error } = await query;
 
       if (error) throw error;
-      
+
       // Combine both lists, marking which are linked
       const combined = [
-        ...linked.map(t => ({ ...t, isLinked: true })),
-        ...(data || []).map(t => ({ ...t, isLinked: false }))
+        ...linked.map((t) => ({ ...t, isLinked: true })),
+        ...(data || []).map((t) => ({ ...t, isLinked: false })),
       ];
 
       setAllTransactions(combined);
@@ -163,10 +177,12 @@ export function LinkTransactionDialog({
 
   const handleToggleTransaction = async (transaction: DisplayTransaction) => {
     if (!invoice) return;
-    
+
     setToggling(transaction.id);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       if (transaction.isLinked) {
@@ -217,7 +233,7 @@ export function LinkTransactionDialog({
 
         toast.success("Transaction linked to bill");
       }
-      
+
       fetchTransactions();
       onSuccess();
     } catch (error) {
@@ -230,31 +246,43 @@ export function LinkTransactionDialog({
 
   const getSimilarityScore = (transaction: Transaction): number => {
     if (!invoice) return 0;
-    
+
     let score = 0;
-    
+
     // Amount similarity (within 10%)
-    const amountDiff = Math.abs(transaction.amount - (invoice.total_amount || invoice.amount));
+    const amountDiff = Math.abs(
+      transaction.amount - (invoice.total_amount || invoice.amount),
+    );
     const amountThreshold = (invoice.total_amount || invoice.amount) * 0.1;
     if (amountDiff <= amountThreshold) score += 40;
-    
+
     // Vendor similarity
-    const transactionVendor = (transaction.vendor || transaction.description).toLowerCase();
+    const transactionVendor = (
+      transaction.vendor || transaction.description
+    ).toLowerCase();
     const invoiceVendor = invoice.vendor.toLowerCase();
-    if (transactionVendor.includes(invoiceVendor) || invoiceVendor.includes(transactionVendor)) {
+    if (
+      transactionVendor.includes(invoiceVendor) ||
+      invoiceVendor.includes(transactionVendor)
+    ) {
       score += 40;
     }
-    
+
     // Date proximity (within 7 days)
     const transactionDate = new Date(transaction.transaction_date);
     const invoiceDate = new Date(invoice.date);
-    const daysDiff = Math.abs((transactionDate.getTime() - invoiceDate.getTime()) / (1000 * 60 * 60 * 24));
+    const daysDiff = Math.abs(
+      (transactionDate.getTime() - invoiceDate.getTime()) /
+        (1000 * 60 * 60 * 24),
+    );
     if (daysDiff <= 7) score += 20;
-    
+
     return score;
   };
 
-  const applyFilters = (transactions: DisplayTransaction[]): DisplayTransaction[] => {
+  const applyFilters = (
+    transactions: DisplayTransaction[],
+  ): DisplayTransaction[] => {
     let filtered = [...transactions];
 
     // Filter by search query
@@ -264,7 +292,7 @@ export function LinkTransactionDialog({
         (t) =>
           t.vendor?.toLowerCase().includes(query) ||
           t.description.toLowerCase().includes(query) ||
-          t.amount.toString().includes(query)
+          t.amount.toString().includes(query),
       );
     }
 
@@ -282,7 +310,11 @@ export function LinkTransactionDialog({
         if (amountOperator === "equal" && amountMin !== undefined) {
           return Math.abs(amount - amountMin) < 0.01;
         }
-        if (amountOperator === "between" && amountMin !== undefined && amountMax !== undefined) {
+        if (
+          amountOperator === "between" &&
+          amountMin !== undefined &&
+          amountMax !== undefined
+        ) {
           return amount >= amountMin && amount <= amountMax;
         }
         return true;
@@ -294,7 +326,7 @@ export function LinkTransactionDialog({
       filtered = filtered.filter((t) => {
         const transactionDate = new Date(t.transaction_date);
         const startDate = new Date(dateStart);
-        
+
         if (dateOperator === "after") {
           return transactionDate > startDate;
         }
@@ -313,7 +345,10 @@ export function LinkTransactionDialog({
     }
 
     // Apply HSA eligibility filter
-    if (advancedFilters.isHsaEligible && advancedFilters.isHsaEligible !== "all") {
+    if (
+      advancedFilters.isHsaEligible &&
+      advancedFilters.isHsaEligible !== "all"
+    ) {
       filtered = filtered.filter((t) => {
         if (advancedFilters.isHsaEligible === "yes") {
           return t.is_hsa_eligible === true;
@@ -329,7 +364,7 @@ export function LinkTransactionDialog({
   };
 
   const filteredTransactions = applyFilters(allTransactions);
-  
+
   // Sort by linked status first (linked at top), then by similarity score
   const sortedTransactions = [...filteredTransactions].sort((a, b) => {
     // First sort by linked status
@@ -389,12 +424,16 @@ export function LinkTransactionDialog({
                   <div
                     key={transaction.id}
                     className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-                      isLinked ? "bg-accent/50 border-primary/50" : "hover:bg-accent/30"
+                      isLinked
+                        ? "bg-accent/50 border-primary/50"
+                        : "hover:bg-accent/30"
                     }`}
                   >
                     <Checkbox
                       checked={isLinked}
-                      onCheckedChange={() => handleToggleTransaction(transaction)}
+                      onCheckedChange={() =>
+                        handleToggleTransaction(transaction)
+                      }
                       disabled={toggling === transaction.id}
                       id={`transaction-${transaction.id}`}
                     />
@@ -420,29 +459,36 @@ export function LinkTransactionDialog({
                                 )}
                               </>
                             )}
-                            {!isLinked && transaction.payment_methods?.is_hsa_account && (
-                              <Badge variant="success" className="text-xs">
-                                Paid via HSA
-                              </Badge>
-                            )}
+                            {!isLinked &&
+                              transaction.payment_methods?.is_hsa_account && (
+                                <Badge variant="success" className="text-xs">
+                                  Paid via HSA
+                                </Badge>
+                              )}
                             {!isLinked && isHighMatch && (
                               <Badge variant="secondary" className="text-xs">
                                 Likely Match
                               </Badge>
                             )}
-                            {!isLinked && transaction.is_hsa_eligible && !transaction.payment_methods?.is_hsa_account && (
-                              <Badge className="bg-primary/10 text-primary text-xs">
-                                HSA Eligible
-                              </Badge>
-                            )}
+                            {!isLinked &&
+                              transaction.is_hsa_eligible &&
+                              !transaction.payment_methods?.is_hsa_account && (
+                                <Badge className="bg-primary/10 text-primary text-xs">
+                                  HSA Eligible
+                                </Badge>
+                              )}
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {new Date(transaction.transaction_date).toLocaleDateString()} •{" "}
-                            {transaction.category || "Uncategorized"}
+                            {new Date(
+                              transaction.transaction_date,
+                            ).toLocaleDateString()}{" "}
+                            • {transaction.category || "Uncategorized"}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <p className="font-semibold">${transaction.amount.toFixed(2)}</p>
+                          <p className="font-semibold">
+                            ${transaction.amount.toFixed(2)}
+                          </p>
                           {toggling === transaction.id && (
                             <Loader2 className="h-4 w-4 animate-spin" />
                           )}

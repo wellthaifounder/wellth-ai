@@ -10,27 +10,31 @@ interface OnboardingProgressBarProps {
 }
 
 const STEP_ROUTES: Record<string, string> = {
-  bill: '/bills/new',
-  review: '/reports',
-  setup: '/settings',
+  bill: "/bills/new",
+  review: "/reports",
+  setup: "/settings",
 };
 
-export function OnboardingProgressBar({ compact = false }: OnboardingProgressBarProps) {
+export function OnboardingProgressBar({
+  compact = false,
+}: OnboardingProgressBarProps) {
   const { hasHSA } = useHSA();
   const navigate = useNavigate();
 
   // Check if user has uploaded any bills
   const { data: billsData } = useQuery({
-    queryKey: ['onboarding-bills'],
+    queryKey: ["onboarding-bills"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return null;
 
       const { data, error } = await supabase
-        .from('invoices')
-        .select('id, created_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: true })
+        .from("invoices")
+        .select("id, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true })
         .limit(1);
 
       if (error) throw error;
@@ -40,15 +44,17 @@ export function OnboardingProgressBar({ compact = false }: OnboardingProgressBar
 
   // Check if user has any bill reviews (analyzed bills)
   const { data: reviewsData } = useQuery({
-    queryKey: ['onboarding-reviews'],
+    queryKey: ["onboarding-reviews"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return null;
 
       const { data, error } = await supabase
-        .from('bill_reviews')
-        .select('id, analyzed_at')
-        .order('analyzed_at', { ascending: true })
+        .from("bill_reviews")
+        .select("id, analyzed_at")
+        .order("analyzed_at", { ascending: true })
         .limit(1);
 
       if (error) throw error;
@@ -59,15 +65,17 @@ export function OnboardingProgressBar({ compact = false }: OnboardingProgressBar
 
   // Check if user has connected bank accounts
   const { data: bankData } = useQuery({
-    queryKey: ['onboarding-banks'],
+    queryKey: ["onboarding-banks"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return null;
 
       const { data, error } = await supabase
-        .from('plaid_connections')
-        .select('id')
-        .eq('user_id', user.id)
+        .from("plaid_connections")
+        .select("id")
+        .eq("user_id", user.id)
         .limit(1);
 
       if (error) throw error;
@@ -82,12 +90,17 @@ export function OnboardingProgressBar({ compact = false }: OnboardingProgressBar
   const hasSetup = hasHSA || hasBank;
 
   const steps = [
-    { key: 'bill', label: 'Upload Bill', icon: Upload, complete: hasBill },
-    { key: 'review', label: 'See Value', icon: Sparkles, complete: hasReview },
-    { key: 'setup', label: 'Connect Accounts', icon: Link2, complete: hasSetup },
+    { key: "bill", label: "Upload Bill", icon: Upload, complete: hasBill },
+    { key: "review", label: "See Value", icon: Sparkles, complete: hasReview },
+    {
+      key: "setup",
+      label: "Connect Accounts",
+      icon: Link2,
+      complete: hasSetup,
+    },
   ];
 
-  const completedSteps = steps.filter(s => s.complete).length;
+  const completedSteps = steps.filter((s) => s.complete).length;
   const progress = (completedSteps / steps.length) * 100;
 
   // Don't show if onboarding is complete
@@ -123,11 +136,15 @@ export function OnboardingProgressBar({ compact = false }: OnboardingProgressBar
                   <div
                     className={`flex items-center gap-1.5 px-2 py-1 rounded-md ${
                       step.complete
-                        ? 'bg-accent/20 text-accent'
-                        : 'bg-muted text-muted-foreground cursor-pointer hover:bg-muted/80'
+                        ? "bg-accent/20 text-accent"
+                        : "bg-muted text-muted-foreground cursor-pointer hover:bg-muted/80"
                     }`}
-                    onClick={!step.complete ? () => navigate(STEP_ROUTES[step.key]) : undefined}
-                    role={!step.complete ? 'button' : undefined}
+                    onClick={
+                      !step.complete
+                        ? () => navigate(STEP_ROUTES[step.key])
+                        : undefined
+                    }
+                    role={!step.complete ? "button" : undefined}
                   >
                     {step.complete ? (
                       <CheckCircle2 className="h-3.5 w-3.5" />
@@ -137,7 +154,9 @@ export function OnboardingProgressBar({ compact = false }: OnboardingProgressBar
                     <span className="text-xs font-medium">{step.label}</span>
                   </div>
                   {index < steps.length - 1 && (
-                    <div className={`h-px w-6 ${step.complete ? 'bg-accent' : 'bg-muted'}`} />
+                    <div
+                      className={`h-px w-6 ${step.complete ? "bg-accent" : "bg-muted"}`}
+                    />
                   )}
                 </div>
               ))}

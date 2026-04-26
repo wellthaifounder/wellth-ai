@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Download, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -10,14 +16,17 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export const PWAInstallPrompt = () => {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
     // Check if app is already installed
-    const isInStandaloneMode = window.matchMedia("(display-mode: standalone)").matches;
+    const isInStandaloneMode = window.matchMedia(
+      "(display-mode: standalone)",
+    ).matches;
     setIsStandalone(isInStandaloneMode);
 
     // Check if iOS
@@ -32,7 +41,8 @@ export const PWAInstallPrompt = () => {
       : Infinity;
 
     // Show prompt if: not installed, not dismissed recently (>7 days), and not iOS (iOS uses custom prompt)
-    const shouldShow = !isInStandaloneMode && (!dismissed || daysSinceDismissed > 7) && !iOS;
+    const shouldShow =
+      !isInStandaloneMode && (!dismissed || daysSinceDismissed > 7) && !iOS;
 
     // Listen for beforeinstallprompt event (Chrome, Edge, etc.)
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -52,7 +62,10 @@ export const PWAInstallPrompt = () => {
     }
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
     };
   }, []);
 
@@ -66,7 +79,7 @@ export const PWAInstallPrompt = () => {
       setShowPrompt(false);
       toast.info(
         "To install: Tap the Share button in Safari, then 'Add to Home Screen'",
-        { duration: 8000 }
+        { duration: 8000 },
       );
       return;
     }
@@ -152,7 +165,8 @@ export const PWAInstallPrompt = () => {
 
           {isIOS && (
             <p className="text-xs text-muted-foreground text-center mt-2">
-              Tap Share <span className="inline-block">⎋</span> then "Add to Home Screen"
+              Tap Share <span className="inline-block">⎋</span> then "Add to
+              Home Screen"
             </p>
           )}
         </CardContent>

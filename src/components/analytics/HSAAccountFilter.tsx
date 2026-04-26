@@ -1,4 +1,10 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useHSAAccounts } from "@/hooks/useHSAAccounts";
 import { formatHSAAccountDateRange } from "@/lib/hsaAccountUtils";
 import { Wallet } from "lucide-react";
@@ -8,7 +14,10 @@ type HSAAccountFilterProps = {
   onValueChange: (value: string) => void;
 };
 
-export function HSAAccountFilter({ value, onValueChange }: HSAAccountFilterProps) {
+export function HSAAccountFilter({
+  value,
+  onValueChange,
+}: HSAAccountFilterProps) {
   const { accounts, isLoading } = useHSAAccounts();
 
   if (isLoading) {

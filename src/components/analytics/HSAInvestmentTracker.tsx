@@ -1,6 +1,21 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { TrendingUp, DollarSign, Calendar } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 import { HSA_LIMITS_2025 } from "@/lib/regulatoryLimits";
 
 interface HSAInvestmentTrackerProps {
@@ -12,13 +27,17 @@ interface ExtendedHSAInvestmentTrackerProps extends HSAInvestmentTrackerProps {
   investmentReturnRate?: number;
 }
 
-export const HSAInvestmentTracker = ({ 
+export const HSAInvestmentTracker = ({
   unreimbursedTotal,
   yearlyContributions = 0,
-  investmentReturnRate = 7
+  investmentReturnRate = 7,
 }: ExtendedHSAInvestmentTrackerProps) => {
   // Calculate investment growth projections
-  const calculateGrowth = (principal: number, years: number, rate: number = investmentReturnRate / 100) => {
+  const calculateGrowth = (
+    principal: number,
+    years: number,
+    rate: number = investmentReturnRate / 100,
+  ) => {
     return principal * Math.pow(1 + rate, years);
   };
 
@@ -27,7 +46,7 @@ export const HSAInvestmentTracker = ({
     const year = new Date().getFullYear() + i;
     const growth = calculateGrowth(unreimbursedTotal, i);
     const withReimbursement = unreimbursedTotal; // Stays constant as it's already spent
-    
+
     return {
       year: i === 0 ? "Now" : `${i}y`,
       invested: Math.round(growth),
@@ -52,7 +71,8 @@ export const HSAInvestmentTracker = ({
             <div>
               <CardTitle>HSA Investment Growth Potential</CardTitle>
               <CardDescription>
-                The power of delaying reimbursement while HSA funds grow tax-free
+                The power of delaying reimbursement while HSA funds grow
+                tax-free
               </CardDescription>
             </div>
             <TrendingUp className="h-8 w-8 text-primary" />
@@ -102,50 +122,54 @@ export const HSAInvestmentTracker = ({
 
           <div>
             <h4 className="font-semibold mb-4">Growth Projection Over Time</h4>
-            <div 
-              role="img" 
+            <div
+              role="img"
               aria-label="Line chart comparing HSA investment growth vs immediate reimbursement over time. Shows projected balance if money is invested versus if reimbursed immediately each year."
             >
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={projectionData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                  <XAxis 
-                    dataKey="year" 
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="hsl(var(--border))"
+                    opacity={0.3}
+                  />
+                  <XAxis
+                    dataKey="year"
                     stroke="hsl(var(--muted-foreground))"
                     tick={{ fontSize: 12 }}
                     aria-label="Year"
                   />
-                  <YAxis 
+                  <YAxis
                     stroke="hsl(var(--muted-foreground))"
                     tick={{ fontSize: 12 }}
                     aria-label="Balance in dollars"
                   />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--popover))', 
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: 'var(--radius)',
-                      boxShadow: 'var(--shadow-lg)',
-                    }} 
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--popover))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "var(--radius)",
+                      boxShadow: "var(--shadow-lg)",
+                    }}
                   />
-                  <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                  <Line 
-                    type="monotone" 
-                    dataKey="invested" 
-                    stroke="hsl(var(--primary))" 
+                  <Legend wrapperStyle={{ paddingTop: "20px" }} />
+                  <Line
+                    type="monotone"
+                    dataKey="invested"
+                    stroke="hsl(var(--primary))"
                     strokeWidth={2}
                     name="HSA Balance (Invested)"
-                    dot={{ fill: 'hsl(var(--primary))', r: 3 }}
+                    dot={{ fill: "hsl(var(--primary))", r: 3 }}
                     activeDot={{ r: 5 }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="reimbursed" 
-                    stroke="hsl(var(--muted-foreground))" 
+                  <Line
+                    type="monotone"
+                    dataKey="reimbursed"
+                    stroke="hsl(var(--muted-foreground))"
                     strokeWidth={2}
                     strokeDasharray="5 5"
                     name="If Reimbursed Now"
-                    dot={{ fill: 'hsl(var(--muted-foreground))', r: 3 }}
+                    dot={{ fill: "hsl(var(--muted-foreground))", r: 3 }}
                     activeDot={{ r: 5 }}
                   />
                 </LineChart>
@@ -156,9 +180,11 @@ export const HSAInvestmentTracker = ({
           <div className="bg-accent/30 p-4 rounded-lg space-y-2">
             <h4 className="font-semibold text-sm">💡 Pro Strategy Explained</h4>
             <p className="text-sm text-muted-foreground">
-              Instead of reimbursing yourself immediately, let your HSA funds stay invested and grow tax-free. 
-              Pay for medical expenses with a rewards credit card to earn points/cash back. Then, reimburse yourself 
-              years later when you need the cash - by then, your HSA has grown significantly through market returns!
+              Instead of reimbursing yourself immediately, let your HSA funds
+              stay invested and grow tax-free. Pay for medical expenses with a
+              rewards credit card to earn points/cash back. Then, reimburse
+              yourself years later when you need the cash - by then, your HSA
+              has grown significantly through market returns!
             </p>
           </div>
 
@@ -166,30 +192,46 @@ export const HSAInvestmentTracker = ({
             <div className="p-4 border rounded-lg">
               <h4 className="font-semibold mb-2 text-sm">Example Scenario</h4>
               <p className="text-sm text-muted-foreground mb-3">
-                You have ${unreimbursedTotal.toFixed(0)} in unreimbursed HSA expenses today.
+                You have ${unreimbursedTotal.toFixed(0)} in unreimbursed HSA
+                expenses today.
               </p>
               <ul className="text-sm space-y-2">
                 <li className="flex items-start gap-2">
                   <span className="text-primary font-bold">→</span>
-                  <span>Reimburse now: Get ${unreimbursedTotal.toFixed(2)}</span>
+                  <span>
+                    Reimburse now: Get ${unreimbursedTotal.toFixed(2)}
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-600 font-bold">→</span>
-                  <span>Wait 10 years: Get ${tenYearGrowth.toFixed(2)} (${totalBenefit.toFixed(2)} extra!)</span>
+                  <span>
+                    Wait 10 years: Get ${tenYearGrowth.toFixed(2)} ($
+                    {totalBenefit.toFixed(2)} extra!)
+                  </span>
                 </li>
               </ul>
             </div>
 
             <div className="p-4 border rounded-lg bg-primary/5">
-              <h4 className="font-semibold mb-2 text-sm">Annual Contribution Limits ({currentYear})</h4>
+              <h4 className="font-semibold mb-2 text-sm">
+                Annual Contribution Limits ({currentYear})
+              </h4>
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-muted-foreground">Individual Coverage</p>
-                  <p className="text-lg font-bold">${HSA_LIMIT_INDIVIDUAL.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Individual Coverage
+                  </p>
+                  <p className="text-lg font-bold">
+                    ${HSA_LIMIT_INDIVIDUAL.toLocaleString()}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Family Coverage</p>
-                  <p className="text-lg font-bold">${HSA_LIMIT_FAMILY.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Family Coverage
+                  </p>
+                  <p className="text-lg font-bold">
+                    ${HSA_LIMIT_FAMILY.toLocaleString()}
+                  </p>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Additional $1,000 catch-up contribution if age 55+

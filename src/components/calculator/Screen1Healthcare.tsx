@@ -14,18 +14,24 @@ interface Screen1Props {
   onNext: () => void;
 }
 
-export const Screen1Healthcare = ({ data, updateData, onNext }: Screen1Props) => {
+export const Screen1Healthcare = ({
+  data,
+  updateData,
+  onNext,
+}: Screen1Props) => {
   const options = [
     {
       value: "hsa",
       label: "HSA (Health Savings Account)",
-      description: "Tax-deductible contributions, tax-free growth, tax-free withdrawals for medical expenses",
+      description:
+        "Tax-deductible contributions, tax-free growth, tax-free withdrawals for medical expenses",
       icon: Wallet,
     },
     {
       value: "fsa",
       label: "FSA (Flexible Spending Account)",
-      description: "Pre-tax contributions through your employer, use-it-or-lose-it each year",
+      description:
+        "Pre-tax contributions through your employer, use-it-or-lose-it each year",
       icon: CreditCard,
     },
     {
@@ -66,7 +72,9 @@ export const Screen1Healthcare = ({ data, updateData, onNext }: Screen1Props) =>
               </div>
               <div className="flex-1">
                 <div className="text-base font-medium">{option.label}</div>
-                <div className="text-sm text-muted-foreground mt-1">{option.description}</div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  {option.description}
+                </div>
               </div>
             </button>
           );
@@ -79,13 +87,22 @@ export const Screen1Healthcare = ({ data, updateData, onNext }: Screen1Props) =>
               </p>
             </TooltipTrigger>
             <TooltipContent className="max-w-xs">
-              <p>HSAs are available with high-deductible health plans and funds roll over forever. FSAs are employer-sponsored and typically must be used each year.</p>
+              <p>
+                HSAs are available with high-deductible health plans and funds
+                roll over forever. FSAs are employer-sponsored and typically
+                must be used each year.
+              </p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>
 
-      <Button onClick={onNext} disabled={!data.accountType} size="lg" className="w-full">
+      <Button
+        onClick={onNext}
+        disabled={!data.accountType}
+        size="lg"
+        className="w-full"
+      >
         Continue
       </Button>
 

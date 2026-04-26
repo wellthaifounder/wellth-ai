@@ -2,12 +2,29 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, TrendingUp, Calendar, DollarSign, Clock, CheckSquare } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ArrowLeft,
+  TrendingUp,
+  Calendar,
+  DollarSign,
+  Clock,
+  CheckSquare,
+} from "lucide-react";
 import { toast } from "sonner";
 import { AuthenticatedNav } from "@/components/AuthenticatedNav";
 import { HSAAccountFilter } from "@/components/analytics/HSAAccountFilter";
-import { calculateVaultSummary, calculateExpenseProjectedValue, type VaultExpense } from "@/lib/vaultCalculations";
+import {
+  calculateVaultSummary,
+  calculateExpenseProjectedValue,
+  type VaultExpense,
+} from "@/lib/vaultCalculations";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { logError } from "@/utils/errorHandler";
@@ -17,7 +34,9 @@ const VaultTracker = () => {
   const [loading, setLoading] = useState(true);
   const [expenses, setExpenses] = useState<VaultExpense[]>([]);
   const [investmentReturn, setInvestmentReturn] = useState(0.08);
-  const [selectedExpenses, setSelectedExpenses] = useState<Set<string>>(new Set());
+  const [selectedExpenses, setSelectedExpenses] = useState<Set<string>>(
+    new Set(),
+  );
   const [selectedHSAAccount, setSelectedHSAAccount] = useState<string>("all");
 
   useEffect(() => {
@@ -26,7 +45,9 @@ const VaultTracker = () => {
 
   const loadVaultExpenses = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         navigate("/auth");
         return;
@@ -48,20 +69,23 @@ const VaultTracker = () => {
       const { data, error } = await query;
 
       if (error) throw error;
-      
+
       // Map to VaultExpense type
-      const vaultExpenses: VaultExpense[] = (data || []).map(invoice => ({
+      const vaultExpenses: VaultExpense[] = (data || []).map((invoice) => ({
         id: invoice.id,
         date: invoice.date,
         vendor: invoice.vendor,
         amount: Number(invoice.amount),
         category: invoice.category,
-        reimbursement_strategy: invoice.reimbursement_strategy as 'immediate' | 'medium' | 'vault',
+        reimbursement_strategy: invoice.reimbursement_strategy as
+          | "immediate"
+          | "medium"
+          | "vault",
         planned_reimbursement_date: invoice.planned_reimbursement_date,
         card_payoff_months: invoice.card_payoff_months || 0,
         investment_notes: invoice.investment_notes,
       }));
-      
+
       setExpenses(vaultExpenses);
     } catch (error) {
       logError("Error loading vault expenses", error);
@@ -100,7 +124,9 @@ const VaultTracker = () => {
         .in("id", Array.from(selectedExpenses));
 
       if (error) throw error;
-      toast.success(`${selectedExpenses.size} expense(s) marked as ready to reimburse`);
+      toast.success(
+        `${selectedExpenses.size} expense(s) marked as ready to reimburse`,
+      );
       setSelectedExpenses(new Set());
       loadVaultExpenses();
     } catch (error) {
@@ -123,7 +149,7 @@ const VaultTracker = () => {
     if (selectedExpenses.size === expenses.length) {
       setSelectedExpenses(new Set());
     } else {
-      setSelectedExpenses(new Set(expenses.map(e => e.id)));
+      setSelectedExpenses(new Set(expenses.map((e) => e.id)));
     }
   };
 
@@ -156,7 +182,7 @@ const VaultTracker = () => {
           <p className="text-muted-foreground">
             Track expenses held for long-term HSA investment growth
           </p>
-          
+
           {/* HSA Account Filter */}
           <div className="mt-4">
             <HSAAccountFilter
@@ -176,9 +202,12 @@ const VaultTracker = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">${summary.totalInVault.toFixed(2)}</p>
+              <p className="text-2xl font-bold">
+                ${summary.totalInVault.toFixed(2)}
+              </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {summary.expenseCount} expense{summary.expenseCount !== 1 ? 's' : ''}
+                {summary.expenseCount} expense
+                {summary.expenseCount !== 1 ? "s" : ""}
               </p>
             </CardContent>
           </Card>
@@ -191,7 +220,9 @@ const VaultTracker = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-primary">${summary.projectedGrowth.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-primary">
+                ${summary.projectedGrowth.toFixed(2)}
+              </p>
               <p className="text-xs text-muted-foreground mt-1">
                 At {(investmentReturn * 100).toFixed(0)}% annual return
               </p>
@@ -206,7 +237,9 @@ const VaultTracker = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{summary.averageYearsInvested.toFixed(1)} years</p>
+              <p className="text-2xl font-bold">
+                {summary.averageYearsInvested.toFixed(1)} years
+              </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Average hold period
               </p>
@@ -222,12 +255,15 @@ const VaultTracker = () => {
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold">
-                {summary.nextReminder 
-                  ? new Date(summary.nextReminder).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                  : 'None'}
+                {summary.nextReminder
+                  ? new Date(summary.nextReminder).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })
+                  : "None"}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {summary.nextReminder ? 'Upcoming' : 'No reminders set'}
+                {summary.nextReminder ? "Upcoming" : "No reminders set"}
               </p>
             </CardContent>
           </Card>
@@ -245,19 +281,14 @@ const VaultTracker = () => {
               </div>
               {expenses.length > 0 && (
                 <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={toggleAll}
-                  >
+                  <Button variant="outline" size="sm" onClick={toggleAll}>
                     <CheckSquare className="h-4 w-4 mr-2" />
-                    {selectedExpenses.size === expenses.length ? "Deselect All" : "Select All"}
+                    {selectedExpenses.size === expenses.length
+                      ? "Deselect All"
+                      : "Select All"}
                   </Button>
                   {selectedExpenses.size > 0 && (
-                    <Button
-                      size="sm"
-                      onClick={handleBulkMarkReady}
-                    >
+                    <Button size="sm" onClick={handleBulkMarkReady}>
                       Mark {selectedExpenses.size} Ready
                     </Button>
                   )}
@@ -270,20 +301,29 @@ const VaultTracker = () => {
               <div className="text-center py-8 text-muted-foreground">
                 <p>No expenses in your vault yet.</p>
                 <p className="text-sm mt-2">
-                  Add expenses with a long-term reimbursement strategy to start building your vault.
+                  Add expenses with a long-term reimbursement strategy to start
+                  building your vault.
                 </p>
               </div>
             ) : (
               <div className="space-y-3">
                 {expenses.map((expense) => {
-                  const projectedValue = calculateExpenseProjectedValue(expense, investmentReturn);
+                  const projectedValue = calculateExpenseProjectedValue(
+                    expense,
+                    investmentReturn,
+                  );
                   const growth = projectedValue - expense.amount;
                   const yearsInvested = expense.planned_reimbursement_date
-                    ? (new Date(expense.planned_reimbursement_date).getTime() - new Date(expense.date).getTime()) / (1000 * 60 * 60 * 24 * 365)
+                    ? (new Date(expense.planned_reimbursement_date).getTime() -
+                        new Date(expense.date).getTime()) /
+                      (1000 * 60 * 60 * 24 * 365)
                     : 0;
 
                   return (
-                    <div key={expense.id} className="border rounded-lg p-4 hover:bg-accent/50 transition-colors">
+                    <div
+                      key={expense.id}
+                      className="border rounded-lg p-4 hover:bg-accent/50 transition-colors"
+                    >
                       <div className="flex items-start gap-3">
                         <Checkbox
                           checked={selectedExpenses.has(expense.id)}
@@ -293,12 +333,21 @@ const VaultTracker = () => {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <p className="font-medium">{expense.vendor}</p>
-                            <Badge variant={expense.reimbursement_strategy === 'vault' ? 'default' : 'secondary'}>
-                              {expense.reimbursement_strategy === 'vault' ? '💎 Vault' : 'Medium-term'}
+                            <Badge
+                              variant={
+                                expense.reimbursement_strategy === "vault"
+                                  ? "default"
+                                  : "secondary"
+                              }
+                            >
+                              {expense.reimbursement_strategy === "vault"
+                                ? "💎 Vault"
+                                : "Medium-term"}
                             </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {expense.category} • {new Date(expense.date).toLocaleDateString()}
+                            {expense.category} •{" "}
+                            {new Date(expense.date).toLocaleDateString()}
                           </p>
                           {expense.investment_notes && (
                             <p className="text-xs text-muted-foreground mt-1 italic">
@@ -307,7 +356,9 @@ const VaultTracker = () => {
                           )}
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold">${expense.amount.toFixed(2)}</p>
+                          <p className="font-semibold">
+                            ${expense.amount.toFixed(2)}
+                          </p>
                           <p className="text-sm text-primary">
                             +${growth.toFixed(2)} growth
                           </p>
@@ -316,14 +367,18 @@ const VaultTracker = () => {
                           </p>
                         </div>
                       </div>
-                      
+
                       <div className="mt-3 pt-3 border-t flex items-center justify-between">
                         <div className="text-sm">
-                          <span className="text-muted-foreground">Planned reimburse: </span>
+                          <span className="text-muted-foreground">
+                            Planned reimburse:{" "}
+                          </span>
                           <span className="font-medium">
                             {expense.planned_reimbursement_date
-                              ? new Date(expense.planned_reimbursement_date).toLocaleDateString()
-                              : 'Not set'}
+                              ? new Date(
+                                  expense.planned_reimbursement_date,
+                                ).toLocaleDateString()
+                              : "Not set"}
                           </span>
                         </div>
                         <Button
@@ -350,10 +405,22 @@ const VaultTracker = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm space-y-2 text-muted-foreground">
-            <p>• Investment returns are not guaranteed and may vary. Past performance does not guarantee future results.</p>
-            <p>• Keep all receipts and documentation for HSA reimbursement purposes.</p>
-            <p>• Consult with a tax professional about HSA reimbursement timing strategies.</p>
-            <p>• Make sure your HSA was open before the expense date to be eligible for reimbursement.</p>
+            <p>
+              • Investment returns are not guaranteed and may vary. Past
+              performance does not guarantee future results.
+            </p>
+            <p>
+              • Keep all receipts and documentation for HSA reimbursement
+              purposes.
+            </p>
+            <p>
+              • Consult with a tax professional about HSA reimbursement timing
+              strategies.
+            </p>
+            <p>
+              • Make sure your HSA was open before the expense date to be
+              eligible for reimbursement.
+            </p>
           </CardContent>
         </Card>
       </div>

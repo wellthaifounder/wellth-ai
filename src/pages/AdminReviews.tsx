@@ -2,7 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +37,9 @@ export default function AdminReviews() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("pending");
-  const [moderationNotes, setModerationNotes] = useState<Record<string, string>>({});
+  const [moderationNotes, setModerationNotes] = useState<
+    Record<string, string>
+  >({});
 
   useEffect(() => {
     if (!adminLoading && !isAdmin) {
@@ -48,14 +56,14 @@ export default function AdminReviews() {
   const fetchReviews = async () => {
     try {
       const { data, error } = await supabase
-        .from('reviews')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("reviews")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       setReviews(data || []);
     } catch (error) {
-      logError('Error fetching reviews', error);
+      logError("Error fetching reviews", error);
       toast.error("Failed to load reviews");
     } finally {
       setLoading(false);
@@ -64,29 +72,31 @@ export default function AdminReviews() {
 
   const handleModeration = async (
     reviewId: string,
-    action: 'approved' | 'rejected',
-    notes?: string
+    action: "approved" | "rejected",
+    notes?: string,
   ) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       // Update review moderation status
       const { error: reviewError } = await supabase
-        .from('reviews')
+        .from("reviews")
         .update({
           moderation_status: action,
           moderated_by: user.id,
           moderated_at: new Date().toISOString(),
           moderation_notes: notes || null,
         })
-        .eq('id', reviewId);
+        .eq("id", reviewId);
 
       if (reviewError) throw reviewError;
 
       // Log the moderation action
       const { error: logError } = await supabase
-        .from('review_moderation_log')
+        .from("review_moderation_log")
         .insert({
           review_id: reviewId,
           admin_id: user.id,
@@ -99,40 +109,47 @@ export default function AdminReviews() {
       toast.success(`Review ${action}`);
       fetchReviews();
     } catch (error) {
-      logError('Error moderating review', error);
+      logError("Error moderating review", error);
       toast.error("Failed to moderate review");
     }
   };
 
-  const handleFeatureToggle = async (reviewId: string, currentlyFeatured: boolean) => {
+  const handleFeatureToggle = async (
+    reviewId: string,
+    currentlyFeatured: boolean,
+  ) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { error } = await supabase
-        .from('reviews')
+        .from("reviews")
         .update({ is_featured: !currentlyFeatured })
-        .eq('id', reviewId);
+        .eq("id", reviewId);
 
       if (error) throw error;
 
       // Log the action
-      await supabase.from('review_moderation_log').insert({
+      await supabase.from("review_moderation_log").insert({
         review_id: reviewId,
         admin_id: user.id,
-        action: currentlyFeatured ? 'unfeatured' : 'featured',
+        action: currentlyFeatured ? "unfeatured" : "featured",
       });
 
-      toast.success(currentlyFeatured ? "Review unfeatured" : "Review featured");
+      toast.success(
+        currentlyFeatured ? "Review unfeatured" : "Review featured",
+      );
       fetchReviews();
     } catch (error) {
-      logError('Error toggling feature', error);
+      logError("Error toggling feature", error);
       toast.error("Failed to update feature status");
     }
   };
 
   const filteredReviews = reviews.filter(
-    review => review.moderation_status === activeTab
+    (review) => review.moderation_status === activeTab,
   );
 
   if (adminLoading || loading) {
@@ -156,17 +173,22 @@ export default function AdminReviews() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="pending">
-              Pending ({reviews.filter(r => r.moderation_status === 'pending').length})
+              Pending (
+              {reviews.filter((r) => r.moderation_status === "pending").length})
             </TabsTrigger>
             <TabsTrigger value="approved">
-              Approved ({reviews.filter(r => r.moderation_status === 'approved').length})
+              Approved (
+              {reviews.filter((r) => r.moderation_status === "approved").length}
+              )
             </TabsTrigger>
             <TabsTrigger value="rejected">
-              Rejected ({reviews.filter(r => r.moderation_status === 'rejected').length})
+              Rejected (
+              {reviews.filter((r) => r.moderation_status === "rejected").length}
+              )
             </TabsTrigger>
           </TabsList>
 
-          {['pending', 'approved', 'rejected'].map((status) => (
+          {["pending", "approved", "rejected"].map((status) => (
             <TabsContent key={status} value={status} className="space-y-4">
               {filteredReviews.length === 0 ? (
                 <Card>
@@ -197,9 +219,12 @@ export default function AdminReviews() {
                               <Badge variant="secondary">Featured</Badge>
                             )}
                           </div>
-                          <CardTitle className="text-lg">{review.review_text}</CardTitle>
+                          <CardTitle className="text-lg">
+                            {review.review_text}
+                          </CardTitle>
                           <CardDescription className="mt-1">
-                            Submitted {new Date(review.created_at).toLocaleDateString()}
+                            Submitted{" "}
+                            {new Date(review.created_at).toLocaleDateString()}
                           </CardDescription>
                         </div>
                       </div>
@@ -208,16 +233,17 @@ export default function AdminReviews() {
                       {review.moderation_notes && (
                         <div className="rounded-lg bg-muted p-3">
                           <p className="text-sm text-muted-foreground">
-                            <strong>Moderation Notes:</strong> {review.moderation_notes}
+                            <strong>Moderation Notes:</strong>{" "}
+                            {review.moderation_notes}
                           </p>
                         </div>
                       )}
 
-                      {status === 'pending' && (
+                      {status === "pending" && (
                         <>
                           <Textarea
                             placeholder="Add moderation notes (optional)"
-                            value={moderationNotes[review.id] || ''}
+                            value={moderationNotes[review.id] || ""}
                             onChange={(e) =>
                               setModerationNotes({
                                 ...moderationNotes,
@@ -231,8 +257,8 @@ export default function AdminReviews() {
                               onClick={() =>
                                 handleModeration(
                                   review.id,
-                                  'approved',
-                                  moderationNotes[review.id]
+                                  "approved",
+                                  moderationNotes[review.id],
                                 )
                               }
                               className="flex-1"
@@ -245,8 +271,8 @@ export default function AdminReviews() {
                               onClick={() =>
                                 handleModeration(
                                   review.id,
-                                  'rejected',
-                                  moderationNotes[review.id]
+                                  "rejected",
+                                  moderationNotes[review.id],
                                 )
                               }
                               className="flex-1"
@@ -258,10 +284,12 @@ export default function AdminReviews() {
                         </>
                       )}
 
-                      {status === 'approved' && (
+                      {status === "approved" && (
                         <Button
                           variant="outline"
-                          onClick={() => handleFeatureToggle(review.id, review.is_featured)}
+                          onClick={() =>
+                            handleFeatureToggle(review.id, review.is_featured)
+                          }
                           className="w-full"
                         >
                           {review.is_featured ? (

@@ -1,13 +1,39 @@
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { getPaymentRecommendation } from "@/lib/paymentRecommendation";
 import { PaymentRecommendation } from "@/components/expense/PaymentRecommendation";
-import { ArrowLeft, CreditCard, Receipt, TrendingUp, ChevronDown, AlertCircle, Calculator, Save, FileText } from "lucide-react";
+import {
+  ArrowLeft,
+  CreditCard,
+  Receipt,
+  TrendingUp,
+  ChevronDown,
+  AlertCircle,
+  Calculator,
+  Save,
+  FileText,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,7 +53,7 @@ const HSA_CATEGORIES = [
   "Physical Therapy",
   "Mental Health",
   "Other Medical",
-  "Not HSA Eligible"
+  "Not HSA Eligible",
 ];
 
 const PrePurchaseDecision = () => {
@@ -37,7 +63,7 @@ const PrePurchaseDecision = () => {
   const [category, setCategory] = useState("");
   const [paymentStrategy, setPaymentStrategy] = useState("immediate");
   const [showAdvanced, setShowAdvanced] = useState(false);
-  
+
   // Advanced settings
   const [rewardsRate, setRewardsRate] = useState("2");
   const [investmentReturn, setInvestmentReturn] = useState("7");
@@ -45,25 +71,25 @@ const PrePurchaseDecision = () => {
   const [cardPayoffMonths, setCardPayoffMonths] = useState("1");
   const [monthlyPayment, setMonthlyPayment] = useState("");
   const [hsaInvestmentYears, setHsaInvestmentYears] = useState("5");
-  
+
   const [showRecommendation, setShowRecommendation] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const handleCalculate = () => {
     if (!amount || !category) return;
-    
+
     // Update cardPayoffMonths based on strategy
     if (paymentStrategy === "immediate") setCardPayoffMonths("1");
     else if (paymentStrategy === "6-month") setCardPayoffMonths("6");
     else if (paymentStrategy === "12-month") setCardPayoffMonths("12");
     else if (paymentStrategy === "18-month") setCardPayoffMonths("18");
-    
+
     setShowRecommendation(true);
   };
 
   const recommendation = useMemo(() => {
     if (!amount || !category || parseFloat(amount) <= 0) return null;
-    
+
     return getPaymentRecommendation({
       amount: parseFloat(amount),
       category,
@@ -75,57 +101,70 @@ const PrePurchaseDecision = () => {
       monthlyPayment: monthlyPayment ? parseFloat(monthlyPayment) : 0,
       hsaInvestmentYears: parseFloat(hsaInvestmentYears),
     });
-  }, [amount, category, rewardsRate, taxRate, investmentReturn, cardPayoffMonths, monthlyPayment, hsaInvestmentYears]);
+  }, [
+    amount,
+    category,
+    rewardsRate,
+    taxRate,
+    investmentReturn,
+    cardPayoffMonths,
+    monthlyPayment,
+    hsaInvestmentYears,
+  ]);
 
   const handleSaveDecision = async () => {
     if (!recommendation) return;
-    
+
     setSaving(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         toast.error("Please sign in to save decisions");
         return;
       }
 
-      const { error } = await supabase
-        .from('expense_decisions')
-        .insert({
-          user_id: user.id,
-          expense_amount: parseFloat(amount),
-          payment_strategy: {
-            ...recommendation,
-            inputs: {
-              category,
-              rewardsRate: parseFloat(rewardsRate),
-              taxRate: parseFloat(taxRate),
-              investmentReturn: parseFloat(investmentReturn),
-              cardPayoffMonths: parseFloat(cardPayoffMonths),
-              hsaInvestmentYears: parseFloat(hsaInvestmentYears),
-            }
-          }
-        });
+      const { error } = await supabase.from("expense_decisions").insert({
+        user_id: user.id,
+        expense_amount: parseFloat(amount),
+        payment_strategy: {
+          ...recommendation,
+          inputs: {
+            category,
+            rewardsRate: parseFloat(rewardsRate),
+            taxRate: parseFloat(taxRate),
+            investmentReturn: parseFloat(investmentReturn),
+            cardPayoffMonths: parseFloat(cardPayoffMonths),
+            hsaInvestmentYears: parseFloat(hsaInvestmentYears),
+          },
+        },
+      });
 
       if (error) throw error;
-      
-      toast.success("Decision saved! You can apply it when entering this expense.", {
-        action: {
-          label: "Enter Expense Now",
-          onClick: () => navigate('/expenses/new', { 
-            state: { 
-              savedDecision: {
-                amount,
-                category,
-                cardPayoffMonths,
-                hsaInvestmentYears,
-                recommendation
-              }
-            }
-          })
-        }
-      });
+
+      toast.success(
+        "Decision saved! You can apply it when entering this expense.",
+        {
+          action: {
+            label: "Enter Expense Now",
+            onClick: () =>
+              navigate("/expenses/new", {
+                state: {
+                  savedDecision: {
+                    amount,
+                    category,
+                    cardPayoffMonths,
+                    hsaInvestmentYears,
+                    recommendation,
+                  },
+                },
+              }),
+          },
+        },
+      );
     } catch (error) {
-      logError('Error saving decision', error);
+      logError("Error saving decision", error);
       toast.error("Failed to save decision");
     } finally {
       setSaving(false);
@@ -152,7 +191,8 @@ const PrePurchaseDecision = () => {
             <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-lg max-w-lg mx-auto">
               <p className="text-sm font-medium">💡 HSA Triple Tax Advantage</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Contributions are tax-deductible, growth is tax-free, and withdrawals for medical expenses are never taxed
+                Contributions are tax-deductible, growth is tax-free, and
+                withdrawals for medical expenses are never taxed
               </p>
             </div>
           </div>
@@ -161,7 +201,8 @@ const PrePurchaseDecision = () => {
             <CardHeader>
               <CardTitle>HSA-Eligible Expense Details</CardTitle>
               <CardDescription>
-                Enter your upcoming medical expense to see your estimated savings
+                Enter your upcoming medical expense to see your estimated
+                savings
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -185,7 +226,9 @@ const PrePurchaseDecision = () => {
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {HSA_CATEGORIES.filter(cat => cat !== "Not HSA Eligible").map((cat) => (
+                      {HSA_CATEGORIES.filter(
+                        (cat) => cat !== "Not HSA Eligible",
+                      ).map((cat) => (
                         <SelectItem key={cat} value={cat}>
                           {cat}
                         </SelectItem>
@@ -201,15 +244,26 @@ const PrePurchaseDecision = () => {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="payment-strategy">Payment Strategy</Label>
-                  <Select value={paymentStrategy} onValueChange={setPaymentStrategy}>
+                  <Select
+                    value={paymentStrategy}
+                    onValueChange={setPaymentStrategy}
+                  >
                     <SelectTrigger id="payment-strategy">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="immediate">Pay Immediately (30 days)</SelectItem>
-                      <SelectItem value="6-month">0% APR for 6 months</SelectItem>
-                      <SelectItem value="12-month">0% APR for 12 months</SelectItem>
-                      <SelectItem value="18-month">0% APR for 18 months</SelectItem>
+                      <SelectItem value="immediate">
+                        Pay Immediately (30 days)
+                      </SelectItem>
+                      <SelectItem value="6-month">
+                        0% APR for 6 months
+                      </SelectItem>
+                      <SelectItem value="12-month">
+                        0% APR for 12 months
+                      </SelectItem>
+                      <SelectItem value="18-month">
+                        0% APR for 18 months
+                      </SelectItem>
                       <SelectItem value="custom">Custom Timeline</SelectItem>
                     </SelectContent>
                   </Select>
@@ -220,14 +274,22 @@ const PrePurchaseDecision = () => {
 
                 <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
                   <CollapsibleTrigger asChild>
-                    <Button variant="ghost" size="sm" className="w-full flex items-center justify-between">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full flex items-center justify-between"
+                    >
                       <span>Advanced Settings</span>
-                      <ChevronDown className={`h-4 w-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform ${showAdvanced ? "rotate-180" : ""}`}
+                      />
                     </Button>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="space-y-4 pt-4">
                     <div className="space-y-2">
-                      <Label htmlFor="rewards-rate">Credit Card Rewards Rate (%)</Label>
+                      <Label htmlFor="rewards-rate">
+                        Credit Card Rewards Rate (%)
+                      </Label>
                       <Input
                         id="rewards-rate"
                         type="number"
@@ -255,7 +317,9 @@ const PrePurchaseDecision = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="investment-return">HSA Investment Return (% annual)</Label>
+                      <Label htmlFor="investment-return">
+                        HSA Investment Return (% annual)
+                      </Label>
                       <Input
                         id="investment-return"
                         type="number"
@@ -264,13 +328,16 @@ const PrePurchaseDecision = () => {
                         onChange={(e) => setInvestmentReturn(e.target.value)}
                       />
                       <p className="text-xs text-muted-foreground">
-                        Expected annual return during investment horizon (from purchase to reimbursement)
+                        Expected annual return during investment horizon (from
+                        purchase to reimbursement)
                       </p>
                     </div>
 
                     {paymentStrategy === "custom" && (
                       <div className="space-y-2">
-                        <Label htmlFor="card-payoff">Card Payoff Period (months)</Label>
+                        <Label htmlFor="card-payoff">
+                          Card Payoff Period (months)
+                        </Label>
                         <Input
                           id="card-payoff"
                           type="number"
@@ -286,7 +353,9 @@ const PrePurchaseDecision = () => {
                     )}
 
                     <div className="space-y-2">
-                      <Label htmlFor="monthly-payment">Monthly Payment (optional)</Label>
+                      <Label htmlFor="monthly-payment">
+                        Monthly Payment (optional)
+                      </Label>
                       <Input
                         id="monthly-payment"
                         type="number"
@@ -296,12 +365,15 @@ const PrePurchaseDecision = () => {
                         onChange={(e) => setMonthlyPayment(e.target.value)}
                       />
                       <p className="text-xs text-muted-foreground">
-                        If you'll make monthly payments, enter the amount. Calculation will use declining balance.
+                        If you'll make monthly payments, enter the amount.
+                        Calculation will use declining balance.
                       </p>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="hsa-years">Investment Horizon (years)</Label>
+                      <Label htmlFor="hsa-years">
+                        Investment Horizon (years)
+                      </Label>
                       <Input
                         id="hsa-years"
                         type="number"
@@ -311,15 +383,16 @@ const PrePurchaseDecision = () => {
                         onChange={(e) => setHsaInvestmentYears(e.target.value)}
                       />
                       <p className="text-xs text-muted-foreground">
-                        Years from now until you reimburse from HSA (can be decades later)
+                        Years from now until you reimburse from HSA (can be
+                        decades later)
                       </p>
                     </div>
                   </CollapsibleContent>
                 </Collapsible>
               </div>
 
-              <Button 
-                onClick={handleCalculate} 
+              <Button
+                onClick={handleCalculate}
                 disabled={!amount || !category || parseFloat(amount) <= 0}
                 className="w-full"
                 size="lg"
@@ -345,7 +418,7 @@ const PrePurchaseDecision = () => {
               )}
 
               <div className="flex gap-3">
-                <Button 
+                <Button
                   onClick={handleSaveDecision}
                   disabled={saving}
                   variant="outline"
@@ -354,28 +427,32 @@ const PrePurchaseDecision = () => {
                   <Save className="h-4 w-4 mr-2" />
                   {saving ? "Saving..." : "Save This Decision"}
                 </Button>
-                <Button 
-                  onClick={() => navigate('/expenses/new', { 
-                    state: { 
-                      savedDecision: {
-                        amount,
-                        category,
-                        cardPayoffMonths,
-                        hsaInvestmentYears,
-                        recommendation
-                      }
-                    }
-                  })}
+                <Button
+                  onClick={() =>
+                    navigate("/expenses/new", {
+                      state: {
+                        savedDecision: {
+                          amount,
+                          category,
+                          cardPayoffMonths,
+                          hsaInvestmentYears,
+                          recommendation,
+                        },
+                      },
+                    })
+                  }
                   className="flex-1"
                 >
                   <FileText className="h-4 w-4 mr-2" />
                   Enter Expense Now
                 </Button>
               </div>
-              
+
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">How This Strategy Works</CardTitle>
+                  <CardTitle className="text-lg">
+                    How This Strategy Works
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {recommendation.method === "hsa-invest" && (
@@ -385,7 +462,9 @@ const PrePurchaseDecision = () => {
                           <CreditCard className="h-4 w-4 text-primary" />
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium text-sm">Pay with a rewards card</p>
+                          <p className="font-medium text-sm">
+                            Pay with a rewards card
+                          </p>
                           <p className="text-xs text-muted-foreground">
                             Earn cash back on the expense immediately
                           </p>
@@ -396,9 +475,12 @@ const PrePurchaseDecision = () => {
                           <Receipt className="h-4 w-4 text-primary" />
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium text-sm">Save your receipts</p>
+                          <p className="font-medium text-sm">
+                            Save your receipts
+                          </p>
                           <p className="text-xs text-muted-foreground">
-                            Receipts are needed when you reimburse from your HSA later
+                            Receipts are needed when you reimburse from your HSA
+                            later
                           </p>
                         </div>
                       </div>
@@ -407,9 +489,12 @@ const PrePurchaseDecision = () => {
                           <TrendingUp className="h-4 w-4 text-primary" />
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium text-sm">HSA funds keep growing</p>
+                          <p className="font-medium text-sm">
+                            HSA funds keep growing
+                          </p>
                           <p className="text-xs text-muted-foreground">
-                            Your HSA stays invested and compounds tax-free until you reimburse
+                            Your HSA stays invested and compounds tax-free until
+                            you reimburse
                           </p>
                         </div>
                       </div>
@@ -421,9 +506,12 @@ const PrePurchaseDecision = () => {
                         <CreditCard className="h-4 w-4 text-primary" />
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium text-sm">Pay with a rewards card</p>
+                        <p className="font-medium text-sm">
+                          Pay with a rewards card
+                        </p>
                         <p className="text-xs text-muted-foreground">
-                          This expense isn't HSA-eligible, but you can still earn cash back
+                          This expense isn't HSA-eligible, but you can still
+                          earn cash back
                         </p>
                       </div>
                     </div>
@@ -440,13 +528,19 @@ const PrePurchaseDecision = () => {
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
                   <p>
-                    <strong>Tax-Free Growth:</strong> HSA funds grow tax-free when invested. Paying out-of-pocket with a rewards card lets your HSA balance keep compounding while you earn cash back.
+                    <strong>Tax-Free Growth:</strong> HSA funds grow tax-free
+                    when invested. Paying out-of-pocket with a rewards card lets
+                    your HSA balance keep compounding while you earn cash back.
                   </p>
                   <p>
-                    <strong>No Reimbursement Deadline:</strong> There's no time limit on HSA reimbursements. You can reimburse yourself decades later, giving your HSA more time to grow.
+                    <strong>No Reimbursement Deadline:</strong> There's no time
+                    limit on HSA reimbursements. You can reimburse yourself
+                    decades later, giving your HSA more time to grow.
                   </p>
                   <p>
-                    <strong>Triple Tax Advantage:</strong> HSA contributions are tax-deductible, growth is tax-free, and qualified withdrawals are never taxed — a benefit unique to HSAs.
+                    <strong>Triple Tax Advantage:</strong> HSA contributions are
+                    tax-deductible, growth is tax-free, and qualified
+                    withdrawals are never taxed — a benefit unique to HSAs.
                   </p>
                 </CardContent>
               </Card>

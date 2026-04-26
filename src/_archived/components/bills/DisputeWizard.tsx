@@ -11,13 +11,13 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { logError } from "@/utils/errorHandler";
-import { 
-  CheckCircle2, 
-  Circle, 
+import {
+  CheckCircle2,
+  Circle,
   FileText,
   Building2,
   Mail,
-  Phone
+  Phone,
 } from "lucide-react";
 
 interface DisputeWizardProps {
@@ -28,23 +28,29 @@ interface DisputeWizardProps {
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
-export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardProps) {
+export function DisputeWizard({
+  invoice,
+  errors,
+  billReviewId,
+}: DisputeWizardProps) {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [selectedErrors, setSelectedErrors] = useState<string[]>([]);
   const [providerInfo, setProviderInfo] = useState({
-    providerName: invoice.vendor || '',
-    providerPhone: '',
-    providerEmail: '',
-    providerAddress: ''
+    providerName: invoice.vendor || "",
+    providerPhone: "",
+    providerEmail: "",
+    providerAddress: "",
   });
   const [insuranceInfo, setInsuranceInfo] = useState({
-    insuranceCompany: '',
-    insurancePhone: '',
-    claimNumber: ''
+    insuranceCompany: "",
+    insurancePhone: "",
+    claimNumber: "",
   });
-  const [disputeReason, setDisputeReason] = useState('');
-  const [submissionMethod, setSubmissionMethod] = useState<'mail' | 'phone' | 'email' | 'portal'>('email');
+  const [disputeReason, setDisputeReason] = useState("");
+  const [submissionMethod, setSubmissionMethod] = useState<
+    "mail" | "phone" | "email" | "portal"
+  >("email");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const steps = [
@@ -52,16 +58,16 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
     { number: 2, title: "Provider Info", icon: Building2 },
     { number: 3, title: "Insurance Info", icon: FileText },
     { number: 4, title: "Build Case", icon: Mail },
-    { number: 5, title: "Submit", icon: Phone }
+    { number: 5, title: "Submit", icon: Phone },
   ];
 
   const currentProgress = (currentStep / steps.length) * 100;
 
   const handleErrorToggle = (errorId: string) => {
-    setSelectedErrors(prev =>
+    setSelectedErrors((prev) =>
       prev.includes(errorId)
-        ? prev.filter(id => id !== errorId)
-        : [...prev, errorId]
+        ? prev.filter((id) => id !== errorId)
+        : [...prev, errorId],
     );
   };
 
@@ -86,41 +92,45 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
     setIsSubmitting(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
       const disputedAmount = selectedErrors.reduce((total, errorId) => {
-        const error = errors.find(e => e.id === errorId);
+        const error = errors.find((e) => e.id === errorId);
         return total + (error?.potential_savings || 0);
       }, 0);
 
       // Create dispute
       const { data: dispute, error: disputeError } = await supabase
-        .from('bill_disputes')
+        .from("bill_disputes")
         .insert({
           user_id: user.id,
           bill_review_id: billReviewId || null,
           invoice_id: invoice.id,
-          dispute_status: 'draft',
+          dispute_status: "draft",
           provider_name: providerInfo.providerName,
           provider_contact_info: {
             phone: providerInfo.providerPhone,
             email: providerInfo.providerEmail,
-            address: providerInfo.providerAddress
+            address: providerInfo.providerAddress,
           },
           insurance_company: insuranceInfo.insuranceCompany,
           insurance_contact_info: {
-            phone: insuranceInfo.insurancePhone
+            phone: insuranceInfo.insurancePhone,
           },
           claim_number: insuranceInfo.claimNumber,
           original_amount: invoice.amount,
           disputed_amount: disputedAmount,
           dispute_reason: disputeReason,
-          timeline: [{
-            date: new Date().toISOString(),
-            status: 'draft',
-            note: 'Dispute created'
-          }]
+          timeline: [
+            {
+              date: new Date().toISOString(),
+              status: "draft",
+              note: "Dispute created",
+            },
+          ],
         })
         .select()
         .single();
@@ -129,16 +139,16 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
 
       // Update selected errors to 'disputed' status
       const { error: updateError } = await supabase
-        .from('bill_errors')
-        .update({ status: 'disputed' })
-        .in('id', selectedErrors);
+        .from("bill_errors")
+        .update({ status: "disputed" })
+        .in("id", selectedErrors);
 
       if (updateError) throw updateError;
 
       toast.success("Dispute created successfully!");
       navigate(`/disputes/${dispute.id}`);
     } catch (error) {
-      logError('Error creating dispute', error);
+      logError("Error creating dispute", error);
       toast.error("Failed to create dispute");
     } finally {
       setIsSubmitting(false);
@@ -163,17 +173,17 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
               const StepIcon = step.icon;
               const isActive = currentStep === step.number;
               const isComplete = currentStep > step.number;
-              
+
               return (
                 <div key={step.number} className="flex items-center">
                   <div className="flex flex-col items-center gap-2">
                     <div
                       className={`h-12 w-12 rounded-full flex items-center justify-center border-2 transition-colors ${
                         isActive
-                          ? 'border-primary bg-primary text-primary-foreground'
+                          ? "border-primary bg-primary text-primary-foreground"
                           : isComplete
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-border bg-background text-muted-foreground'
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border bg-background text-muted-foreground"
                       }`}
                     >
                       {isComplete ? (
@@ -182,7 +192,9 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
                         <StepIcon className="h-6 w-6" />
                       )}
                     </div>
-                    <span className={`text-sm font-medium ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    <span
+                      className={`text-sm font-medium ${isActive ? "text-foreground" : "text-muted-foreground"}`}
+                    >
                       {step.title}
                     </span>
                   </div>
@@ -202,7 +214,9 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
         {currentStep === 1 && (
           <div className="space-y-4">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Select Issues to Dispute</h2>
+              <h2 className="text-2xl font-bold mb-2">
+                Select Issues to Dispute
+              </h2>
               <p className="text-muted-foreground">
                 Choose which billing errors you want to challenge
               </p>
@@ -226,7 +240,9 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
                     />
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-semibold">{error.error_type.replace(/_/g, ' ')}</h4>
+                        <h4 className="font-semibold">
+                          {error.error_type.replace(/_/g, " ")}
+                        </h4>
                         <Badge variant="outline">
                           ${error.potential_savings.toFixed(2)} savings
                         </Badge>
@@ -257,7 +273,12 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
                 <Input
                   id="providerName"
                   value={providerInfo.providerName}
-                  onChange={(e) => setProviderInfo({ ...providerInfo, providerName: e.target.value })}
+                  onChange={(e) =>
+                    setProviderInfo({
+                      ...providerInfo,
+                      providerName: e.target.value,
+                    })
+                  }
                   placeholder="e.g., Memorial Hospital"
                 />
               </div>
@@ -268,7 +289,12 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
                   id="providerPhone"
                   type="tel"
                   value={providerInfo.providerPhone}
-                  onChange={(e) => setProviderInfo({ ...providerInfo, providerPhone: e.target.value })}
+                  onChange={(e) =>
+                    setProviderInfo({
+                      ...providerInfo,
+                      providerPhone: e.target.value,
+                    })
+                  }
                   placeholder="(555) 123-4567"
                 />
               </div>
@@ -279,7 +305,12 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
                   id="providerEmail"
                   type="email"
                   value={providerInfo.providerEmail}
-                  onChange={(e) => setProviderInfo({ ...providerInfo, providerEmail: e.target.value })}
+                  onChange={(e) =>
+                    setProviderInfo({
+                      ...providerInfo,
+                      providerEmail: e.target.value,
+                    })
+                  }
                   placeholder="billing@provider.com"
                 />
               </div>
@@ -289,7 +320,12 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
                 <Textarea
                   id="providerAddress"
                   value={providerInfo.providerAddress}
-                  onChange={(e) => setProviderInfo({ ...providerInfo, providerAddress: e.target.value })}
+                  onChange={(e) =>
+                    setProviderInfo({
+                      ...providerInfo,
+                      providerAddress: e.target.value,
+                    })
+                  }
                   placeholder="123 Medical Drive, Suite 100..."
                   rows={3}
                 />
@@ -313,7 +349,12 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
                 <Input
                   id="insuranceCompany"
                   value={insuranceInfo.insuranceCompany}
-                  onChange={(e) => setInsuranceInfo({ ...insuranceInfo, insuranceCompany: e.target.value })}
+                  onChange={(e) =>
+                    setInsuranceInfo({
+                      ...insuranceInfo,
+                      insuranceCompany: e.target.value,
+                    })
+                  }
                   placeholder="e.g., Blue Cross Blue Shield"
                 />
               </div>
@@ -324,7 +365,12 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
                   id="insurancePhone"
                   type="tel"
                   value={insuranceInfo.insurancePhone}
-                  onChange={(e) => setInsuranceInfo({ ...insuranceInfo, insurancePhone: e.target.value })}
+                  onChange={(e) =>
+                    setInsuranceInfo({
+                      ...insuranceInfo,
+                      insurancePhone: e.target.value,
+                    })
+                  }
                   placeholder="(555) 987-6543"
                 />
               </div>
@@ -334,7 +380,12 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
                 <Input
                   id="claimNumber"
                   value={insuranceInfo.claimNumber}
-                  onChange={(e) => setInsuranceInfo({ ...insuranceInfo, claimNumber: e.target.value })}
+                  onChange={(e) =>
+                    setInsuranceInfo({
+                      ...insuranceInfo,
+                      claimNumber: e.target.value,
+                    })
+                  }
                   placeholder="CLM-12345678"
                 />
               </div>
@@ -370,10 +421,10 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
               <h4 className="font-semibold mb-2">Selected Issues:</h4>
               <ul className="space-y-1 text-sm">
                 {selectedErrors.map((errorId) => {
-                  const error = errors.find(e => e.id === errorId);
+                  const error = errors.find((e) => e.id === errorId);
                   return error ? (
                     <li key={errorId} className="flex justify-between">
-                      <span>{error.error_type.replace(/_/g, ' ')}</span>
+                      <span>{error.error_type.replace(/_/g, " ")}</span>
                       <span className="font-semibold text-green-600">
                         ${error.potential_savings.toFixed(2)}
                       </span>
@@ -390,7 +441,8 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
             <div>
               <h2 className="text-2xl font-bold mb-2">Review & Submit</h2>
               <p className="text-muted-foreground">
-                Your dispute will be saved as a draft for you to submit when ready
+                Your dispute will be saved as a draft for you to submit when
+                ready
               </p>
             </div>
 
@@ -399,19 +451,24 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
                 <h4 className="font-semibold mb-1">Provider:</h4>
                 <p className="text-sm">{providerInfo.providerName}</p>
               </div>
-              
+
               <div>
                 <h4 className="font-semibold mb-1">Issues Disputed:</h4>
-                <p className="text-sm">{selectedErrors.length} billing errors</p>
+                <p className="text-sm">
+                  {selectedErrors.length} billing errors
+                </p>
               </div>
-              
+
               <div>
                 <h4 className="font-semibold mb-1">Total Disputed Amount:</h4>
                 <p className="text-lg font-bold text-green-600">
-                  ${selectedErrors.reduce((total, errorId) => {
-                    const error = errors.find(e => e.id === errorId);
-                    return total + (error?.potential_savings || 0);
-                  }, 0).toFixed(2)}
+                  $
+                  {selectedErrors
+                    .reduce((total, errorId) => {
+                      const error = errors.find((e) => e.id === errorId);
+                      return total + (error?.potential_savings || 0);
+                    }, 0)
+                    .toFixed(2)}
                 </p>
               </div>
             </Card>
@@ -440,7 +497,7 @@ export function DisputeWizard({ invoice, errors, billReviewId }: DisputeWizardPr
               onClick={handleSubmit}
               disabled={isSubmitting || !isStepComplete(4)}
             >
-              {isSubmitting ? 'Creating...' : 'Create Dispute'}
+              {isSubmitting ? "Creating..." : "Create Dispute"}
             </Button>
           )}
         </div>

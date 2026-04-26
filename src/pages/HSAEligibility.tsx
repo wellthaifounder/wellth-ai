@@ -1,25 +1,31 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { 
-  Search, 
-  BookOpen, 
-  ExternalLink, 
-  CheckCircle2, 
-  XCircle, 
+import {
+  Search,
+  BookOpen,
+  ExternalLink,
+  CheckCircle2,
+  XCircle,
   AlertTriangle,
   FileText,
   Grid3x3,
   List,
   MessageCircle,
   Sparkles,
-  ArrowLeft
+  ArrowLeft,
 } from "lucide-react";
 import {
   hsaEligibilityItems,
@@ -36,63 +42,70 @@ export default function HSAEligibility() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedStatus, setSelectedStatus] = useState<EligibilityStatus | null>(null);
-  const [selectedItem, setSelectedItem] = useState<HSAEligibilityItem | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedStatus, setSelectedStatus] =
+    useState<EligibilityStatus | null>(null);
+  const [selectedItem, setSelectedItem] = useState<HSAEligibilityItem | null>(
+    null,
+  );
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const categoryCounts = getCategoryCounts();
 
   // Apply filters
-  let filteredItems = searchQuery 
+  let filteredItems = searchQuery
     ? searchEligibilityItems(searchQuery)
     : hsaEligibilityItems;
 
   if (selectedCategories.length > 0) {
-    filteredItems = filteredItems.filter(item => selectedCategories.includes(item.category));
+    filteredItems = filteredItems.filter((item) =>
+      selectedCategories.includes(item.category),
+    );
   }
 
   if (selectedStatus) {
-    filteredItems = filteredItems.filter(item => item.status === selectedStatus);
+    filteredItems = filteredItems.filter(
+      (item) => item.status === selectedStatus,
+    );
   }
 
   const toggleCategory = (category: string) => {
-    setSelectedCategories(prev => 
+    setSelectedCategories((prev) =>
       prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
+        ? prev.filter((c) => c !== category)
+        : [...prev, category],
     );
   };
 
   const getStatusColor = (status: EligibilityStatus) => {
     switch (status) {
-      case 'eligible':
-        return 'bg-success text-success-foreground';
-      case 'not-eligible':
-        return 'bg-destructive text-destructive-foreground';
-      case 'conditional':
-        return 'bg-accent text-accent-foreground';
+      case "eligible":
+        return "bg-success text-success-foreground";
+      case "not-eligible":
+        return "bg-destructive text-destructive-foreground";
+      case "conditional":
+        return "bg-accent text-accent-foreground";
     }
   };
 
   const getStatusIcon = (status: EligibilityStatus) => {
     switch (status) {
-      case 'eligible':
+      case "eligible":
         return <CheckCircle2 className="h-4 w-4" />;
-      case 'not-eligible':
+      case "not-eligible":
         return <XCircle className="h-4 w-4" />;
-      case 'conditional':
+      case "conditional":
         return <AlertTriangle className="h-4 w-4" />;
     }
   };
 
   const getStatusLabel = (status: EligibilityStatus) => {
     switch (status) {
-      case 'eligible':
-        return 'HSA Eligible';
-      case 'not-eligible':
-        return 'Not Eligible';
-      case 'conditional':
-        return 'Conditionally Eligible';
+      case "eligible":
+        return "HSA Eligible";
+      case "not-eligible":
+        return "Not Eligible";
+      case "conditional":
+        return "Conditionally Eligible";
     }
   };
 
@@ -110,7 +123,8 @@ export default function HSAEligibility() {
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-3">HSA Eligibility Reference</h1>
           <p className="text-muted-foreground text-lg">
-            Quickly check if medical expenses qualify for HSA reimbursement based on IRS guidelines
+            Quickly check if medical expenses qualify for HSA reimbursement
+            based on IRS guidelines
           </p>
         </div>
 
@@ -118,8 +132,9 @@ export default function HSAEligibility() {
         <Alert className="mb-6 border-accent">
           <BookOpen className="h-4 w-4" />
           <AlertDescription>
-            This tool provides general information based on IRS Publication 502. HSA administrators may have different rules. 
-            Always consult a tax professional for your specific situation and keep all receipts.
+            This tool provides general information based on IRS Publication 502.
+            HSA administrators may have different rules. Always consult a tax
+            professional for your specific situation and keep all receipts.
           </AlertDescription>
         </Alert>
 
@@ -138,11 +153,14 @@ export default function HSAEligibility() {
                   Ask Wellbie for Personalized Help
                 </h3>
                 <p className="text-muted-foreground mb-3">
-                  Not sure if a specific purchase qualifies? Ask Wellbie, your AI assistant, for instant guidance on HSA eligibility. 
-                  Just describe your expense and get personalized answers based on IRS guidelines.
+                  Not sure if a specific purchase qualifies? Ask Wellbie, your
+                  AI assistant, for instant guidance on HSA eligibility. Just
+                  describe your expense and get personalized answers based on
+                  IRS guidelines.
                 </p>
                 <p className="text-sm text-muted-foreground italic">
-                  Try asking: "Is a massage HSA eligible?" or "Can I use my HSA for prescription sunglasses?"
+                  Try asking: "Is a massage HSA eligible?" or "Can I use my HSA
+                  for prescription sunglasses?"
                 </p>
               </div>
             </div>
@@ -174,42 +192,48 @@ export default function HSAEligibility() {
                   All Items
                 </Button>
                 <Button
-                  variant={selectedStatus === 'eligible' ? "default" : "outline"}
+                  variant={
+                    selectedStatus === "eligible" ? "default" : "outline"
+                  }
                   size="sm"
-                  onClick={() => setSelectedStatus('eligible')}
+                  onClick={() => setSelectedStatus("eligible")}
                 >
                   <CheckCircle2 className="h-4 w-4 mr-1" />
                   Eligible
                 </Button>
                 <Button
-                  variant={selectedStatus === 'conditional' ? "default" : "outline"}
+                  variant={
+                    selectedStatus === "conditional" ? "default" : "outline"
+                  }
                   size="sm"
-                  onClick={() => setSelectedStatus('conditional')}
+                  onClick={() => setSelectedStatus("conditional")}
                 >
                   <AlertTriangle className="h-4 w-4 mr-1" />
                   Conditional
                 </Button>
                 <Button
-                  variant={selectedStatus === 'not-eligible' ? "default" : "outline"}
+                  variant={
+                    selectedStatus === "not-eligible" ? "default" : "outline"
+                  }
                   size="sm"
-                  onClick={() => setSelectedStatus('not-eligible')}
+                  onClick={() => setSelectedStatus("not-eligible")}
                 >
                   <XCircle className="h-4 w-4 mr-1" />
                   Not Eligible
                 </Button>
-                
+
                 <div className="ml-auto flex gap-2">
                   <Button
-                    variant={viewMode === 'grid' ? 'default' : 'outline'}
+                    variant={viewMode === "grid" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setViewMode('grid')}
+                    onClick={() => setViewMode("grid")}
                   >
                     <Grid3x3 className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant={viewMode === 'list' ? 'default' : 'outline'}
+                    variant={viewMode === "list" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setViewMode('list')}
+                    onClick={() => setViewMode("list")}
                   >
                     <List className="h-4 w-4" />
                   </Button>
@@ -223,12 +247,16 @@ export default function HSAEligibility() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-lg">Filter by Category</CardTitle>
-            <CardDescription>Select multiple categories to filter results</CardDescription>
+            <CardDescription>
+              Select multiple categories to filter results
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
               <Button
-                variant={selectedCategories.length === 0 ? "default" : "outline"}
+                variant={
+                  selectedCategories.length === 0 ? "default" : "outline"
+                }
                 size="sm"
                 onClick={() => setSelectedCategories([])}
               >
@@ -237,7 +265,11 @@ export default function HSAEligibility() {
               {Object.values(CATEGORIES).map((category) => (
                 <Button
                   key={category}
-                  variant={selectedCategories.includes(category) ? "default" : "outline"}
+                  variant={
+                    selectedCategories.includes(category)
+                      ? "default"
+                      : "outline"
+                  }
                   size="sm"
                   onClick={() => toggleCategory(category)}
                 >
@@ -251,7 +283,9 @@ export default function HSAEligibility() {
         {/* Active Filters */}
         {(selectedCategories.length > 0 || selectedStatus) && (
           <div className="flex items-center gap-2 mb-4 flex-wrap">
-            <span className="text-sm text-muted-foreground">Active filters:</span>
+            <span className="text-sm text-muted-foreground">
+              Active filters:
+            </span>
             {selectedCategories.map((category) => (
               <Badge key={category} variant="outline" className="gap-1">
                 {category}
@@ -287,9 +321,16 @@ export default function HSAEligibility() {
         ) : (
           <div className="mb-6">
             <p className="text-sm text-muted-foreground mb-4">
-              Showing {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'}
+              Showing {filteredItems.length}{" "}
+              {filteredItems.length === 1 ? "item" : "items"}
             </p>
-            <div className={viewMode === 'grid' ? 'grid gap-4 md:grid-cols-2 lg:grid-cols-3' : 'space-y-3'}>
+            <div
+              className={
+                viewMode === "grid"
+                  ? "grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+                  : "space-y-3"
+              }
+            >
               {filteredItems.map((item) => (
                 <Card
                   key={item.id}
@@ -307,7 +348,7 @@ export default function HSAEligibility() {
                       {item.description}
                     </CardDescription>
                   </CardHeader>
-                  {viewMode === 'list' && (
+                  {viewMode === "list" && (
                     <CardContent>
                       <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                         <Badge variant="outline">{item.category}</Badge>
@@ -334,8 +375,9 @@ export default function HSAEligibility() {
               <div className="space-y-2">
                 <h3 className="font-semibold">Need More Information?</h3>
                 <p className="text-sm text-muted-foreground">
-                  This reference tool covers the most common medical expenses. For complete details and edge cases, 
-                  refer to the full IRS Publication 502 or consult with a tax professional.
+                  This reference tool covers the most common medical expenses.
+                  For complete details and edge cases, refer to the full IRS
+                  Publication 502 or consult with a tax professional.
                 </p>
                 <div className="flex gap-3">
                   <a
@@ -366,11 +408,15 @@ export default function HSAEligibility() {
               <CardHeader>
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
-                    <CardTitle className="text-2xl mb-2">{selectedItem.name}</CardTitle>
+                    <CardTitle className="text-2xl mb-2">
+                      {selectedItem.name}
+                    </CardTitle>
                     <div className="flex flex-wrap gap-2 mb-3">
                       <Badge className={getStatusColor(selectedItem.status)}>
                         {getStatusIcon(selectedItem.status)}
-                        <span className="ml-1">{getStatusLabel(selectedItem.status)}</span>
+                        <span className="ml-1">
+                          {getStatusLabel(selectedItem.status)}
+                        </span>
                       </Badge>
                       <Badge variant="outline">{selectedItem.category}</Badge>
                       {selectedItem.requiresLMN && (
@@ -393,7 +439,9 @@ export default function HSAEligibility() {
               <CardContent className="space-y-4">
                 <div>
                   <h3 className="font-semibold mb-2">Description</h3>
-                  <p className="text-muted-foreground">{selectedItem.description}</p>
+                  <p className="text-muted-foreground">
+                    {selectedItem.description}
+                  </p>
                 </div>
 
                 {selectedItem.conditions && (
@@ -401,7 +449,9 @@ export default function HSAEligibility() {
                     <h3 className="font-semibold mb-2">Conditions</h3>
                     <Alert>
                       <AlertTriangle className="h-4 w-4" />
-                      <AlertDescription>{selectedItem.conditions}</AlertDescription>
+                      <AlertDescription>
+                        {selectedItem.conditions}
+                      </AlertDescription>
                     </Alert>
                   </div>
                 )}
@@ -449,7 +499,6 @@ export default function HSAEligibility() {
             </Card>
           </div>
         )}
-
       </div>
     </AuthenticatedLayout>
   );

@@ -7,12 +7,14 @@
 **Solution**: Your table is actually called `profiles`.
 
 ✅ **Updated files**:
+
 - [`CORRECTED_MIGRATION.sql`](CORRECTED_MIGRATION.sql) - Fixed SQL migration
 - [`InsurancePlanDialog.tsx`](src/components/onboarding/InsurancePlanDialog.tsx) - Now uses `profiles` table
 - [`useInsurancePlan.ts`](src/hooks/useInsurancePlan.ts) - Now queries `profiles` table
 - [`QUICK_INTEGRATION_GUIDE.md`](QUICK_INTEGRATION_GUIDE.md) - Updated with correct SQL
 
 **Next steps**:
+
 1. Run the SQL from [`CORRECTED_MIGRATION.sql`](CORRECTED_MIGRATION.sql) in Supabase SQL Editor
 2. Continue with Step 2 in [QUICK_INTEGRATION_GUIDE.md](QUICK_INTEGRATION_GUIDE.md)
 
@@ -23,10 +25,12 @@
 ### 1. Analytics events not being logged
 
 **Symptoms**:
+
 - Console shows analytics events but they're not in database
 - Error: "relation analytics_events does not exist"
 
 **Solution**:
+
 ```sql
 -- Check if table exists
 SELECT table_name FROM information_schema.tables
@@ -38,10 +42,12 @@ WHERE table_schema = 'public' AND table_name = 'analytics_events';
 ### 2. Insurance plan dialog won't save
 
 **Symptoms**:
+
 - Form submits but data doesn't persist
 - Error in console about RLS policies
 
 **Check**:
+
 ```sql
 -- 1. Verify column exists
 SELECT column_name, data_type
@@ -62,12 +68,14 @@ WHERE id = auth.uid();
 ### 3. Onboarding progress bar not showing
 
 **Symptoms**:
+
 - Progress bar never appears
 - User already has bills/bank connected
 
 **Explanation**: Progress bar auto-hides when onboarding is complete (all 3 milestones met).
 
 **Check milestones**:
+
 ```sql
 -- Check if user has bills
 SELECT COUNT(*) FROM invoices WHERE user_id = auth.uid();
@@ -85,6 +93,7 @@ SELECT hsa_opened_date FROM profiles WHERE id = auth.uid();
 ```
 
 If user has:
+
 - Bills uploaded (>0)
 - Bills analyzed (>0)
 - Bank connected OR HSA date set
@@ -94,9 +103,11 @@ Then onboarding is complete and progress bar won't show.
 ### 4. HSA upgrade prompts not appearing
 
 **Symptoms**:
+
 - Non-HSA users don't see prompts on bill detail or calculator
 
 **Check**:
+
 ```typescript
 // In browser console:
 localStorage.getItem('wellth_hsa_opened_date')
@@ -114,10 +125,12 @@ SELECT hsa_opened_date FROM profiles WHERE id = auth.uid();
 ### 5. Dashboard widgets not appearing
 
 **Symptoms**:
+
 - InsurancePlanPrompt doesn't show
 - HSAHealthCheck missing
 
 **Solution**:
+
 ```typescript
 // In src/pages/Dashboard.tsx, verify imports:
 import { InsurancePlanPrompt } from "@/components/dashboard/InsurancePlanPrompt";
@@ -135,10 +148,12 @@ import { HSAHealthCheck } from "@/components/dashboard/HSAHealthCheck";
 ### 6. TypeScript errors after updates
 
 **Symptoms**:
+
 - Build fails with type errors
 - IDE shows red squiggles
 
 **Solution**:
+
 ```bash
 # Restart TypeScript server (in VS Code)
 Ctrl+Shift+P → "TypeScript: Restart TS Server"
@@ -205,15 +220,16 @@ WHERE tablename = 'analytics_events';
 After running migration, test each component:
 
 ### ✅ Analytics Tracking
+
 ```typescript
 // In browser console:
-import { analytics } from '@/lib/analytics';
+import { analytics } from "@/lib/analytics";
 
 // Test event
 analytics.track({
-  type: 'page_view',
-  page: '/test',
-  metadata: { test: true }
+  type: "page_view",
+  page: "/test",
+  metadata: { test: true },
 });
 
 // Check database
@@ -222,6 +238,7 @@ analytics.track({
 ```
 
 ### ✅ Insurance Plan
+
 1. Navigate to Dashboard
 2. Click "Add Insurance Plan"
 3. Fill form with test data
@@ -232,6 +249,7 @@ analytics.track({
    - Database: `SELECT insurance_plan FROM profiles WHERE id = auth.uid();`
 
 ### ✅ Onboarding Progress
+
 1. Create fresh test account
 2. Login and go to Dashboard
 3. Verify progress bar shows "0/3 complete"
@@ -267,6 +285,7 @@ DELETE FROM analytics_events WHERE user_id = auth.uid();
 ```
 
 In browser console:
+
 ```javascript
 localStorage.clear();
 location.reload();

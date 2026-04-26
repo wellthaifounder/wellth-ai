@@ -1,4 +1,4 @@
-import confetti from 'canvas-confetti';
+import confetti from "canvas-confetti";
 
 /**
  * Confetti animation utilities for success moments
@@ -11,7 +11,7 @@ export const celebrateSuccess = () => {
     particleCount: 100,
     spread: 70,
     origin: { y: 0.6 },
-    colors: ['#00A9A5', '#F4C430', '#4A90E2', '#2ECC71'],
+    colors: ["#00A9A5", "#F4C430", "#4A90E2", "#2ECC71"],
   });
 };
 
@@ -42,7 +42,7 @@ export const celebrateFirstTime = () => {
         x: randomInRange(0.1, 0.3),
         y: Math.random() - 0.2,
       },
-      colors: ['#00A9A5', '#F4C430', '#4A90E2'],
+      colors: ["#00A9A5", "#F4C430", "#4A90E2"],
     });
 
     confetti({
@@ -53,7 +53,7 @@ export const celebrateFirstTime = () => {
         x: randomInRange(0.7, 0.9),
         y: Math.random() - 0.2,
       },
-      colors: ['#00A9A5', '#F4C430', '#4A90E2'],
+      colors: ["#00A9A5", "#F4C430", "#4A90E2"],
     });
   }, 250);
 };
@@ -64,7 +64,7 @@ export const celebrateSmallWin = () => {
     particleCount: 50,
     spread: 50,
     origin: { y: 0.7 },
-    colors: ['#00A9A5', '#F4C430'],
+    colors: ["#00A9A5", "#F4C430"],
     ticks: 100,
   });
 };
@@ -74,7 +74,7 @@ export const celebrateMilestone = () => {
   const count = 200;
   const defaults = {
     origin: { y: 0.7 },
-    colors: ['#00A9A5', '#F4C430', '#4A90E2', '#2ECC71'],
+    colors: ["#00A9A5", "#F4C430", "#4A90E2", "#2ECC71"],
   };
 
   function fire(particleRatio: number, opts: any) {

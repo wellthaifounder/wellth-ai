@@ -6,9 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, FileText, TrendingUp, Clock, CheckCircle2 } from "lucide-react";
+import {
+  Loader2,
+  FileText,
+  TrendingUp,
+  Clock,
+  CheckCircle2,
+} from "lucide-react";
 import { format } from "date-fns";
-import { AdvancedFilters, FilterState } from "@/components/bills/AdvancedFilters";
+import {
+  AdvancedFilters,
+  FilterState,
+} from "@/components/bills/AdvancedFilters";
 import { DisputeAnalyticsDashboard } from "@/components/bills/DisputeAnalyticsDashboard";
 import { BulkDisputeActions } from "@/components/bills/BulkDisputeActions";
 import { useState, useMemo } from "react";
@@ -17,58 +26,78 @@ export default function DisputeManagement() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<FilterState>({
-    searchQuery: '',
-    status: 'all',
+    searchQuery: "",
+    status: "all",
     dateRange: { from: undefined, to: undefined },
     amountRange: [0, 10000],
-    provider: '',
-    savingsMin: 0
+    provider: "",
+    savingsMin: 0,
   });
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const { data: disputes, isLoading, refetch } = useQuery({
-    queryKey: ['disputes'],
+  const {
+    data: disputes,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["disputes"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
-        .from('bill_disputes')
-        .select(`
+        .from("bill_disputes")
+        .select(
+          `
           *,
           invoices (
             vendor,
             amount
           )
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        `,
+        )
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data;
-    }
+    },
   });
 
   // Apply filters to disputes
   const filteredDisputes = useMemo(() => {
     if (!disputes) return [];
 
-    return disputes.filter(dispute => {
+    return disputes.filter((dispute) => {
       // Search query
       if (filters.searchQuery) {
         const query = filters.searchQuery.toLowerCase();
-        const matchesProvider = dispute.provider_name.toLowerCase().includes(query);
-        const matchesClaim = dispute.claim_number?.toLowerCase().includes(query);
+        const matchesProvider = dispute.provider_name
+          .toLowerCase()
+          .includes(query);
+        const matchesClaim = dispute.claim_number
+          ?.toLowerCase()
+          .includes(query);
         if (!matchesProvider && !matchesClaim) return false;
       }
 
       // Status filter
-      if (filters.status !== 'all' && dispute.dispute_status !== filters.status) {
+      if (
+        filters.status !== "all" &&
+        dispute.dispute_status !== filters.status
+      ) {
         return false;
       }
 
       // Provider filter
-      if (filters.provider && !dispute.provider_name.toLowerCase().includes(filters.provider.toLowerCase())) {
+      if (
+        filters.provider &&
+        !dispute.provider_name
+          .toLowerCase()
+          .includes(filters.provider.toLowerCase())
+      ) {
         return false;
       }
 
@@ -82,7 +111,8 @@ export default function DisputeManagement() {
       if (filters.dateRange.from) {
         const disputeDate = new Date(dispute.created_at);
         if (disputeDate < filters.dateRange.from) return false;
-        if (filters.dateRange.to && disputeDate > filters.dateRange.to) return false;
+        if (filters.dateRange.to && disputeDate > filters.dateRange.to)
+          return false;
       }
 
       return true;
@@ -92,31 +122,61 @@ export default function DisputeManagement() {
   const statusConfig = {
     draft: { label: "Draft", variant: "secondary" as const, icon: FileText },
     submitted: { label: "Submitted", variant: "default" as const, icon: Clock },
-    provider_reviewing: { label: "Under Review", variant: "default" as const, icon: Clock },
-    awaiting_response: { label: "Awaiting Response", variant: "outline" as const, icon: Clock },
-    resolved_favorable: { label: "Resolved - Favorable", variant: "default" as const, icon: CheckCircle2 },
-    resolved_unfavorable: { label: "Resolved - Unfavorable", variant: "destructive" as const, icon: Clock },
-    withdrawn: { label: "Withdrawn", variant: "secondary" as const, icon: FileText }
+    provider_reviewing: {
+      label: "Under Review",
+      variant: "default" as const,
+      icon: Clock,
+    },
+    awaiting_response: {
+      label: "Awaiting Response",
+      variant: "outline" as const,
+      icon: Clock,
+    },
+    resolved_favorable: {
+      label: "Resolved - Favorable",
+      variant: "default" as const,
+      icon: CheckCircle2,
+    },
+    resolved_unfavorable: {
+      label: "Resolved - Unfavorable",
+      variant: "destructive" as const,
+      icon: Clock,
+    },
+    withdrawn: {
+      label: "Withdrawn",
+      variant: "secondary" as const,
+      icon: FileText,
+    },
   };
 
-  const activeDisputes = filteredDisputes?.filter(d => 
-    !['resolved_favorable', 'resolved_unfavorable', 'withdrawn'].includes(d.dispute_status)
-  ) || [];
+  const activeDisputes =
+    filteredDisputes?.filter(
+      (d) =>
+        !["resolved_favorable", "resolved_unfavorable", "withdrawn"].includes(
+          d.dispute_status,
+        ),
+    ) || [];
 
-  const resolvedDisputes = filteredDisputes?.filter(d => 
-    ['resolved_favorable', 'resolved_unfavorable', 'withdrawn'].includes(d.dispute_status)
-  ) || [];
+  const resolvedDisputes =
+    filteredDisputes?.filter((d) =>
+      ["resolved_favorable", "resolved_unfavorable", "withdrawn"].includes(
+        d.dispute_status,
+      ),
+    ) || [];
 
-  const totalSavings = filteredDisputes?.reduce((sum, d) => 
-    d.savings_achieved ? sum + Number(d.savings_achieved) : sum, 0
-  ) || 0;
+  const totalSavings =
+    filteredDisputes?.reduce(
+      (sum, d) => (d.savings_achieved ? sum + Number(d.savings_achieved) : sum),
+      0,
+    ) || 0;
 
   const DisputeCard = ({ dispute }: { dispute: any }) => {
-    const config = statusConfig[dispute.dispute_status as keyof typeof statusConfig];
+    const config =
+      statusConfig[dispute.dispute_status as keyof typeof statusConfig];
     const StatusIcon = config.icon;
 
     return (
-      <Card 
+      <Card
         className="hover:shadow-lg transition-shadow cursor-pointer"
         onClick={() => navigate(`/disputes/${dispute.id}`)}
       >
@@ -125,7 +185,7 @@ export default function DisputeManagement() {
             <div>
               <CardTitle className="text-lg">{dispute.provider_name}</CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                Created {format(new Date(dispute.created_at), 'MMM d, yyyy')}
+                Created {format(new Date(dispute.created_at), "MMM d, yyyy")}
               </p>
             </div>
             <Badge variant={config.variant} className="gap-1">
@@ -138,7 +198,9 @@ export default function DisputeManagement() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Original Amount</p>
-              <p className="text-lg font-semibold">${dispute.original_amount.toFixed(2)}</p>
+              <p className="text-lg font-semibold">
+                ${dispute.original_amount.toFixed(2)}
+              </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Disputed Amount</p>
@@ -161,7 +223,8 @@ export default function DisputeManagement() {
             <div className="flex items-center gap-2 text-sm">
               <Clock className="h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground">
-                Response due: {format(new Date(dispute.response_deadline), 'MMM d, yyyy')}
+                Response due:{" "}
+                {format(new Date(dispute.response_deadline), "MMM d, yyyy")}
               </span>
             </div>
           )}
@@ -192,23 +255,26 @@ export default function DisputeManagement() {
         </div>
 
         {/* Analytics Dashboard */}
-        <DisputeAnalyticsDashboard disputes={filteredDisputes} isLoading={isLoading} />
+        <DisputeAnalyticsDashboard
+          disputes={filteredDisputes}
+          isLoading={isLoading}
+        />
 
         {/* Filters */}
-        <AdvancedFilters 
+        <AdvancedFilters
           onFiltersChange={setFilters}
           showAmountFilter={true}
           showProviderFilter={true}
           showSavingsFilter={false}
           statusOptions={[
-            { value: 'all', label: 'All Statuses' },
-            { value: 'draft', label: 'Draft' },
-            { value: 'submitted', label: 'Submitted' },
-            { value: 'provider_reviewing', label: 'Under Review' },
-            { value: 'awaiting_response', label: 'Awaiting Response' },
-            { value: 'resolved_favorable', label: 'Resolved - Favorable' },
-            { value: 'resolved_unfavorable', label: 'Resolved - Unfavorable' },
-            { value: 'withdrawn', label: 'Withdrawn' }
+            { value: "all", label: "All Statuses" },
+            { value: "draft", label: "Draft" },
+            { value: "submitted", label: "Submitted" },
+            { value: "provider_reviewing", label: "Under Review" },
+            { value: "awaiting_response", label: "Awaiting Response" },
+            { value: "resolved_favorable", label: "Resolved - Favorable" },
+            { value: "resolved_unfavorable", label: "Resolved - Unfavorable" },
+            { value: "withdrawn", label: "Withdrawn" },
           ]}
         />
 
@@ -240,17 +306,19 @@ export default function DisputeManagement() {
             {activeDisputes.length === 0 ? (
               <Card className="p-8 text-center">
                 <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Active Disputes</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  No Active Disputes
+                </h3>
                 <p className="text-muted-foreground mb-4">
                   You don't have any active disputes at the moment
                 </p>
-                <Button onClick={() => navigate('/invoices')}>
+                <Button onClick={() => navigate("/invoices")}>
                   View Bills
                 </Button>
               </Card>
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
-                {activeDisputes.map(dispute => (
+                {activeDisputes.map((dispute) => (
                   <DisputeCard key={dispute.id} dispute={dispute} />
                 ))}
               </div>
@@ -261,14 +329,16 @@ export default function DisputeManagement() {
             {resolvedDisputes.length === 0 ? (
               <Card className="p-8 text-center">
                 <CheckCircle2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Resolved Disputes</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  No Resolved Disputes
+                </h3>
                 <p className="text-muted-foreground">
                   You haven't resolved any disputes yet
                 </p>
               </Card>
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
-                {resolvedDisputes.map(dispute => (
+                {resolvedDisputes.map((dispute) => (
                   <DisputeCard key={dispute.id} dispute={dispute} />
                 ))}
               </div>
@@ -283,13 +353,13 @@ export default function DisputeManagement() {
                 <p className="text-muted-foreground mb-4">
                   You haven't created any disputes yet
                 </p>
-                <Button onClick={() => navigate('/invoices')}>
+                <Button onClick={() => navigate("/invoices")}>
                   View Bills
                 </Button>
               </Card>
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
-                {filteredDisputes.map(dispute => (
+                {filteredDisputes.map((dispute) => (
                   <DisputeCard key={dispute.id} dispute={dispute} />
                 ))}
               </div>

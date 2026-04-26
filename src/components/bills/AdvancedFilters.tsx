@@ -3,11 +3,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Filter, X, Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 
@@ -28,34 +38,34 @@ interface AdvancedFiltersProps {
   statusOptions?: { value: string; label: string }[];
 }
 
-export function AdvancedFilters({ 
-  onFiltersChange, 
+export function AdvancedFilters({
+  onFiltersChange,
   showAmountFilter = true,
   showProviderFilter = true,
   showSavingsFilter = false,
   statusOptions = [
-    { value: 'all', label: 'All Statuses' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'resolved', label: 'Resolved' }
-  ]
+    { value: "all", label: "All Statuses" },
+    { value: "pending", label: "Pending" },
+    { value: "resolved", label: "Resolved" },
+  ],
 }: AdvancedFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
-    searchQuery: '',
-    status: 'all',
+    searchQuery: "",
+    status: "all",
     dateRange: { from: undefined, to: undefined },
     amountRange: [0, 10000],
-    provider: '',
-    savingsMin: 0
+    provider: "",
+    savingsMin: 0,
   });
 
   const activeFilterCount = [
     filters.searchQuery,
-    filters.status !== 'all',
+    filters.status !== "all",
     filters.dateRange.from,
     filters.provider,
     filters.amountRange[0] > 0 || filters.amountRange[1] < 10000,
-    filters.savingsMin > 0
+    filters.savingsMin > 0,
   ].filter(Boolean).length;
 
   const updateFilters = (newFilters: Partial<FilterState>) => {
@@ -66,12 +76,12 @@ export function AdvancedFilters({
 
   const clearFilters = () => {
     const cleared: FilterState = {
-      searchQuery: '',
-      status: 'all',
+      searchQuery: "",
+      status: "all",
       dateRange: { from: undefined, to: undefined },
       amountRange: [0, 10000],
-      provider: '',
-      savingsMin: 0
+      provider: "",
+      savingsMin: 0,
     };
     setFilters(cleared);
     onFiltersChange(cleared);
@@ -92,15 +102,15 @@ export function AdvancedFilters({
               />
             </div>
 
-            <Select 
-              value={filters.status} 
+            <Select
+              value={filters.status}
               onValueChange={(value) => updateFilters({ status: value })}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                {statusOptions.map(option => (
+                {statusOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
@@ -123,11 +133,7 @@ export function AdvancedFilters({
             </Button>
 
             {activeFilterCount > 0 && (
-              <Button
-                variant="ghost"
-                onClick={clearFilters}
-                className="gap-2"
-              >
+              <Button variant="ghost" onClick={clearFilters} className="gap-2">
                 <X className="h-4 w-4" />
                 Clear All
               </Button>
@@ -168,14 +174,14 @@ export function AdvancedFilters({
                       defaultMonth={filters.dateRange.from}
                       selected={{
                         from: filters.dateRange.from,
-                        to: filters.dateRange.to
+                        to: filters.dateRange.to,
                       }}
-                      onSelect={(range) => 
-                        updateFilters({ 
-                          dateRange: { 
-                            from: range?.from, 
-                            to: range?.to 
-                          } 
+                      onSelect={(range) =>
+                        updateFilters({
+                          dateRange: {
+                            from: range?.from,
+                            to: range?.to,
+                          },
                         })
                       }
                       numberOfMonths={2}
@@ -192,7 +198,9 @@ export function AdvancedFilters({
                     id="provider"
                     placeholder="Filter by provider..."
                     value={filters.provider}
-                    onChange={(e) => updateFilters({ provider: e.target.value })}
+                    onChange={(e) =>
+                      updateFilters({ provider: e.target.value })
+                    }
                   />
                 </div>
               )}
@@ -201,11 +209,14 @@ export function AdvancedFilters({
               {showAmountFilter && (
                 <div className="space-y-2">
                   <Label>
-                    Amount Range: ${filters.amountRange[0]} - ${filters.amountRange[1]}
+                    Amount Range: ${filters.amountRange[0]} - $
+                    {filters.amountRange[1]}
                   </Label>
                   <Slider
                     value={filters.amountRange}
-                    onValueChange={(value) => updateFilters({ amountRange: value as [number, number] })}
+                    onValueChange={(value) =>
+                      updateFilters({ amountRange: value as [number, number] })
+                    }
                     max={10000}
                     step={100}
                     className="py-4"
@@ -221,7 +232,9 @@ export function AdvancedFilters({
                   </Label>
                   <Slider
                     value={[filters.savingsMin]}
-                    onValueChange={(value) => updateFilters({ savingsMin: value[0] })}
+                    onValueChange={(value) =>
+                      updateFilters({ savingsMin: value[0] })
+                    }
                     max={5000}
                     step={50}
                     className="py-4"
@@ -237,36 +250,40 @@ export function AdvancedFilters({
               {filters.searchQuery && (
                 <Badge variant="secondary" className="gap-1">
                   Search: {filters.searchQuery}
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
-                    onClick={() => updateFilters({ searchQuery: '' })}
+                  <X
+                    className="h-3 w-3 cursor-pointer"
+                    onClick={() => updateFilters({ searchQuery: "" })}
                   />
                 </Badge>
               )}
-              {filters.status !== 'all' && (
+              {filters.status !== "all" && (
                 <Badge variant="secondary" className="gap-1">
                   Status: {filters.status}
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
-                    onClick={() => updateFilters({ status: 'all' })}
+                  <X
+                    className="h-3 w-3 cursor-pointer"
+                    onClick={() => updateFilters({ status: "all" })}
                   />
                 </Badge>
               )}
               {filters.dateRange.from && (
                 <Badge variant="secondary" className="gap-1">
                   Date Range
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
-                    onClick={() => updateFilters({ dateRange: { from: undefined, to: undefined } })}
+                  <X
+                    className="h-3 w-3 cursor-pointer"
+                    onClick={() =>
+                      updateFilters({
+                        dateRange: { from: undefined, to: undefined },
+                      })
+                    }
                   />
                 </Badge>
               )}
               {filters.provider && (
                 <Badge variant="secondary" className="gap-1">
                   Provider: {filters.provider}
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
-                    onClick={() => updateFilters({ provider: '' })}
+                  <X
+                    className="h-3 w-3 cursor-pointer"
+                    onClick={() => updateFilters({ provider: "" })}
                   />
                 </Badge>
               )}

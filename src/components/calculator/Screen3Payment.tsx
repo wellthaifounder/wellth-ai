@@ -25,13 +25,19 @@ const TAX_BRACKETS = [
   { value: 37, label: "37%", income: "Over $609,350" },
 ];
 
-export const Screen3Payment = ({ data, updateData, onNext, onBack }: Screen3Props) => {
+export const Screen3Payment = ({
+  data,
+  updateData,
+  onNext,
+  onBack,
+}: Screen3Props) => {
   return (
     <div className="space-y-8 rounded-2xl bg-card p-8 shadow-lg">
       <div className="space-y-2 text-center">
         <h1 className="text-3xl font-bold">What's your tax bracket?</h1>
         <p className="text-muted-foreground">
-          This determines how much you save by using pre-tax dollars for healthcare
+          This determines how much you save by using pre-tax dollars for
+          healthcare
         </p>
       </div>
 
@@ -46,7 +52,11 @@ export const Screen3Payment = ({ data, updateData, onNext, onBack }: Screen3Prop
                 <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p>Your marginal tax rate — the rate on your last dollar of income. If you're unsure, 22% is a common bracket for most working adults.</p>
+                <p>
+                  Your marginal tax rate — the rate on your last dollar of
+                  income. If you're unsure, 22% is a common bracket for most
+                  working adults.
+                </p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -64,7 +74,9 @@ export const Screen3Payment = ({ data, updateData, onNext, onBack }: Screen3Prop
               }`}
             >
               <span className="text-lg font-bold">{bracket.label}</span>
-              <span className="text-sm text-muted-foreground">{bracket.income}</span>
+              <span className="text-sm text-muted-foreground">
+                {bracket.income}
+              </span>
             </button>
           ))}
         </div>

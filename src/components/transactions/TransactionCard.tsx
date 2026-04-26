@@ -8,7 +8,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Eye, Tag, Link2, XCircle, RotateCcw, ListRestart, Split } from "lucide-react";
+import {
+  MoreVertical,
+  Eye,
+  Tag,
+  Link2,
+  XCircle,
+  RotateCcw,
+  ListRestart,
+  Split,
+} from "lucide-react";
 import { format } from "date-fns";
 
 interface TransactionCardProps {
@@ -60,13 +69,24 @@ export function TransactionCard({
   const getStatusBadge = () => {
     switch (reconciliationStatus) {
       case "linked_to_invoice":
-        return <Badge className="bg-green-500/10 text-green-700 dark:text-green-400">Tracked</Badge>;
+        return (
+          <Badge className="bg-green-500/10 text-green-700 dark:text-green-400">
+            Tracked
+          </Badge>
+        );
       case "unlinked":
-        return <Badge variant="outline" className="border-yellow-500 text-yellow-700 dark:text-yellow-400">Needs Linking</Badge>;
+        return (
+          <Badge
+            variant="outline"
+            className="border-yellow-500 text-yellow-700 dark:text-yellow-400"
+          >
+            Needs Linking
+          </Badge>
+        );
       case "ignored":
         return (
-          <Badge 
-            variant="outline" 
+          <Badge
+            variant="outline"
             className="cursor-pointer hover:bg-muted transition-colors"
             onClick={onUnignore}
             title="Click to unignore"
@@ -94,17 +114,19 @@ export function TransactionCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-lg">{getStatusIndicator()}</span>
-            <p className="font-medium text-foreground truncate">{vendor || description}</p>
+            <p className="font-medium text-foreground truncate">
+              {vendor || description}
+            </p>
           </div>
-          
+
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <p className="text-sm text-muted-foreground">
               {format(new Date(date), "MMM d, yyyy")}
             </p>
             {getStatusBadge()}
             {isMedical ? (
-              <Badge 
-                variant="secondary" 
+              <Badge
+                variant="secondary"
                 className="cursor-pointer hover:bg-secondary/80 transition-colors"
                 onClick={onToggleMedical}
                 title="Click to toggle medical status"
@@ -112,7 +134,7 @@ export function TransactionCard({
                 Medical ✓
               </Badge>
             ) : (
-              <Badge 
+              <Badge
                 variant="outline"
                 className="cursor-pointer hover:bg-muted transition-colors"
                 onClick={onToggleMedical}
@@ -121,9 +143,7 @@ export function TransactionCard({
                 Mark Medical
               </Badge>
             )}
-            {isFromHsaAccount && (
-              <Badge variant="success">Paid via HSA</Badge>
-            )}
+            {isFromHsaAccount && <Badge variant="success">Paid via HSA</Badge>}
             {isHsaEligible && !isFromHsaAccount && (
               <Badge className="bg-primary/10 text-primary">HSA Eligible</Badge>
             )}
@@ -141,7 +161,9 @@ export function TransactionCard({
           </div>
 
           {vendor && vendor !== description && (
-            <p className="text-sm text-muted-foreground truncate">{description}</p>
+            <p className="text-sm text-muted-foreground truncate">
+              {description}
+            </p>
           )}
         </div>
 
@@ -149,7 +171,7 @@ export function TransactionCard({
           <p className="text-lg font-semibold text-foreground">
             ${Math.abs(amount).toFixed(2)}
           </p>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -161,19 +183,22 @@ export function TransactionCard({
                 <span className="sr-only">More actions</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 bg-background z-50">
+            <DropdownMenuContent
+              align="end"
+              className="w-48 bg-background z-50"
+            >
               <DropdownMenuItem onClick={onViewDetails}>
                 <Eye className="h-4 w-4 mr-2" />
                 View Details
               </DropdownMenuItem>
-              
+
               {onMarkMedical && !isMedical && (
                 <DropdownMenuItem onClick={onMarkMedical}>
                   <Tag className="h-4 w-4 mr-2" />
                   Mark as Medical
                 </DropdownMenuItem>
               )}
-              
+
               {onLinkToInvoice && reconciliationStatus === "unlinked" && (
                 <DropdownMenuItem onClick={onLinkToInvoice}>
                   <Link2 className="h-4 w-4 mr-2" />
@@ -181,12 +206,15 @@ export function TransactionCard({
                 </DropdownMenuItem>
               )}
 
-              {onSplitTransaction && !isSplit && !splitParentId && !invoiceId && (
-                <DropdownMenuItem onClick={onSplitTransaction}>
-                  <Split className="h-4 w-4 mr-2" />
-                  Split Transaction
-                </DropdownMenuItem>
-              )}
+              {onSplitTransaction &&
+                !isSplit &&
+                !splitParentId &&
+                !invoiceId && (
+                  <DropdownMenuItem onClick={onSplitTransaction}>
+                    <Split className="h-4 w-4 mr-2" />
+                    Split Transaction
+                  </DropdownMenuItem>
+                )}
 
               {reconciliationStatus !== "unlinked" && onAddToReviewQueue && (
                 <>
@@ -211,7 +239,10 @@ export function TransactionCard({
               {onIgnore && reconciliationStatus !== "ignored" && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={onIgnore} className="text-destructive">
+                  <DropdownMenuItem
+                    onClick={onIgnore}
+                    className="text-destructive"
+                  >
                     <XCircle className="h-4 w-4 mr-2" />
                     Ignore
                   </DropdownMenuItem>

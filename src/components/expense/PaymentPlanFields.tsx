@@ -2,7 +2,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 
@@ -39,7 +45,10 @@ export function PaymentPlanFields({
             onCheckedChange={onHasPaymentPlanChange}
           />
           <div>
-            <Label htmlFor="payment-plan" className="text-base font-semibold cursor-pointer">
+            <Label
+              htmlFor="payment-plan"
+              className="text-base font-semibold cursor-pointer"
+            >
               This expense is on a payment plan
             </Label>
             <CardDescription className="mt-1">
@@ -54,15 +63,15 @@ export function PaymentPlanFields({
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              Enter the <strong>full bill amount</strong> and number of installments. Each payment you make should be tracked as a separate entry with payment receipts.
+              Enter the <strong>full bill amount</strong> and number of
+              installments. Each payment you make should be tracked as a
+              separate entry with payment receipts.
             </AlertDescription>
           </Alert>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="total-amount">
-                Total Bill Amount
-              </Label>
+              <Label htmlFor="total-amount">Total Bill Amount</Label>
               <Input
                 id="total-amount"
                 type="number"
@@ -77,9 +86,7 @@ export function PaymentPlanFields({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="installments">
-                Number of Installments
-              </Label>
+              <Label htmlFor="installments">Number of Installments</Label>
               <Input
                 id="installments"
                 type="number"
@@ -95,9 +102,7 @@ export function PaymentPlanFields({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="payment-plan-notes">
-              Payment Plan Details
-            </Label>
+            <Label htmlFor="payment-plan-notes">Payment Plan Details</Label>
             <Textarea
               id="payment-plan-notes"
               placeholder="e.g., $416.67/month for 12 months starting March 2025"
@@ -113,11 +118,15 @@ export function PaymentPlanFields({
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
                   <p className="text-muted-foreground">Total Amount:</p>
-                  <p className="font-semibold">${parseFloat(totalAmount).toFixed(2)}</p>
+                  <p className="font-semibold">
+                    ${parseFloat(totalAmount).toFixed(2)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">This Payment:</p>
-                  <p className="font-semibold">${parseFloat(currentAmount).toFixed(2)}</p>
+                  <p className="font-semibold">
+                    ${parseFloat(currentAmount).toFixed(2)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Installments:</p>
@@ -126,7 +135,10 @@ export function PaymentPlanFields({
                 <div>
                   <p className="text-muted-foreground">Per Payment:</p>
                   <p className="font-semibold">
-                    ${(parseFloat(totalAmount) / parseFloat(installments)).toFixed(2)}
+                    $
+                    {(
+                      parseFloat(totalAmount) / parseFloat(installments)
+                    ).toFixed(2)}
                   </p>
                 </div>
               </div>

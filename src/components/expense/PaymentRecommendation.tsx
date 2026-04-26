@@ -7,7 +7,10 @@ interface PaymentRecommendationProps {
   className?: string;
 }
 
-export const PaymentRecommendation = ({ recommendation, className = "" }: PaymentRecommendationProps) => {
+export const PaymentRecommendation = ({
+  recommendation,
+  className = "",
+}: PaymentRecommendationProps) => {
   const getIcon = () => {
     switch (recommendation.method) {
       case "hsa-invest":
@@ -40,31 +43,47 @@ export const PaymentRecommendation = ({ recommendation, className = "" }: Paymen
               <div className="text-2xl font-bold text-primary">
                 ${recommendation.savingsAmount.toFixed(2)}
               </div>
-              <div className="text-xs text-muted-foreground">Estimated Total Savings</div>
+              <div className="text-xs text-muted-foreground">
+                Estimated Total Savings
+              </div>
             </div>
-            
+
             {recommendation.breakdown && (
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Savings Breakdown</p>
+                <p className="text-xs text-muted-foreground">
+                  Savings Breakdown
+                </p>
                 <div className="text-sm space-y-1">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Rewards:</span>
-                    <span className="font-medium">${recommendation.breakdown.rewards.toFixed(2)}</span>
+                    <span className="font-medium">
+                      ${recommendation.breakdown.rewards.toFixed(2)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Tax Savings:</span>
-                    <span className="font-medium text-green-600">${recommendation.breakdown.taxSavings.toFixed(2)}</span>
+                    <span className="font-medium text-green-600">
+                      ${recommendation.breakdown.taxSavings.toFixed(2)}
+                    </span>
                   </div>
                   {recommendation.breakdown.timingBenefit > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Timing Growth:</span>
-                      <span className="font-medium">${recommendation.breakdown.timingBenefit.toFixed(2)}</span>
+                      <span className="text-muted-foreground">
+                        Timing Growth:
+                      </span>
+                      <span className="font-medium">
+                        ${recommendation.breakdown.timingBenefit.toFixed(2)}
+                      </span>
                     </div>
                   )}
                   {recommendation.breakdown.investmentGrowth > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Long-term Growth:</span>
-                      <span className="font-medium">${recommendation.breakdown.investmentGrowth.toFixed(2)}</span>
+                      <span className="text-muted-foreground">
+                        Long-term Growth:
+                      </span>
+                      <span className="font-medium">
+                        ${recommendation.breakdown.investmentGrowth.toFixed(2)}
+                      </span>
                     </div>
                   )}
                 </div>

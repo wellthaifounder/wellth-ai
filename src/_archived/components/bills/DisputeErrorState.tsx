@@ -10,11 +10,11 @@ interface DisputeErrorStateProps {
   showHomeButton?: boolean;
 }
 
-export const DisputeErrorState = ({ 
+export const DisputeErrorState = ({
   title = "Error Loading Dispute",
   message = "We encountered an error while loading the dispute details. Please try again.",
   onRetry,
-  showHomeButton = true
+  showHomeButton = true,
 }: DisputeErrorStateProps) => {
   const navigate = useNavigate();
 
@@ -41,7 +41,7 @@ export const DisputeErrorState = ({
               </Button>
             )}
             {showHomeButton && (
-              <Button onClick={() => navigate('/disputes')} variant="outline">
+              <Button onClick={() => navigate("/disputes")} variant="outline">
                 <Home className="h-4 w-4 mr-2" />
                 Back to Disputes
               </Button>
@@ -50,7 +50,8 @@ export const DisputeErrorState = ({
 
           <div className="pt-4 border-t">
             <p className="text-sm text-muted-foreground">
-              If the problem persists, please contact support or check your network connection.
+              If the problem persists, please contact support or check your
+              network connection.
             </p>
           </div>
         </CardContent>

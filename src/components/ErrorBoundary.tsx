@@ -1,7 +1,13 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { logError } from "@/utils/errorHandler";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 
 interface Props {
@@ -40,7 +46,7 @@ export class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log error details for debugging
     logError("ErrorBoundary caught an error", error, { errorInfo });
-    
+
     this.setState({
       error,
       errorInfo,
@@ -116,11 +122,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
               {/* Action buttons */}
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button
-                  onClick={this.handleReset}
-                  size="lg"
-                  className="gap-2"
-                >
+                <Button onClick={this.handleReset} size="lg" className="gap-2">
                   <RefreshCw className="h-4 w-4" />
                   Try Again
                 </Button>

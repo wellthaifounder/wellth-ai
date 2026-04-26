@@ -26,7 +26,9 @@ export function WellbieTip({ unreviewedCount, hasExpenses }: WellbieTipProps) {
           <div className="flex items-start gap-3">
             <Lightbulb className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-1" />
             <div className="flex-1 space-y-2">
-              <p className="font-semibold text-amber-900 dark:text-amber-100">Wellbie Tip:</p>
+              <p className="font-semibold text-amber-900 dark:text-amber-100">
+                Wellbie Tip:
+              </p>
               <p className="text-sm text-amber-800 dark:text-amber-200">
                 {getTipMessage()}
               </p>

@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSubscription } from "@/contexts/SubscriptionContext";
@@ -6,7 +12,14 @@ import { Check, Crown, Sparkles } from "lucide-react";
 import { formatDistance } from "date-fns";
 
 export const SubscriptionManagement = () => {
-  const { tier, isSubscribed, subscriptionEnd, createCheckoutSession, openCustomerPortal, loading } = useSubscription();
+  const {
+    tier,
+    isSubscribed,
+    subscriptionEnd,
+    createCheckoutSession,
+    openCustomerPortal,
+    loading,
+  } = useSubscription();
 
   if (loading) {
     return (
@@ -26,19 +39,19 @@ export const SubscriptionManagement = () => {
 
   const tierInfo = {
     free: {
-      name: 'Starter',
+      name: "Starter",
       icon: <Sparkles className="h-5 w-5" />,
-      color: 'secondary' as const,
+      color: "secondary" as const,
     },
     plus: {
-      name: 'Plus',
+      name: "Plus",
       icon: <Check className="h-5 w-5" />,
-      color: 'default' as const,
+      color: "default" as const,
     },
     premium: {
-      name: 'Premium',
+      name: "Premium",
       icon: <Crown className="h-5 w-5" />,
-      color: 'default' as const,
+      color: "default" as const,
     },
   };
 
@@ -51,20 +64,26 @@ export const SubscriptionManagement = () => {
           <div>
             <CardTitle>Subscription</CardTitle>
             <CardDescription>
-              {tier === 'free' ? 'Manage your subscription and upgrade options' : 'Manage your subscription'}
+              {tier === "free"
+                ? "Manage your subscription and upgrade options"
+                : "Manage your subscription"}
             </CardDescription>
           </div>
-          <Badge variant={currentTier.color} className="flex items-center gap-2">
+          <Badge
+            variant={currentTier.color}
+            className="flex items-center gap-2"
+          >
             {currentTier.icon}
             {currentTier.name}
           </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {tier === 'free' && (
+        {tier === "free" && (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              You're currently on the free Starter plan with up to 50 expenses per month.
+              You're currently on the free Starter plan with up to 50 expenses
+              per month.
             </p>
             <div className="grid gap-4 md:grid-cols-2">
               <Card className="border-primary/20">
@@ -87,8 +106,8 @@ export const SubscriptionManagement = () => {
                       Advanced analytics
                     </li>
                   </ul>
-                  <Button 
-                    onClick={() => createCheckoutSession('plus')} 
+                  <Button
+                    onClick={() => createCheckoutSession("plus")}
                     className="w-full"
                   >
                     Upgrade to Plus
@@ -119,8 +138,8 @@ export const SubscriptionManagement = () => {
                       Tax optimization
                     </li>
                   </ul>
-                  <Button 
-                    onClick={() => createCheckoutSession('premium')} 
+                  <Button
+                    onClick={() => createCheckoutSession("premium")}
                     className="w-full"
                   >
                     Upgrade to Premium
@@ -135,15 +154,22 @@ export const SubscriptionManagement = () => {
           <div className="space-y-4">
             <div className="rounded-lg bg-muted p-4">
               <p className="text-sm">
-                Your subscription renews{' '}
-                {formatDistance(new Date(subscriptionEnd), new Date(), { addSuffix: true })}
+                Your subscription renews{" "}
+                {formatDistance(new Date(subscriptionEnd), new Date(), {
+                  addSuffix: true,
+                })}
               </p>
             </div>
-            <Button onClick={openCustomerPortal} variant="outline" className="w-full">
+            <Button
+              onClick={openCustomerPortal}
+              variant="outline"
+              className="w-full"
+            >
               Manage Billing & Subscription
             </Button>
             <p className="text-xs text-muted-foreground text-center">
-              Update payment method, view billing history, or cancel subscription
+              Update payment method, view billing history, or cancel
+              subscription
             </p>
           </div>
         )}

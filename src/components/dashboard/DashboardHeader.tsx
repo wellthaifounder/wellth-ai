@@ -8,7 +8,10 @@ interface DashboardHeaderProps {
   primaryAction: DashboardAction;
 }
 
-export function DashboardHeader({ firstName, primaryAction }: DashboardHeaderProps) {
+export function DashboardHeader({
+  firstName,
+  primaryAction,
+}: DashboardHeaderProps) {
   const navigate = useNavigate();
   const Icon = primaryAction.icon;
 
@@ -24,9 +27,9 @@ export function DashboardHeader({ firstName, primaryAction }: DashboardHeaderPro
             <span className="text-2xl">🎯</span>
             <h2 className="text-xl font-semibold">Your Next Step:</h2>
           </div>
-          
-          <Button 
-            size="lg" 
+
+          <Button
+            size="lg"
             className="w-full sm:w-auto text-lg h-auto py-4 px-8"
             onClick={() => navigate(primaryAction.route)}
           >
@@ -43,8 +46,8 @@ export function DashboardHeader({ firstName, primaryAction }: DashboardHeaderPro
 
         {primaryAction.priority !== 4 && (
           <div className="pt-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => navigate("/expenses/new")}
               className="bg-background/80"
             >

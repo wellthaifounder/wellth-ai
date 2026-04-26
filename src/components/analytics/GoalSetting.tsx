@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,21 +91,29 @@ export const GoalSetting = ({ currentStats }: GoalSettingProps) => {
 
   const addGoalMutation = useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
-      const { error } = await supabase.from("savings_goals").insert([{
-        user_id: user.id,
-        goal_type: newGoal.goal_type,
-        target_amount: newGoal.target_amount,
-        current_amount: 0,
-        deadline: newGoal.deadline || null,
-      }]);
+      const { error } = await supabase.from("savings_goals").insert([
+        {
+          user_id: user.id,
+          goal_type: newGoal.goal_type,
+          target_amount: newGoal.target_amount,
+          current_amount: 0,
+          deadline: newGoal.deadline || null,
+        },
+      ]);
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Goal added successfully");
       setShowAddGoal(false);
-      setNewGoal({ goal_type: "annual_savings", target_amount: 0, deadline: "" });
+      setNewGoal({
+        goal_type: "annual_savings",
+        target_amount: 0,
+        deadline: "",
+      });
       queryClient.invalidateQueries({ queryKey: ["savings_goals"] });
     },
     onError: () => toast.error("Failed to add goal"),
@@ -143,10 +157,20 @@ export const GoalSetting = ({ currentStats }: GoalSettingProps) => {
               <Target className="h-5 w-5" />
               Savings Goals
             </CardTitle>
-            <CardDescription>Track progress toward your financial targets</CardDescription>
+            <CardDescription>
+              Track progress toward your financial targets
+            </CardDescription>
           </div>
-          <Button onClick={() => setShowAddGoal(!showAddGoal)} size="sm" variant="outline">
-            {showAddGoal ? <X className="h-4 w-4 mr-1" /> : <Plus className="h-4 w-4 mr-1" />}
+          <Button
+            onClick={() => setShowAddGoal(!showAddGoal)}
+            size="sm"
+            variant="outline"
+          >
+            {showAddGoal ? (
+              <X className="h-4 w-4 mr-1" />
+            ) : (
+              <Plus className="h-4 w-4 mr-1" />
+            )}
             {showAddGoal ? "Cancel" : "Add Goal"}
           </Button>
         </div>
@@ -158,7 +182,9 @@ export const GoalSetting = ({ currentStats }: GoalSettingProps) => {
               <Label>Goal Type</Label>
               <Select
                 value={newGoal.goal_type}
-                onValueChange={(value) => setNewGoal({ ...newGoal, goal_type: value })}
+                onValueChange={(value) =>
+                  setNewGoal({ ...newGoal, goal_type: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -180,7 +206,10 @@ export const GoalSetting = ({ currentStats }: GoalSettingProps) => {
                 placeholder="e.g., 5000"
                 value={newGoal.target_amount || ""}
                 onChange={(e) =>
-                  setNewGoal({ ...newGoal, target_amount: parseFloat(e.target.value) || 0 })
+                  setNewGoal({
+                    ...newGoal,
+                    target_amount: parseFloat(e.target.value) || 0,
+                  })
                 }
               />
             </div>
@@ -190,11 +219,17 @@ export const GoalSetting = ({ currentStats }: GoalSettingProps) => {
               <Input
                 type="date"
                 value={newGoal.deadline}
-                onChange={(e) => setNewGoal({ ...newGoal, deadline: e.target.value })}
+                onChange={(e) =>
+                  setNewGoal({ ...newGoal, deadline: e.target.value })
+                }
               />
             </div>
 
-            <Button onClick={() => addGoalMutation.mutate()} disabled={addGoalMutation.isPending} className="w-full">
+            <Button
+              onClick={() => addGoalMutation.mutate()}
+              disabled={addGoalMutation.isPending}
+              className="w-full"
+            >
               <Check className="h-4 w-4 mr-2" />
               Create Goal
             </Button>
@@ -205,13 +240,18 @@ export const GoalSetting = ({ currentStats }: GoalSettingProps) => {
           <div className="text-center py-12 text-muted-foreground">
             <Target className="h-12 w-12 mx-auto mb-3 opacity-50" />
             <p className="font-medium">No savings goals yet</p>
-            <p className="text-sm mt-1">Create your first goal to start tracking progress</p>
+            <p className="text-sm mt-1">
+              Create your first goal to start tracking progress
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
             {goals.map((goal) => {
               const current = calculateCurrentAmount(goal);
-              const progress = Math.min((current / goal.target_amount) * 100, 100);
+              const progress = Math.min(
+                (current / goal.target_amount) * 100,
+                100,
+              );
               const isComplete = progress >= 100;
 
               return (
@@ -220,7 +260,11 @@ export const GoalSetting = ({ currentStats }: GoalSettingProps) => {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h4 className="font-medium">
-                          {GOAL_TYPES[goal.goal_type as keyof typeof GOAL_TYPES]}
+                          {
+                            GOAL_TYPES[
+                              goal.goal_type as keyof typeof GOAL_TYPES
+                            ]
+                          }
                         </h4>
                         {isComplete && (
                           <Badge variant="default" className="bg-green-600">
@@ -230,10 +274,12 @@ export const GoalSetting = ({ currentStats }: GoalSettingProps) => {
                         )}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        ${current.toFixed(2)} of ${goal.target_amount.toFixed(2)}
+                        ${current.toFixed(2)} of $
+                        {goal.target_amount.toFixed(2)}
                         {goal.deadline && (
                           <span className="ml-2">
-                            • Due {format(new Date(goal.deadline), "MMM dd, yyyy")}
+                            • Due{" "}
+                            {format(new Date(goal.deadline), "MMM dd, yyyy")}
                           </span>
                         )}
                       </div>
@@ -252,7 +298,9 @@ export const GoalSetting = ({ currentStats }: GoalSettingProps) => {
                     <Progress value={progress} className="h-2" />
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>{progress.toFixed(0)}% complete</span>
-                      <span>${(goal.target_amount - current).toFixed(2)} to go</span>
+                      <span>
+                        ${(goal.target_amount - current).toFixed(2)} to go
+                      </span>
                     </div>
                   </div>
                 </div>

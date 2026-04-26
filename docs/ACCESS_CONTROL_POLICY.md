@@ -90,4 +90,4 @@ In the event of a suspected unauthorized access or credential compromise:
 
 ---
 
-*This policy is reviewed annually and updated to reflect changes in infrastructure, team composition, or regulatory requirements.*
+_This policy is reviewed annually and updated to reflect changes in infrastructure, team composition, or regulatory requirements._

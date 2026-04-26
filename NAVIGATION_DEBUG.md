@@ -11,6 +11,7 @@ The navigation structure IS correctly implemented in the code. Here are the pote
 The sidebar is configured to only show on **large screens (≥ 1024px width)**.
 
 ### Code:
+
 ```tsx
 <div className="hidden lg:block">
   <AppSidebar ... />
@@ -18,6 +19,7 @@ The sidebar is configured to only show on **large screens (≥ 1024px width)**.
 ```
 
 ### Solution:
+
 **Check your screen width when viewing the app:**
 
 1. **In Lovable Preview:**
@@ -37,7 +39,9 @@ The sidebar is configured to only show on **large screens (≥ 1024px width)**.
 Lovable might be serving a cached version even though code was pushed.
 
 ### Solutions:
+
 1. **Hard refresh in Lovable preview:**
+
    ```
    Ctrl + Shift + R (Windows)
    Cmd + Shift + R (Mac)
@@ -64,7 +68,9 @@ Lovable might be serving a cached version even though code was pushed.
 The sidebar might be collapsed by default.
 
 ### Solution:
+
 Look for the **sidebar toggle button** just below the top nav bar:
+
 - It's a small button with hamburger/menu icon
 - Click it to expand the sidebar
 - Should reveal the 5-section navigation
@@ -76,6 +82,7 @@ Look for the **sidebar toggle button** just below the top nav bar:
 Check if `@/components/ui/sidebar` was deployed correctly.
 
 ### Solution (run locally):
+
 ```bash
 # Check if sidebar component exists
 ls -la src/components/ui/sidebar.tsx
@@ -92,6 +99,7 @@ npm run dev
 ## 🧪 Testing Plan
 
 ### Test #1: Local Dev Server (Highest Priority)
+
 ```bash
 # Make sure dev server is running
 npm run dev
@@ -106,6 +114,7 @@ window.innerWidth
 ```
 
 **Expected:**
+
 - Left sidebar visible with 5 sections
 - Top nav shows 4 main categories
 - Bottom section shows "Account"
@@ -113,6 +122,7 @@ window.innerWidth
 ---
 
 ### Test #2: Force Wider Window
+
 1. Maximize your browser window
 2. Zoom out if needed (Ctrl + -)
 3. Use a 1920x1080 or wider monitor if available
@@ -121,7 +131,9 @@ window.innerWidth
 ---
 
 ### Test #3: Check Mobile Menu
+
 If your screen is < 1024px wide, you should see:
+
 - Hamburger menu icon (☰) in top-right corner
 - Click it to open slide-out menu
 - Menu should show all 5 sections:
@@ -134,6 +146,7 @@ If your screen is < 1024px wide, you should see:
 ---
 
 ### Test #4: Browser DevTools Responsive Mode
+
 1. Open DevTools (F12)
 2. Click the "Toggle device toolbar" icon (Ctrl + Shift + M)
 3. Select "Responsive" mode
@@ -217,25 +230,31 @@ When you click [☰]:
 ## 🔧 Quick Fixes
 
 ### Fix #1: Force Desktop View
+
 Add this temporarily to test:
 
 **Open DevTools Console:**
+
 ```javascript
 // Check current width
-console.log('Window width:', window.innerWidth);
+console.log("Window width:", window.innerWidth);
 
 // If less than 1024, resize or zoom out
 ```
 
 ### Fix #2: Inspect Sidebar Element
+
 **Open DevTools (F12) → Elements tab:**
+
 1. Search for `AppSidebar` or `data-sidebar`
 2. Check if element exists in DOM
 3. Check computed styles - look for `display: none` or `hidden`
 4. If found, the sidebar is there but hidden due to screen size
 
 ### Fix #3: Toggle Sidebar Manually
+
 Look for this button in the UI:
+
 - Just below the top navigation bar
 - Left side, small button with ≡ or → icon
 - Click to expand/collapse sidebar
@@ -245,18 +264,19 @@ Look for this button in the UI:
 ## 📊 Diagnostic Commands
 
 ### Run these in browser console:
+
 ```javascript
 // Check if sidebar exists
-document.querySelector('[data-sidebar]')
+document.querySelector("[data-sidebar]");
 
 // Check window width
-window.innerWidth
+window.innerWidth;
 
 // Check if lg breakpoint is active
-window.matchMedia('(min-width: 1024px)').matches
+window.matchMedia("(min-width: 1024px)").matches;
 
 // Force sidebar visible (temporary test)
-document.querySelector('.hidden.lg\\:block').classList.remove('hidden')
+document.querySelector(".hidden.lg\\:block").classList.remove("hidden");
 ```
 
 ---
@@ -266,21 +286,26 @@ document.querySelector('.hidden.lg\\:block').classList.remove('hidden')
 Once you see the sidebar correctly:
 
 **Money Section:**
+
 - Dashboard (no badge)
 - Transactions (with badge if unreviewed)
 - Savings Tools (no badge)
 
 **Bills Section:**
+
 - Bills (with badge if pending reviews)
 - Documents (no badge)
 
 **Insights Section:**
+
 - Reports (no badge)
 
 **Providers Section:**
+
 - Provider Directory (no badge)
 
 **Account Section (at bottom):**
+
 - Manage Reviews (only if admin)
 - Share Feedback
 - Settings

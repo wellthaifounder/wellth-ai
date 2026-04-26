@@ -6,7 +6,7 @@ const TripwireSuccess = () => {
 
   useEffect(() => {
     // Tripwire flow has been removed — redirect to auth
-    navigate('/auth', { replace: true });
+    navigate("/auth", { replace: true });
   }, [navigate]);
 
   return null;

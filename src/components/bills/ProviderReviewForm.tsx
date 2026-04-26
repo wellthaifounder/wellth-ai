@@ -3,7 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Star, Loader2 } from "lucide-react";
@@ -17,43 +23,53 @@ interface ProviderReviewFormProps {
 export function ProviderReviewForm({ providerId }: ProviderReviewFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    invoice_id: '',
+    invoice_id: "",
     overall_experience_rating: 0,
     billing_clarity_rating: 0,
     cost_transparency_rating: 0,
     payment_flexibility_rating: 0,
-    insurance_plan_type: '',
-    network_status: 'unknown' as 'in_network' | 'out_of_network' | 'unknown',
+    insurance_plan_type: "",
+    network_status: "unknown" as "in_network" | "out_of_network" | "unknown",
     deductible_met: false,
-    procedure_category: '',
-    review_text: '',
-    would_recommend: true
+    procedure_category: "",
+    review_text: "",
+    would_recommend: true,
   });
 
   // Fetch user's invoices with this provider
   const { data: invoices } = useQuery({
-    queryKey: ['user-invoices-for-provider', providerId],
+    queryKey: ["user-invoices-for-provider", providerId],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return [];
 
       const { data, error } = await supabase
-        .from('invoices')
-        .select('id, vendor, date, amount, npi_number')
-        .eq('user_id', user.id)
-        .eq('npi_number', providerId)
-        .order('date', { ascending: false });
+        .from("invoices")
+        .select("id, vendor, date, amount, npi_number")
+        .eq("user_id", user.id)
+        .eq("npi_number", providerId)
+        .order("date", { ascending: false });
 
       if (error) throw error;
       return data;
-    }
+    },
   });
 
   const handleStarClick = (field: string, rating: number) => {
     setFormData({ ...formData, [field]: rating });
   };
 
-  const StarRating = ({ label, field, value }: { label: string; field: string; value: number }) => (
+  const StarRating = ({
+    label,
+    field,
+    value,
+  }: {
+    label: string;
+    field: string;
+    value: number;
+  }) => (
     <div className="space-y-2">
       <Label>{label}</Label>
       <div className="flex gap-1">
@@ -67,8 +83,8 @@ export function ProviderReviewForm({ providerId }: ProviderReviewFormProps) {
             <Star
               className={`h-8 w-8 ${
                 star <= value
-                  ? 'fill-yellow-500 text-yellow-500'
-                  : 'text-muted-foreground'
+                  ? "fill-yellow-500 text-yellow-500"
+                  : "text-muted-foreground"
               }`}
             />
           </button>
@@ -90,12 +106,13 @@ export function ProviderReviewForm({ providerId }: ProviderReviewFormProps) {
     setIsSubmitting(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
-      const { error } = await supabase
-        .from('provider_reviews')
-        .upsert({
+      const { error } = await supabase.from("provider_reviews").upsert(
+        {
           provider_id: providerId,
           user_id: user.id,
           invoice_id: formData.invoice_id,
@@ -108,31 +125,33 @@ export function ProviderReviewForm({ providerId }: ProviderReviewFormProps) {
           deductible_met: formData.deductible_met,
           procedure_category: formData.procedure_category || null,
           review_text: formData.review_text || null,
-          would_recommend: formData.would_recommend
-        }, {
-          onConflict: 'user_id,invoice_id'
-        });
+          would_recommend: formData.would_recommend,
+        },
+        {
+          onConflict: "user_id,invoice_id",
+        },
+      );
 
       if (error) throw error;
 
       toast.success("Review submitted successfully");
-      
+
       // Reset form
       setFormData({
-        invoice_id: '',
+        invoice_id: "",
         overall_experience_rating: 0,
         billing_clarity_rating: 0,
         cost_transparency_rating: 0,
         payment_flexibility_rating: 0,
-        insurance_plan_type: '',
-        network_status: 'unknown',
+        insurance_plan_type: "",
+        network_status: "unknown",
         deductible_met: false,
-        procedure_category: '',
-        review_text: '',
-        would_recommend: true
+        procedure_category: "",
+        review_text: "",
+        would_recommend: true,
       });
     } catch (error) {
-      logError('Error submitting review', error);
+      logError("Error submitting review", error);
       toast.error("Failed to submit review");
     } finally {
       setIsSubmitting(false);
@@ -150,9 +169,11 @@ export function ProviderReviewForm({ providerId }: ProviderReviewFormProps) {
       <CardContent className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="invoice">Select Invoice *</Label>
-          <Select 
+          <Select
             value={formData.invoice_id}
-            onValueChange={(value) => setFormData({ ...formData, invoice_id: value })}
+            onValueChange={(value) =>
+              setFormData({ ...formData, invoice_id: value })
+            }
           >
             <SelectTrigger>
               <SelectValue placeholder="Choose an invoice to review" />
@@ -160,34 +181,36 @@ export function ProviderReviewForm({ providerId }: ProviderReviewFormProps) {
             <SelectContent>
               {invoices?.map((invoice) => (
                 <SelectItem key={invoice.id} value={invoice.id}>
-                  {invoice.vendor} - {new Date(invoice.date).toLocaleDateString()} - ${Number(invoice.amount).toFixed(2)}
+                  {invoice.vendor} -{" "}
+                  {new Date(invoice.date).toLocaleDateString()} - $
+                  {Number(invoice.amount).toFixed(2)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        <StarRating 
-          label="Overall Experience *" 
-          field="overall_experience_rating" 
-          value={formData.overall_experience_rating} 
+        <StarRating
+          label="Overall Experience *"
+          field="overall_experience_rating"
+          value={formData.overall_experience_rating}
         />
 
         <div className="grid gap-6 md:grid-cols-3">
-          <StarRating 
-            label="Billing Clarity" 
-            field="billing_clarity_rating" 
-            value={formData.billing_clarity_rating} 
+          <StarRating
+            label="Billing Clarity"
+            field="billing_clarity_rating"
+            value={formData.billing_clarity_rating}
           />
-          <StarRating 
-            label="Cost Transparency" 
-            field="cost_transparency_rating" 
-            value={formData.cost_transparency_rating} 
+          <StarRating
+            label="Cost Transparency"
+            field="cost_transparency_rating"
+            value={formData.cost_transparency_rating}
           />
-          <StarRating 
-            label="Payment Flexibility" 
-            field="payment_flexibility_rating" 
-            value={formData.payment_flexibility_rating} 
+          <StarRating
+            label="Payment Flexibility"
+            field="payment_flexibility_rating"
+            value={formData.payment_flexibility_rating}
           />
         </div>
 
@@ -196,7 +219,9 @@ export function ProviderReviewForm({ providerId }: ProviderReviewFormProps) {
           <Textarea
             id="review"
             value={formData.review_text}
-            onChange={(e) => setFormData({ ...formData, review_text: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, review_text: e.target.value })
+            }
             placeholder="Share details about your experience with this provider..."
             rows={4}
           />
@@ -207,7 +232,9 @@ export function ProviderReviewForm({ providerId }: ProviderReviewFormProps) {
             type="checkbox"
             id="recommend"
             checked={formData.would_recommend}
-            onChange={(e) => setFormData({ ...formData, would_recommend: e.target.checked })}
+            onChange={(e) =>
+              setFormData({ ...formData, would_recommend: e.target.checked })
+            }
             className="h-4 w-4"
           />
           <Label htmlFor="recommend" className="cursor-pointer">
@@ -215,9 +242,13 @@ export function ProviderReviewForm({ providerId }: ProviderReviewFormProps) {
           </Label>
         </div>
 
-        <Button 
+        <Button
           onClick={handleSubmit}
-          disabled={isSubmitting || formData.overall_experience_rating === 0 || !formData.invoice_id}
+          disabled={
+            isSubmitting ||
+            formData.overall_experience_rating === 0 ||
+            !formData.invoice_id
+          }
           className="w-full"
         >
           {isSubmitting ? (
@@ -226,7 +257,7 @@ export function ProviderReviewForm({ providerId }: ProviderReviewFormProps) {
               Submitting...
             </>
           ) : (
-            'Submit Review'
+            "Submit Review"
           )}
         </Button>
       </CardContent>

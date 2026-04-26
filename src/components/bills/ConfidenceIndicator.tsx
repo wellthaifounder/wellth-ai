@@ -87,7 +87,7 @@ export function ConfidenceIndicator({
               config.bgColor,
               config.borderColor,
               sizes.badge,
-              className
+              className,
             )}
           >
             <Icon className={cn(sizes.icon, config.color)} />
@@ -136,7 +136,7 @@ export function ConfidenceBar({
               ? "bg-green-500"
               : confidence >= 0.7
                 ? "bg-yellow-500"
-                : "bg-red-500"
+                : "bg-red-500",
           )}
           style={{ width: `${percentage}%` }}
         />

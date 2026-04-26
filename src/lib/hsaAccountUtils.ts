@@ -20,13 +20,16 @@ export type HSAAccount = {
  * Returns the most recently opened active account
  */
 export function getActiveHSAAccount(accounts: HSAAccount[]): HSAAccount | null {
-  const activeAccounts = accounts.filter((acc) => acc.is_active && !acc.closed_date);
-  
+  const activeAccounts = accounts.filter(
+    (acc) => acc.is_active && !acc.closed_date,
+  );
+
   if (activeAccounts.length === 0) return null;
-  
+
   // Sort by opened_date descending and return the most recent
-  return activeAccounts.sort((a, b) => 
-    new Date(b.opened_date).getTime() - new Date(a.opened_date).getTime()
+  return activeAccounts.sort(
+    (a, b) =>
+      new Date(b.opened_date).getTime() - new Date(a.opened_date).getTime(),
   )[0];
 }
 
@@ -36,10 +39,10 @@ export function getActiveHSAAccount(accounts: HSAAccount[]): HSAAccount | null {
  */
 export function getEligibleHSAAccounts(
   billDate: string | Date,
-  accounts: HSAAccount[]
+  accounts: HSAAccount[],
 ): HSAAccount[] {
   const date = typeof billDate === "string" ? parseISO(billDate) : billDate;
-  
+
   return accounts.filter((account) => isDateInHSAPeriod(date, account));
 }
 
@@ -53,15 +56,16 @@ export function isDateInHSAPeriod(date: Date, account: HSAAccount): boolean {
   const openedDate = parseISO(coverageStart);
 
   // Date must be on or after the effective coverage start
-  const isAfterOrSameAsOpened = isAfter(date, openedDate) || isSameDay(date, openedDate);
-  
+  const isAfterOrSameAsOpened =
+    isAfter(date, openedDate) || isSameDay(date, openedDate);
+
   if (!isAfterOrSameAsOpened) return false;
-  
+
   // If no closed date, account is still open
   if (!account.closed_date) return true;
-  
+
   const closedDate = parseISO(account.closed_date);
-  
+
   // Date must be before or on closed date
   return isBefore(date, closedDate) || isSameDay(date, closedDate);
 }
@@ -71,11 +75,11 @@ export function isDateInHSAPeriod(date: Date, account: HSAAccount): boolean {
  */
 export function formatHSAAccountDateRange(account: HSAAccount): string {
   const openedDate = new Date(account.opened_date).toLocaleDateString();
-  
+
   if (!account.closed_date) {
     return `${openedDate} - Present`;
   }
-  
+
   const closedDate = new Date(account.closed_date).toLocaleDateString();
   return `${openedDate} - ${closedDate}`;
 }
@@ -85,16 +89,16 @@ export function formatHSAAccountDateRange(account: HSAAccount): string {
  */
 export function validateHSAAccountDates(
   openedDate: string,
-  closedDate: string | null
+  closedDate: string | null,
 ): string | null {
   if (!closedDate) return null;
-  
+
   const opened = parseISO(openedDate);
   const closed = parseISO(closedDate);
-  
+
   if (isBefore(closed, opened) || isSameDay(closed, opened)) {
     return "Closed date must be after opened date";
   }
-  
+
   return null;
 }

@@ -2,7 +2,13 @@ import { useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,28 +44,98 @@ import { AIExtractionCard } from "@/components/bills/AIExtractionCard";
 // Document types with metadata
 const DOCUMENT_TYPES = [
   // Bills & Statements
-  { value: "bill", label: "Medical Bill", category: "bills", triggersAIReview: true },
-  { value: "itemized_statement", label: "Itemized Statement", category: "bills", triggersAIReview: true },
-  { value: "eob", label: "Explanation of Benefits (EOB)", category: "insurance", triggersAIReview: true },
+  {
+    value: "bill",
+    label: "Medical Bill",
+    category: "bills",
+    triggersAIReview: true,
+  },
+  {
+    value: "itemized_statement",
+    label: "Itemized Statement",
+    category: "bills",
+    triggersAIReview: true,
+  },
+  {
+    value: "eob",
+    label: "Explanation of Benefits (EOB)",
+    category: "insurance",
+    triggersAIReview: true,
+  },
 
   // Payments
-  { value: "payment_receipt", label: "Payment Receipt", category: "payments", triggersAIReview: false },
-  { value: "payment_plan_agreement", label: "Payment Plan Agreement", category: "payments", triggersAIReview: false },
+  {
+    value: "payment_receipt",
+    label: "Payment Receipt",
+    category: "payments",
+    triggersAIReview: false,
+  },
+  {
+    value: "payment_plan_agreement",
+    label: "Payment Plan Agreement",
+    category: "payments",
+    triggersAIReview: false,
+  },
 
   // Insurance
-  { value: "insurance_card", label: "Insurance Card", category: "insurance", triggersAIReview: false },
-  { value: "prior_authorization", label: "Prior Authorization", category: "insurance", triggersAIReview: false },
-  { value: "denial_letter", label: "Denial Letter", category: "insurance", triggersAIReview: false },
-  { value: "appeal_letter", label: "Appeal Letter", category: "insurance", triggersAIReview: false },
+  {
+    value: "insurance_card",
+    label: "Insurance Card",
+    category: "insurance",
+    triggersAIReview: false,
+  },
+  {
+    value: "prior_authorization",
+    label: "Prior Authorization",
+    category: "insurance",
+    triggersAIReview: false,
+  },
+  {
+    value: "denial_letter",
+    label: "Denial Letter",
+    category: "insurance",
+    triggersAIReview: false,
+  },
+  {
+    value: "appeal_letter",
+    label: "Appeal Letter",
+    category: "insurance",
+    triggersAIReview: false,
+  },
 
   // Clinical
-  { value: "doctors_notes", label: "Doctor's Notes", category: "clinical", triggersAIReview: false },
-  { value: "lab_results", label: "Lab Results", category: "clinical", triggersAIReview: false },
-  { value: "prescription", label: "Prescription", category: "clinical", triggersAIReview: false },
+  {
+    value: "doctors_notes",
+    label: "Doctor's Notes",
+    category: "clinical",
+    triggersAIReview: false,
+  },
+  {
+    value: "lab_results",
+    label: "Lab Results",
+    category: "clinical",
+    triggersAIReview: false,
+  },
+  {
+    value: "prescription",
+    label: "Prescription",
+    category: "clinical",
+    triggersAIReview: false,
+  },
 
   // Other
-  { value: "receipt", label: "General Receipt", category: "receipts", triggersAIReview: false },
-  { value: "other", label: "Other Document", category: "other", triggersAIReview: false },
+  {
+    value: "receipt",
+    label: "General Receipt",
+    category: "receipts",
+    triggersAIReview: false,
+  },
+  {
+    value: "other",
+    label: "Other Document",
+    category: "other",
+    triggersAIReview: false,
+  },
 ];
 
 const ALLOWED_FILE_TYPES = {
@@ -91,7 +167,10 @@ interface UnifiedUploadWizardProps {
   initialEventId?: string;
 }
 
-export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploadWizardProps) {
+export function UnifiedUploadWizard({
+  onComplete,
+  initialEventId,
+}: UnifiedUploadWizardProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
@@ -100,10 +179,12 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
 
   const [step, setStep] = useState<WizardStep>("upload");
   const [files, setFiles] = useState<FileWithMetadata[]>([]);
-  const [linkOption, setLinkOption] = useState<"existing" | "new" | "unattached">(
-    eventIdFromUrl ? "existing" : "unattached"
+  const [linkOption, setLinkOption] = useState<
+    "existing" | "new" | "unattached"
+  >(eventIdFromUrl ? "existing" : "unattached");
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(
+    eventIdFromUrl || null,
   );
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(eventIdFromUrl || null);
   const [newEventTitle, setNewEventTitle] = useState("");
   const [requestAIReview, setRequestAIReview] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -114,7 +195,9 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
   const { data: events } = useQuery({
     queryKey: ["medical-events-list"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return [];
 
       const { data, error } = await supabase
@@ -161,14 +244,20 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
     setFiles(files.filter((f) => f.id !== id));
   };
 
-  const updateFileMetadata = (id: string, field: keyof FileWithMetadata, value: string) => {
+  const updateFileMetadata = (
+    id: string,
+    field: keyof FileWithMetadata,
+    value: string,
+  ) => {
     setFiles(files.map((f) => (f.id === id ? { ...f, [field]: value } : f)));
   };
 
   // Upload mutation
   const uploadMutation = useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       setIsUploading(true);
@@ -208,7 +297,9 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
         if (uploadError) throw uploadError;
 
         // Get document category
-        const docType = DOCUMENT_TYPES.find((t) => t.value === fileData.documentType);
+        const docType = DOCUMENT_TYPES.find(
+          (t) => t.value === fileData.documentType,
+        );
 
         // Create receipt record
         const { data: receipt, error: receiptError } = await supabase
@@ -234,7 +325,7 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
       // Run AI analysis if requested
       if (requestAIReview && canTriggerAIReview) {
         const billReceipt = uploadedReceipts.find((r) =>
-          ["bill", "itemized_statement", "eob"].includes(r.document_type)
+          ["bill", "itemized_statement", "eob"].includes(r.document_type),
         );
 
         if (billReceipt) {
@@ -272,7 +363,7 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
                   imageUrl: urlData.publicUrl,
                   invoiceId: invoice.id,
                 },
-              }
+              },
             );
 
             if (analysisData?.success) {
@@ -283,11 +374,18 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
                 await supabase
                   .from("invoices")
                   .update({
-                    vendor: analysisData.metadata.provider_name?.value || "Unknown Provider",
+                    vendor:
+                      analysisData.metadata.provider_name?.value ||
+                      "Unknown Provider",
                     amount: analysisData.metadata.total_amount?.value || 0,
-                    total_amount: analysisData.metadata.total_amount?.value || 0,
-                    date: analysisData.metadata.service_date?.value || new Date().toISOString().split("T")[0],
-                    category: analysisData.metadata.category?.value || "Medical Services",
+                    total_amount:
+                      analysisData.metadata.total_amount?.value || 0,
+                    date:
+                      analysisData.metadata.service_date?.value ||
+                      new Date().toISOString().split("T")[0],
+                    category:
+                      analysisData.metadata.category?.value ||
+                      "Medical Services",
                   })
                   .eq("id", invoice.id);
               }
@@ -323,7 +421,13 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
       return;
     }
 
-    const steps: WizardStep[] = ["upload", "classify", "link", "ai-review", "complete"];
+    const steps: WizardStep[] = [
+      "upload",
+      "classify",
+      "link",
+      "ai-review",
+      "complete",
+    ];
     const currentIndex = steps.indexOf(step);
 
     // Skip AI review step if not applicable
@@ -359,19 +463,31 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Progress Steps */}
       <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-        <span className={cn(step === "upload" && "text-primary font-medium")}>1. Upload</span>
+        <span className={cn(step === "upload" && "text-primary font-medium")}>
+          1. Upload
+        </span>
         <ArrowRight className="h-4 w-4" />
-        <span className={cn(step === "classify" && "text-primary font-medium")}>2. Classify</span>
+        <span className={cn(step === "classify" && "text-primary font-medium")}>
+          2. Classify
+        </span>
         <ArrowRight className="h-4 w-4" />
-        <span className={cn(step === "link" && "text-primary font-medium")}>3. Link</span>
+        <span className={cn(step === "link" && "text-primary font-medium")}>
+          3. Link
+        </span>
         {canTriggerAIReview && requestAIReview && (
           <>
             <ArrowRight className="h-4 w-4" />
-            <span className={cn(step === "ai-review" && "text-primary font-medium")}>4. AI Review</span>
+            <span
+              className={cn(step === "ai-review" && "text-primary font-medium")}
+            >
+              4. AI Review
+            </span>
           </>
         )}
         <ArrowRight className="h-4 w-4" />
-        <span className={cn(step === "complete" && "text-primary font-medium")}>Done</span>
+        <span className={cn(step === "complete" && "text-primary font-medium")}>
+          Done
+        </span>
       </div>
 
       {/* Step 1: Upload */}
@@ -390,11 +506,16 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
                 "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
                 isDragActive
                   ? "border-primary bg-primary/5"
-                  : "border-muted-foreground/25 hover:border-primary/50"
+                  : "border-muted-foreground/25 hover:border-primary/50",
               )}
             >
               <input {...getInputProps()} />
-              <Upload className={cn("h-12 w-12 mx-auto mb-4", isDragActive ? "text-primary" : "text-muted-foreground")} />
+              <Upload
+                className={cn(
+                  "h-12 w-12 mx-auto mb-4",
+                  isDragActive ? "text-primary" : "text-muted-foreground",
+                )}
+              />
               <p className="text-lg font-medium mb-1">
                 {isDragActive ? "Drop files here" : "Upload documents"}
               </p>
@@ -406,11 +527,20 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
             {files.length > 0 && (
               <div className="space-y-2">
                 {files.map((f) => (
-                  <div key={f.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                  <div
+                    key={f.id}
+                    className="flex items-center gap-3 p-3 border rounded-lg"
+                  >
                     <FileText className="h-5 w-5 text-muted-foreground" />
                     <span className="flex-1 truncate">{f.file.name}</span>
-                    <Badge variant="secondary">{(f.file.size / 1024).toFixed(0)} KB</Badge>
-                    <Button variant="ghost" size="sm" onClick={() => removeFile(f.id)}>
+                    <Badge variant="secondary">
+                      {(f.file.size / 1024).toFixed(0)} KB
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeFile(f.id)}
+                    >
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
@@ -433,9 +563,7 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
         <Card>
           <CardHeader>
             <CardTitle>Classify Documents</CardTitle>
-            <CardDescription>
-              Select the type for each document
-            </CardDescription>
+            <CardDescription>Select the type for each document</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {files.map((f) => (
@@ -450,7 +578,9 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
                     <Label className="text-xs">Document Type</Label>
                     <Select
                       value={f.documentType}
-                      onValueChange={(v) => updateFileMetadata(f.id, "documentType", v)}
+                      onValueChange={(v) =>
+                        updateFileMetadata(f.id, "documentType", v)
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -475,7 +605,9 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
                     <Input
                       placeholder="e.g., March payment"
                       value={f.description}
-                      onChange={(e) => updateFileMetadata(f.id, "description", e.target.value)}
+                      onChange={(e) =>
+                        updateFileMetadata(f.id, "description", e.target.value)
+                      }
                     />
                   </div>
                 </div>
@@ -510,7 +642,7 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
               <div
                 className={cn(
                   "p-4 border rounded-lg cursor-pointer transition-colors",
-                  linkOption === "existing" && "border-primary bg-primary/5"
+                  linkOption === "existing" && "border-primary bg-primary/5",
                 )}
                 onClick={() => setLinkOption("existing")}
               >
@@ -525,7 +657,10 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
                 </div>
                 {linkOption === "existing" && events && events.length > 0 && (
                   <div className="mt-3">
-                    <Select value={selectedEventId || ""} onValueChange={setSelectedEventId}>
+                    <Select
+                      value={selectedEventId || ""}
+                      onValueChange={setSelectedEventId}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select an event" />
                       </SelectTrigger>
@@ -544,7 +679,7 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
               <div
                 className={cn(
                   "p-4 border rounded-lg cursor-pointer transition-colors",
-                  linkOption === "new" && "border-primary bg-primary/5"
+                  linkOption === "new" && "border-primary bg-primary/5",
                 )}
                 onClick={() => setLinkOption("new")}
               >
@@ -571,7 +706,7 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
               <div
                 className={cn(
                   "p-4 border rounded-lg cursor-pointer transition-colors",
-                  linkOption === "unattached" && "border-primary bg-primary/5"
+                  linkOption === "unattached" && "border-primary bg-primary/5",
                 )}
                 onClick={() => setLinkOption("unattached")}
               >
@@ -594,15 +729,21 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
                   <Checkbox
                     id="ai-review"
                     checked={requestAIReview}
-                    onCheckedChange={(checked) => setRequestAIReview(checked as boolean)}
+                    onCheckedChange={(checked) =>
+                      setRequestAIReview(checked as boolean)
+                    }
                   />
                   <div className="flex-1">
-                    <Label htmlFor="ai-review" className="font-medium cursor-pointer flex items-center gap-2">
+                    <Label
+                      htmlFor="ai-review"
+                      className="font-medium cursor-pointer flex items-center gap-2"
+                    >
                       <Sparkles className="h-4 w-4 text-primary" />
                       Request AI Error Detection
                     </Label>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Our AI will analyze your bill for potential errors and overcharges
+                      Our AI will analyze your bill for potential errors and
+                      overcharges
                     </p>
                   </div>
                 </div>
@@ -666,7 +807,11 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
             )}
 
             <div className="flex justify-between">
-              <Button variant="outline" onClick={handleBack} disabled={isUploading}>
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                disabled={isUploading}
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back
               </Button>
@@ -689,18 +834,20 @@ export function UnifiedUploadWizard({ onComplete, initialEventId }: UnifiedUploa
             <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">Upload Complete!</h3>
             <p className="text-muted-foreground mb-6">
-              Your {files.length} document{files.length > 1 ? "s have" : " has"} been uploaded successfully.
+              Your {files.length} document{files.length > 1 ? "s have" : " has"}{" "}
+              been uploaded successfully.
             </p>
             <div className="flex gap-3 justify-center">
-              <Button variant="outline" onClick={() => {
-                setFiles([]);
-                setStep("upload");
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setFiles([]);
+                  setStep("upload");
+                }}
+              >
                 Upload More
               </Button>
-              <Button onClick={handleComplete}>
-                Done
-              </Button>
+              <Button onClick={handleComplete}>Done</Button>
             </div>
           </CardContent>
         </Card>

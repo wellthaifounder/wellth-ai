@@ -3,7 +3,7 @@
 export interface PaymentTransaction {
   id: string;
   amount: number;
-  payment_source: 'hsa_direct' | 'out_of_pocket' | 'unpaid';
+  payment_source: "hsa_direct" | "out_of_pocket" | "unpaid";
   payment_date: string;
   payment_method_id?: string;
 }
@@ -31,29 +31,35 @@ export interface HSAEligibilityBreakdown {
 
 export const calculateHSAEligibility = (
   expenseReport: ExpenseReport,
-  payments: PaymentTransaction[]
+  payments: PaymentTransaction[],
 ): HSAEligibilityBreakdown => {
-  const totalInvoiced = Number(expenseReport.total_amount || expenseReport.amount);
-  
+  const totalInvoiced = Number(
+    expenseReport.total_amount || expenseReport.amount,
+  );
+
   const paidViaHSA = payments
-    .filter(p => p.payment_source === 'hsa_direct')
+    .filter((p) => p.payment_source === "hsa_direct")
     .reduce((sum, p) => sum + Number(p.amount), 0);
-  
+
   const paidViaOther = payments
-    .filter(p => p.payment_source === 'out_of_pocket')
+    .filter((p) => p.payment_source === "out_of_pocket")
     .reduce((sum, p) => sum + Number(p.amount), 0);
-  
+
   const unpaidBalance = totalInvoiced - paidViaHSA - paidViaOther;
-  
+
   // HSA Reimbursement Eligible = Out-of-pocket payments + Unpaid balance
   // (Assumes the expense is HSA eligible)
-  const hsaReimbursementEligible = expenseReport.is_hsa_eligible 
-    ? paidViaOther + unpaidBalance 
+  const hsaReimbursementEligible = expenseReport.is_hsa_eligible
+    ? paidViaOther + unpaidBalance
     : 0;
-  
-  const alreadyPaidRecoverable = expenseReport.is_hsa_eligible ? paidViaOther : 0;
-  const unpaidStrategicOpportunity = expenseReport.is_hsa_eligible ? unpaidBalance : 0;
-  
+
+  const alreadyPaidRecoverable = expenseReport.is_hsa_eligible
+    ? paidViaOther
+    : 0;
+  const unpaidStrategicOpportunity = expenseReport.is_hsa_eligible
+    ? unpaidBalance
+    : 0;
+
   // Assume 2% average credit card rewards on out-of-pocket payments
   const potentialRewards = unpaidBalance * 0.02;
 
@@ -70,7 +76,7 @@ export const calculateHSAEligibility = (
 };
 
 export const calculateAggregateHSAStats = (
-  expenseReports: (ExpenseReport & { payments?: PaymentTransaction[] })[]
+  expenseReports: (ExpenseReport & { payments?: PaymentTransaction[] })[],
 ) => {
   let totalInvoiced = 0;
   let totalPaidViaHSA = 0;
@@ -81,10 +87,10 @@ export const calculateAggregateHSAStats = (
   let totalStrategicOpportunity = 0;
   let totalPotentialRewards = 0;
 
-  expenseReports.forEach(report => {
+  expenseReports.forEach((report) => {
     const payments = report.payments || [];
     const breakdown = calculateHSAEligibility(report, payments);
-    
+
     totalInvoiced += breakdown.totalInvoiced;
     totalPaidViaHSA += breakdown.paidViaHSA;
     totalPaidViaOther += breakdown.paidViaOther;
@@ -96,7 +102,7 @@ export const calculateAggregateHSAStats = (
   });
 
   // Investment growth calculation: assume 7% annual return over 30 years for money kept in HSA
-  const taxSavings = totalHSAEligible * 0.30; // 30% tax bracket savings
+  const taxSavings = totalHSAEligible * 0.3; // 30% tax bracket savings
   const investmentGrowthPotential = totalHSAEligible * Math.pow(1.07, 30); // 7% compounded over 30 years
 
   return {
@@ -116,28 +122,28 @@ export const calculateAggregateHSAStats = (
 export const getPaymentStatusBadge = (
   totalAmount: number,
   paidViaHSA: number,
-  paidViaOther: number
+  paidViaOther: number,
 ): { status: string; variant: string; color: string } => {
   const totalPaid = paidViaHSA + paidViaOther;
   const unpaid = totalAmount - totalPaid;
 
   if (unpaid <= 0) {
-    return { 
-      status: "Fully Paid", 
-      variant: "default", 
-      color: "bg-green-500/10 text-green-600 border-green-500/20" 
+    return {
+      status: "Fully Paid",
+      variant: "default",
+      color: "bg-green-500/10 text-green-600 border-green-500/20",
     };
   } else if (totalPaid > 0) {
-    return { 
-      status: `Partially Paid (${((totalPaid / totalAmount) * 100).toFixed(0)}%)`, 
-      variant: "secondary", 
-      color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20" 
+    return {
+      status: `Partially Paid (${((totalPaid / totalAmount) * 100).toFixed(0)}%)`,
+      variant: "secondary",
+      color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
     };
   } else {
-    return { 
-      status: "Unpaid", 
-      variant: "destructive", 
-      color: "bg-red-500/10 text-red-600 border-red-500/20" 
+    return {
+      status: "Unpaid",
+      variant: "destructive",
+      color: "bg-red-500/10 text-red-600 border-red-500/20",
     };
   }
 };

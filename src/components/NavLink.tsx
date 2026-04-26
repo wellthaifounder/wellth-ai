@@ -6,18 +6,18 @@ interface NavLinkProps extends LinkProps {
   end?: boolean;
 }
 
-export const NavLink = ({ 
-  to, 
-  className, 
-  activeClassName = "bg-sidebar-accent text-sidebar-accent-foreground", 
+export const NavLink = ({
+  to,
+  className,
+  activeClassName = "bg-sidebar-accent text-sidebar-accent-foreground",
   end = false,
   children,
-  ...props 
+  ...props
 }: NavLinkProps) => {
   const location = useLocation();
   const toPath = typeof to === "string" ? to : to.pathname;
-  
-  const isActive = end 
+
+  const isActive = end
     ? location.pathname === toPath
     : location.pathname.startsWith(toPath || "");
 

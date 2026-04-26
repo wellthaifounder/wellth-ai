@@ -49,7 +49,9 @@ export function LinkToEventDialog({
   const { data: events, isLoading } = useQuery({
     queryKey: ["medical-events-for-linking"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
@@ -99,7 +101,9 @@ export function LinkToEventDialog({
   // Create new event and link
   const createAndLinkMutation = useMutation({
     mutationFn: async (title: string) => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       // Create new event
@@ -241,13 +245,19 @@ export function LinkToEventDialog({
                         onClick={() => setSelectedEventId(event.id)}
                       >
                         <RadioGroupItem value={event.id} id={event.id} />
-                        <label htmlFor={event.id} className="flex-1 cursor-pointer">
+                        <label
+                          htmlFor={event.id}
+                          className="flex-1 cursor-pointer"
+                        >
                           <p className="font-medium">{event.title}</p>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                             {event.event_date && (
                               <span className="flex items-center gap-1">
                                 <Calendar className="h-3 w-3" />
-                                {format(new Date(event.event_date), "MMM d, yyyy")}
+                                {format(
+                                  new Date(event.event_date),
+                                  "MMM d, yyyy",
+                                )}
                               </span>
                             )}
                             {event.primary_provider && (

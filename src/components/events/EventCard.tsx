@@ -49,7 +49,14 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   other: "Other",
 };
 
-const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: typeof CheckCircle2 }> = {
+const STATUS_CONFIG: Record<
+  string,
+  {
+    label: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+    icon: typeof CheckCircle2;
+  }
+> = {
   active: { label: "Active", variant: "default", icon: Clock },
   resolved: { label: "Resolved", variant: "secondary", icon: CheckCircle2 },
   disputed: { label: "Disputed", variant: "destructive", icon: AlertCircle },
@@ -57,13 +64,15 @@ const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secon
 };
 
 export function EventCard({ event, onClick }: EventCardProps) {
-  const outstandingBalance = event.user_responsibility_override !== null
-    ? event.user_responsibility_override
-    : event.total_billed - event.total_paid;
+  const outstandingBalance =
+    event.user_responsibility_override !== null
+      ? event.user_responsibility_override
+      : event.total_billed - event.total_paid;
 
-  const paymentProgress = event.total_billed > 0
-    ? Math.min((event.total_paid / event.total_billed) * 100, 100)
-    : 0;
+  const paymentProgress =
+    event.total_billed > 0
+      ? Math.min((event.total_paid / event.total_billed) * 100, 100)
+      : 0;
 
   const statusConfig = STATUS_CONFIG[event.status] || STATUS_CONFIG.active;
   const StatusIcon = statusConfig.icon;
@@ -72,7 +81,7 @@ export function EventCard({ event, onClick }: EventCardProps) {
     <Card
       className={cn(
         "hover:shadow-lg transition-all cursor-pointer",
-        event.status === "disputed" && "border-destructive/50"
+        event.status === "disputed" && "border-destructive/50",
       )}
       onClick={onClick}
     >
@@ -120,14 +129,18 @@ export function EventCard({ event, onClick }: EventCardProps) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-xs text-muted-foreground">Total Billed</p>
-            <p className="text-lg font-semibold">${event.total_billed.toFixed(2)}</p>
+            <p className="text-lg font-semibold">
+              ${event.total_billed.toFixed(2)}
+            </p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Outstanding</p>
-            <p className={cn(
-              "text-lg font-semibold",
-              outstandingBalance > 0 ? "text-destructive" : "text-green-600"
-            )}>
+            <p
+              className={cn(
+                "text-lg font-semibold",
+                outstandingBalance > 0 ? "text-destructive" : "text-green-600",
+              )}
+            >
               ${outstandingBalance.toFixed(2)}
             </p>
           </div>
@@ -137,7 +150,9 @@ export function EventCard({ event, onClick }: EventCardProps) {
         {event.hsa_eligible_amount > 0 && (
           <div className="pt-2 border-t">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">HSA Eligible</span>
+              <span className="text-sm text-muted-foreground">
+                HSA Eligible
+              </span>
               <span className="text-sm font-medium text-green-600">
                 ${event.hsa_eligible_amount.toFixed(2)}
               </span>

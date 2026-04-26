@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2025-12-06
 
 ### Added - Security (Tier 1 & Tier 4)
+
 - **Critical Security Fixes (Tier 1):**
   - Row Level Security (RLS) policies on all database tables (40+ policies)
   - User authentication enforcement across all sensitive operations
@@ -30,9 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Secure session storage (sessionStorage instead of localStorage)
 
 ### Added - Performance (Tier 3)
+
 - **Query Optimization:**
   - Fixed N+1 query problems in bill reviews, dashboard, HSA stats
-  - Replaced SELECT * with specific column selection
+  - Replaced SELECT \* with specific column selection
   - Moved client-side filtering to database (Provider Directory)
   - Database indexes for hot query paths (10 composite indexes)
 
@@ -47,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 50-90% faster filtered/sorted queries
 
 ### Added - Features
+
 - **Multi-HSA Account Support:**
   - Transaction splitting across multiple HSA accounts
   - Multi-account balance tracking and management
@@ -69,6 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Service worker caching
 
 ### Added - Accessibility
+
 - WCAG 2.1 AA compliance
 - Full keyboard navigation support
 - Screen reader compatibility (ARIA labels, semantic HTML)
@@ -76,6 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - High color contrast ratios
 
 ### Added - Documentation
+
 - Comprehensive audit summary (COMPLETE-AUDIT-SUMMARY.md)
 - Tier 3 performance documentation (20+ optimizations)
 - Tier 4 security documentation (6 enhancements)
@@ -85,24 +90,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Complete testing report
 
 ### Fixed - Critical Bugs (Tier 2)
+
 - Transaction link in header navigation
 - Bill error count query performance
 - HSA timeline population issues
 - Dashboard data synchronization
 
 ### Fixed - UI/UX
+
 - Missing gradient background (bg-gradient-hero utility class)
 - Empty HSA timeline display
 - Dashboard consolidation and navigation
 - Mobile responsiveness across all pages
 
 ### Changed
+
 - Migrated from Lovable Cloud to self-hosted Supabase
 - Updated Supabase project configuration
 - Improved error messages (generic, non-PHI)
 - Enhanced CORS security (environment-based origins)
 
 ### Security
+
 - **HIPAA Compliance:**
   - Technical Safeguards (§164.312): Access control, encryption, audit controls
   - Physical Safeguards (§164.310): Workstation security, session timeout
@@ -111,6 +120,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.9.0] - 2025-11-20
 
 ### Added
+
 - GitHub Spec Kit integration for spec-driven development
 - Slash commands for feature specification workflow
 - Multi-HSA transaction splitting feature
@@ -119,6 +129,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reimbursement tracking system
 
 ### Added - Design System
+
 - Complete design system documentation (DESIGN_SYSTEM_MASTER.md)
 - Semantic design tokens (colors, typography, spacing)
 - Accessible component library (shadcn/ui + Radix UI)
@@ -126,17 +137,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Number formatting utilities
 
 ### Added - Subscription Tiers
+
 - Free tier: Basic expense tracking
 - Plus tier ($9.99/month): AI bill review, unlimited HSA accounts
 - Premium tier ($19.99/month): Priority support, custom reports
 
 ### Added - Integrations
+
 - Stripe subscription management
 - Plaid bank account connection
 - Gemini AI for bill analysis
 - OAuth authentication (Google)
 
 ### Fixed
+
 - Dashboard performance issues
 - Bill review workflow improvements
 - HSA account filtering
@@ -145,12 +159,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.8.0] - 2025-11-11
 
 ### Added - Visual Polish (Phase 5-6)
+
 - Enhanced timeline visualizations
 - Improved headers with opacity effects
 - Mobile-optimized layouts
 - Admin review interface
 
 ### Added - Core Features
+
 - Expense tracking with receipt upload
 - HSA/FSA account management
 - Bill review and analysis
@@ -158,6 +174,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reimbursement request workflow
 
 ### Added - Database
+
 - 35+ database migrations
 - Complete schema for healthcare finance
 - RLS policies for data security
@@ -166,6 +183,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.7.0] - 2025-10-05 (Initial Development)
 
 ### Added - Foundation
+
 - React 18 + TypeScript setup
 - Vite build configuration
 - Tailwind CSS styling
@@ -189,18 +207,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Upgrading to 1.0.0
 
 **Database Migrations:**
+
 ```bash
 npx supabase db push
 ```
 
 **Environment Variables:**
 New required variables:
+
 - `PLAID_ENCRYPTION_KEY` (generate: `openssl rand -base64 32`)
 - `ALLOWED_ORIGIN` (your frontend URL)
 
 See `.env.example` for complete list.
 
 **Supabase Secrets:**
+
 ```bash
 supabase secrets set PLAID_ENCRYPTION_KEY="your_key_here"
 supabase secrets set STRIPE_SECRET_KEY="your_key_here"
@@ -208,6 +229,7 @@ supabase secrets set STRIPE_SECRET_KEY="your_key_here"
 ```
 
 **Breaking Changes:**
+
 - Plaid tokens now encrypted (one-time migration required via `migrate-encrypt-tokens` edge function)
 - Session timeout enabled (users logged out after 15 min inactivity)
 - File uploads now validated (max 10MB, specific types only)

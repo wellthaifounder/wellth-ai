@@ -9,15 +9,23 @@ interface Screen2Props {
   onBack: () => void;
 }
 
-export const Screen2HSA = ({ data, updateData, onNext, onBack }: Screen2Props) => {
+export const Screen2HSA = ({
+  data,
+  updateData,
+  onNext,
+  onBack,
+}: Screen2Props) => {
   const householdOptions = [1, 2, 3, 4, 5];
 
   return (
     <div className="space-y-8 rounded-2xl bg-card p-8 shadow-lg">
       <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold">How much do you spend on healthcare?</h1>
+        <h1 className="text-3xl font-bold">
+          How much do you spend on healthcare?
+        </h1>
         <p className="text-muted-foreground">
-          Include doctor visits, prescriptions, dental, vision — anything medical
+          Include doctor visits, prescriptions, dental, vision — anything
+          medical
         </p>
       </div>
 
@@ -64,7 +72,9 @@ export const Screen2HSA = ({ data, updateData, onNext, onBack }: Screen2Props) =
                 }`}
               >
                 <div className="text-2xl font-bold">{size}</div>
-                {size === 5 && <div className="text-xs text-muted-foreground">+</div>}
+                {size === 5 && (
+                  <div className="text-xs text-muted-foreground">+</div>
+                )}
               </button>
             ))}
           </div>

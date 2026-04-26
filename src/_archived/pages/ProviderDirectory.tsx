@@ -7,58 +7,87 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Building2, TrendingUp, TrendingDown, Star, AlertTriangle } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Loader2,
+  Building2,
+  TrendingUp,
+  TrendingDown,
+  Star,
+  AlertTriangle,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { AdvancedFilters, FilterState } from "@/components/bills/AdvancedFilters";
+import {
+  AdvancedFilters,
+  FilterState,
+} from "@/components/bills/AdvancedFilters";
 import { ProviderRatingsDisclaimer } from "@/components/provider/ProviderRatingsDisclaimer";
 
 export default function ProviderDirectory() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<FilterState>({
-    searchQuery: '',
-    status: 'all',
+    searchQuery: "",
+    status: "all",
     dateRange: { from: undefined, to: undefined },
     amountRange: [0, 10000],
-    provider: '',
-    savingsMin: 0
+    provider: "",
+    savingsMin: 0,
   });
-  const [insurancePlanFilter, setInsurancePlanFilter] = useState('all');
+  const [insurancePlanFilter, setInsurancePlanFilter] = useState("all");
 
   const { data: filteredProviders, isLoading } = useQuery({
-    queryKey: ['providers', filters.searchQuery, filters.provider, insurancePlanFilter],
+    queryKey: [
+      "providers",
+      filters.searchQuery,
+      filters.provider,
+      insurancePlanFilter,
+    ],
     queryFn: async () => {
       let query = supabase
-        .from('providers')
-        .select('id, name, city, state, insurance_networks, billing_accuracy_score, total_bills_analyzed, provider_type, overall_rating')
-        .order('billing_accuracy_score', { ascending: false });
+        .from("providers")
+        .select(
+          "id, name, city, state, insurance_networks, billing_accuracy_score, total_bills_analyzed, provider_type, overall_rating",
+        )
+        .order("billing_accuracy_score", { ascending: false });
 
       // Apply search filter at database level (case-insensitive)
       if (filters.searchQuery) {
-        query = query.or(`name.ilike.%${filters.searchQuery}%,city.ilike.%${filters.searchQuery}%`);
+        query = query.or(
+          `name.ilike.%${filters.searchQuery}%,city.ilike.%${filters.searchQuery}%`,
+        );
       }
 
       // Provider name filter
       if (filters.provider) {
-        query = query.ilike('name', `%${filters.provider}%`);
+        query = query.ilike("name", `%${filters.provider}%`);
       }
 
       // Insurance plan filter (using PostgreSQL array contains)
-      if (insurancePlanFilter !== 'all') {
-        query = query.contains('insurance_networks', [insurancePlanFilter]);
+      if (insurancePlanFilter !== "all") {
+        query = query.contains("insurance_networks", [insurancePlanFilter]);
       }
 
       const { data, error } = await query;
       if (error) throw error;
       return data || [];
-    }
+    },
   });
 
   const topPerformers = filteredProviders?.slice(0, 5) || [];
-  const avgAccuracy = filteredProviders?.reduce((sum, p) => sum + Number(p.billing_accuracy_score), 0) / (filteredProviders?.length || 1);
+  const avgAccuracy =
+    filteredProviders?.reduce(
+      (sum, p) => sum + Number(p.billing_accuracy_score),
+      0,
+    ) / (filteredProviders?.length || 1);
 
   useEffect(() => {
-    analytics.pageView('/providers');
+    analytics.pageView("/providers");
   }, []);
 
   useEffect(() => {
@@ -84,12 +113,15 @@ export default function ProviderDirectory() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-3xl font-bold">Provider Ratings</h1>
-            <Badge variant="secondary" className="text-xs">Beta</Badge>
+            <Badge variant="secondary" className="text-xs">
+              Beta
+            </Badge>
           </div>
           <p className="text-muted-foreground mb-4">
-            Track billing accuracy, average charges, and dispute history for healthcare providers
+            Track billing accuracy, average charges, and dispute history for
+            healthcare providers
           </p>
-          
+
           <div className="mb-4">
             <ProviderRatingsDisclaimer variant="homepage" />
           </div>
@@ -104,7 +136,9 @@ export default function ProviderDirectory() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{filteredProviders?.length || 0}</div>
+              <div className="text-2xl font-bold">
+                {filteredProviders?.length || 0}
+              </div>
             </CardContent>
           </Card>
 
@@ -115,7 +149,9 @@ export default function ProviderDirectory() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{avgAccuracy.toFixed(1)}%</div>
+              <div className="text-2xl font-bold">
+                {avgAccuracy.toFixed(1)}%
+              </div>
             </CardContent>
           </Card>
 
@@ -127,7 +163,10 @@ export default function ProviderDirectory() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {filteredProviders?.reduce((sum, p) => sum + p.total_bills_analyzed, 0) || 0}
+                {filteredProviders?.reduce(
+                  (sum, p) => sum + p.total_bills_analyzed,
+                  0,
+                ) || 0}
               </div>
             </CardContent>
           </Card>
@@ -140,7 +179,13 @@ export default function ProviderDirectory() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-orange-600">
-                ${filteredProviders?.reduce((sum, p) => sum + Number(p.total_overcharges_found), 0).toFixed(2) || 0}
+                $
+                {filteredProviders
+                  ?.reduce(
+                    (sum, p) => sum + Number(p.total_overcharges_found),
+                    0,
+                  )
+                  .toFixed(2) || 0}
               </div>
             </CardContent>
           </Card>
@@ -148,21 +193,24 @@ export default function ProviderDirectory() {
 
         {/* Filters */}
         <div className="space-y-4">
-          <AdvancedFilters 
+          <AdvancedFilters
             onFiltersChange={setFilters}
             showAmountFilter={false}
             showProviderFilter={true}
             showSavingsFilter={false}
             statusOptions={[]}
           />
-          
+
           {/* Insurance Plan Filter */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Insurance Plan Filter</CardTitle>
             </CardHeader>
             <CardContent>
-              <Select value={insurancePlanFilter} onValueChange={setInsurancePlanFilter}>
+              <Select
+                value={insurancePlanFilter}
+                onValueChange={setInsurancePlanFilter}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="All Insurance Plans" />
                 </SelectTrigger>
@@ -172,7 +220,9 @@ export default function ProviderDirectory() {
                   <SelectItem value="HMO">HMO</SelectItem>
                   <SelectItem value="EPO">EPO</SelectItem>
                   <SelectItem value="POS">POS</SelectItem>
-                  <SelectItem value="HDHP">High Deductible Health Plan (HDHP)</SelectItem>
+                  <SelectItem value="HDHP">
+                    High Deductible Health Plan (HDHP)
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </CardContent>
@@ -226,7 +276,9 @@ export default function ProviderDirectory() {
         {/* All Providers List */}
         <Card>
           <CardHeader>
-            <CardTitle>All Providers ({filteredProviders?.length || 0})</CardTitle>
+            <CardTitle>
+              All Providers ({filteredProviders?.length || 0})
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {!filteredProviders || filteredProviders.length === 0 ? (
@@ -254,7 +306,9 @@ export default function ProviderDirectory() {
                       <div className="flex-1 space-y-3">
                         <div className="flex items-start justify-between">
                           <div>
-                            <h3 className="font-semibold text-lg">{provider.name}</h3>
+                            <h3 className="font-semibold text-lg">
+                              {provider.name}
+                            </h3>
                             {provider.provider_type && (
                               <Badge variant="outline" className="mt-1">
                                 {provider.provider_type}
@@ -270,14 +324,18 @@ export default function ProviderDirectory() {
                           {provider.overall_rating > 0 && (
                             <div className="flex items-center gap-1">
                               <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                              <span className="font-semibold">{Number(provider.overall_rating).toFixed(1)}</span>
+                              <span className="font-semibold">
+                                {Number(provider.overall_rating).toFixed(1)}
+                              </span>
                             </div>
                           )}
                         </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                           <div>
-                            <p className="text-xs text-muted-foreground">Billing Accuracy</p>
+                            <p className="text-xs text-muted-foreground">
+                              Billing Accuracy
+                            </p>
                             <div className="flex items-center gap-2">
                               {isHighAccuracy ? (
                                 <TrendingUp className="h-4 w-4 text-green-600" />
@@ -286,29 +344,47 @@ export default function ProviderDirectory() {
                               ) : (
                                 <TrendingDown className="h-4 w-4 text-orange-600" />
                               )}
-                              <span className={`font-bold ${
-                                isHighAccuracy ? 'text-green-600' : 
-                                isLowAccuracy ? 'text-red-600' : 'text-orange-600'
-                              }`}>
+                              <span
+                                className={`font-bold ${
+                                  isHighAccuracy
+                                    ? "text-green-600"
+                                    : isLowAccuracy
+                                      ? "text-red-600"
+                                      : "text-orange-600"
+                                }`}
+                              >
                                 {accuracyScore.toFixed(1)}%
                               </span>
                             </div>
                           </div>
 
                           <div>
-                            <p className="text-xs text-muted-foreground">Bills Analyzed</p>
-                            <p className="font-semibold">{provider.total_bills_analyzed}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Bills Analyzed
+                            </p>
+                            <p className="font-semibold">
+                              {provider.total_bills_analyzed}
+                            </p>
                           </div>
 
                           <div>
-                            <p className="text-xs text-muted-foreground">Disputes Filed</p>
-                            <p className="font-semibold">{provider.total_disputes_filed}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Disputes Filed
+                            </p>
+                            <p className="font-semibold">
+                              {provider.total_disputes_filed}
+                            </p>
                           </div>
 
                           <div>
-                            <p className="text-xs text-muted-foreground">Overcharges Found</p>
+                            <p className="text-xs text-muted-foreground">
+                              Overcharges Found
+                            </p>
                             <p className="font-semibold text-orange-600">
-                              ${Number(provider.total_overcharges_found).toFixed(2)}
+                              $
+                              {Number(provider.total_overcharges_found).toFixed(
+                                2,
+                              )}
                             </p>
                           </div>
                         </div>

@@ -17,7 +17,7 @@ interface Settlement {
   amount: number;
   notes: string;
   created_at: string;
-  type: 'offer' | 'counter_offer';
+  type: "offer" | "counter_offer";
 }
 
 interface SettlementNegotiationTrackerProps {
@@ -36,7 +36,9 @@ export const SettlementNegotiationTracker = ({
   const [isAdding, setIsAdding] = useState(false);
   const [newAmount, setNewAmount] = useState("");
   const [newNotes, setNewNotes] = useState("");
-  const [offerType, setOfferType] = useState<'offer' | 'counter_offer'>('offer');
+  const [offerType, setOfferType] = useState<"offer" | "counter_offer">(
+    "offer",
+  );
   const { toast } = useToast();
 
   const loadSettlements = async () => {
@@ -51,16 +53,20 @@ export const SettlementNegotiationTracker = ({
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      
+
       // Parse the settlement data from communications
-      const parsedSettlements = data?.map(comm => ({
-        id: comm.id,
-        amount: parseFloat(comm.outcome || "0"),
-        notes: comm.summary,
-        created_at: comm.created_at,
-        type: comm.direction === 'outbound' ? 'offer' : 'counter_offer' as 'offer' | 'counter_offer',
-      })) || [];
-      
+      const parsedSettlements =
+        data?.map((comm) => ({
+          id: comm.id,
+          amount: parseFloat(comm.outcome || "0"),
+          notes: comm.summary,
+          created_at: comm.created_at,
+          type:
+            comm.direction === "outbound"
+              ? "offer"
+              : ("counter_offer" as "offer" | "counter_offer"),
+        })) || [];
+
       setSettlements(parsedSettlements);
     } catch (error: any) {
       toast({
@@ -85,45 +91,52 @@ export const SettlementNegotiationTracker = ({
 
     setIsAdding(true);
     try {
-      const { error } = await supabase
-        .from('dispute_communications')
-        .insert([{
+      const { error } = await supabase.from("dispute_communications").insert([
+        {
           dispute_id: disputeId,
-          communication_type: (offerType === 'offer' ? 'phone_call' : 'email') as Database["public"]["Enums"]["communication_type"],
-          direction: (offerType === 'offer' ? 'inbound' : 'outbound') as Database["public"]["Enums"]["communication_direction"],
-          summary: `${offerType === 'offer' ? 'Settlement Offer' : 'Counter Offer'}: $${newAmount}`,
+          communication_type: (offerType === "offer"
+            ? "phone_call"
+            : "email") as Database["public"]["Enums"]["communication_type"],
+          direction: (offerType === "offer"
+            ? "inbound"
+            : "outbound") as Database["public"]["Enums"]["communication_direction"],
+          summary: `${offerType === "offer" ? "Settlement Offer" : "Counter Offer"}: $${newAmount}`,
           outcome: newNotes || null,
-        }]);
+        },
+      ]);
 
       if (error) throw error;
 
       // Send notification for settlement offers
-      if (offerType === 'offer') {
+      if (offerType === "offer") {
         try {
-          await supabase.functions.invoke('send-dispute-notification', {
-            body: { 
+          await supabase.functions.invoke("send-dispute-notification", {
+            body: {
               disputeId,
-              notificationType: 'settlement_offer'
-            }
+              notificationType: "settlement_offer",
+            },
           });
         } catch (notifError) {
-          logError('Notification error', notifError);
+          logError("Notification error", notifError);
         }
       }
 
       toast({
         title: "Success",
-        description: `${offerType === 'offer' ? 'Offer' : 'Counter offer'} recorded successfully.`,
+        description: `${offerType === "offer" ? "Offer" : "Counter offer"} recorded successfully.`,
       });
 
       setNewAmount("");
       setNewNotes("");
       loadSettlements();
     } catch (error) {
-      logError('Error adding settlement', error);
+      logError("Error adding settlement", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to record settlement. Please try again.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to record settlement. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -136,9 +149,10 @@ export const SettlementNegotiationTracker = ({
   });
 
   const savingsFromOriginal = originalAmount - (parseFloat(newAmount) || 0);
-  const savingsPercentage = originalAmount > 0 
-    ? ((savingsFromOriginal / originalAmount) * 100).toFixed(1)
-    : 0;
+  const savingsPercentage =
+    originalAmount > 0
+      ? ((savingsFromOriginal / originalAmount) * 100).toFixed(1)
+      : 0;
 
   return (
     <Card>
@@ -152,11 +166,15 @@ export const SettlementNegotiationTracker = ({
         <div className="grid grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
           <div>
             <p className="text-sm text-muted-foreground">Original Bill</p>
-            <p className="text-lg font-semibold">${originalAmount.toLocaleString()}</p>
+            <p className="text-lg font-semibold">
+              ${originalAmount.toLocaleString()}
+            </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Disputed Amount</p>
-            <p className="text-lg font-semibold text-orange-600">${disputedAmount.toLocaleString()}</p>
+            <p className="text-lg font-semibold text-orange-600">
+              ${disputedAmount.toLocaleString()}
+            </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Target Settlement</p>
@@ -171,16 +189,16 @@ export const SettlementNegotiationTracker = ({
             <Label>Add Settlement Offer</Label>
             <div className="flex gap-2">
               <Button
-                variant={offerType === 'offer' ? 'default' : 'outline'}
+                variant={offerType === "offer" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setOfferType('offer')}
+                onClick={() => setOfferType("offer")}
               >
                 Your Offer
               </Button>
               <Button
-                variant={offerType === 'counter_offer' ? 'default' : 'outline'}
+                variant={offerType === "counter_offer" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setOfferType('counter_offer')}
+                onClick={() => setOfferType("counter_offer")}
               >
                 Their Counter
               </Button>
@@ -199,7 +217,8 @@ export const SettlementNegotiationTracker = ({
               />
               {newAmount && (
                 <p className="text-sm text-green-600">
-                  Save ${savingsFromOriginal.toLocaleString()} ({savingsPercentage}%)
+                  Save ${savingsFromOriginal.toLocaleString()} (
+                  {savingsPercentage}%)
                 </p>
               )}
             </div>
@@ -248,8 +267,14 @@ export const SettlementNegotiationTracker = ({
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <Badge variant={settlement.type === 'offer' ? 'default' : 'secondary'}>
-                      {settlement.type === 'offer' ? 'Your Offer' : 'Counter Offer'}
+                    <Badge
+                      variant={
+                        settlement.type === "offer" ? "default" : "secondary"
+                      }
+                    >
+                      {settlement.type === "offer"
+                        ? "Your Offer"
+                        : "Counter Offer"}
                     </Badge>
                     <span className="text-sm text-muted-foreground">
                       {format(new Date(settlement.created_at), "MMM d, yyyy")}

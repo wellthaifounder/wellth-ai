@@ -14,18 +14,21 @@ Wellth.ai is a comprehensive healthcare expense management platform that helps u
 ## Key Features
 
 ### Financial Management
+
 - **Multi-HSA/FSA Account Support** - Manage multiple accounts with real-time balance tracking
 - **Automated Bank Integration** - Sync transactions automatically via Plaid
 - **Smart Reimbursement Tracking** - Vault, immediate, or medium-term strategies
 - **Payment Method Intelligence** - Track rewards, HSA eligibility, and optimize spending
 
 ### AI-Powered Analysis
+
 - **Wellbie AI Assistant** - Natural language healthcare finance guidance
 - **Medical Bill Review** - Automated error detection and overcharge identification
 - **Receipt OCR** - Extract data from receipts and invoices automatically
 - **PHI Redaction** - Pattern + AI-based protected health information removal
 
 ### Compliance & Security
+
 - **HIPAA-Compliant Architecture** - Full technical, physical, and administrative safeguards
 - **40+ Row Level Security Policies** - Database-level access control
 - **AES-256-GCM Encryption** - Secure banking token storage
@@ -33,6 +36,7 @@ Wellth.ai is a comprehensive healthcare expense management platform that helps u
 - **PHI Protection** - Automatic sanitization in logs and errors
 
 ### User Experience
+
 - **Progressive Web App** - Install on mobile and desktop
 - **WCAG 2.1 AA Accessible** - Full keyboard navigation and screen reader support
 - **Responsive Design** - Optimized for mobile, tablet, and desktop
@@ -41,6 +45,7 @@ Wellth.ai is a comprehensive healthcare expense management platform that helps u
 ## Tech Stack
 
 ### Frontend
+
 - **React 18.3** - Modern UI library with hooks
 - **TypeScript 5.8** - Type-safe development
 - **Vite 5.4** - Lightning-fast build tool
@@ -50,17 +55,20 @@ Wellth.ai is a comprehensive healthcare expense management platform that helps u
 - **React Router 6.30** - Client-side routing
 
 ### Backend & Infrastructure
+
 - **Supabase** - PostgreSQL database, authentication, storage, edge functions
 - **PostgreSQL 15+** - Relational database with RLS
 - **Deno Runtime** - Secure serverless functions (17 edge functions)
 - **Supabase Auth** - JWT-based authentication with OAuth support
 
 ### External Services
+
 - **Stripe** - Subscription management (Free, Plus, Premium tiers)
 - **Plaid** - Bank account integration and transaction sync
 - **Gemini AI** - Advanced medical bill analysis and chat
 
 ### Security & Compliance
+
 - **Row Level Security** - 40+ policies enforcing user-level access
 - **Content Security Policy** - XSS and injection prevention
 - **AES-256-GCM** - Encryption for sensitive banking tokens
@@ -107,25 +115,30 @@ See [docs/getting-started/installation.md](docs/getting-started/installation.md)
 ## Documentation
 
 ### Getting Started
+
 - [Installation Guide](docs/getting-started/installation.md) - Complete setup instructions
 - [Environment Variables](docs/getting-started/environment-variables.md) - Configuration reference
 - [Development Guide](docs/getting-started/development.md) - Local development workflow
 
 ### Architecture
+
 - [System Overview](docs/architecture/README.md) - High-level architecture and design
 - [Database Schema](docs/database/schema.md) - Complete database documentation
 - [Security Architecture](docs/security/README.md) - Security design and implementation
 
 ### API Documentation
+
 - [Edge Functions](docs/api/README.md) - All 17 Supabase edge functions documented
 - [Authentication](docs/architecture/README.md#authentication) - Auth flow and session management
 
 ### Development
+
 - [Coding Standards](docs/development/coding-standards.md) - TypeScript and React patterns
 - [Contributing Guide](CONTRIBUTING.md) - How to contribute to Wellth.ai
 - [Testing Guide](docs/development/testing.md) - Testing strategy and examples
 
 ### Security & Compliance
+
 - [Security Policy](docs/security/SECURITY.md) - Vulnerability reporting and security measures
 - [HIPAA Compliance](docs/security/hipaa-compliance.md) - Compliance documentation
 - [PHI Handling](docs/security/phi-handling.md) - Protected health information guidelines

@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { logError } from '@/utils/errorHandler';
+import { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { logError } from "@/utils/errorHandler";
 
 /**
  * Session timeout hook for healthcare application security
@@ -13,7 +13,7 @@ import { logError } from '@/utils/errorHandler';
  */
 export const useSessionTimeout = (
   timeoutMinutes: number = 15,
-  warningMinutes: number = 2
+  warningMinutes: number = 2,
 ) => {
   const navigate = useNavigate();
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
@@ -30,12 +30,12 @@ export const useSessionTimeout = (
     try {
       await supabase.auth.signOut();
       sessionStorage.clear();
-      navigate('/auth');
-      toast.error('Session expired for security. Please log in again.', {
+      navigate("/auth");
+      toast.error("Session expired for security. Please log in again.", {
         duration: 5000,
       });
     } catch (error) {
-      logError('Error during automatic logout', error);
+      logError("Error during automatic logout", error);
     }
   };
 
@@ -45,7 +45,7 @@ export const useSessionTimeout = (
       {
         duration: Infinity,
         action: {
-          label: 'Stay Logged In',
+          label: "Stay Logged In",
           onClick: () => {
             if (warningToastIdRef.current) {
               toast.dismiss(warningToastIdRef.current);
@@ -53,7 +53,7 @@ export const useSessionTimeout = (
             resetTimeout();
           },
         },
-      }
+      },
     );
   };
 
@@ -72,7 +72,9 @@ export const useSessionTimeout = (
   useEffect(() => {
     // Check if user is authenticated
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
         clearAllTimers();
         return;
@@ -85,16 +87,16 @@ export const useSessionTimeout = (
     checkAuth();
 
     // Listen for user activity to reset timeout
-    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+    const events = ["mousedown", "keydown", "scroll", "touchstart", "click"];
 
-    events.forEach(event => {
+    events.forEach((event) => {
       document.addEventListener(event, resetTimeout);
     });
 
     // Cleanup on unmount
     return () => {
       clearAllTimers();
-      events.forEach(event => {
+      events.forEach((event) => {
         document.removeEventListener(event, resetTimeout);
       });
     };

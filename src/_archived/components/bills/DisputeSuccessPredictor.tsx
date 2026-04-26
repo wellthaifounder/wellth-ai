@@ -25,8 +25,10 @@ export const DisputeSuccessPredictor = ({
   let successScore = 50; // Base score
 
   // Strong error types increase success rate
-  const strongErrorTypes = ['duplicate_charge', 'incorrect_coding', 'upcoding'];
-  const hasStrongErrors = errorTypes.some(type => strongErrorTypes.includes(type));
+  const strongErrorTypes = ["duplicate_charge", "incorrect_coding", "upcoding"];
+  const hasStrongErrors = errorTypes.some((type) =>
+    strongErrorTypes.includes(type),
+  );
   if (hasStrongErrors) successScore += 20;
 
   // Multiple errors increase success rate
@@ -49,9 +51,23 @@ export const DisputeSuccessPredictor = ({
   successScore = Math.min(successScore, 95);
 
   const getSuccessLevel = () => {
-    if (successScore >= 75) return { label: "High", color: "text-green-600", variant: "default" as const };
-    if (successScore >= 50) return { label: "Medium", color: "text-yellow-600", variant: "secondary" as const };
-    return { label: "Low", color: "text-red-600", variant: "destructive" as const };
+    if (successScore >= 75)
+      return {
+        label: "High",
+        color: "text-green-600",
+        variant: "default" as const,
+      };
+    if (successScore >= 50)
+      return {
+        label: "Medium",
+        color: "text-yellow-600",
+        variant: "secondary" as const,
+      };
+    return {
+      label: "Low",
+      color: "text-red-600",
+      variant: "destructive" as const,
+    };
   };
 
   const successLevel = getSuccessLevel();
@@ -98,11 +114,13 @@ export const DisputeSuccessPredictor = ({
             <span className={`text-4xl font-bold ${successLevel.color}`}>
               {successScore}%
             </span>
-            <Badge variant={successLevel.variant}>{successLevel.label} Probability</Badge>
+            <Badge variant={successLevel.variant}>
+              {successLevel.label} Probability
+            </Badge>
           </div>
           <Progress value={successScore} className="h-3" />
           <p className="text-sm text-muted-foreground">
-            Based on {factors.filter(f => f.present).length} positive factors
+            Based on {factors.filter((f) => f.present).length} positive factors
           </p>
         </div>
 
@@ -132,9 +150,12 @@ export const DisputeSuccessPredictor = ({
           <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
             <div className="space-y-1">
-              <p className="text-sm font-medium text-yellow-900">Consider Improving Your Case</p>
+              <p className="text-sm font-medium text-yellow-900">
+                Consider Improving Your Case
+              </p>
               <p className="text-xs text-yellow-700">
-                Add more documentation or insurance verification to strengthen your dispute
+                Add more documentation or insurance verification to strengthen
+                your dispute
               </p>
             </div>
           </div>

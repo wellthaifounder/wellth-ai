@@ -1,23 +1,23 @@
 /**
  * WellthLogo Component
- * 
+ *
  * Primary brand logo for Wellth.ai featuring the "Wellness Pulse" concept.
- * 
+ *
  * USAGE GUIDE:
  * ------------
  * - Use this as the PRIMARY logo in navigation, marketing pages, and headers
  * - Use WellbieAvatar for conversational moments, loading states, and chat interfaces
- * 
+ *
  * VARIANTS:
  * - full: Icon + wordmark (default for desktop navigation)
  * - icon: Icon only (mobile navigation, favicons)
  * - wordmark: Wordmark only (for contexts where icon is already present)
- * 
+ *
  * COLOR MODES:
  * - color: Full brand colors (default)
  * - monochrome: Single color, inherits text color
  * - white: For dark backgrounds
- * 
+ *
  * SIZING:
  * - sm: 20px height (mobile nav)
  * - md: 32px height (desktop nav)
@@ -33,32 +33,34 @@ interface WellthLogoProps {
   showTagline?: boolean;
 }
 
-export const WellthLogo = ({ 
+export const WellthLogo = ({
   variant = "full",
   colorMode = "color",
   size = "md",
   className = "",
-  showTagline = false
+  showTagline = false,
 }: WellthLogoProps) => {
   const heights = {
     sm: "h-5",
     md: "h-8",
     lg: "h-12",
-    xl: "h-16"
+    xl: "h-16",
   };
 
   const renderIcon = () => {
-    const primaryColor = colorMode === "white" 
-      ? "white" 
-      : colorMode === "monochrome" 
-      ? "currentColor" 
-      : "hsl(178, 100%, 33%)"; // --primary teal
-    
-    const accentColor = colorMode === "white" 
-      ? "rgba(255,255,255,0.9)" 
-      : colorMode === "monochrome" 
-      ? "currentColor" 
-      : "hsl(43, 88%, 61%)"; // --accent gold
+    const primaryColor =
+      colorMode === "white"
+        ? "white"
+        : colorMode === "monochrome"
+          ? "currentColor"
+          : "hsl(178, 100%, 33%)"; // --primary teal
+
+    const accentColor =
+      colorMode === "white"
+        ? "rgba(255,255,255,0.9)"
+        : colorMode === "monochrome"
+          ? "currentColor"
+          : "hsl(43, 88%, 61%)"; // --accent gold
 
     return (
       <svg
@@ -76,7 +78,7 @@ export const WellthLogo = ({
           strokeLinejoin="round"
           fill="none"
         />
-        
+
         {/* Wellness Pulse Line - integrated through center */}
         <path
           d="M 25 40 L 35 40 L 40 30 L 45 50 L 50 38 L 60 38 L 65 50 L 70 30 L 75 40 L 95 40"
@@ -92,30 +94,40 @@ export const WellthLogo = ({
   };
 
   const renderWordmark = () => {
-    const textColor = colorMode === "white" 
-      ? "text-white" 
-      : colorMode === "monochrome" 
-      ? "text-current" 
-      : "text-secondary";
+    const textColor =
+      colorMode === "white"
+        ? "text-white"
+        : colorMode === "monochrome"
+          ? "text-current"
+          : "text-secondary";
 
     return (
       <div className="flex flex-col">
-        <span className={`font-heading font-bold ${textColor} ${
-          size === 'sm' ? 'text-xl' : 
-          size === 'md' ? 'text-2xl' : 
-          size === 'lg' ? 'text-4xl' : 
-          'text-5xl'
-        }`}>
+        <span
+          className={`font-heading font-bold ${textColor} ${
+            size === "sm"
+              ? "text-xl"
+              : size === "md"
+                ? "text-2xl"
+                : size === "lg"
+                  ? "text-4xl"
+                  : "text-5xl"
+          }`}
+        >
           Wellth.ai
         </span>
         {showTagline && (
-          <span className={`${
-            colorMode === "white" ? "text-white/70" : "text-muted-foreground"
-          } ${
-            size === 'sm' ? 'text-[10px] -mt-1' : 
-            size === 'md' ? 'text-xs -mt-1' : 
-            'text-sm -mt-1.5'
-          }`}>
+          <span
+            className={`${
+              colorMode === "white" ? "text-white/70" : "text-muted-foreground"
+            } ${
+              size === "sm"
+                ? "text-[10px] -mt-1"
+                : size === "md"
+                  ? "text-xs -mt-1"
+                  : "text-sm -mt-1.5"
+            }`}
+          >
             Smarter health. Wealthier you.
           </span>
         )}

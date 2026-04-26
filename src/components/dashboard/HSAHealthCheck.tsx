@@ -1,5 +1,17 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, CheckCircle2, PiggyBank, TrendingUp, Lightbulb } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  AlertCircle,
+  CheckCircle2,
+  PiggyBank,
+  TrendingUp,
+  Lightbulb,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
@@ -22,7 +34,7 @@ export function HSAHealthCheck({
   maxContribution = HSA_LIMITS_2025.selfOnly, // 2025 individual limit
   unreimbursedExpenses = 0,
   investedAmount = 0,
-  investedPercentage = 0
+  investedPercentage = 0,
 }: HSAHealthCheckProps) {
   const navigate = useNavigate();
 
@@ -36,7 +48,9 @@ export function HSAHealthCheck({
               <Lightbulb className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <CardTitle className="text-lg">Are You Eligible for an HSA?</CardTitle>
+              <CardTitle className="text-lg">
+                Are You Eligible for an HSA?
+              </CardTitle>
               <CardDescription className="mt-1">
                 Save thousands in taxes this year
               </CardDescription>
@@ -45,13 +59,16 @@ export function HSAHealthCheck({
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            If you have a High Deductible Health Plan (HDHP), you could save $1,000+ in taxes annually with an HSA.
+            If you have a High Deductible Health Plan (HDHP), you could save
+            $1,000+ in taxes annually with an HSA.
           </p>
 
           <div className="space-y-2">
             <div className="flex items-start gap-2 text-sm">
               <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
-              <span>Tax-free contributions and withdrawals for medical expenses</span>
+              <span>
+                Tax-free contributions and withdrawals for medical expenses
+              </span>
             </div>
             <div className="flex items-start gap-2 text-sm">
               <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
@@ -89,18 +106,25 @@ export function HSAHealthCheck({
   const hasBalanceData = hsaBalance > 0 || ytdContributions > 0;
   const contributionProgress = (ytdContributions / maxContribution) * 100;
   const contributionRemaining = maxContribution - ytdContributions;
-  const cashPercentage = hsaBalance > 0 ? ((hsaBalance - investedAmount) / hsaBalance) * 100 : 0;
+  const cashPercentage =
+    hsaBalance > 0 ? ((hsaBalance - investedAmount) / hsaBalance) * 100 : 0;
 
   // Determine health status — only flag contribution/investment issues when we have real data
   const issues: string[] = [];
   if (hasBalanceData && contributionProgress < 80) {
-    issues.push(`You're $${contributionRemaining.toFixed(0)} short of maxing out your HSA contribution`);
+    issues.push(
+      `You're $${contributionRemaining.toFixed(0)} short of maxing out your HSA contribution`,
+    );
   }
   if (hasBalanceData && investedPercentage < 50 && hsaBalance > 1000) {
-    issues.push(`${cashPercentage.toFixed(0)}% of your HSA is uninvested (missing growth potential)`);
+    issues.push(
+      `${cashPercentage.toFixed(0)}% of your HSA is uninvested (missing growth potential)`,
+    );
   }
   if (unreimbursedExpenses > 500) {
-    issues.push(`You have $${unreimbursedExpenses.toFixed(0)} in unreimbursed expenses`);
+    issues.push(
+      `You have $${unreimbursedExpenses.toFixed(0)} in unreimbursed expenses`,
+    );
   }
 
   const isHealthy = issues.length === 0;
@@ -110,11 +134,15 @@ export function HSAHealthCheck({
     : "text-amber-600 dark:text-amber-400 bg-amber-500/10";
 
   return (
-    <Card className={`border-2 ${isHealthy ? 'border-green-200 dark:border-green-800' : 'border-amber-200 dark:border-amber-800'}`}>
+    <Card
+      className={`border-2 ${isHealthy ? "border-green-200 dark:border-green-800" : "border-amber-200 dark:border-amber-800"}`}
+    >
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`h-10 w-10 rounded-full flex items-center justify-center ${statusColor}`}>
+            <div
+              className={`h-10 w-10 rounded-full flex items-center justify-center ${statusColor}`}
+            >
               {isHealthy ? (
                 <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
               ) : (
@@ -137,12 +165,17 @@ export function HSAHealthCheck({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">Balance</span>
-                <span className="text-lg font-bold">${hsaBalance.toLocaleString()}</span>
+                <span className="text-lg font-bold">
+                  ${hsaBalance.toLocaleString()}
+                </span>
               </div>
               {investedAmount > 0 && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <TrendingUp className="h-3 w-3" />
-                  <span>${investedAmount.toLocaleString()} invested ({investedPercentage}% of balance)</span>
+                  <span>
+                    ${investedAmount.toLocaleString()} invested (
+                    {investedPercentage}% of balance)
+                  </span>
                 </div>
               )}
             </div>
@@ -151,7 +184,9 @@ export function HSAHealthCheck({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">YTD Contributions</span>
-                <span className="text-sm font-bold">${ytdContributions.toFixed(0)} / ${maxContribution.toFixed(0)}</span>
+                <span className="text-sm font-bold">
+                  ${ytdContributions.toFixed(0)} / ${maxContribution.toFixed(0)}
+                </span>
               </div>
               <Progress value={contributionProgress} className="h-2" />
               <p className="text-xs text-muted-foreground mt-1">
@@ -161,7 +196,14 @@ export function HSAHealthCheck({
           </>
         ) : (
           <div className="p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground">
-            Connect your HSA provider in <button className="underline underline-offset-2 font-medium text-foreground" onClick={() => navigate("/settings")}>Settings</button> to see your balance and contribution data here.
+            Connect your HSA provider in{" "}
+            <button
+              className="underline underline-offset-2 font-medium text-foreground"
+              onClick={() => navigate("/settings")}
+            >
+              Settings
+            </button>{" "}
+            to see your balance and contribution data here.
           </div>
         )}
 
@@ -186,7 +228,10 @@ export function HSAHealthCheck({
             </p>
             <ul className="space-y-1">
               {issues.map((issue, index) => (
-                <li key={index} className="text-xs text-amber-800 dark:text-amber-200 flex items-start gap-2">
+                <li
+                  key={index}
+                  className="text-xs text-amber-800 dark:text-amber-200 flex items-start gap-2"
+                >
                   <span className="mt-0.5">•</span>
                   <span>{issue}</span>
                 </li>

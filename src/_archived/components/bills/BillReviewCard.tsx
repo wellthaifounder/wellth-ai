@@ -34,10 +34,17 @@ export function BillReviewCard({ review, errorCount }: BillReviewCardProps) {
               {review.invoice?.vendor || "Medical Bill"}
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Analyzed {formatDistanceToNow(new Date(review.analyzed_at), { addSuffix: true })}
+              Analyzed{" "}
+              {formatDistanceToNow(new Date(review.analyzed_at), {
+                addSuffix: true,
+              })}
             </p>
           </div>
-          <Badge variant={review.review_status === 'pending' ? 'default' : 'secondary'}>
+          <Badge
+            variant={
+              review.review_status === "pending" ? "default" : "secondary"
+            }
+          >
             {review.review_status}
           </Badge>
         </div>
@@ -64,7 +71,7 @@ export function BillReviewCard({ review, errorCount }: BillReviewCardProps) {
             <p className="text-sm text-muted-foreground">Confidence Score</p>
             <div className="flex items-center gap-2">
               <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                <div 
+                <div
                   className="h-full bg-primary transition-all"
                   style={{ width: `${review.confidence_score * 100}%` }}
                 />
@@ -77,14 +84,14 @@ export function BillReviewCard({ review, errorCount }: BillReviewCardProps) {
         )}
 
         <div className="flex gap-2 pt-2">
-          <Button 
+          <Button
             onClick={() => navigate(`/bills/${review.invoice_id}/review`)}
             className="flex-1"
           >
             View Details
           </Button>
-          {errorCount > 0 && review.review_status === 'pending' && (
-            <Button 
+          {errorCount > 0 && review.review_status === "pending" && (
+            <Button
               onClick={() => navigate(`/bills/${review.invoice_id}/dispute`)}
               variant="outline"
             >

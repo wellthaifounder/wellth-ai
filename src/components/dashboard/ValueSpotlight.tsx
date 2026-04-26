@@ -11,10 +11,18 @@ interface SpotlightCardProps {
   variant?: "default" | "success" | "info";
 }
 
-function SpotlightCard({ icon, title, description, cta, onClick, variant = "default" }: SpotlightCardProps) {
+function SpotlightCard({
+  icon,
+  title,
+  description,
+  cta,
+  onClick,
+  variant = "default",
+}: SpotlightCardProps) {
   const variantStyles = {
     default: "from-primary/10 to-primary/5 border-primary/20",
-    success: "from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800",
+    success:
+      "from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800",
     info: "from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800",
   };
 
@@ -26,9 +34,15 @@ function SpotlightCard({ icon, title, description, cta, onClick, variant = "defa
           <div className="flex-1 min-w-0 space-y-3">
             <div>
               <h3 className="font-semibold text-lg mb-1">{title}</h3>
-              <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {description}
+              </p>
             </div>
-            <Button onClick={onClick} size="sm" className="w-full sm:w-auto min-h-[44px]">
+            <Button
+              onClick={onClick}
+              size="sm"
+              className="w-full sm:w-auto min-h-[44px]"
+            >
               {cta}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
@@ -90,18 +104,18 @@ export function ValueSpotlight({
           <SpotlightCard
             icon="🔍"
             title="Potential Savings Found!"
-            description={`${pendingReviews} bill${pendingReviews === 1 ? '' : 's'} with errors found${totalPotentialSavings > 0 ? ` - up to $${totalPotentialSavings.toFixed(0)} in potential savings` : ''}`}
+            description={`${pendingReviews} bill${pendingReviews === 1 ? "" : "s"} with errors found${totalPotentialSavings > 0 ? ` - up to $${totalPotentialSavings.toFixed(0)} in potential savings` : ""}`}
             cta="Review Now"
             onClick={onReviewClick}
             variant="default"
           />
         )}
-        
+
         {recentDisputeWins > 0 && (
           <SpotlightCard
             icon="🎉"
             title="Recent Wins"
-            description={`You saved $${disputeSavings.toFixed(0)} from ${recentDisputeWins} successful dispute${recentDisputeWins === 1 ? '' : 's'} this month!`}
+            description={`You saved $${disputeSavings.toFixed(0)} from ${recentDisputeWins} successful dispute${recentDisputeWins === 1 ? "" : "s"} this month!`}
             cta="View Disputes"
             onClick={onDisputeClick}
             variant="success"

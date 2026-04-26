@@ -1,6 +1,7 @@
 # Design System Phase 6: Charts & Tables Enhancement
 
 ## Overview
+
 Phase 6 focused on refining data visualization and table presentation with Stripe-style aesthetics, standardized number formatting, and comprehensive accessibility.
 
 ## 1. Number Formatting Utilities
@@ -8,19 +9,21 @@ Phase 6 focused on refining data visualization and table presentation with Strip
 Created standardized formatting functions in `src/lib/utils.ts`:
 
 ### Functions Added:
+
 - **`formatCurrency(amount, currency, options)`** - Formats numbers as currency with proper localization
 - **`formatNumber(num, decimals)`** - Formats numbers with thousand separators
 - **`formatPercent(num, decimals)`** - Formats numbers as percentages
 - **`formatCompactNumber(num)`** - Compacts large numbers (1K, 1M notation)
 
 ### Usage Example:
+
 ```typescript
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
 
-formatCurrency(1234.56)        // "$1,234.56"
-formatNumber(1234567, 2)       // "1,234,567.00"
-formatPercent(45.678, 1)       // "45.7%"
-formatCompactNumber(1500000)   // "1.5M"
+formatCurrency(1234.56); // "$1,234.56"
+formatNumber(1234567, 2); // "1,234,567.00"
+formatPercent(45.678, 1); // "45.7%"
+formatCompactNumber(1500000); // "1.5M"
 ```
 
 ## 2. Stripe-Style Tables
@@ -28,6 +31,7 @@ formatCompactNumber(1500000)   // "1.5M"
 Enhanced `src/components/ui/table.tsx` with professional styling:
 
 ### Table Component Updates:
+
 - **TableRow**: Subtle hover states with smooth transitions
   - `hover:bg-accent/5` for gentle highlighting
   - `hover:border-border/60` for refined borders
@@ -43,6 +47,7 @@ Enhanced `src/components/ui/table.tsx` with professional styling:
   - Consistent font size: `text-sm`
 
 ### Design Tokens Used:
+
 - `border-border/40` and `border-border/60` for border states
 - `bg-accent/5` and `bg-accent/10` for hover/selected states
 - `bg-muted/30` for header backgrounds
@@ -53,6 +58,7 @@ Enhanced `src/components/ui/table.tsx` with professional styling:
 Updated all chart components to use semantic design tokens:
 
 ### Chart Components Updated:
+
 - `src/components/analytics/YearOverYearComparison.tsx`
 - `src/components/analytics/HSAInvestmentTracker.tsx`
 - `src/components/analytics/RewardsOptimizationDashboard.tsx`
@@ -61,12 +67,14 @@ Updated all chart components to use semantic design tokens:
 ### Theme Improvements:
 
 #### Colors:
+
 - Primary line: `stroke="hsl(var(--primary))"`
 - Secondary lines: `stroke="hsl(var(--chart-2))"`, `stroke="hsl(var(--chart-3))"`
 - Grid lines: `stroke="hsl(var(--border))" opacity={0.3}`
 - Axes: `stroke="hsl(var(--muted-foreground))"`
 
 #### Tooltips:
+
 ```typescript
 contentStyle={{
   backgroundColor: 'hsl(var(--popover))',
@@ -77,6 +85,7 @@ contentStyle={{
 ```
 
 #### Interactive Elements:
+
 - Active dots: `activeDot={{ r: 6 }}`
 - Regular dots: `dot={{ fill: 'hsl(var(--primary))', r: 4 }}`
 - Legend padding: `wrapperStyle={{ paddingTop: '20px' }}`
@@ -87,26 +96,29 @@ contentStyle={{
 Added comprehensive ARIA labels to all charts:
 
 ### Chart Container Labels:
+
 ```jsx
-<div 
-  role="img" 
+<div
+  role="img"
   aria-label="Line chart comparing year-over-year savings trends. Shows total savings, tax savings, and rewards earned across multiple years to track financial progress over time."
 >
 ```
 
 ### Axis Labels:
+
 ```jsx
-<XAxis 
+<XAxis
   aria-label="Year"
   stroke="hsl(var(--muted-foreground))"
 />
-<YAxis 
+<YAxis
   aria-label="Amount in dollars"
   stroke="hsl(var(--muted-foreground))"
 />
 ```
 
 ### Screen Reader Support:
+
 - All charts wrapped with `role="img"`
 - Descriptive `aria-label` explaining chart purpose and data
 - Axis labels identifying what each axis represents
@@ -117,11 +129,13 @@ Added comprehensive ARIA labels to all charts:
 All enhancements include dark mode considerations:
 
 ### Table Styling:
+
 - Dynamic borders that adapt to theme
 - Subtle hover states that work in both modes
 - Header backgrounds with proper contrast
 
 ### Chart Styling:
+
 - Uses semantic tokens that automatically adapt
 - Tooltip backgrounds follow theme
 - Grid opacity adjusted for visibility in both modes
@@ -129,12 +143,14 @@ All enhancements include dark mode considerations:
 ## Visual Improvements
 
 ### Before:
+
 - Basic table styling with standard padding
 - Charts using hardcoded colors
 - Inconsistent number formatting across the app
 - Limited accessibility labels
 
 ### After:
+
 - Professional Stripe-style tables with refined spacing
 - Charts using semantic color tokens from design system
 - Standardized number formatting with utilities
@@ -165,6 +181,7 @@ All enhancements include dark mode considerations:
 ## Next Steps
 
 Consider these enhancements for future phases:
+
 - Add data export functionality to tables
 - Implement chart download/save as image
 - Add more chart types (area charts, scatter plots)

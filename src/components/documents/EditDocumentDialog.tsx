@@ -1,9 +1,21 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { logError } from "@/utils/errorHandler";
@@ -27,7 +39,12 @@ const DOCUMENT_TYPES = [
   { value: "medical_record", label: "Medical Record" },
 ];
 
-export const EditDocumentDialog = ({ receipt, open, onOpenChange, onSaved }: EditDocumentDialogProps) => {
+export const EditDocumentDialog = ({
+  receipt,
+  open,
+  onOpenChange,
+  onSaved,
+}: EditDocumentDialogProps) => {
   const [documentType, setDocumentType] = useState(receipt.document_type);
   const [description, setDescription] = useState(receipt.description || "");
   const [saving, setSaving] = useState(false);

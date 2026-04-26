@@ -1,6 +1,7 @@
 import type { Database } from "@/integrations/supabase/types";
 
-type TransactionSplit = Database["public"]["Tables"]["transaction_splits"]["Row"];
+type TransactionSplit =
+  Database["public"]["Tables"]["transaction_splits"]["Row"];
 
 export interface SplitFormData {
   hsa_account_id: string | null;
@@ -14,25 +15,28 @@ export interface SplitFormData {
  */
 export function validateSplitAmounts(
   splits: SplitFormData[],
-  parentAmount: number
+  parentAmount: number,
 ): { isValid: boolean; message?: string } {
   if (splits.length === 0) {
     return { isValid: false, message: "At least one split is required" };
   }
 
   const totalSplitAmount = splits.reduce((sum, split) => sum + split.amount, 0);
-  
+
   if (Math.abs(totalSplitAmount - parentAmount) > 0.01) {
     return {
       isValid: false,
-      message: `Split amounts ($${totalSplitAmount.toFixed(2)}) must equal transaction amount ($${parentAmount.toFixed(2)})`
+      message: `Split amounts ($${totalSplitAmount.toFixed(2)}) must equal transaction amount ($${parentAmount.toFixed(2)})`,
     };
   }
 
   // Check for invalid amounts
-  const hasInvalidAmount = splits.some(split => split.amount <= 0);
+  const hasInvalidAmount = splits.some((split) => split.amount <= 0);
   if (hasInvalidAmount) {
-    return { isValid: false, message: "All split amounts must be greater than zero" };
+    return {
+      isValid: false,
+      message: "All split amounts must be greater than zero",
+    };
   }
 
   return { isValid: true };
@@ -43,7 +47,7 @@ export function validateSplitAmounts(
  */
 export function calculateRemainingAmount(
   splits: SplitFormData[],
-  parentAmount: number
+  parentAmount: number,
 ): number {
   const totalAllocated = splits.reduce((sum, split) => sum + split.amount, 0);
   return Math.max(0, parentAmount - totalAllocated);
@@ -59,7 +63,10 @@ export function canTransactionBeSplit(transaction: {
 }): { canSplit: boolean; reason?: string } {
   // Can't split a transaction that's already a split child
   if (transaction.split_parent_id) {
-    return { canSplit: false, reason: "This is already part of a split transaction" };
+    return {
+      canSplit: false,
+      reason: "This is already part of a split transaction",
+    };
   }
 
   // Can't split a transaction that's already split (already has children)
@@ -69,7 +76,10 @@ export function canTransactionBeSplit(transaction: {
 
   // Can't split a transaction that's linked to a bill
   if (transaction.invoice_id) {
-    return { canSplit: false, reason: "Cannot split transactions that are linked to bills" };
+    return {
+      canSplit: false,
+      reason: "Cannot split transactions that are linked to bills",
+    };
   }
 
   return { canSplit: true };
@@ -87,16 +97,18 @@ export function formatSplitSummary(splits: TransactionSplit[]): string {
 /**
  * Groups splits by HSA account
  */
-export function groupSplitsByAccount(splits: TransactionSplit[]): Map<string | null, TransactionSplit[]> {
+export function groupSplitsByAccount(
+  splits: TransactionSplit[],
+): Map<string | null, TransactionSplit[]> {
   const grouped = new Map<string | null, TransactionSplit[]>();
-  
-  splits.forEach(split => {
+
+  splits.forEach((split) => {
     const accountId = split.hsa_account_id;
     if (!grouped.has(accountId)) {
       grouped.set(accountId, []);
     }
     grouped.get(accountId)!.push(split);
   });
-  
+
   return grouped;
 }

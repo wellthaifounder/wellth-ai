@@ -2,7 +2,14 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { CheckCircle2, Sparkles, FileText, TrendingUp, Shield, ArrowLeft } from "lucide-react";
+import {
+  CheckCircle2,
+  Sparkles,
+  FileText,
+  TrendingUp,
+  Shield,
+  ArrowLeft,
+} from "lucide-react";
 import { CountdownTimer } from "./CountdownTimer";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +21,11 @@ interface TripwireOfferProps {
   onPurchaseComplete?: () => void;
 }
 
-export const TripwireOffer = ({ estimatedSavings, calculatorData, onPurchaseComplete }: TripwireOfferProps) => {
+export const TripwireOffer = ({
+  estimatedSavings,
+  calculatorData,
+  onPurchaseComplete,
+}: TripwireOfferProps) => {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
@@ -24,31 +35,39 @@ export const TripwireOffer = ({ estimatedSavings, calculatorData, onPurchaseComp
     setIsProcessing(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-tripwire-checkout', {
-        body: {
-          estimatedSavings,
-          calculatorData
-        }
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "create-tripwire-checkout",
+        {
+          body: {
+            estimatedSavings,
+            calculatorData,
+          },
+        },
+      );
 
       if (error) {
         throw error;
       }
 
       if (data?.clientSecret) {
-        sessionStorage.setItem('stripe_tripwire_client_secret', data.clientSecret);
-        
+        sessionStorage.setItem(
+          "stripe_tripwire_client_secret",
+          data.clientSecret,
+        );
+
         // Clear calculator data since they're purchasing (won't need to see tripwire again)
-        sessionStorage.removeItem('estimatedSavings');
-        sessionStorage.removeItem('calculatorData');
-        
-        navigate('/checkout');
+        sessionStorage.removeItem("estimatedSavings");
+        sessionStorage.removeItem("calculatorData");
+
+        navigate("/checkout");
         return;
       }
 
-      throw new Error('No client secret returned');
+      throw new Error("No client secret returned");
     } catch (error) {
-      toast.error(`Error: ${error instanceof Error ? error.message : 'Something went wrong'}`);
+      toast.error(
+        `Error: ${error instanceof Error ? error.message : "Something went wrong"}`,
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -65,7 +84,10 @@ export const TripwireOffer = ({ estimatedSavings, calculatorData, onPurchaseComp
           <ArrowLeft className="h-4 w-4" />
           Back to Offer
         </Button>
-        <EmbeddedCheckout clientSecret={clientSecret} onComplete={onPurchaseComplete} />
+        <EmbeddedCheckout
+          clientSecret={clientSecret}
+          onComplete={onPurchaseComplete}
+        />
       </div>
     );
   }
@@ -77,7 +99,9 @@ export const TripwireOffer = ({ estimatedSavings, calculatorData, onPurchaseComp
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            <span className="font-semibold text-primary">LIMITED TIME OFFER</span>
+            <span className="font-semibold text-primary">
+              LIMITED TIME OFFER
+            </span>
           </div>
           <CountdownTimer minutes={15} />
         </div>
@@ -89,7 +113,9 @@ export const TripwireOffer = ({ estimatedSavings, calculatorData, onPurchaseComp
           </h3>
           <div className="flex items-baseline gap-2">
             <span className="text-4xl font-bold text-primary">$17</span>
-            <span className="text-lg text-muted-foreground line-through">$199</span>
+            <span className="text-lg text-muted-foreground line-through">
+              $199
+            </span>
             <span className="rounded-full bg-destructive/10 px-3 py-1 text-sm font-semibold text-destructive">
               91% OFF
             </span>
@@ -105,7 +131,8 @@ export const TripwireOffer = ({ estimatedSavings, calculatorData, onPurchaseComp
               <div>
                 <p className="font-medium">Personalized 15-Page PDF Report</p>
                 <p className="text-sm text-muted-foreground">
-                  Based on your ${estimatedSavings.toLocaleString()}/year savings potential
+                  Based on your ${estimatedSavings.toLocaleString()}/year
+                  savings potential
                 </p>
               </div>
             </div>
@@ -161,7 +188,9 @@ export const TripwireOffer = ({ estimatedSavings, calculatorData, onPurchaseComp
           onClick={handlePurchase}
           disabled={isProcessing}
         >
-          {isProcessing ? "Loading Secure Checkout..." : "Get Instant Access - Only $17"}
+          {isProcessing
+            ? "Loading Secure Checkout..."
+            : "Get Instant Access - Only $17"}
         </Button>
 
         {/* Trust Badges */}

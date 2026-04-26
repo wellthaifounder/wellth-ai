@@ -10,7 +10,9 @@ interface InsurancePlanPromptProps {
   expenseCount: number;
 }
 
-export function InsurancePlanPrompt({ expenseCount }: InsurancePlanPromptProps) {
+export function InsurancePlanPrompt({
+  expenseCount,
+}: InsurancePlanPromptProps) {
   const [showDialog, setShowDialog] = useState(false);
   const {
     hasInsurancePlan,
@@ -18,7 +20,7 @@ export function InsurancePlanPrompt({ expenseCount }: InsurancePlanPromptProps) 
     deductibleRemaining,
     outOfPocketRemaining,
     deductibleMet,
-    outOfPocketMet
+    outOfPocketMet,
   } = useInsurancePlan();
 
   // Don't show prompt until user has uploaded 3+ bills
@@ -37,12 +39,15 @@ export function InsurancePlanPrompt({ expenseCount }: InsurancePlanPromptProps) 
               <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
                 <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <CardTitle className="text-lg">Get Accurate Deductible Tracking</CardTitle>
+              <CardTitle className="text-lg">
+                Get Accurate Deductible Tracking
+              </CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              We've analyzed {expenseCount} bills for you. Add your insurance details to see exactly how much counts toward your deductible.
+              We've analyzed {expenseCount} bills for you. Add your insurance
+              details to see exactly how much counts toward your deductible.
             </p>
 
             <div className="space-y-2">
@@ -77,13 +82,16 @@ export function InsurancePlanPrompt({ expenseCount }: InsurancePlanPromptProps) 
   }
 
   // Show insurance plan summary with deductible tracking
-  const deductibleProgress = insurancePlan?.deductible && insurancePlan?.deductible_met
-    ? (insurancePlan.deductible_met / insurancePlan.deductible) * 100
-    : 0;
+  const deductibleProgress =
+    insurancePlan?.deductible && insurancePlan?.deductible_met
+      ? (insurancePlan.deductible_met / insurancePlan.deductible) * 100
+      : 0;
 
-  const oopProgress = insurancePlan?.out_of_pocket_max && insurancePlan?.out_of_pocket_met
-    ? (insurancePlan.out_of_pocket_met / insurancePlan.out_of_pocket_max) * 100
-    : 0;
+  const oopProgress =
+    insurancePlan?.out_of_pocket_max && insurancePlan?.out_of_pocket_met
+      ? (insurancePlan.out_of_pocket_met / insurancePlan.out_of_pocket_max) *
+        100
+      : 0;
 
   return (
     <>
@@ -97,11 +105,16 @@ export function InsurancePlanPrompt({ expenseCount }: InsurancePlanPromptProps) 
               <div>
                 <CardTitle className="text-lg">Insurance Plan</CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  {insurancePlan?.carrier} • {insurancePlan?.plan_type.toUpperCase()}
+                  {insurancePlan?.carrier} •{" "}
+                  {insurancePlan?.plan_type.toUpperCase()}
                 </p>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => setShowDialog(true)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowDialog(true)}
+            >
               Edit
             </Button>
           </div>
@@ -121,38 +134,44 @@ export function InsurancePlanPrompt({ expenseCount }: InsurancePlanPromptProps) 
               </div>
               <Progress value={deductibleProgress} className="h-2" />
               <p className="text-xs text-muted-foreground">
-                ${insurancePlan.deductible_met?.toFixed(0) || 0} of ${insurancePlan.deductible.toFixed(0)} met
+                ${insurancePlan.deductible_met?.toFixed(0) || 0} of $
+                {insurancePlan.deductible.toFixed(0)} met
               </p>
             </div>
           )}
 
           {/* Out-of-Pocket Progress */}
-          {outOfPocketRemaining !== null && insurancePlan?.out_of_pocket_max && (
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">
-                  Out-of-Pocket Max
-                  {outOfPocketMet && " ✓"}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  ${outOfPocketRemaining.toFixed(0)} remaining
-                </span>
+          {outOfPocketRemaining !== null &&
+            insurancePlan?.out_of_pocket_max && (
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">
+                    Out-of-Pocket Max
+                    {outOfPocketMet && " ✓"}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    ${outOfPocketRemaining.toFixed(0)} remaining
+                  </span>
+                </div>
+                <Progress value={oopProgress} className="h-2" />
+                <p className="text-xs text-muted-foreground">
+                  ${insurancePlan.out_of_pocket_met?.toFixed(0) || 0} of $
+                  {insurancePlan.out_of_pocket_max.toFixed(0)} met
+                </p>
               </div>
-              <Progress value={oopProgress} className="h-2" />
-              <p className="text-xs text-muted-foreground">
-                ${insurancePlan.out_of_pocket_met?.toFixed(0) || 0} of ${insurancePlan.out_of_pocket_max.toFixed(0)} met
-              </p>
-            </div>
-          )}
+            )}
 
           {/* Alert if close to deductible */}
-          {deductibleRemaining !== null && deductibleRemaining > 0 && deductibleRemaining < 500 && (
-            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-md">
-              <p className="text-xs text-blue-800 dark:text-blue-200">
-                💡 You're only ${deductibleRemaining.toFixed(0)} away from meeting your deductible!
-              </p>
-            </div>
-          )}
+          {deductibleRemaining !== null &&
+            deductibleRemaining > 0 &&
+            deductibleRemaining < 500 && (
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-md">
+                <p className="text-xs text-blue-800 dark:text-blue-200">
+                  💡 You're only ${deductibleRemaining.toFixed(0)} away from
+                  meeting your deductible!
+                </p>
+              </div>
+            )}
         </CardContent>
       </Card>
 

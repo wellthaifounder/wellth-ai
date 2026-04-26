@@ -8,8 +8,8 @@ export interface DisputeTemplate {
 
 export const DISPUTE_TEMPLATES: Record<string, DisputeTemplate> = {
   duplicate_charge: {
-    errorType: 'duplicate_charge',
-    subject: 'Billing Error: Duplicate Charges on Account',
+    errorType: "duplicate_charge",
+    subject: "Billing Error: Duplicate Charges on Account",
     letterTemplate: `[Your Name]
 [Your Address]
 [City, State ZIP]
@@ -74,12 +74,12 @@ Can you help me remove these duplicate charges and send me a corrected statement
 
 [Take notes on who you spoke with, what they said, and next steps]
 
-Follow-up: Ask for a reference number and timeframe for resolution.`
+Follow-up: Ask for a reference number and timeframe for resolution.`,
   },
 
   upcoding: {
-    errorType: 'upcoding',
-    subject: 'Billing Dispute: Incorrect Service Level Code',
+    errorType: "upcoding",
+    subject: "Billing Dispute: Incorrect Service Level Code",
     letterTemplate: `[Your Name]
 [Your Address]
 [City, State ZIP]
@@ -136,12 +136,12 @@ My bill shows code [CPT_CODE] for [SERVICE_DESCRIPTION], but I only received [AC
 
 Can you review my medical record and correct this? The correct code should be [CORRECT_CODE].
 
-[Take notes and get a reference number]`
+[Take notes and get a reference number]`,
   },
 
   unbundling: {
-    errorType: 'unbundling',
-    subject: 'Billing Error: Unbundled Services',
+    errorType: "unbundling",
+    subject: "Billing Error: Unbundled Services",
     letterTemplate: `[Your Name]
 [Your Address]
 [City, State ZIP]
@@ -202,12 +202,12 @@ I was charged separately for [LIST SERVICES], but these should be billed togethe
 
 Can you correct this and adjust my bill?
 
-[Document the conversation]`
+[Document the conversation]`,
   },
 
   balance_billing: {
-    errorType: 'balance_billing',
-    subject: 'Dispute: Balance Billing / No Surprises Act Violation',
+    errorType: "balance_billing",
+    subject: "Dispute: Balance Billing / No Surprises Act Violation",
     letterTemplate: `[Your Name]
 [Your Address]
 [City, State ZIP]
@@ -287,12 +287,12 @@ I need you to:
 
 This is a violation of the No Surprises Act. Who can help me resolve this today?
 
-[Get supervisor if needed; document everything]`
+[Get supervisor if needed; document everything]`,
   },
 
   incorrect_quantity: {
-    errorType: 'incorrect_quantity',
-    subject: 'Billing Error: Incorrect Quantity Charged',
+    errorType: "incorrect_quantity",
+    subject: "Billing Error: Incorrect Quantity Charged",
     letterTemplate: `[Your Name]
 [Your Address]
 [City, State ZIP]
@@ -350,12 +350,12 @@ My bill shows [QUANTITY] of [ITEM], but I only received [ACTUAL_QUANTITY].
 
 Can you review my medical record and correct this?
 
-[Take notes]`
+[Take notes]`,
   },
 
   coding_error: {
-    errorType: 'coding_error',
-    subject: 'Billing Error: Incorrect Medical Code',
+    errorType: "coding_error",
+    subject: "Billing Error: Incorrect Medical Code",
     letterTemplate: `[Your Name]
 [Your Address]
 [City, State ZIP]
@@ -412,12 +412,13 @@ Date: [SERVICE_DATE]
 
 The bill shows code [INCORRECT_CODE], but [explain issue]. Can you have this reviewed by a medical coder?
 
-[Document conversation]`
+[Document conversation]`,
   },
 
   pricing_transparency_violation: {
-    errorType: 'pricing_transparency_violation',
-    subject: 'URGENT: Billing Dispute - Charges Exceed Published Price Transparency Rates',
+    errorType: "pricing_transparency_violation",
+    subject:
+      "URGENT: Billing Dispute - Charges Exceed Published Price Transparency Rates",
     letterTemplate: `[Your Name]
 [Your Address]
 [City, State ZIP]
@@ -542,8 +543,8 @@ If this isn't resolved, I'll be filing complaints with CMS, the OIG, and my stat
 
 Can you escalate this to a supervisor or compliance officer?
 
-[Take detailed notes: name, title, date, what they said, next steps, reference number]`
-  }
+[Take detailed notes: name, title, date, what they said, next steps, reference number]`,
+  },
 };
 
 export function getDisputeTemplate(errorType: string): DisputeTemplate | null {
@@ -552,53 +553,69 @@ export function getDisputeTemplate(errorType: string): DisputeTemplate | null {
 
 export function fillTemplate(
   template: string,
-  replacements: Record<string, string>
+  replacements: Record<string, string>,
 ): string {
   let filled = template;
-  
+
   Object.entries(replacements).forEach(([key, value]) => {
     const placeholder = `[${key}]`;
-    filled = filled.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value);
+    filled = filled.replace(
+      new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
+      value,
+    );
   });
-  
+
   return filled;
 }
 
 export const EDUCATION_CONTENT = {
   glossary: {
-    cpt_code: "Current Procedural Terminology codes are numeric codes used to describe medical, surgical, and diagnostic services",
+    cpt_code:
+      "Current Procedural Terminology codes are numeric codes used to describe medical, surgical, and diagnostic services",
     eob: "Explanation of Benefits - a statement from your insurance showing what they paid and what you owe",
-    deductible: "The amount you pay before your insurance starts covering costs",
-    coinsurance: "Your share of costs after meeting your deductible (e.g., you pay 20%, insurance pays 80%)",
-    copay: "A fixed amount you pay for a service (e.g., $30 for a doctor visit)",
-    balance_billing: "When an out-of-network provider bills you for the difference between their charge and what insurance paid",
-    upcoding: "Billing for a more expensive service than what was actually provided",
-    unbundling: "Billing separately for services that should be billed together at a lower bundled price"
+    deductible:
+      "The amount you pay before your insurance starts covering costs",
+    coinsurance:
+      "Your share of costs after meeting your deductible (e.g., you pay 20%, insurance pays 80%)",
+    copay:
+      "A fixed amount you pay for a service (e.g., $30 for a doctor visit)",
+    balance_billing:
+      "When an out-of-network provider bills you for the difference between their charge and what insurance paid",
+    upcoding:
+      "Billing for a more expensive service than what was actually provided",
+    unbundling:
+      "Billing separately for services that should be billed together at a lower bundled price",
   },
-  
+
   patientRights: {
-    right_to_itemized_bill: "You have the right to request an itemized bill showing all charges in detail",
+    right_to_itemized_bill:
+      "You have the right to request an itemized bill showing all charges in detail",
     right_to_dispute: "You can dispute any charges you believe are incorrect",
     right_to_appeal: "If your dispute is denied, you can appeal the decision",
-    protection_from_surprise_bills: "The No Surprises Act protects you from most surprise medical bills",
-    right_to_financial_assistance: "Many hospitals offer financial assistance programs for patients who qualify",
-    right_to_payment_plan: "You can usually negotiate a payment plan for large bills"
+    protection_from_surprise_bills:
+      "The No Surprises Act protects you from most surprise medical bills",
+    right_to_financial_assistance:
+      "Many hospitals offer financial assistance programs for patients who qualify",
+    right_to_payment_plan:
+      "You can usually negotiate a payment plan for large bills",
   },
-  
+
   resources: [
     {
       name: "Centers for Medicare & Medicaid Services",
       url: "https://www.cms.gov",
-      description: "Federal agency overseeing Medicare, Medicaid, and health insurance marketplace"
+      description:
+        "Federal agency overseeing Medicare, Medicaid, and health insurance marketplace",
     },
     {
       name: "No Surprises Act Help",
       url: "https://www.cms.gov/nosurprises",
-      description: "Information about protections from surprise medical bills"
+      description: "Information about protections from surprise medical bills",
     },
     {
       name: "State Insurance Department",
-      description: "Your state insurance department can help with billing disputes"
-    }
-  ]
+      description:
+        "Your state insurance department can help with billing disputes",
+    },
+  ],
 };

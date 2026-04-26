@@ -9,6 +9,7 @@
 ## Phase 1: HSA Account Management ✅
 
 ### Task 1.1: Database Schema - HSA Accounts Table
+
 **Status**: ✅ Complete  
 **Estimated**: 30 min  
 **Dependencies**: None
@@ -19,6 +20,7 @@
 - [x] Add trigger for updated_at timestamp
 
 ### Task 1.2: Data Migration - Existing HSA Dates
+
 **Status**: ✅ Complete  
 **Estimated**: 30 min  
 **Dependencies**: Task 1.1
@@ -29,6 +31,7 @@
 - [x] Test migration on sample data
 
 ### Task 1.3: Component - HSAAccountManager
+
 **Status**: ✅ Complete  
 **Estimated**: 2 hours  
 **Dependencies**: Task 1.1
@@ -40,6 +43,7 @@
 - [x] Handle active/inactive status toggle
 
 ### Task 1.4: Component - HSAAccountSelector
+
 **Status**: ✅ Complete  
 **Estimated**: 1 hour  
 **Dependencies**: Task 1.1
@@ -50,6 +54,7 @@
 - [x] Handle empty state (no accounts)
 
 ### Task 1.5: Hook - useHSAAccounts
+
 **Status**: ✅ Complete  
 **Estimated**: 1 hour  
 **Dependencies**: Task 1.1
@@ -61,6 +66,7 @@
 - [x] Add optimistic updates
 
 ### Task 1.6: Utility - hsaAccountUtils
+
 **Status**: ✅ Complete  
 **Estimated**: 1 hour  
 **Dependencies**: Task 1.1
@@ -72,6 +78,7 @@
 - [x] Add unit tests
 
 ### Task 1.7: Update - hsaCalculations.ts
+
 **Status**: ✅ Complete  
 **Estimated**: 1 hour  
 **Dependencies**: Task 1.1, Task 1.6
@@ -83,6 +90,7 @@
 - [x] Test with both old and new data
 
 ### Task 1.8: UI - Settings HSA Accounts Page
+
 **Status**: ✅ Complete  
 **Estimated**: 1 hour  
 **Dependencies**: Task 1.3, Task 1.4
@@ -97,6 +105,7 @@
 ## Phase 2: Transaction Splitting ✅
 
 ### Task 2.1: Database Schema - Transaction Splits
+
 **Status**: ✅ Complete
 **Estimated**: 30 min  
 **Dependencies**: Phase 1 Complete
@@ -107,6 +116,7 @@
 - [ ] Add updated_at trigger
 
 ### Task 2.2: Database Schema - Modify Transactions Table
+
 **Status**: ✅ Complete
 **Estimated**: 15 min  
 **Dependencies**: Task 2.1
@@ -117,6 +127,7 @@
 - [ ] Test backward compatibility
 
 ### Task 2.3: Component - TransactionSplitDialog
+
 **Status**: ✅ Complete
 **Estimated**: 3 hours  
 **Dependencies**: Task 2.1
@@ -129,6 +140,7 @@
 - [ ] Handle validation errors
 
 ### Task 2.4: Component - SplitTransactionCard
+
 **Status**: ✅ Complete
 **Estimated**: 1.5 hours  
 **Dependencies**: Task 2.1
@@ -140,6 +152,7 @@
 - [ ] Add edit splits action
 
 ### Task 2.5: Component - SplitIndicator
+
 **Status**: 🔴 Not Started  
 **Estimated**: 30 min  
 **Dependencies**: Task 2.1
@@ -149,6 +162,7 @@
 - [ ] Add tooltip explaining split status
 
 ### Task 2.6: Hook - useTransactionSplits
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1.5 hours  
 **Dependencies**: Task 2.1
@@ -160,6 +174,7 @@
 - [ ] Handle validation and error states
 
 ### Task 2.7: Utility - transactionSplitUtils
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1 hour  
 **Dependencies**: Task 2.1
@@ -171,6 +186,7 @@
 - [ ] Add unit tests
 
 ### Task 2.8: Update - TransactionCard Component
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1 hour  
 **Dependencies**: Task 2.3, Task 2.5
@@ -181,6 +197,7 @@
 - [ ] Update visual design
 
 ### Task 2.9: Update - Transactions Page
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1 hour  
 **Dependencies**: Task 2.4, Task 2.8
@@ -195,6 +212,7 @@
 ## Phase 3: Payment Allocation ⏳
 
 ### Task 3.1: Database Schema - Payment Transactions
+
 **Status**: 🔴 Not Started  
 **Estimated**: 15 min  
 **Dependencies**: Phase 2 Complete
@@ -204,6 +222,7 @@
 - [ ] Update indexes if needed
 
 ### Task 3.2: Utility - paymentAllocationUtils
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1 hour  
 **Dependencies**: Task 3.1
@@ -214,6 +233,7 @@
 - [ ] Add unit tests for over-allocation prevention
 
 ### Task 3.3: Update - LinkTransactionDialog
+
 **Status**: 🔴 Not Started  
 **Estimated**: 2 hours  
 **Dependencies**: Task 3.1, Task 3.2
@@ -225,6 +245,7 @@
 - [ ] Default to full transaction amount
 
 ### Task 3.4: Update - Bills Page Payment Breakdown
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1.5 hours  
 **Dependencies**: Task 3.1
@@ -236,6 +257,7 @@
 - [ ] Handle multiple transactions per bill
 
 ### Task 3.5: Component - PaymentAllocationList
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1 hour  
 **Dependencies**: Task 3.1
@@ -250,6 +272,7 @@
 ## Phase 4: Reimbursement Flow Updates ⏳
 
 ### Task 4.1: Database Schema - Reimbursement Requests
+
 **Status**: 🔴 Not Started  
 **Estimated**: 15 min  
 **Dependencies**: Phase 1 Complete
@@ -259,6 +282,7 @@
 - [ ] Test nullable constraint
 
 ### Task 4.2: Hook - useHSAEligibility
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1 hour  
 **Dependencies**: Task 1.6, Task 4.1
@@ -269,6 +293,7 @@
 - [ ] Handle no eligible accounts case
 
 ### Task 4.3: Update - HSAReimbursement Page
+
 **Status**: 🔴 Not Started  
 **Estimated**: 2 hours  
 **Dependencies**: Task 1.4, Task 4.2
@@ -280,6 +305,7 @@
 - [ ] Prevent submission with ineligible bills
 
 ### Task 4.4: Update - ReimbursementDetails Page
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1 hour  
 **Dependencies**: Task 4.1
@@ -289,6 +315,7 @@
 - [ ] Handle null hsa_account_id (legacy requests)
 
 ### Task 4.5: Validation - Eligibility Logic
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1 hour  
 **Dependencies**: Task 4.2
@@ -303,6 +330,7 @@
 ## Phase 5: UI Enhancements & Polish ⏳
 
 ### Task 5.1: Component - HSAEligibilityBadge
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1 hour  
 **Dependencies**: Task 4.2
@@ -313,6 +341,7 @@
 - [ ] Handle multiple eligible accounts
 
 ### Task 5.2: Update - Bills Page Eligibility Display
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1.5 hours  
 **Dependencies**: Task 5.1
@@ -323,6 +352,7 @@
 - [ ] Show account-specific eligibility in lists
 
 ### Task 5.3: Update - Transactions Page Filters
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1 hour  
 **Dependencies**: Task 5.1
@@ -333,6 +363,7 @@
 - [ ] Update empty states with filter context
 
 ### Task 5.4: UI Polish - Tooltips and Help Text
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1.5 hours  
 **Dependencies**: All previous tasks
@@ -344,6 +375,7 @@
 - [ ] Add contextual help icons
 
 ### Task 5.5: UI Polish - Visual Indicators
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1 hour  
 **Dependencies**: All previous tasks
@@ -359,6 +391,7 @@
 ## Phase 6: Testing & Bug Fixes ⏳
 
 ### Task 6.1: End-to-End Testing
+
 **Status**: 🔴 Not Started  
 **Estimated**: 2 hours  
 **Dependencies**: Phase 5 Complete
@@ -370,6 +403,7 @@
 - [ ] Test on mobile and desktop
 
 ### Task 6.2: Edge Case Testing
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1.5 hours  
 **Dependencies**: Phase 5 Complete
@@ -381,6 +415,7 @@
 - [ ] Test boundary dates (same as opened/closed dates)
 
 ### Task 6.3: Validation Testing
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1 hour  
 **Dependencies**: Phase 5 Complete
@@ -392,6 +427,7 @@
 - [ ] Test error message clarity
 
 ### Task 6.4: Performance Testing
+
 **Status**: 🔴 Not Started  
 **Estimated**: 1 hour  
 **Dependencies**: Phase 5 Complete
@@ -403,6 +439,7 @@
 - [ ] Add pagination if needed
 
 ### Task 6.5: Bug Fixes and Refinement
+
 **Status**: 🔴 Not Started  
 **Estimated**: 2 hours  
 **Dependencies**: Tasks 6.1-6.4
@@ -423,6 +460,7 @@
 **Not Started**: 24
 
 **Phase Status**:
+
 - Phase 1: ✅ Complete (8 tasks)
 - Phase 2: ✅ Complete (9 tasks)
 - Phase 3: 🔴 Not Started (5 tasks)

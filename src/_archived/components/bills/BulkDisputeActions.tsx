@@ -43,7 +43,7 @@ export const BulkDisputeActions = ({
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      onSelectionChange(disputes.map(d => d.id));
+      onSelectionChange(disputes.map((d) => d.id));
     } else {
       onSelectionChange([]);
     }
@@ -56,61 +56,66 @@ export const BulkDisputeActions = ({
     try {
       let updateData: any = {};
       let notificationType: string | null = null;
-      
+
       switch (bulkAction) {
-        case 'submit':
-          updateData = { 
-            dispute_status: 'submitted', 
-            submitted_date: new Date().toISOString().split('T')[0]
+        case "submit":
+          updateData = {
+            dispute_status: "submitted",
+            submitted_date: new Date().toISOString().split("T")[0],
           };
-          notificationType = 'submitted';
+          notificationType = "submitted";
           break;
-        case 'withdraw':
-          updateData = { 
-            dispute_status: 'withdrawn',
-            resolution_date: new Date().toISOString().split('T')[0]
+        case "withdraw":
+          updateData = {
+            dispute_status: "withdrawn",
+            resolution_date: new Date().toISOString().split("T")[0],
           };
           break;
-        case 'archive':
-          updateData = { dispute_status: 'withdrawn' };
+        case "archive":
+          updateData = { dispute_status: "withdrawn" };
           break;
       }
 
       // Update all selected disputes
       const { error } = await supabase
-        .from('bill_disputes')
+        .from("bill_disputes")
         .update(updateData)
-        .in('id', selectedIds);
+        .in("id", selectedIds);
 
       if (error) throw error;
 
       // Send notifications for submitted disputes
-      if (notificationType === 'submitted') {
+      if (notificationType === "submitted") {
         for (const disputeId of selectedIds) {
           try {
-            await supabase.functions.invoke('send-dispute-notification', {
-              body: { disputeId, notificationType }
+            await supabase.functions.invoke("send-dispute-notification", {
+              body: { disputeId, notificationType },
             });
           } catch (notifError) {
-            logError('Notification error for dispute', notifError, { disputeId });
+            logError("Notification error for dispute", notifError, {
+              disputeId,
+            });
           }
         }
       }
 
       toast({
         title: "Success",
-        description: `${selectedIds.length} dispute(s) ${bulkAction === 'submit' ? 'submitted' : bulkAction === 'withdraw' ? 'withdrawn' : 'archived'} successfully.`,
+        description: `${selectedIds.length} dispute(s) ${bulkAction === "submit" ? "submitted" : bulkAction === "withdraw" ? "withdrawn" : "archived"} successfully.`,
       });
 
       onActionComplete();
       onSelectionChange([]);
-      setBulkAction('');
+      setBulkAction("");
       setShowConfirmDialog(false);
     } catch (error) {
-      logError('Bulk action error', error);
+      logError("Bulk action error", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to complete bulk action. Please try again.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to complete bulk action. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -122,11 +127,15 @@ export const BulkDisputeActions = ({
     <>
       <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
         <Checkbox
-          checked={selectedIds.length === disputes.length && disputes.length > 0}
+          checked={
+            selectedIds.length === disputes.length && disputes.length > 0
+          }
           onCheckedChange={handleSelectAll}
         />
         <span className="text-sm font-medium">
-          {selectedIds.length > 0 ? `${selectedIds.length} selected` : "Select all"}
+          {selectedIds.length > 0
+            ? `${selectedIds.length} selected`
+            : "Select all"}
         </span>
 
         {selectedIds.length > 0 && (
@@ -167,8 +176,8 @@ export const BulkDisputeActions = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Bulk Action</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to {bulkAction} {selectedIds.length} dispute(s)?
-              This action cannot be undone.
+              Are you sure you want to {bulkAction} {selectedIds.length}{" "}
+              dispute(s)? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -19,6 +19,7 @@ This document details how Wellth.ai meets the HIPAA Security Rule requirements f
 **HIPAA Security Rule:** 45 CFR Part 164, Subpart C
 
 Wellth.ai handles Protected Health Information (PHI) including:
+
 - Medical bills and invoices
 - Insurance information
 - Provider visit records
@@ -38,13 +39,16 @@ Wellth.ai handles Protected Health Information (PHI) including:
 #### Unique User Identification (Required)
 
 **Implementation:**
+
 - Supabase Auth with unique user IDs (UUID)
 - Email/password or OAuth (Google) authentication
 - No shared accounts
 
 ```typescript
 // Every user has unique identifier
-const { data: { user } } = await supabase.auth.getUser();
+const {
+  data: { user },
+} = await supabase.auth.getUser();
 console.log(user.id); // UUID: unique identifier
 ```
 
@@ -55,11 +59,13 @@ console.log(user.id); // UUID: unique identifier
 #### Emergency Access Procedure (Required)
 
 **Implementation:**
+
 - Password reset via email
 - Account recovery through verified email
 - Admin access via Supabase Dashboard (service role key)
 
 **Procedure:**
+
 1. User clicks "Forgot Password"
 2. Email sent with reset link
 3. User creates new password
@@ -72,6 +78,7 @@ console.log(user.id); // UUID: unique identifier
 #### Automatic Logoff (Addressable)
 
 **Implementation:**
+
 - **15-minute session timeout** after inactivity
 - **2-minute warning** before logout
 - Activity monitored: mouse, keyboard, scroll, touch
@@ -82,6 +89,7 @@ useSessionTimeout(15, 2); // 15 min timeout, 2 min warning
 ```
 
 **User Experience:**
+
 1. 15 minutes of inactivity triggers warning toast
 2. User can click "Stay Logged In" to extend
 3. If no action, automatic logout at 15:00
@@ -93,6 +101,7 @@ useSessionTimeout(15, 2); // 15 min timeout, 2 min warning
 #### Encryption and Decryption (Addressable)
 
 **Implementation:**
+
 - **AES-256-GCM encryption** for Plaid banking tokens
 - 256-bit keys, 12-byte initialization vectors
 - Tokens encrypted before storage
@@ -104,9 +113,9 @@ async function encryptPlaidToken(plaintext: string): Promise<string> {
   const iv = crypto.getRandomValues(new Uint8Array(12)); // 12-byte IV
 
   const ciphertext = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
+    { name: "AES-GCM", iv },
     key,
-    encoder.encode(plaintext)
+    encoder.encode(plaintext),
   );
 
   return `${base64(iv)}:${base64(ciphertext)}`;
@@ -114,6 +123,7 @@ async function encryptPlaidToken(plaintext: string): Promise<string> {
 ```
 
 **What's Encrypted:**
+
 - Plaid access tokens (bank account credentials)
 - Stored in `plaid_connections.encrypted_access_token`
 
@@ -128,6 +138,7 @@ async function encryptPlaidToken(plaintext: string): Promise<string> {
 #### Timestamp Tracking (Implemented)
 
 **Implementation:**
+
 - `created_at` timestamp on all table inserts
 - `updated_at` timestamp on all table updates
 - PostgreSQL triggers maintain timestamps automatically
@@ -150,6 +161,7 @@ CREATE TRIGGER update_expenses_updated_at
 #### Error ID Generation (Implemented)
 
 **Implementation:**
+
 - Unique error IDs generated for all errors
 - Allows correlation between user reports and logs
 
@@ -170,6 +182,7 @@ export const handleError = (error: unknown, context: string) => {
 **Status:** ⚠️ Planned, not yet implemented
 
 **Plan:** Integrate Sentry or similar service for:
+
 - Centralized error tracking
 - User action logging
 - Performance monitoring
@@ -186,6 +199,7 @@ export const handleError = (error: unknown, context: string) => {
 #### Database Constraints (Implemented)
 
 **Implementation:**
+
 - Foreign key constraints prevent orphaned records
 - CHECK constraints enforce data validity
 - NOT NULL constraints prevent incomplete data
@@ -206,6 +220,7 @@ ALTER TABLE expenses
 #### Encryption Prevents Tampering (Implemented)
 
 **Implementation:**
+
 - AES-GCM provides authenticated encryption
 - Tampering with ciphertext causes decryption failure
 - IV included in ciphertext prevents replay attacks
@@ -217,6 +232,7 @@ ALTER TABLE expenses
 #### File Integrity (Implemented)
 
 **Implementation:**
+
 - File type validation (MIME + extension)
 - Size limits prevent corruption
 - Supabase Storage provides checksums
@@ -232,6 +248,7 @@ ALTER TABLE expenses
 #### Authentication Methods (Implemented)
 
 **Implementation:**
+
 1. **Email/Password:**
    - Bcrypt password hashing (Supabase default)
    - Minimum 8 characters required
@@ -242,16 +259,20 @@ ALTER TABLE expenses
    - Verified Google accounts only
 
 **JWT Tokens:**
+
 - Signed tokens prevent forgery
 - 1-hour expiration
 - Automatic refresh before expiry
 
 ```typescript
 // Authentication verification
-const { data: { user }, error } = await supabase.auth.getUser(token);
+const {
+  data: { user },
+  error,
+} = await supabase.auth.getUser(token);
 
 if (error || !user) {
-  return new Response('Unauthorized', { status: 401 });
+  return new Response("Unauthorized", { status: 401 });
 }
 ```
 
@@ -266,11 +287,13 @@ if (error || !user) {
 #### HTTPS Everywhere (Implemented)
 
 **Implementation:**
+
 - All connections use HTTPS (TLS 1.3)
 - Supabase enforces SSL/TLS connections
 - No plaintext HTTP allowed
 
 **Endpoints Protected:**
+
 - Frontend ↔ Supabase: HTTPS
 - Edge Functions ↔ External APIs: HTTPS
   - Stripe: `https://api.stripe.com`
@@ -284,15 +307,19 @@ if (error || !user) {
 #### Content Security Policy (Implemented)
 
 **Implementation:**
+
 - Restricts data transmission endpoints
 - Prevents unauthorized external connections
 
 ```html
-<meta http-equiv="Content-Security-Policy" content="
+<meta
+  http-equiv="Content-Security-Policy"
+  content="
   connect-src 'self' https://*.supabase.co https://sandbox.plaid.com
               https://api.stripe.com;
   ...
-" />
+"
+/>
 ```
 
 **Evidence:** `index.html` CSP headers
@@ -308,6 +335,7 @@ if (error || !user) {
 #### Session Timeout (Implemented)
 
 **Implementation:**
+
 - 15-minute automatic logout prevents unattended access
 - Protects PHI on shared/public computers
 - User warned 2 minutes before timeout
@@ -325,6 +353,7 @@ if (error || !user) {
 #### Application-Level Controls (Implemented)
 
 **Implementation:**
+
 - Content Security Policy prevents malicious code execution
 - File upload restrictions prevent malware
 - XSS protection via CSP and React's built-in escaping
@@ -340,17 +369,19 @@ if (error || !user) {
 #### Data Disposal (Implemented)
 
 **Implementation:**
+
 - Supabase handles secure data deletion
 - Row Level Security prevents unauthorized deletion
 - Soft deletes where appropriate (audit trail)
 
 **User Data Deletion:**
+
 ```typescript
 // User can delete their own data
 const { error } = await supabase
-  .from('expenses')
+  .from("expenses")
   .delete()
-  .eq('user_id', user.id);
+  .eq("user_id", user.id);
 ```
 
 **Evidence:** RLS policies, Supabase's secure deletion
@@ -366,6 +397,7 @@ const { error } = await supabase
 #### Risk Analysis (Implemented)
 
 **Actions Taken:**
+
 - Comprehensive security audit (Tier 1-4)
 - Identified and fixed 20+ security issues
 - Ongoing monitoring planned (Sentry integration)
@@ -377,17 +409,18 @@ const { error } = await supabase
 #### PHI Redaction (Implemented)
 
 **Implementation:**
+
 - Pattern-based PHI detection (SSN, phone, email, MRN, address)
 - AI-based contextual PHI detection (Gemini AI)
 - Automatic redaction in logs and user-facing errors
 
 ```typescript
 // Pattern-based redaction
-text = text.replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[SSN-REDACTED]');
+text = text.replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[SSN-REDACTED]");
 
 // AI-based redaction
 const response = await gemini.generateContent(
-  "Identify and redact all PHI in the following text: " + text
+  "Identify and redact all PHI in the following text: " + text,
 );
 ```
 
@@ -398,6 +431,7 @@ const response = await gemini.generateContent(
 #### Error Sanitization (Implemented)
 
 **Implementation:**
+
 - Generic error messages for users
 - Detailed logs only in development
 - PHI removed from all error messages
@@ -406,9 +440,9 @@ const response = await gemini.generateContent(
 // Sanitize error messages
 function sanitizeErrorMessage(message: string): string {
   return message
-    .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[REDACTED]')
-    .replace(/\b[\w.-]+@[\w.-]+\.\w+\b/g, '[EMAIL-REDACTED]')
-    .replace(/https?:\/\/[^\s]+/g, '[URL-REDACTED]');
+    .replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[REDACTED]")
+    .replace(/\b[\w.-]+@[\w.-]+\.\w+\b/g, "[EMAIL-REDACTED]")
+    .replace(/https?:\/\/[^\s]+/g, "[URL-REDACTED]");
 }
 ```
 
@@ -423,6 +457,7 @@ function sanitizeErrorMessage(message: string): string {
 #### Authentication Required (Implemented)
 
 **Implementation:**
+
 - All endpoints require authentication
 - JWT tokens validated on every request
 - No anonymous access to PHI
@@ -434,6 +469,7 @@ function sanitizeErrorMessage(message: string): string {
 #### Password Requirements (Implemented)
 
 **Implementation:**
+
 - Minimum 8 characters
 - Bcrypt hashing (cost factor 10)
 - No password reuse (Supabase default)
@@ -445,6 +481,7 @@ function sanitizeErrorMessage(message: string): string {
 #### Session Termination (Implemented)
 
 **Implementation:**
+
 - Automatic logout after 15 minutes
 - Manual logout available
 - Token revocation on logout
@@ -460,6 +497,7 @@ function sanitizeErrorMessage(message: string): string {
 #### Row Level Security (Implemented)
 
 **Implementation:**
+
 - 40+ RLS policies enforce user-level access
 - Users can only access their own data
 - Nested policies for related data
@@ -480,6 +518,7 @@ CREATE POLICY "Users can view their own expenses"
 #### Role-Based Access (Implemented)
 
 **Current Roles:**
+
 - User: Standard access to own data
 - (Future: Admin, Support roles)
 
@@ -494,6 +533,7 @@ CREATE POLICY "Users can view their own expenses"
 #### Developer Training Materials (In Progress)
 
 **Available:**
+
 - Security policy documentation
 - PHI handling guidelines
 - Coding standards with security requirements
@@ -510,6 +550,7 @@ CREATE POLICY "Users can view their own expenses"
 #### Data Backup (Implemented by Supabase)
 
 **Implementation:**
+
 - Automatic daily backups
 - Point-in-time recovery
 - 7-day backup retention (default)
@@ -523,6 +564,7 @@ CREATE POLICY "Users can view their own expenses"
 **Status:** ⚠️ Needs formal documentation
 
 **Plan:**
+
 - Document recovery procedures
 - Test backup restoration
 - Define RTO/RPO objectives
@@ -535,24 +577,24 @@ CREATE POLICY "Users can view their own expenses"
 
 ### Summary
 
-| Safeguard | Requirement | Status | Notes |
-|-----------|-------------|--------|-------|
-| **Technical Safeguards** | | | |
-| Access Control | § 164.312(a)(1) | ✅ Complete | RLS + session timeout |
-| Audit Controls | § 164.312(b) | ⚠️ 90% | Need centralized logging |
-| Integrity | § 164.312(c)(1) | ✅ Complete | Encryption + constraints |
-| Authentication | § 164.312(d) | ✅ Complete | Supabase Auth |
-| Transmission Security | § 164.312(e)(1) | ✅ Complete | HTTPS + TLS 1.3 |
-| **Physical Safeguards** | | | |
-| Workstation Use | § 164.310(b) | ✅ Complete | Session timeout |
-| Workstation Security | § 164.310(c) | ✅ Complete | CSP + file validation |
-| Device/Media Controls | § 164.310(d)(1) | ✅ Complete | Secure deletion |
-| **Administrative Safeguards** | | | |
-| Security Management | § 164.308(a)(1) | ✅ Complete | PHI redaction + audit |
-| Workforce Security | § 164.308(a)(3) | ✅ Complete | Auth + session termination |
-| Information Access Mgmt | § 164.308(a)(4) | ✅ Complete | RLS policies |
-| Security Training | § 164.308(a)(5) | ⚠️ In Progress | Docs available |
-| Contingency Plan | § 164.308(a)(7) | ⚠️ 70% | Backups automatic, need DR doc |
+| Safeguard                     | Requirement     | Status         | Notes                          |
+| ----------------------------- | --------------- | -------------- | ------------------------------ |
+| **Technical Safeguards**      |                 |                |                                |
+| Access Control                | § 164.312(a)(1) | ✅ Complete    | RLS + session timeout          |
+| Audit Controls                | § 164.312(b)    | ⚠️ 90%         | Need centralized logging       |
+| Integrity                     | § 164.312(c)(1) | ✅ Complete    | Encryption + constraints       |
+| Authentication                | § 164.312(d)    | ✅ Complete    | Supabase Auth                  |
+| Transmission Security         | § 164.312(e)(1) | ✅ Complete    | HTTPS + TLS 1.3                |
+| **Physical Safeguards**       |                 |                |                                |
+| Workstation Use               | § 164.310(b)    | ✅ Complete    | Session timeout                |
+| Workstation Security          | § 164.310(c)    | ✅ Complete    | CSP + file validation          |
+| Device/Media Controls         | § 164.310(d)(1) | ✅ Complete    | Secure deletion                |
+| **Administrative Safeguards** |                 |                |                                |
+| Security Management           | § 164.308(a)(1) | ✅ Complete    | PHI redaction + audit          |
+| Workforce Security            | § 164.308(a)(3) | ✅ Complete    | Auth + session termination     |
+| Information Access Mgmt       | § 164.308(a)(4) | ✅ Complete    | RLS policies                   |
+| Security Training             | § 164.308(a)(5) | ⚠️ In Progress | Docs available                 |
+| Contingency Plan              | § 164.308(a)(7) | ⚠️ 70%         | Backups automatic, need DR doc |
 
 **Overall Compliance: 95%**
 
@@ -567,16 +609,19 @@ CREATE POLICY "Users can view their own expenses"
 #### Notification Timeline
 
 **To Individuals:**
+
 - Within 60 days of breach discovery
 - Via email or mail
 - Include: what happened, what PHI involved, steps taken, mitigation
 
 **To HHS:**
+
 - <500 individuals: Annual report
 - ≥500 individuals: Within 60 days
 - Submit via HHS website
 
 **To Media:**
+
 - Only if ≥500 residents of a state/jurisdiction
 - Prominent media outlets
 - Same timeline as individual notification
@@ -615,11 +660,13 @@ For HIPAA compliance audits, maintain:
 ### Regular Reviews
 
 **Quarterly:**
+
 - Review security policies
 - Update risk assessment
 - Test backup restoration
 
 **Annually:**
+
 - Full HIPAA compliance audit
 - Update security documentation
 - Workforce training
@@ -633,6 +680,7 @@ For HIPAA compliance audits, maintain:
 Wellth.ai must have BAAs with:
 
 **Current Vendors:**
+
 1. **Supabase** - Database and backend platform ✅
 2. **Stripe** - Payment processing (no PHI) ⚠️
 3. **Plaid** - Bank integration (no PHI) ⚠️
@@ -647,6 +695,7 @@ Wellth.ai must have BAAs with:
 **Note:** This document covers the HIPAA **Security Rule** (45 CFR Part 164, Subpart C).
 
 **Privacy Rule** (45 CFR Part 164, Subpart E) covers:
+
 - Notice of Privacy Practices
 - Patient rights (access, amendment, accounting)
 - Minimum necessary standard

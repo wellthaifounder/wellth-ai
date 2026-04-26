@@ -3,9 +3,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { logError } from "@/utils/errorHandler";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Download, Eye, X, Image as ImageIcon, Pencil, Check } from "lucide-react";
+import {
+  FileText,
+  Download,
+  Eye,
+  X,
+  Image as ImageIcon,
+  Pencil,
+  Check,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Receipt {
@@ -39,15 +52,24 @@ const DOCUMENT_TYPE_LABELS = {
 const DOCUMENT_TYPE_COLORS = {
   invoice: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
   bill: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  payment_receipt: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  payment_receipt:
+    "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
   eob: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-  itemized_statement: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
-  prescription_label: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+  itemized_statement:
+    "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
+  prescription_label:
+    "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
   receipt: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
-  other: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+  other:
+    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
 };
 
-export function ReceiptGallery({ expenseId, receipts, onReceiptDeleted, onReceiptUpdated }: ReceiptGalleryProps) {
+export function ReceiptGallery({
+  expenseId,
+  receipts,
+  onReceiptDeleted,
+  onReceiptUpdated,
+}: ReceiptGalleryProps) {
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
   const [viewUrl, setViewUrl] = useState<string>("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -86,16 +108,24 @@ export function ReceiptGallery({ expenseId, receipts, onReceiptDeleted, onReceip
       const url = URL.createObjectURL(data);
       const a = document.createElement("a");
       a.href = url;
-      a.download = receipt.description || receipt.file_path.split("/").pop() || "receipt";
+      a.download =
+        receipt.description || receipt.file_path.split("/").pop() || "receipt";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast({ title: "Success", description: "Receipt downloaded successfully" });
+      toast({
+        title: "Success",
+        description: "Receipt downloaded successfully",
+      });
     } catch (error) {
       logError("Error downloading receipt", error);
-      toast({ title: "Error", description: "Failed to download receipt", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Failed to download receipt",
+        variant: "destructive",
+      });
     }
   };
 
@@ -112,7 +142,11 @@ export function ReceiptGallery({ expenseId, receipts, onReceiptDeleted, onReceip
       onReceiptDeleted?.();
     } catch (error) {
       logError("Error deleting receipt", error);
-      toast({ title: "Error", description: "Failed to delete receipt", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Failed to delete receipt",
+        variant: "destructive",
+      });
     }
   };
 
@@ -142,13 +176,19 @@ export function ReceiptGallery({ expenseId, receipts, onReceiptDeleted, onReceip
       onReceiptUpdated?.();
     } catch (error) {
       logError("Error updating receipt name", error);
-      toast({ title: "Error", description: "Failed to update document name", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Failed to update document name",
+        variant: "destructive",
+      });
     } finally {
       setSavingId(null);
     }
   };
 
-  const sortedReceipts = [...receipts].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+  const sortedReceipts = [...receipts].sort(
+    (a, b) => (a.display_order ?? 0) - (b.display_order ?? 0),
+  );
 
   if (receipts.length === 0) {
     return (
@@ -163,8 +203,14 @@ export function ReceiptGallery({ expenseId, receipts, onReceiptDeleted, onReceip
     <>
       <div className="space-y-3">
         {sortedReceipts.map((receipt) => {
-          const typeLabel = DOCUMENT_TYPE_LABELS[receipt.document_type as keyof typeof DOCUMENT_TYPE_LABELS] ?? receipt.document_type;
-          const typeColor = DOCUMENT_TYPE_COLORS[receipt.document_type as keyof typeof DOCUMENT_TYPE_COLORS] ?? DOCUMENT_TYPE_COLORS.other;
+          const typeLabel =
+            DOCUMENT_TYPE_LABELS[
+              receipt.document_type as keyof typeof DOCUMENT_TYPE_LABELS
+            ] ?? receipt.document_type;
+          const typeColor =
+            DOCUMENT_TYPE_COLORS[
+              receipt.document_type as keyof typeof DOCUMENT_TYPE_COLORS
+            ] ?? DOCUMENT_TYPE_COLORS.other;
           const isEditing = editingId === receipt.id;
           const isSaving = savingId === receipt.id;
 
@@ -230,20 +276,31 @@ export function ReceiptGallery({ expenseId, receipts, onReceiptDeleted, onReceip
                   </div>
                 )}
                 <div className="flex items-center gap-2 mt-0.5">
-                  <Badge className={`text-[10px] px-1.5 py-0 ${typeColor}`}>{typeLabel}</Badge>
+                  <Badge className={`text-[10px] px-1.5 py-0 ${typeColor}`}>
+                    {typeLabel}
+                  </Badge>
                   <span className="text-xs text-muted-foreground">
-                    Uploaded {new Date(receipt.uploaded_at).toLocaleDateString()}
+                    Uploaded{" "}
+                    {new Date(receipt.uploaded_at).toLocaleDateString()}
                   </span>
                 </div>
               </div>
 
               {/* Actions */}
               <div className="flex items-center gap-1 shrink-0">
-                <Button variant="outline" size="sm" onClick={() => handleView(receipt)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleView(receipt)}
+                >
                   <Eye className="h-4 w-4 mr-1" />
                   View
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => handleDownload(receipt)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDownload(receipt)}
+                >
                   <Download className="h-4 w-4 mr-1" />
                   Download
                 </Button>
@@ -261,18 +318,28 @@ export function ReceiptGallery({ expenseId, receipts, onReceiptDeleted, onReceip
         })}
       </div>
 
-      <Dialog open={!!selectedReceipt} onOpenChange={() => setSelectedReceipt(null)}>
+      <Dialog
+        open={!!selectedReceipt}
+        onOpenChange={() => setSelectedReceipt(null)}
+      >
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
           <DialogHeader>
             <DialogTitle>
               {selectedReceipt?.description ||
-                (selectedReceipt && DOCUMENT_TYPE_LABELS[selectedReceipt.document_type as keyof typeof DOCUMENT_TYPE_LABELS])}
+                (selectedReceipt &&
+                  DOCUMENT_TYPE_LABELS[
+                    selectedReceipt.document_type as keyof typeof DOCUMENT_TYPE_LABELS
+                  ])}
             </DialogTitle>
           </DialogHeader>
           {selectedReceipt && viewUrl && (
             <div className="mt-4">
               {selectedReceipt.file_type.startsWith("image/") ? (
-                <img src={viewUrl} alt="Receipt" className="w-full rounded-lg" />
+                <img
+                  src={viewUrl}
+                  alt="Receipt"
+                  className="w-full rounded-lg"
+                />
               ) : (
                 <iframe
                   src={viewUrl}

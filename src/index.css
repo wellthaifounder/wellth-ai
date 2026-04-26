@@ -8,26 +8,26 @@
   :root {
     /* Refined Spacing Scale (8px base) */
     --space-0: 0;
-    --space-1: 0.25rem;   /* 4px  - icon gaps, tight spacing */
-    --space-2: 0.5rem;    /* 8px  - compact padding */
-    --space-3: 0.75rem;   /* 12px - button padding, small gaps */
-    --space-4: 1rem;      /* 16px - standard padding */
-    --space-5: 1.5rem;    /* 24px - section spacing */
-    --space-6: 2rem;      /* 32px - large section spacing */
-    --space-8: 3rem;      /* 48px - hero spacing */
-    --space-10: 4rem;     /* 64px - page-level spacing */
-    
+    --space-1: 0.25rem; /* 4px  - icon gaps, tight spacing */
+    --space-2: 0.5rem; /* 8px  - compact padding */
+    --space-3: 0.75rem; /* 12px - button padding, small gaps */
+    --space-4: 1rem; /* 16px - standard padding */
+    --space-5: 1.5rem; /* 24px - section spacing */
+    --space-6: 2rem; /* 32px - large section spacing */
+    --space-8: 3rem; /* 48px - hero spacing */
+    --space-10: 4rem; /* 64px - page-level spacing */
+
     /* Typography Scale */
-    --text-xs: 0.75rem;      /* 12px - labels, captions */
-    --text-sm: 0.875rem;     /* 14px - body small, secondary text */
-    --text-base: 1rem;       /* 16px - primary body */
-    --text-lg: 1.125rem;     /* 18px - large body, subheadings */
-    --text-xl: 1.25rem;      /* 20px - small headings */
-    --text-2xl: 1.5rem;      /* 24px - section headings */
-    --text-3xl: 1.875rem;    /* 30px - page titles */
-    --text-4xl: 2.25rem;     /* 36px - hero headlines */
-    --text-5xl: 3rem;        /* 48px - hero headlines large */
-    
+    --text-xs: 0.75rem; /* 12px - labels, captions */
+    --text-sm: 0.875rem; /* 14px - body small, secondary text */
+    --text-base: 1rem; /* 16px - primary body */
+    --text-lg: 1.125rem; /* 18px - large body, subheadings */
+    --text-xl: 1.25rem; /* 20px - small headings */
+    --text-2xl: 1.5rem; /* 24px - section headings */
+    --text-3xl: 1.875rem; /* 30px - page titles */
+    --text-4xl: 2.25rem; /* 36px - hero headlines */
+    --text-5xl: 3rem; /* 48px - hero headlines large */
+
     /* Line Heights */
     --leading-none: 1;
     --leading-tight: 1.25;
@@ -35,22 +35,26 @@
     --leading-normal: 1.5;
     --leading-relaxed: 1.625;
     --leading-loose: 2;
-    
+
     /* Shadow System (calm, professional) */
     --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    
+    --shadow-sm:
+      0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    --shadow-md:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --shadow-lg:
+      0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --shadow-xl:
+      0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+
     /* Refined Border Radii */
-    --radius-xs: 0.25rem;   /* 4px  - badges, small elements */
-    --radius-sm: 0.5rem;    /* 8px  - buttons, inputs */
-    --radius-md: 0.75rem;   /* 12px - cards */
-    --radius-lg: 1rem;      /* 16px - large cards, modals */
-    --radius-xl: 1.5rem;    /* 24px - hero cards, feature cards */
-    --radius-full: 9999px;  /* pill buttons */
-    
+    --radius-xs: 0.25rem; /* 4px  - badges, small elements */
+    --radius-sm: 0.5rem; /* 8px  - buttons, inputs */
+    --radius-md: 0.75rem; /* 12px - cards */
+    --radius-lg: 1rem; /* 16px - large cards, modals */
+    --radius-xl: 1.5rem; /* 24px - hero cards, feature cards */
+    --radius-full: 9999px; /* pill buttons */
+
     /* Neutral Canvas - Softer Background */
     --background: 216 20% 98%;
     --foreground: 228 25% 20%;
@@ -90,20 +94,41 @@
     --ring: 178 85% 36%;
 
     --radius: 0.75rem;
-    
+
     /* Chart Colors for Data Visualization */
-    --chart-1: 178 85% 36%;  /* Primary teal */
-    --chart-2: 228 36% 50%;  /* Navy blue */
-    --chart-3: 43 75% 58%;   /* Gold accent */
-    --chart-4: 122 39% 49%;  /* Success green */
-    --chart-5: 357 79% 59%;  /* Alert red */
-    
+    --chart-1: 178 85% 36%; /* Primary teal */
+    --chart-2: 228 36% 50%; /* Navy blue */
+    --chart-3: 43 75% 58%; /* Gold accent */
+    --chart-4: 122 39% 49%; /* Success green */
+    --chart-5: 357 79% 59%; /* Alert red */
+
     /* Wellth.ai Enhanced Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(178 85% 36%) 0%, hsl(178 75% 42%) 50%, hsl(228 36% 40%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(216 20% 98%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(43 75% 58%) 0%, hsl(43 80% 65%) 100%);
-    --gradient-soft: linear-gradient(180deg, hsl(178 85% 96%) 0%, hsl(0 0% 100%) 100%);
-    --gradient-primary-subtle: linear-gradient(135deg, hsl(178 50% 95%) 0%, hsl(216 40% 96%) 100%);
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(178 85% 36%) 0%,
+      hsl(178 75% 42%) 50%,
+      hsl(228 36% 40%) 100%
+    );
+    --gradient-card: linear-gradient(
+      145deg,
+      hsl(0 0% 100%) 0%,
+      hsl(216 20% 98%) 100%
+    );
+    --gradient-accent: linear-gradient(
+      135deg,
+      hsl(43 75% 58%) 0%,
+      hsl(43 80% 65%) 100%
+    );
+    --gradient-soft: linear-gradient(
+      180deg,
+      hsl(178 85% 96%) 0%,
+      hsl(0 0% 100%) 100%
+    );
+    --gradient-primary-subtle: linear-gradient(
+      135deg,
+      hsl(178 50% 95%) 0%,
+      hsl(216 40% 96%) 100%
+    );
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -113,16 +138,16 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-    
+
     /* Z-Index Hierarchy — all sticky/fixed elements must respect this order:
        nav/sidebar (40) < modal overlay+content (50) < tooltips (60) < toasts (70)
        Rule: never set a nav or sidebar element above --z-modal (50). */
     --z-base: 0;
-    --z-sidebar: 40;   /* sticky nav, sidebars */
-    --z-drag: 45;      /* drag-and-drop handles */
-    --z-modal: 50;     /* Dialog overlay + content (shadcn default) */
-    --z-tooltip: 60;   /* Tooltip popovers */
-    --z-toast: 70;     /* Toast notifications */
+    --z-sidebar: 40; /* sticky nav, sidebars */
+    --z-drag: 45; /* drag-and-drop handles */
+    --z-modal: 50; /* Dialog overlay + content (shadcn default) */
+    --z-tooltip: 60; /* Tooltip popovers */
+    --z-toast: 70; /* Toast notifications */
   }
 
   .dark {
@@ -161,20 +186,41 @@
     --border: 228 25% 25%;
     --input: 228 25% 25%;
     --ring: 178 85% 36%;
-    
+
     /* Chart Colors for Data Visualization (Dark Mode) */
-    --chart-1: 178 85% 45%;  /* Lighter primary teal */
-    --chart-2: 228 40% 60%;  /* Lighter navy blue */
-    --chart-3: 43 80% 65%;   /* Lighter gold accent */
-    --chart-4: 122 45% 55%;  /* Lighter success green */
-    --chart-5: 357 75% 65%;  /* Lighter alert red */
-    
+    --chart-1: 178 85% 45%; /* Lighter primary teal */
+    --chart-2: 228 40% 60%; /* Lighter navy blue */
+    --chart-3: 43 80% 65%; /* Lighter gold accent */
+    --chart-4: 122 45% 55%; /* Lighter success green */
+    --chart-5: 357 75% 65%; /* Lighter alert red */
+
     /* Wellth.ai Dark Mode Enhanced Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(178 85% 30%) 0%, hsl(178 75% 36%) 50%, hsl(228 36% 25%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(228 36% 16%) 0%, hsl(228 30% 20%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(43 75% 55%) 0%, hsl(43 80% 62%) 100%);
-    --gradient-soft: linear-gradient(180deg, hsl(178 85% 15%) 0%, hsl(228 36% 12%) 100%);
-    --gradient-primary-subtle: linear-gradient(135deg, hsl(178 50% 18%) 0%, hsl(228 40% 16%) 100%);
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(178 85% 30%) 0%,
+      hsl(178 75% 36%) 50%,
+      hsl(228 36% 25%) 100%
+    );
+    --gradient-card: linear-gradient(
+      145deg,
+      hsl(228 36% 16%) 0%,
+      hsl(228 30% 20%) 100%
+    );
+    --gradient-accent: linear-gradient(
+      135deg,
+      hsl(43 75% 55%) 0%,
+      hsl(43 80% 62%) 100%
+    );
+    --gradient-soft: linear-gradient(
+      180deg,
+      hsl(178 85% 15%) 0%,
+      hsl(228 36% 12%) 100%
+    );
+    --gradient-primary-subtle: linear-gradient(
+      135deg,
+      hsl(178 50% 18%) 0%,
+      hsl(228 40% 16%) 100%
+    );
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -183,7 +229,7 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-    
+
     /* Z-Index Hierarchy (same in dark mode) */
     --z-base: 0;
     --z-sidebar: 40;
@@ -201,10 +247,17 @@
 
   body {
     @apply bg-background text-foreground font-sans;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-heading tracking-tight;
   }
 
@@ -266,7 +319,9 @@
   .scroll-fade-in {
     opacity: 0;
     transform: translateY(20px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    transition:
+      opacity 0.6s ease-out,
+      transform 0.6s ease-out;
   }
 
   .scroll-fade-in.visible {
@@ -277,7 +332,9 @@
   .scroll-slide-left {
     opacity: 0;
     transform: translateX(-30px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    transition:
+      opacity 0.6s ease-out,
+      transform 0.6s ease-out;
   }
 
   .scroll-slide-left.visible {
@@ -288,7 +345,9 @@
   .scroll-slide-right {
     opacity: 0;
     transform: translateX(30px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    transition:
+      opacity 0.6s ease-out,
+      transform 0.6s ease-out;
   }
 
   .scroll-slide-right.visible {
@@ -299,7 +358,9 @@
   .scroll-scale-in {
     opacity: 0;
     transform: scale(0.95);
-    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    transition:
+      opacity 0.5s ease-out,
+      transform 0.5s ease-out;
   }
 
   .scroll-scale-in.visible {
@@ -313,12 +374,28 @@
   }
 
   /* Staggered animations */
-  .scroll-fade-in.delay-100 { transition-delay: 0.1s; }
-  .scroll-fade-in.delay-200 { transition-delay: 0.2s; }
-  .scroll-fade-in.delay-300 { transition-delay: 0.3s; }
-  .scroll-fade-in.delay-400 { transition-delay: 0.4s; }
-  .scroll-slide-left.delay-100 { transition-delay: 0.1s; }
-  .scroll-slide-left.delay-200 { transition-delay: 0.2s; }
-  .scroll-slide-right.delay-100 { transition-delay: 0.1s; }
-  .scroll-slide-right.delay-200 { transition-delay: 0.2s; }
+  .scroll-fade-in.delay-100 {
+    transition-delay: 0.1s;
+  }
+  .scroll-fade-in.delay-200 {
+    transition-delay: 0.2s;
+  }
+  .scroll-fade-in.delay-300 {
+    transition-delay: 0.3s;
+  }
+  .scroll-fade-in.delay-400 {
+    transition-delay: 0.4s;
+  }
+  .scroll-slide-left.delay-100 {
+    transition-delay: 0.1s;
+  }
+  .scroll-slide-left.delay-200 {
+    transition-delay: 0.2s;
+  }
+  .scroll-slide-right.delay-100 {
+    transition-delay: 0.1s;
+  }
+  .scroll-slide-right.delay-200 {
+    transition-delay: 0.2s;
+  }
 }

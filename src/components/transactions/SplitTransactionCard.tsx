@@ -14,7 +14,9 @@ interface SplitTransactionCardProps {
   transaction: Transaction & { is_split?: boolean };
 }
 
-export function SplitTransactionCard({ transaction }: SplitTransactionCardProps) {
+export function SplitTransactionCard({
+  transaction,
+}: SplitTransactionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { splits, isLoading } = useTransactionSplits(transaction.id);
   const { accounts } = useHSAAccounts();
@@ -32,7 +34,9 @@ export function SplitTransactionCard({ transaction }: SplitTransactionCardProps)
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <CardTitle className="text-base">{transaction.description}</CardTitle>
+            <CardTitle className="text-base">
+              {transaction.description}
+            </CardTitle>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>${transaction.amount.toFixed(2)}</span>
               <Badge variant="secondary" className="text-xs">
@@ -70,9 +74,13 @@ export function SplitTransactionCard({ transaction }: SplitTransactionCardProps)
                     </Badge>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground">{split.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {split.description}
+                </p>
                 {split.notes && (
-                  <p className="text-xs text-muted-foreground italic">{split.notes}</p>
+                  <p className="text-xs text-muted-foreground italic">
+                    {split.notes}
+                  </p>
                 )}
               </div>
               <div className="text-right">
@@ -80,7 +88,7 @@ export function SplitTransactionCard({ transaction }: SplitTransactionCardProps)
               </div>
             </div>
           ))}
-          
+
           <div className="flex justify-between items-center pt-2 border-t">
             <span className="text-sm font-medium">Total</span>
             <span className="font-semibold">

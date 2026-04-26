@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,7 +30,12 @@ interface UnattachedReceipt {
   file_type: string;
 }
 
-export const AttachDocumentDialog = ({ invoiceId, open, onOpenChange, onAttached }: AttachDocumentDialogProps) => {
+export const AttachDocumentDialog = ({
+  invoiceId,
+  open,
+  onOpenChange,
+  onAttached,
+}: AttachDocumentDialogProps) => {
   const [receipts, setReceipts] = useState<UnattachedReceipt[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -39,7 +50,9 @@ export const AttachDocumentDialog = ({ invoiceId, open, onOpenChange, onAttached
   const loadUnattachedReceipts = async () => {
     try {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       const { data, error } = await supabase
@@ -88,7 +101,7 @@ export const AttachDocumentDialog = ({ invoiceId, open, onOpenChange, onAttached
 
   const toggleSelection = (id: string) => {
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
@@ -106,13 +119,17 @@ export const AttachDocumentDialog = ({ invoiceId, open, onOpenChange, onAttached
           {loading ? (
             <div className="flex flex-col items-center justify-center py-8 gap-2">
               <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-sm text-muted-foreground">Loading documents...</p>
+              <p className="text-sm text-muted-foreground">
+                Loading documents...
+              </p>
             </div>
           ) : receipts.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
               <p>No unattached documents available</p>
-              <p className="text-sm mt-1">Upload documents first or check the Documents center</p>
+              <p className="text-sm mt-1">
+                Upload documents first or check the Documents center
+              </p>
             </div>
           ) : (
             receipts.map((receipt) => (
@@ -129,7 +146,7 @@ export const AttachDocumentDialog = ({ invoiceId, open, onOpenChange, onAttached
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary" className="text-xs">
-                      {receipt.document_type.replace(/_/g, ' ')}
+                      {receipt.document_type.replace(/_/g, " ")}
                     </Badge>
                   </div>
                   {receipt.description && (
@@ -153,7 +170,9 @@ export const AttachDocumentDialog = ({ invoiceId, open, onOpenChange, onAttached
             onClick={handleAttach}
             disabled={attaching || selectedIds.length === 0}
           >
-            {attaching ? "Attaching..." : `Attach ${selectedIds.length > 0 ? `(${selectedIds.length})` : ''}`}
+            {attaching
+              ? "Attaching..."
+              : `Attach ${selectedIds.length > 0 ? `(${selectedIds.length})` : ""}`}
           </Button>
         </div>
       </DialogContent>
