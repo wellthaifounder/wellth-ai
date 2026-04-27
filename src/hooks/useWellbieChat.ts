@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { streamWellbieChat } from "@/utils/wellbieChatStream";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { logError } from "@/utils/errorHandler";
 
 type Message = { role: "user" | "assistant"; content: string };
@@ -39,7 +39,6 @@ export const useWellbieChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const location = useLocation();
-  const { toast } = useToast();
 
   const loadConversations = useCallback(async () => {
     const { data, error } = await supabase
@@ -92,10 +91,7 @@ export const useWellbieChat = () => {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      toast({
-        title: "Please sign in to save conversations",
-        variant: "destructive",
-      });
+      toast.error("Please sign in to save conversations");
       return null;
     }
 
@@ -240,10 +236,7 @@ export const useWellbieChat = () => {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        toast({
-          title: "Please sign in to use Wellbie",
-          variant: "destructive",
-        });
+        toast.error("Please sign in to use Wellbie");
         return;
       }
 

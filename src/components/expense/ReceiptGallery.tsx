@@ -19,7 +19,7 @@ import {
   Pencil,
   Check,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface Receipt {
   id: string;
@@ -75,7 +75,6 @@ export function ReceiptGallery({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
-  const { toast } = useToast();
 
   const handleView = async (receipt: Receipt) => {
     try {
@@ -89,10 +88,8 @@ export function ReceiptGallery({
       setSelectedReceipt(receipt);
     } catch (error) {
       logError("Error viewing receipt", error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to load receipt for viewing",
-        variant: "destructive",
       });
     }
   };
@@ -115,16 +112,13 @@ export function ReceiptGallery({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast({
-        title: "Success",
+      toast.success("Success", {
         description: "Receipt downloaded successfully",
       });
     } catch (error) {
       logError("Error downloading receipt", error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to download receipt",
-        variant: "destructive",
       });
     }
   };
@@ -138,14 +132,12 @@ export function ReceiptGallery({
 
       if (error) throw error;
 
-      toast({ title: "Success", description: "Receipt deleted successfully" });
+      toast.success("Success", { description: "Receipt deleted successfully" });
       onReceiptDeleted?.();
     } catch (error) {
       logError("Error deleting receipt", error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to delete receipt",
-        variant: "destructive",
       });
     }
   };
@@ -170,16 +162,14 @@ export function ReceiptGallery({
 
       if (error) throw error;
 
-      toast({ title: "Saved", description: "Document name updated" });
+      toast.success("Saved", { description: "Document name updated" });
       setEditingId(null);
       setEditingName("");
       onReceiptUpdated?.();
     } catch (error) {
       logError("Error updating receipt name", error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to update document name",
-        variant: "destructive",
       });
     } finally {
       setSavingId(null);

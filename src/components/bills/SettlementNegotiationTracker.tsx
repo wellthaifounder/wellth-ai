@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2, Plus, TrendingDown } from "lucide-react";
 import { logError } from "@/utils/errorHandler";
 import { format } from "date-fns";
@@ -39,7 +39,6 @@ export const SettlementNegotiationTracker = ({
   const [offerType, setOfferType] = useState<"offer" | "counter_offer">(
     "offer",
   );
-  const { toast } = useToast();
 
   const loadSettlements = async () => {
     setIsLoading(true);
@@ -69,10 +68,8 @@ export const SettlementNegotiationTracker = ({
 
       setSettlements(parsedSettlements);
     } catch (error: any) {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to load settlement history",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -81,10 +78,8 @@ export const SettlementNegotiationTracker = ({
 
   const handleAddSettlement = async () => {
     if (!newAmount || parseFloat(newAmount) <= 0) {
-      toast({
-        title: "Invalid Amount",
+      toast.error("Invalid Amount", {
         description: "Please enter a valid settlement amount.",
-        variant: "destructive",
       });
       return;
     }
@@ -121,8 +116,7 @@ export const SettlementNegotiationTracker = ({
         }
       }
 
-      toast({
-        title: "Success",
+      toast.success("Success", {
         description: `${offerType === "offer" ? "Offer" : "Counter offer"} recorded successfully.`,
       });
 
@@ -131,13 +125,11 @@ export const SettlementNegotiationTracker = ({
       loadSettlements();
     } catch (error) {
       logError("Error adding settlement", error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description:
           error instanceof Error
             ? error.message
             : "Failed to record settlement. Please try again.",
-        variant: "destructive",
       });
     } finally {
       setIsAdding(false);

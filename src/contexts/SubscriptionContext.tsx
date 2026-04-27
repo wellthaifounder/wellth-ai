@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { safeLog, logError } from "@/utils/errorHandler";
 
 type SubscriptionTier = "free" | "plus" | "premium";
@@ -29,7 +29,6 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   const refreshSubscription = async () => {
     try {
@@ -81,10 +80,8 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     } catch (error) {
       safeLog("Error creating checkout session", error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to start checkout. Please try again.",
-        variant: "destructive",
       });
     }
   };
@@ -101,10 +98,8 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     } catch (error) {
       logError("Error opening customer portal", error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to open billing portal. Please try again.",
-        variant: "destructive",
       });
     }
   };
