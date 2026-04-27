@@ -172,16 +172,16 @@ serve(async (req) => {
 
 ## Secrets & Key Management
 
-| Secret                          | Where it lives                 | Notes                                  |
-| ------------------------------- | ------------------------------ | -------------------------------------- |
-| `VITE_SUPABASE_URL`             | Vercel env vars                | Public — safe to expose                |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Vercel env vars                | Anon key — safe to expose              |
-| `VITE_STRIPE_PUBLISHABLE_KEY`   | Vercel env vars                | Publishable key — safe to expose       |
-| `STRIPE_SECRET_KEY`             | Supabase Edge Function Secrets | Never in frontend or Vercel            |
-| `PLAID_CLIENT_ID`               | Supabase Edge Function Secrets | Never in frontend                      |
-| `PLAID_SECRET`                  | Supabase Edge Function Secrets | Never in frontend                      |
-| `PLAID_ENCRYPTION_KEY`          | Supabase Edge Function Secrets | 32-byte hex key; rotate on compromise  |
-| `SUPABASE_SERVICE_ROLE_KEY`     | Auto-injected by Supabase      | Never commit; never expose to frontend |
+| Secret                          | Where it lives                 | Notes                                            |
+| ------------------------------- | ------------------------------ | ------------------------------------------------ |
+| `VITE_SUPABASE_URL`             | Vercel env vars                | Public — safe to expose                          |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Vercel env vars                | Anon key — safe to expose                        |
+| `VITE_STRIPE_PUBLISHABLE_KEY`   | Vercel env vars                | Publishable key — safe to expose                 |
+| `STRIPE_SECRET_KEY`             | Supabase Edge Function Secrets | Never in frontend or Vercel                      |
+| `PLAID_CLIENT_ID`               | Supabase Edge Function Secrets | Never in frontend                                |
+| `PLAID_SECRET`                  | Supabase Edge Function Secrets | Never in frontend                                |
+| `PLAID_ENCRYPTION_KEY`          | Supabase Edge Function Secrets | Base64-encoded 32-byte key; rotate on compromise |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Auto-injected by Supabase      | Never commit; never expose to frontend           |
 
 **Rotation schedule:** Rotate all API keys every 90 days. Rotate immediately on suspected compromise.
 
@@ -386,6 +386,11 @@ Check subscription with `useSubscription()` hook from `src/contexts/Subscription
 **Issue:** All edge functions had `CORS: Deno.env.get('ALLOWED_ORIGIN') || 'https://wellth.ai'` — a static string fallback. The live site is `https://www.wellth-ai.app` (different origin), causing CORS failures on all edge function calls.
 **Fix:** Use `getCorsHeaders(req.headers.get('origin'))` with a whitelist array containing both `https://wellth-ai.app` and `https://www.wellth-ai.app`. See the canonical edge function template above.
 
+### 2026-04-24
+
+**Issue:** The Plaid token-encryption migration (`20251202201215_encrypt_plaid_tokens.sql`) added `encrypted_access_token` but deferred dropping the legacy `access_token NOT NULL` column to a follow-up migration that was never written. First Plaid Link attempt in a fresh sandbox failed with `null value in column "access_token" violates not-null constraint`.
+**Fix:** Wrote `20260424120000_drop_legacy_plaid_access_token.sql` to drop the legacy column and set `encrypted_access_token NOT NULL`. **Rule:** never split mandatory schema cleanup into "MANUAL STEPS REQUIRED" comments inside a migration. Either include the cleanup in the same migration (when no data needs back-filling) or write the follow-up migration immediately and commit both together. Comment-driven manual steps get forgotten.
+
 ---
 
-_Last updated: 2026-03-24_
+_Last updated: 2026-04-24_

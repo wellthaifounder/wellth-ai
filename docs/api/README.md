@@ -15,25 +15,24 @@ Wellth.ai uses **17 serverless edge functions** deployed on Supabase (Deno runti
 
 ## Quick Reference
 
-| Function                                                | Method | Purpose                         | Auth Required |
-| ------------------------------------------------------- | ------ | ------------------------------- | ------------- |
-| [analyze-medical-bill](#analyze-medical-bill)           | POST   | AI bill error detection         | Yes           |
-| [check-subscription](#check-subscription)               | POST   | Verify subscription status      | Yes           |
-| [create-checkout](#create-checkout)                     | POST   | Create Stripe checkout          | Yes           |
-| [create-tripwire-checkout](#create-tripwire-checkout)   | POST   | Tripwire offer checkout         | Yes           |
-| [customer-portal](#customer-portal)                     | POST   | Stripe customer portal          | Yes           |
-| [get-checkout-session](#get-checkout-session)           | POST   | Retrieve checkout session       | Yes           |
-| [migrate-encrypt-tokens](#migrate-encrypt-tokens)       | POST   | Encrypt Plaid tokens (one-time) | Admin         |
-| [plaid-create-link-token](#plaid-create-link-token)     | POST   | Generate Plaid Link token       | Yes           |
-| [plaid-exchange-token](#plaid-exchange-token)           | POST   | Exchange Plaid token            | Yes           |
-| [plaid-sync-transactions](#plaid-sync-transactions)     | POST   | Sync bank transactions          | Yes           |
-| [process-receipt-ocr](#process-receipt-ocr)             | POST   | Extract receipt data            | Yes           |
-| [redact-phi](#redact-phi)                               | POST   | Redact PHI from text            | Yes           |
-| [send-dispute-notification](#send-dispute-notification) | POST   | Send dispute emails             | Yes           |
-| [send-nurture-email](#send-nurture-email)               | POST   | Send marketing email            | Yes           |
-| [sync-npi-data](#sync-npi-data)                         | POST   | Sync NPI provider data          | Admin         |
-| [sync-provider-data](#sync-provider-data)               | POST   | Sync provider database          | Admin         |
-| [wellbie-chat](#wellbie-chat)                           | POST   | AI chat assistant               | Yes           |
+| Function                                                | Method | Purpose                    | Auth Required |
+| ------------------------------------------------------- | ------ | -------------------------- | ------------- |
+| [analyze-medical-bill](#analyze-medical-bill)           | POST   | AI bill error detection    | Yes           |
+| [check-subscription](#check-subscription)               | POST   | Verify subscription status | Yes           |
+| [create-checkout](#create-checkout)                     | POST   | Create Stripe checkout     | Yes           |
+| [create-tripwire-checkout](#create-tripwire-checkout)   | POST   | Tripwire offer checkout    | Yes           |
+| [customer-portal](#customer-portal)                     | POST   | Stripe customer portal     | Yes           |
+| [get-checkout-session](#get-checkout-session)           | POST   | Retrieve checkout session  | Yes           |
+| [plaid-create-link-token](#plaid-create-link-token)     | POST   | Generate Plaid Link token  | Yes           |
+| [plaid-exchange-token](#plaid-exchange-token)           | POST   | Exchange Plaid token       | Yes           |
+| [plaid-sync-transactions](#plaid-sync-transactions)     | POST   | Sync bank transactions     | Yes           |
+| [process-receipt-ocr](#process-receipt-ocr)             | POST   | Extract receipt data       | Yes           |
+| [redact-phi](#redact-phi)                               | POST   | Redact PHI from text       | Yes           |
+| [send-dispute-notification](#send-dispute-notification) | POST   | Send dispute emails        | Yes           |
+| [send-nurture-email](#send-nurture-email)               | POST   | Send marketing email       | Yes           |
+| [sync-npi-data](#sync-npi-data)                         | POST   | Sync NPI provider data     | Admin         |
+| [sync-provider-data](#sync-provider-data)               | POST   | Sync provider database     | Admin         |
+| [wellbie-chat](#wellbie-chat)                           | POST   | AI chat assistant          | Yes           |
 
 ## Functions by Category
 
@@ -236,23 +235,6 @@ Wellth.ai uses **17 serverless edge functions** deployed on Supabase (Deno runti
 - Addresses
 
 **[View detailed documentation →](edge-functions/redact-phi.md)** _(coming soon)_
-
----
-
-#### migrate-encrypt-tokens
-
-**Purpose:** One-time migration of plaintext Plaid tokens to encrypted
-
-**Description:** Admin-only function that encrypts existing plaintext Plaid access tokens. Requires `MIGRATION_ADMIN_KEY` to execute.
-
-**Use Cases:**
-
-- Initial migration to encrypted tokens
-- Security upgrade
-
-**Security:** Admin key should be removed after migration complete
-
-**[View detailed documentation →](edge-functions/migrate-encrypt-tokens.md)** _(coming soon)_
 
 ---
 

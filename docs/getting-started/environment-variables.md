@@ -219,35 +219,9 @@ openssl rand -base64 32
 
 **Used by:**
 
-- `plaid-exchange-token` - Encrypts new Plaid tokens
-- `plaid-sync-transactions` - Decrypts tokens for API calls
-
----
-
-#### `MIGRATION_ADMIN_KEY` (Temporary)
-
-**Description:** One-time admin key for migrating plaintext tokens to encrypted
-**Format:** Base64-encoded 32-byte key
-**Example:** `f6AJDVZV6vgM4RXEcy/2RRwLdNndA3lGSO95oTX0Lbg=`
-
-**Used by:** `migrate-encrypt-tokens` edge function (one-time use)
-
-**Generate:**
-
-```bash
-openssl rand -base64 32
-```
-
-**Lifecycle:**
-
-1. Set before running migration
-2. Run `migrate-encrypt-tokens` function once
-3. **Delete after 30 days** (when confident migration succeeded)
-
-```bash
-# Remove after migration complete
-npx supabase secrets unset MIGRATION_ADMIN_KEY
-```
+- `plaid-exchange-token` - Encrypts new Plaid tokens on initial connection
+- `plaid-sync-transactions` - Decrypts tokens for transaction sync API calls
+- `delete-user-account` - Decrypts tokens to revoke Plaid items on account deletion
 
 ---
 

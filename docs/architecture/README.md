@@ -246,7 +246,6 @@ See [Authentication Flow](#authentication-flow) below.
 **Security:**
 
 - `redact-phi` - PHI redaction (pattern + AI)
-- `migrate-encrypt-tokens` - One-time token encryption
 
 **Notifications:**
 
