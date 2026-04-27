@@ -39,6 +39,8 @@ interface Transaction {
 interface LinkedTransaction extends Transaction {
   payment_transaction_id: string;
   payment_source: string;
+  auto_linked?: boolean;
+  match_confidence?: number;
 }
 
 interface Invoice {
@@ -100,6 +102,8 @@ export function LinkTransactionDialog({
           id,
           transaction_id,
           payment_source,
+          auto_linked,
+          match_confidence,
           transactions (
             id,
             transaction_date,
@@ -126,6 +130,8 @@ export function LinkTransactionDialog({
           ...(pt.transactions as Transaction),
           payment_transaction_id: pt.id,
           payment_source: pt.payment_source,
+          auto_linked: pt.auto_linked,
+          match_confidence: pt.match_confidence,
         }));
 
       // Fetch all linked transaction IDs to exclude from unlinked list
@@ -230,6 +236,29 @@ export function LinkTransactionDialog({
           .eq("id", transaction.id);
 
         if (transactionError) throw transactionError;
+
+        // Learn vendor alias if names differ
+        const txnVendor = (transaction.vendor || transaction.description || "")
+          .toLowerCase()
+          .trim();
+        const invVendor = invoice.vendor.toLowerCase().trim();
+        if (
+          txnVendor &&
+          invVendor &&
+          txnVendor !== invVendor &&
+          !txnVendor.includes(invVendor) &&
+          !invVendor.includes(txnVendor)
+        ) {
+          await supabase.from("vendor_aliases").upsert(
+            {
+              user_id: user.id,
+              canonical_vendor: invoice.vendor,
+              alias: transaction.vendor || transaction.description,
+              source: "learned",
+            },
+            { onConflict: "user_id,canonical_vendor,alias" },
+          );
+        }
 
         toast.success("Transaction linked to bill");
       }
@@ -449,9 +478,21 @@ export function LinkTransactionDialog({
                             </p>
                             {isLinked && (
                               <>
-                                <Badge variant="outline" className="text-xs">
-                                  Linked
-                                </Badge>
+                                {transaction.auto_linked ? (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/20"
+                                  >
+                                    Auto-matched
+                                    {transaction.match_confidence
+                                      ? ` (${Math.round(transaction.match_confidence * 100)}%)`
+                                      : ""}
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="text-xs">
+                                    Linked
+                                  </Badge>
+                                )}
                                 {transaction.payment_source === "hsa" && (
                                   <Badge variant="success" className="text-xs">
                                     Paid via HSA

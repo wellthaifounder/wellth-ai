@@ -11,6 +11,7 @@ interface OnboardingState {
   hasSeenProviderDirectory: boolean;
   hasSeenHSAFeatures: boolean;
   hasSeenTransactions: boolean;
+  hasSeenLedgerWorkflow: boolean;
   hasCompletedOnboarding: boolean;
 }
 
@@ -29,6 +30,7 @@ const defaultState: OnboardingState = {
   hasSeenProviderDirectory: false,
   hasSeenHSAFeatures: false,
   hasSeenTransactions: false,
+  hasSeenLedgerWorkflow: false,
   hasCompletedOnboarding: false,
 };
 

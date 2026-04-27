@@ -18,14 +18,21 @@ import { Plus, Loader2, FileText, Search } from "lucide-react";
 import { toast } from "sonner";
 import {
   calculateHSAEligibility,
+  getPaymentStatusBadge,
   type PaymentTransaction,
 } from "@/lib/hsaCalculations";
+import { Link } from "react-router-dom";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { logError } from "@/utils/errorHandler";
 import { BillsHeroMetrics } from "@/components/bills/BillsHeroMetrics";
+import { useOnboarding } from "@/contexts/OnboardingContext";
 // Bill review feature archived
 // import { BillReviewCard } from "@/components/bills/BillReviewCard";
 // import { DisputeAnalyticsDashboard } from "@/components/bills/DisputeAnalyticsDashboard";
+
+interface BillPaymentTransaction extends PaymentTransaction {
+  auto_linked?: boolean;
+}
 
 interface Bill {
   id: string;
@@ -35,11 +42,12 @@ interface Bill {
   amount: number;
   total_amount?: number;
   is_hsa_eligible: boolean;
-  payment_transactions: PaymentTransaction[];
+  payment_transactions: BillPaymentTransaction[];
 }
 
 const Bills = () => {
   const navigate = useNavigate();
+  const { hasSeenLedgerWorkflow } = useOnboarding();
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
@@ -71,7 +79,8 @@ const Bills = () => {
             amount,
             payment_source,
             is_reimbursed,
-            reimbursed_date
+            reimbursed_date,
+            auto_linked
           )
         `,
         )
@@ -212,6 +221,20 @@ const Bills = () => {
           </Button>
         </div>
 
+        {/* Ledger nudge for new users */}
+        {!hasSeenLedgerWorkflow && (
+          <p className="text-sm text-muted-foreground">
+            After uploading, head to the{" "}
+            <Link
+              to="/ledger"
+              className="text-primary underline underline-offset-4 hover:text-primary/80"
+            >
+              Ledger
+            </Link>{" "}
+            to classify and organize your bills.
+          </p>
+        )}
+
         {/* Hero Metrics */}
         <BillsHeroMetrics
           totalBilled={aggregateStats.totalInvoiced}
@@ -338,11 +361,40 @@ const Bills = () => {
                           <p className="font-semibold">
                             ${Number(bill.amount).toFixed(2)}
                           </p>
-                          {bill.is_hsa_eligible && (
-                            <Badge variant="secondary" className="mt-1">
-                              HSA Eligible
-                            </Badge>
-                          )}
+                          <div className="flex items-center gap-1 justify-end mt-1">
+                            {(() => {
+                              const breakdown = calculateHSAEligibility(
+                                bill,
+                                bill.payment_transactions || [],
+                              );
+                              const badge = getPaymentStatusBadge(
+                                breakdown.totalInvoiced,
+                                breakdown.paidViaHSA,
+                                breakdown.paidViaOther,
+                              );
+                              return (
+                                <Badge
+                                  variant="outline"
+                                  className={badge.color}
+                                >
+                                  {badge.status}
+                                </Badge>
+                              );
+                            })()}
+                            {bill.payment_transactions?.some(
+                              (pt) => pt.auto_linked,
+                            ) && (
+                              <Badge
+                                variant="outline"
+                                className="bg-blue-500/10 text-blue-600 border-blue-500/20"
+                              >
+                                Auto-matched
+                              </Badge>
+                            )}
+                            {bill.is_hsa_eligible && (
+                              <Badge variant="secondary">HSA Eligible</Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>

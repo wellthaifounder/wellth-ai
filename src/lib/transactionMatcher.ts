@@ -23,11 +23,44 @@ export interface Invoice {
   invoice_date?: string;
 }
 
+export interface VendorAlias {
+  canonical_vendor: string;
+  alias: string;
+}
+
 export interface MatchSuggestion {
   type: "link_to_invoice" | "mark_medical" | "not_medical" | "skip";
   confidence: number;
   reason: string;
   invoice?: Invoice;
+}
+
+/** Auto-link tier thresholds */
+export const MATCH_TIER = {
+  /** Auto-link without user action */
+  AUTO_LINK: 0.9,
+  /** Show as suggested match (one-click confirm) */
+  SUGGEST: 0.7,
+  /** Below this = exception requiring manual resolution */
+  EXCEPTION: 0.7,
+} as const;
+
+export type MatchTier = "auto_link" | "suggest" | "exception" | "no_match";
+
+export interface TieredMatch {
+  invoice: Invoice;
+  confidence: number;
+  tier: MatchTier;
+  reason: string;
+}
+
+/**
+ * Classify a confidence score into a match tier
+ */
+export function getMatchTier(confidence: number): MatchTier {
+  if (confidence >= MATCH_TIER.AUTO_LINK) return "auto_link";
+  if (confidence >= MATCH_TIER.SUGGEST) return "suggest";
+  return "exception";
 }
 
 /**
@@ -78,11 +111,42 @@ function datesMatch(date1: string, date2: string, daysRange = 7): boolean {
 }
 
 /**
+ * Check vendor match including aliases.
+ * Returns 1.0 for exact/alias match, otherwise falls back to string similarity.
+ */
+function vendorMatchScore(
+  transactionVendor: string,
+  invoiceVendor: string,
+  aliases: VendorAlias[] = [],
+): number {
+  const txnVendor = (transactionVendor || "").toLowerCase().trim();
+  const invVendor = invoiceVendor.toLowerCase().trim();
+
+  // Direct match
+  if (txnVendor === invVendor) return 1.0;
+
+  // Check aliases: does the transaction vendor match a known alias for this invoice vendor?
+  for (const alias of aliases) {
+    const canonical = alias.canonical_vendor.toLowerCase().trim();
+    const aliasText = alias.alias.toLowerCase().trim();
+    if (
+      (invVendor.includes(canonical) || canonical.includes(invVendor)) &&
+      (txnVendor.includes(aliasText) || aliasText.includes(txnVendor))
+    ) {
+      return 1.0;
+    }
+  }
+
+  return stringSimilarity(txnVendor, invVendor);
+}
+
+/**
  * Find best matching invoice for a transaction
  */
 export function findMatchingInvoice(
   transaction: Transaction,
   invoices: Invoice[],
+  aliases: VendorAlias[] = [],
 ): { invoice: Invoice; confidence: number } | null {
   if (!invoices || invoices.length === 0) return null;
 
@@ -91,12 +155,13 @@ export function findMatchingInvoice(
   for (const invoice of invoices) {
     let confidence = 0;
 
-    // Check vendor similarity
-    const vendorSimilarity = stringSimilarity(
+    // Check vendor similarity (with alias support)
+    const vendorScore = vendorMatchScore(
       transaction.vendor || transaction.description,
       invoice.vendor,
+      aliases,
     );
-    confidence += vendorSimilarity * 0.4;
+    confidence += vendorScore * 0.4;
 
     // Check amount match
     if (amountsMatch(transaction.amount, invoice.amount)) {
@@ -116,6 +181,34 @@ export function findMatchingInvoice(
   }
 
   return bestMatch;
+}
+
+/**
+ * Find best matching invoice with tier classification.
+ * Used by the auto-linking pipeline.
+ */
+export function findTieredMatch(
+  transaction: Transaction,
+  invoices: Invoice[],
+  aliases: VendorAlias[] = [],
+): TieredMatch | null {
+  const match = findMatchingInvoice(transaction, invoices, aliases);
+  if (!match) return null;
+
+  const tier = getMatchTier(match.confidence);
+  const tierLabels: Record<MatchTier, string> = {
+    auto_link: "Auto-linked",
+    suggest: "Suggested match",
+    exception: "Needs review",
+    no_match: "No match",
+  };
+
+  return {
+    invoice: match.invoice,
+    confidence: match.confidence,
+    tier,
+    reason: `${tierLabels[tier]}: ${match.invoice.vendor} $${match.invoice.amount} (${Math.round(match.confidence * 100)}% confidence)`,
+  };
 }
 
 /**

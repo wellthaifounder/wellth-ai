@@ -251,12 +251,19 @@ serve(async (req) => {
       .select("vendor_pattern, is_medical")
       .eq("user_id", user.id);
 
-    // Get user's invoices for matching
+    // Get user's invoices for matching (exclude fully paid)
     const { data: userInvoices } = await supabase
       .from("invoices")
-      .select("id, vendor, amount, date, invoice_date")
+      .select("id, vendor, amount, date, invoice_date, status")
       .eq("user_id", user.id)
-      .eq("is_reimbursed", false);
+      .eq("is_reimbursed", false)
+      .in("status", ["unpaid", "partially_paid"]);
+
+    // Get user's vendor aliases for smarter matching
+    const { data: vendorAliases } = await supabase
+      .from("vendor_aliases")
+      .select("canonical_vendor, alias")
+      .eq("user_id", user.id);
 
     // Process and store transactions
     const transactionsToInsert = transactionsData.transactions.map(
@@ -322,6 +329,170 @@ serve(async (req) => {
 
       console.log("Successfully inserted transactions:", inserted?.length || 0);
 
+      // ── Auto-linking pipeline ─────────────────────────────────────────
+      const matchStartTime = Date.now();
+      let autoLinkedCount = 0;
+      let suggestedCount = 0;
+      let exceptionCount = 0;
+
+      const medicalTransactions = (inserted || []).filter(
+        (t: any) =>
+          t.is_medical && t.reconciliation_status !== "linked_to_invoice",
+      );
+
+      if (
+        medicalTransactions.length > 0 &&
+        userInvoices &&
+        userInvoices.length > 0
+      ) {
+        const aliases = vendorAliases || [];
+
+        for (const txn of medicalTransactions) {
+          const txnVendor = (txn.vendor || txn.description || "")
+            .toLowerCase()
+            .trim();
+          let bestMatch: { invoiceId: string; confidence: number } | null =
+            null;
+
+          for (const invoice of userInvoices) {
+            let confidence = 0;
+            const invVendor = invoice.vendor.toLowerCase().trim();
+
+            // Vendor match (40% weight) — check direct match, aliases, then fuzzy
+            let vendorScore = 0;
+            if (txnVendor === invVendor) {
+              vendorScore = 1.0;
+            } else if (
+              txnVendor.includes(invVendor) ||
+              invVendor.includes(txnVendor)
+            ) {
+              vendorScore = 0.8;
+            } else {
+              // Check aliases
+              const aliasMatch = aliases.some((a) => {
+                const canonical = a.canonical_vendor.toLowerCase().trim();
+                const aliasText = a.alias.toLowerCase().trim();
+                return (
+                  (invVendor.includes(canonical) ||
+                    canonical.includes(invVendor)) &&
+                  (txnVendor.includes(aliasText) ||
+                    aliasText.includes(txnVendor))
+                );
+              });
+              if (aliasMatch) vendorScore = 1.0;
+            }
+            confidence += vendorScore * 0.4;
+
+            // Amount match (40% weight) — within 2% tolerance
+            const amountDiff = Math.abs(txn.amount - Number(invoice.amount));
+            const avgAmount = (txn.amount + Number(invoice.amount)) / 2;
+            if (avgAmount > 0 && amountDiff <= avgAmount * 0.02) {
+              confidence += 0.4;
+            }
+
+            // Date proximity (20% weight) — within 3 days for auto-link tier
+            const invoiceDate = invoice.invoice_date || invoice.date;
+            if (invoiceDate) {
+              const txnDate = new Date(txn.transaction_date);
+              const invDate = new Date(invoiceDate);
+              const daysDiff = Math.abs(
+                (txnDate.getTime() - invDate.getTime()) / (1000 * 60 * 60 * 24),
+              );
+              if (daysDiff <= 3) {
+                confidence += 0.2;
+              } else if (daysDiff <= 7) {
+                confidence += 0.1;
+              }
+            }
+
+            if (
+              confidence > 0.5 &&
+              (!bestMatch || confidence > bestMatch.confidence)
+            ) {
+              bestMatch = { invoiceId: invoice.id, confidence };
+            }
+          }
+
+          if (!bestMatch) {
+            exceptionCount++;
+            continue;
+          }
+
+          // Tier 1: Auto-link (confidence >= 0.9)
+          if (bestMatch.confidence >= 0.9) {
+            const { error: paymentError } = await supabase
+              .from("payment_transactions")
+              .insert({
+                invoice_id: bestMatch.invoiceId,
+                transaction_id: txn.id,
+                user_id: user.id,
+                payment_date: txn.transaction_date,
+                amount: txn.amount,
+                payment_source: "out_of_pocket",
+                auto_linked: true,
+                auto_linked_at: new Date().toISOString(),
+                match_confidence: bestMatch.confidence,
+                notes: `Auto-linked from Plaid sync (${Math.round(bestMatch.confidence * 100)}% confidence)`,
+              });
+
+            if (!paymentError) {
+              await supabase
+                .from("transactions")
+                .update({
+                  invoice_id: bestMatch.invoiceId,
+                  reconciliation_status: "linked_to_invoice",
+                })
+                .eq("id", txn.id);
+
+              autoLinkedCount++;
+              // Remove invoice from candidates so it doesn't get double-linked
+              const invoiceIdx = userInvoices.findIndex(
+                (i) => i.id === bestMatch!.invoiceId,
+              );
+              if (invoiceIdx !== -1) userInvoices.splice(invoiceIdx, 1);
+            } else {
+              console.error(
+                `[${requestId}] Auto-link failed for txn ${txn.id}:`,
+                paymentError.message,
+              );
+              exceptionCount++;
+            }
+          }
+          // Tier 2: Suggested match (0.7–0.9) — store suggestion, don't auto-link
+          else if (bestMatch.confidence >= 0.7) {
+            await supabase.from("transaction_invoice_suggestions").upsert(
+              {
+                transaction_id: txn.id,
+                invoice_id: bestMatch.invoiceId,
+                confidence_score: Math.round(bestMatch.confidence * 100),
+                match_reason: `Vendor + amount + date match (${Math.round(bestMatch.confidence * 100)}%)`,
+              },
+              { onConflict: "transaction_id,invoice_id" },
+            );
+            suggestedCount++;
+          }
+          // Tier 3: Exception — below threshold
+          else {
+            exceptionCount++;
+          }
+        }
+
+        console.log(
+          `[${requestId}] Auto-matching: ${autoLinkedCount} auto-linked, ${suggestedCount} suggested, ${exceptionCount} exceptions`,
+        );
+      }
+
+      // Log matching run for observability
+      await supabase.from("matching_run_log").insert({
+        user_id: user.id,
+        trigger_source: "plaid_sync",
+        transactions_processed: medicalTransactions.length,
+        auto_linked_count: autoLinkedCount,
+        suggested_count: suggestedCount,
+        exception_count: exceptionCount,
+        duration_ms: Date.now() - matchStartTime,
+      });
+
       // Update last sync time
       await supabase
         .from("plaid_connections")
@@ -335,6 +506,8 @@ serve(async (req) => {
           inserted: inserted?.length || 0,
           medical_detected:
             inserted?.filter((t: any) => t.is_medical).length || 0,
+          auto_linked: autoLinkedCount,
+          suggested_matches: suggestedCount,
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
