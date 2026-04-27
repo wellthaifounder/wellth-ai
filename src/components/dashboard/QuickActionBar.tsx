@@ -1,7 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { CreditCard, DollarSign, Upload, PlusCircle } from "lucide-react";
+import {
+  CreditCard,
+  DollarSign,
+  Upload,
+  PlusCircle,
+  LayoutList,
+} from "lucide-react";
 
 interface QuickActionBarProps {
   hasHSA: boolean;
@@ -21,7 +27,16 @@ export function QuickActionBar({
       <h3 className="text-sm font-semibold mb-3 text-muted-foreground">
         Quick Actions
       </h3>
-      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        <Button
+          variant="outline"
+          className="h-auto min-h-[44px] py-3 flex-col gap-1"
+          onClick={() => navigate("/ledger")}
+        >
+          <LayoutList className="h-5 w-5" />
+          <span className="text-xs">Open Ledger</span>
+        </Button>
+
         <Button
           variant="outline"
           className="h-auto min-h-[44px] py-3 flex-col gap-1"

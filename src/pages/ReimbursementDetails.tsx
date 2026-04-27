@@ -10,7 +10,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { WellthLogo } from "@/components/WellthLogo";
-import { ArrowLeft, Download, Mail, FileText } from "lucide-react";
+import { Download, Mail, FileText } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { toast } from "sonner";
 import { generateReimbursementPDF } from "@/lib/pdfGenerator";
 import {
@@ -210,19 +218,26 @@ const ReimbursementDetails = () => {
           >
             <WellthLogo size="sm" showTagline />
           </button>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate("/dashboard")}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
         </div>
       </nav>
 
       <main className="container mx-auto px-4 py-8">
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink
+                onClick={() => navigate("/reimbursement-requests")}
+                className="cursor-pointer"
+              >
+                HSA Claims
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Request Details</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2">
             Reimbursement Request Details

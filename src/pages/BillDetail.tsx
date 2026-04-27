@@ -12,9 +12,16 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
   FileText,
   AlertTriangle,
   CreditCard,
@@ -321,12 +328,24 @@ export default function BillDetail() {
   return (
     <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 max-w-6xl">
-        <div className="mb-6">
-          <Button variant="ghost" onClick={() => navigate("/bills")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Bills
-          </Button>
-        </div>
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink
+                onClick={() => navigate("/bills")}
+                className="cursor-pointer"
+              >
+                Bills
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="truncate max-w-[260px]">
+                {isNewBill ? "Add New Bill" : bill?.vendor || "Bill Details"}
+              </BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">

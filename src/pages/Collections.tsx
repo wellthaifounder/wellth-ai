@@ -288,14 +288,23 @@ export default function Collections() {
           <Card className="p-8 text-center">
             <FolderOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Care Events Yet</h3>
-            <p className="text-muted-foreground mb-4">
-              Create a care event to start grouping your medical expenses by
-              episode of care
+            <p className="text-muted-foreground mb-4 max-w-md mx-auto">
+              Care events help you group related medical bills — like all visits
+              to the same provider or a single episode of care.
             </p>
-            <Button onClick={() => navigate("/collections/new")}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Care Event
-            </Button>
+            <div className="flex items-center justify-center gap-3">
+              <Button variant="outline" onClick={() => navigate("/ledger")}>
+                Go to Ledger
+              </Button>
+              <Button onClick={() => navigate("/collections/new")}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Care Event
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-4">
+              Tip: Select bills on the Ledger page and click "Group as Care
+              Event" to create one.
+            </p>
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
