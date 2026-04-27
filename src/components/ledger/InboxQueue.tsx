@@ -385,8 +385,21 @@ export function InboxQueue() {
     onToggleExpand: () => setExpanded((prev) => !prev),
   });
 
-  if (isLoading || items.length === 0) {
+  if (isLoading) {
     return null;
+  }
+
+  if (items.length === 0) {
+    return (
+      <Card className="border-green-500/20 bg-green-500/5">
+        <div className="flex items-center gap-2 px-4 py-3">
+          <CheckCircle2 className="h-4 w-4 text-green-600" />
+          <span className="text-sm text-muted-foreground">
+            Inbox clear — no items need your attention
+          </span>
+        </div>
+      </Card>
+    );
   }
 
   const selectedItems = items.filter((i) => selectedIds.has(i.id));

@@ -17,14 +17,17 @@ import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useHSA } from "@/contexts/HSAContext";
 import { useOnboarding } from "@/contexts/OnboardingContext";
-import { WelcomeDialog } from "@/components/onboarding/WelcomeDialog";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { QuickActionBar } from "@/components/dashboard/QuickActionBar";
 import { TotalValueCard } from "@/components/dashboard/TotalValueCard";
 import { HSAHealthCheck } from "@/components/dashboard/HSAHealthCheck";
+import { AttentionBanner } from "@/components/dashboard/AttentionBanner";
+import { useAttentionItems } from "@/hooks/useAttentionItems";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { hasHSA, hsaOpenedDate, userIntent } = useHSA();
+  const attention = useAttentionItems();
 
   // Show HSA features if user selected HSA intent or actually has an HSA
   const showHSAFeatures =
@@ -273,18 +276,17 @@ const Dashboard = () => {
             <MissingHSADateBanner onDateSet={fetchStats} />
           )}
 
+          {!isNewUser && <AttentionBanner attention={attention} />}
+
           {isNewUser ? (
             <EmptyStateOnboarding projectedSavings={projectedSavings} />
           ) : (
             <>
-              <WelcomeDialog
+              <OnboardingWizard
                 open={showWelcome}
-                onClose={() => {
-                  setShowWelcome(false);
-                  onboarding.completeOnboarding();
+                onOpenChange={(open) => {
+                  if (!open) setShowWelcome(false);
                 }}
-                firstName={firstName}
-                hasHSA={hasHSA}
               />
 
               {/* Simplified Single-Page Dashboard */}

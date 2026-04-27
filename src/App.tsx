@@ -60,6 +60,7 @@ const NewCollection = lazy(() => import("./pages/NewCollection"));
 const UserReviews = lazy(() => import("./pages/UserReviews"));
 const AdminReviews = lazy(() => import("./pages/AdminReviews"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const Guide = lazy(() => import("./pages/Guide"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Loading fallback
@@ -444,6 +445,17 @@ const App = () => (
                           <ProtectedRoute>
                             <ErrorBoundary>
                               <Ledger />
+                            </ErrorBoundary>
+                          </ProtectedRoute>
+                        }
+                      />
+
+                      <Route
+                        path="/guide"
+                        element={
+                          <ProtectedRoute>
+                            <ErrorBoundary>
+                              <Guide />
                             </ErrorBoundary>
                           </ProtectedRoute>
                         }

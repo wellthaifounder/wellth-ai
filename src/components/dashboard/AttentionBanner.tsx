@@ -79,7 +79,7 @@ export function AttentionBanner({ attention }: AttentionBannerProps) {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => navigate("/transactions")}
+                  onClick={() => navigate("/ledger")}
                 >
                   Review
                 </Button>
@@ -95,7 +95,7 @@ export function AttentionBanner({ attention }: AttentionBannerProps) {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => navigate("/transactions")}
+                  onClick={() => navigate("/ledger")}
                 >
                   Link
                 </Button>
@@ -110,7 +110,7 @@ export function AttentionBanner({ attention }: AttentionBannerProps) {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => navigate("/bills")}
+                  onClick={() => navigate("/ledger")}
                 >
                   View
                 </Button>
@@ -125,7 +125,7 @@ export function AttentionBanner({ attention }: AttentionBannerProps) {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => navigate("/hsa-reimbursement")}
+                  onClick={() => navigate("/ledger")}
                 >
                   Claim
                 </Button>

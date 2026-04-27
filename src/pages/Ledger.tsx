@@ -28,6 +28,8 @@ import {
   FolderHeart,
   Sparkles,
   X,
+  Upload,
+  FileText,
 } from "lucide-react";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { logError } from "@/utils/errorHandler";
@@ -36,6 +38,9 @@ import { CreateCareEventDialog } from "@/components/ledger/CreateCareEventDialog
 import { ClaimHSADialog } from "@/components/ledger/ClaimHSADialog";
 import { useClusterSuggestions } from "@/hooks/useClusterSuggestions";
 import { useClaimableEvents } from "@/hooks/useClaimableEvents";
+import { WorkflowGuideBanner } from "@/components/ledger/WorkflowGuideBanner";
+import { FeatureTooltip } from "@/components/onboarding/FeatureTooltip";
+import { useOnboarding } from "@/contexts/OnboardingContext";
 
 interface LedgerEntry {
   invoice_id: string;
@@ -150,6 +155,9 @@ const Ledger = () => {
     null,
   );
   const [claimableDismissed, setClaimableDismissed] = useState(false);
+
+  const { hasSeenTransactions, markAsSeen } = useOnboarding();
+  const [inboxTooltipDismissed, setInboxTooltipDismissed] = useState(false);
 
   const { data: clusters } = useClusterSuggestions();
   const { data: claimableEvents } = useClaimableEvents();
@@ -369,8 +377,21 @@ const Ledger = () => {
   return (
     <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-8 max-w-7xl space-y-6">
+        {/* Workflow Guide */}
+        <WorkflowGuideBanner />
+
         {/* Attention Queue */}
-        <InboxQueue />
+        <FeatureTooltip
+          title="Your Inbox"
+          description="New transactions appear here for you to classify. Use keyboard shortcuts (J/K to navigate, M for medical, N for not) or click the buttons."
+          show={!hasSeenTransactions && !inboxTooltipDismissed}
+          onDismiss={() => {
+            setInboxTooltipDismissed(true);
+            markAsSeen("hasSeenTransactions");
+          }}
+        >
+          <InboxQueue />
+        </FeatureTooltip>
 
         {/* Cluster Suggestions Banner */}
         {!clusterDismissed && clusters && clusters.length > 0 && (
@@ -661,10 +682,36 @@ const Ledger = () => {
           <CardContent>
             {filtered.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                <p className="mb-1">No entries match your current filters</p>
-                <p className="text-sm">
-                  Try adjusting your filter settings or add a new bill.
-                </p>
+                {searchTerm ||
+                statusFilter !== "all" ||
+                matchFilter !== "all" ||
+                careEventFilter !== "all" ||
+                hsaFilter ? (
+                  <>
+                    <p className="mb-1">
+                      No entries match your current filters
+                    </p>
+                    <p className="text-sm">
+                      Try adjusting your filter settings.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="mb-1 font-medium text-foreground">
+                      No bills yet
+                    </p>
+                    <p className="text-sm mb-4">
+                      Upload your first bill to get started. Once you have
+                      bills, you can classify transactions, group them into care
+                      events, and claim HSA reimbursements.
+                    </p>
+                    <Button onClick={() => navigate("/bills/new")}>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload Your First Bill
+                    </Button>
+                  </>
+                )}
               </div>
             ) : (
               <>
