@@ -10,6 +10,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -41,6 +50,7 @@ import { GenericSkeleton } from "@/components/skeletons/GenericSkeleton";
 import { logError } from "@/utils/errorHandler";
 
 export function HSAAccountManager() {
+  const isMobile = useIsMobile();
   const { accounts, isLoading, createAccount, updateAccount, deleteAccount } =
     useHSAAccounts();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -192,6 +202,139 @@ export function HSAAccountManager() {
     );
   }
 
+  const renderFormFields = () => (
+    <div className="space-y-4 py-4">
+      <div className="space-y-2">
+        <Label htmlFor="account_name">Account Name</Label>
+        <Input
+          id="account_name"
+          placeholder="e.g., Fidelity HSA 2024"
+          value={formData.account_name}
+          onChange={(e) =>
+            setFormData({ ...formData, account_name: e.target.value })
+          }
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="opened_date">Opened Date</Label>
+        <Input
+          id="opened_date"
+          type="date"
+          value={formData.opened_date}
+          onChange={(e) =>
+            setFormData({ ...formData, opened_date: e.target.value })
+          }
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="eligibility_start_date">
+          Eligibility Start Date{" "}
+          <span className="text-muted-foreground font-normal text-xs">
+            (optional)
+          </span>
+        </Label>
+        <Input
+          id="eligibility_start_date"
+          type="date"
+          value={formData.eligibility_start_date}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              eligibility_start_date: e.target.value,
+            })
+          }
+        />
+        <p className="text-xs text-muted-foreground">
+          If your HSA eligibility began before you opened the account (e.g.
+          retroactive election after a qualifying life event), enter that
+          earlier date here.
+        </p>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="qle_type">
+          What triggered this account?{" "}
+          <span className="text-muted-foreground font-normal text-xs">
+            (optional)
+          </span>
+        </Label>
+        <Select
+          value={formData.qle_type}
+          onValueChange={(v) => setFormData({ ...formData, qle_type: v })}
+        >
+          <SelectTrigger id="qle_type">
+            <SelectValue placeholder="Select a qualifying life event…" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="new_employment">
+              New employment / employer plan
+            </SelectItem>
+            <SelectItem value="loss_of_coverage">
+              Loss of prior coverage
+            </SelectItem>
+            <SelectItem value="marriage">Marriage</SelectItem>
+            <SelectItem value="divorce">Divorce / separation</SelectItem>
+            <SelectItem value="birth_adoption">Birth or adoption</SelectItem>
+            <SelectItem value="plan_change">
+              Mid-year plan change to HDHP
+            </SelectItem>
+            <SelectItem value="other">Other</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          Helps accurately track which expenses are reimbursable when
+          eligibility started mid-year.
+        </p>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="closed_date">
+          Closed Date{" "}
+          <span className="text-muted-foreground font-normal text-xs">
+            (optional)
+          </span>
+        </Label>
+        <Input
+          id="closed_date"
+          type="date"
+          value={formData.closed_date}
+          onChange={(e) =>
+            setFormData({ ...formData, closed_date: e.target.value })
+          }
+        />
+        <p className="text-xs text-muted-foreground">
+          Leave empty if account is still active
+        </p>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="notes">
+          Notes{" "}
+          <span className="text-muted-foreground font-normal text-xs">
+            (optional)
+          </span>
+        </Label>
+        <Textarea
+          id="notes"
+          placeholder="e.g. Switched to Fidelity HDHP Gold on July 1, covers spouse and dependents"
+          value={formData.notes}
+          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+          rows={2}
+        />
+      </div>
+      <div className="flex items-center space-x-2">
+        <Switch
+          id="is_active"
+          checked={formData.is_active}
+          onCheckedChange={(checked) =>
+            setFormData({ ...formData, is_active: checked })
+          }
+        />
+        <Label htmlFor="is_active">Account is active</Label>
+      </div>
+      {formError && <p className="text-sm text-destructive">{formError}</p>}
+    </div>
+  );
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -267,178 +410,67 @@ export function HSAAccountManager() {
         </div>
       )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingAccount ? "Edit HSA Account" : "Add HSA Account"}
-            </DialogTitle>
-            <DialogDescription>
-              {editingAccount
-                ? "Update your HSA account details"
-                : "Add a new HSA account to track eligibility"}
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="account_name">Account Name</Label>
-                <Input
-                  id="account_name"
-                  placeholder="e.g., Fidelity HSA 2024"
-                  value={formData.account_name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, account_name: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="opened_date">Opened Date</Label>
-                <Input
-                  id="opened_date"
-                  type="date"
-                  value={formData.opened_date}
-                  onChange={(e) =>
-                    setFormData({ ...formData, opened_date: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="eligibility_start_date">
-                  Eligibility Start Date{" "}
-                  <span className="text-muted-foreground font-normal text-xs">
-                    (optional)
-                  </span>
-                </Label>
-                <Input
-                  id="eligibility_start_date"
-                  type="date"
-                  value={formData.eligibility_start_date}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      eligibility_start_date: e.target.value,
-                    })
-                  }
-                />
-                <p className="text-xs text-muted-foreground">
-                  If your HSA eligibility began before you opened the account
-                  (e.g. retroactive election after a qualifying life event),
-                  enter that earlier date here.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="qle_type">
-                  What triggered this account?{" "}
-                  <span className="text-muted-foreground font-normal text-xs">
-                    (optional)
-                  </span>
-                </Label>
-                <Select
-                  value={formData.qle_type}
-                  onValueChange={(v) =>
-                    setFormData({ ...formData, qle_type: v })
-                  }
+      {isMobile ? (
+        <Drawer open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DrawerContent className="max-h-[85vh]">
+            <DrawerHeader>
+              <DrawerTitle>
+                {editingAccount ? "Edit HSA Account" : "Add HSA Account"}
+              </DrawerTitle>
+              <DrawerDescription>
+                {editingAccount
+                  ? "Update your HSA account details"
+                  : "Add a new HSA account to track eligibility"}
+              </DrawerDescription>
+            </DrawerHeader>
+            <form onSubmit={handleSubmit} className="overflow-y-auto px-4">
+              {renderFormFields()}
+              <DrawerFooter className="px-0">
+                <Button type="submit">
+                  {editingAccount ? "Update Account" : "Add Account"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCloseDialog}
                 >
-                  <SelectTrigger id="qle_type">
-                    <SelectValue placeholder="Select a qualifying life event…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="new_employment">
-                      New employment / employer plan
-                    </SelectItem>
-                    <SelectItem value="loss_of_coverage">
-                      Loss of prior coverage
-                    </SelectItem>
-                    <SelectItem value="marriage">Marriage</SelectItem>
-                    <SelectItem value="divorce">
-                      Divorce / separation
-                    </SelectItem>
-                    <SelectItem value="birth_adoption">
-                      Birth or adoption
-                    </SelectItem>
-                    <SelectItem value="plan_change">
-                      Mid-year plan change to HDHP
-                    </SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Helps accurately track which expenses are reimbursable when
-                  eligibility started mid-year.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="closed_date">
-                  Closed Date{" "}
-                  <span className="text-muted-foreground font-normal text-xs">
-                    (optional)
-                  </span>
-                </Label>
-                <Input
-                  id="closed_date"
-                  type="date"
-                  value={formData.closed_date}
-                  onChange={(e) =>
-                    setFormData({ ...formData, closed_date: e.target.value })
-                  }
-                />
-                <p className="text-xs text-muted-foreground">
-                  Leave empty if account is still active
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">
-                  Notes{" "}
-                  <span className="text-muted-foreground font-normal text-xs">
-                    (optional)
-                  </span>
-                </Label>
-                <Textarea
-                  id="notes"
-                  placeholder="e.g. Switched to Fidelity HDHP Gold on July 1, covers spouse and dependents"
-                  value={formData.notes}
-                  onChange={(e) =>
-                    setFormData({ ...formData, notes: e.target.value })
-                  }
-                  rows={2}
-                />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="is_active"
-                  checked={formData.is_active}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, is_active: checked })
-                  }
-                />
-                <Label htmlFor="is_active">Account is active</Label>
-              </div>
-              {formError && (
-                <p className="text-sm text-destructive">{formError}</p>
-              )}
-            </div>
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCloseDialog}
-              >
-                Cancel
-              </Button>
-              <Button type="submit">
-                {editingAccount ? "Update Account" : "Add Account"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+                  Cancel
+                </Button>
+              </DrawerFooter>
+            </form>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {editingAccount ? "Edit HSA Account" : "Add HSA Account"}
+              </DialogTitle>
+              <DialogDescription>
+                {editingAccount
+                  ? "Update your HSA account details"
+                  : "Add a new HSA account to track eligibility"}
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit}>
+              {renderFormFields()}
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCloseDialog}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  {editingAccount ? "Update Account" : "Add Account"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
