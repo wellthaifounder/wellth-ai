@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -22,6 +22,7 @@ import {
   Download,
   Send,
   CheckCircle2,
+  Info,
 } from "lucide-react";
 import { generateReimbursementPDF } from "@/lib/pdfGenerator";
 import { celebrateFirstReimbursement } from "@/lib/confettiUtils";
@@ -50,7 +51,6 @@ const HSA_PROVIDERS = [
 
 export default function HSAReimbursement() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [expenses, setExpenses] = useState<HSAExpense[]>([]);
   const [selectedExpenses, setSelectedExpenses] = useState<Set<string>>(
     new Set(),
@@ -111,10 +111,8 @@ export default function HSAReimbursement() {
       setExpenses(filteredExpenses);
     } catch (error) {
       logError("Error fetching HSA expenses", error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to load HSA expenses",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -131,6 +129,17 @@ export default function HSAReimbursement() {
     setSelectedExpenses(newSelected);
   };
 
+  const toggleSelectAllFiltered = (visibleIds: string[]) => {
+    const allSelected = visibleIds.every((id) => selectedExpenses.has(id));
+    const newSelected = new Set(selectedExpenses);
+    if (allSelected) {
+      visibleIds.forEach((id) => newSelected.delete(id));
+    } else {
+      visibleIds.forEach((id) => newSelected.add(id));
+    }
+    setSelectedExpenses(newSelected);
+  };
+
   const calculateTotal = () => {
     return expenses
       .filter((e) => selectedExpenses.has(e.id))
@@ -139,10 +148,8 @@ export default function HSAReimbursement() {
 
   const generatePDF = async () => {
     if (selectedExpenses.size === 0) {
-      toast({
-        title: "No expenses selected",
+      toast.error("No expenses selected", {
         description: "Please select at least one expense",
-        variant: "destructive",
       });
       return;
     }
@@ -170,16 +177,13 @@ export default function HSAReimbursement() {
       a.click();
       URL.revokeObjectURL(url);
 
-      toast({
-        title: "PDF Generated",
+      toast.success("PDF Generated", {
         description: "Your reimbursement package has been downloaded",
       });
     } catch (error) {
       logError("Error generating PDF", error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to generate PDF",
-        variant: "destructive",
       });
     } finally {
       setGeneratingPDF(false);
@@ -188,19 +192,15 @@ export default function HSAReimbursement() {
 
   const handleSubmitRequest = async () => {
     if (selectedExpenses.size === 0) {
-      toast({
-        title: "No expenses selected",
+      toast.error("No expenses selected", {
         description: "Please select at least one expense",
-        variant: "destructive",
       });
       return;
     }
 
     if (!hsaProvider) {
-      toast({
-        title: "HSA Provider Required",
+      toast.error("HSA Provider Required", {
         description: "Please select your HSA provider",
-        variant: "destructive",
       });
       return;
     }
@@ -275,8 +275,7 @@ export default function HSAReimbursement() {
       a.click();
       URL.revokeObjectURL(url);
 
-      toast({
-        title: "Success",
+      toast.success("Success", {
         description: "Reimbursement request created and PDF downloaded",
       });
 
@@ -296,10 +295,8 @@ export default function HSAReimbursement() {
       }, 1500);
     } catch (error) {
       logError("Error submitting reimbursement", error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to submit reimbursement request",
-        variant: "destructive",
       });
     } finally {
       setSubmitting(false);
@@ -376,11 +373,28 @@ export default function HSAReimbursement() {
   return (
     <AuthenticatedLayout>
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2">HSA Reimbursement Request</h1>
           <p className="text-muted-foreground">
             Select expenses and generate a professional reimbursement package
           </p>
+        </div>
+
+        <div className="mb-8 rounded-lg border border-primary/20 bg-primary/5 p-4">
+          <div className="flex items-start gap-3">
+            <Info className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+            <div className="text-sm">
+              <p className="font-semibold mb-1">
+                Wellth.ai creates your documentation — you submit it to your HSA
+                provider
+              </p>
+              <p className="text-muted-foreground">
+                After you generate the PDF, log in to your HSA provider's portal
+                (e.g., Fidelity, HSA Bank, HealthEquity) and upload it with
+                their reimbursement form. This typically takes about 2 minutes.
+              </p>
+            </div>
+          </div>
         </div>
 
         {expenses.length === 0 ? (
@@ -446,6 +460,38 @@ export default function HSAReimbursement() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {filteredAndSortedExpenses.length > 0 && (
+                <div className="flex items-center justify-between mb-3 px-3 py-2 rounded-lg bg-muted/40">
+                  <div className="flex items-center gap-3">
+                    <Checkbox
+                      id="select-all"
+                      checked={
+                        filteredAndSortedExpenses.length > 0 &&
+                        filteredAndSortedExpenses.every((e) =>
+                          selectedExpenses.has(e.id),
+                        )
+                      }
+                      onCheckedChange={() =>
+                        toggleSelectAllFiltered(
+                          filteredAndSortedExpenses.map((e) => e.id),
+                        )
+                      }
+                    />
+                    <Label
+                      htmlFor="select-all"
+                      className="text-sm font-medium cursor-pointer"
+                    >
+                      Select all ({filteredAndSortedExpenses.length})
+                    </Label>
+                  </div>
+                  {selectedExpenses.size > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      {selectedExpenses.size} selected
+                    </span>
+                  )}
+                </div>
+              )}
 
               <div className="space-y-3">
                 {filteredAndSortedExpenses.map((expense) => (
