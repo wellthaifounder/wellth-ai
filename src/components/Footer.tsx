@@ -65,6 +65,11 @@ export const Footer = () => {
                     Sign In
                   </a>
                 </li>
+                <li>
+                  <a href="/privacy" className="hover:text-foreground">
+                    Privacy Policy
+                  </a>
+                </li>
               </ul>
             </nav>
           </div>

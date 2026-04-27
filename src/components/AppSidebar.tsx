@@ -14,6 +14,7 @@ import {
   FolderHeart,
   ClipboardList,
   BookOpen,
+  HelpCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
@@ -92,6 +93,7 @@ const hsaMenuItems: MenuItem[] = [
 const insightsMenuItems: MenuItem[] = [
   { icon: TrendingUp, label: "Reports", path: "/reports", badgeKey: null },
   { icon: FileText, label: "Documents", path: "/documents", badgeKey: null },
+  { icon: HelpCircle, label: "HSA Guide", path: "/guide", badgeKey: null },
 ];
 
 export function AppSidebar({ unreviewedTransactions = 0 }: AppSidebarProps) {
