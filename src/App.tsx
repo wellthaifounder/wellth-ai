@@ -59,6 +59,7 @@ const NewCollection = lazy(() => import("./pages/NewCollection"));
 // const ProviderTransparency = lazy(() => import("./pages/ProviderTransparency"));
 const UserReviews = lazy(() => import("./pages/UserReviews"));
 const AdminReviews = lazy(() => import("./pages/AdminReviews"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Loading fallback
@@ -98,6 +99,7 @@ const App = () => (
                       />
                       <Route path="/checkout" element={<Checkout />} />
                       <Route path="/install" element={<Install />} />
+                      <Route path="/privacy" element={<PrivacyPolicy />} />
 
                       {/* Protected routes */}
                       <Route

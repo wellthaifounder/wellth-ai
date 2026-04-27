@@ -13,11 +13,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { WellthLogo } from "@/components/WellthLogo";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Separator } from "@/components/ui/separator";
 import { UserIntentDialog } from "@/components/onboarding/UserIntentDialog";
+
+const PRIVACY_POLICY_VERSION = "2026-04-24";
 
 const signUpSchema = z.object({
   fullName: z.string().trim().min(1, "Name is required").max(100),
@@ -42,6 +45,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [showReset, setShowReset] = useState(false);
   const [showIntentDialog, setShowIntentDialog] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   // Sign up form
   const [signUpData, setSignUpData] = useState({
@@ -49,6 +53,7 @@ const Auth = () => {
     email: "",
     password: "",
   });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Sign in form
   const [signInData, setSignInData] = useState({
@@ -59,21 +64,53 @@ const Auth = () => {
   // Reset password
   const [resetEmail, setResetEmail] = useState("");
 
+  const validateSignUpField = (field: string, value: string) => {
+    const partial = { ...signUpData, [field]: value };
+    const result = signUpSchema.safeParse(partial);
+    if (result.success) {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    } else {
+      const fieldError = result.error.issues.find((i) => i.path[0] === field);
+      if (fieldError) {
+        setFieldErrors((prev) => ({ ...prev, [field]: fieldError.message }));
+      } else {
+        setFieldErrors((prev) => {
+          const next = { ...prev };
+          delete next[field];
+          return next;
+        });
+      }
+    }
+  };
+
   useEffect(() => {
+    const shouldShowIntent = async (userId: string): Promise<boolean> => {
+      // Check sessionStorage first (email signup flow)
+      if (sessionStorage.getItem("isNewSignup") === "true") return true;
+
+      // For OAuth returns, check if user_intent is set in their profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("user_intent")
+        .eq("id", userId)
+        .single();
+
+      return !profile?.user_intent;
+    };
+
     // Check if user is already logged in
     const checkUser = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
       if (session) {
-        // Check if this is a new signup that needs intent selection
-        const isNewSignup = sessionStorage.getItem("isNewSignup") === "true";
-
-        if (isNewSignup) {
-          // Show intent dialog for new users
+        if (await shouldShowIntent(session.user.id)) {
           setShowIntentDialog(true);
         } else {
-          // Existing users go straight to dashboard
           navigate("/dashboard");
         }
       }
@@ -83,16 +120,29 @@ const Auth = () => {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session && event === "SIGNED_IN") {
-        // Check if this is a new signup
-        const isNewSignup = sessionStorage.getItem("isNewSignup") === "true";
+        // Persist any pending terms acceptance from a Google OAuth sign-up
+        const pending = sessionStorage.getItem("pendingTermsAcceptance");
+        if (pending) {
+          try {
+            const { accepted_at, version } = JSON.parse(pending);
+            await supabase
+              .from("profiles")
+              .update({
+                terms_accepted_at: accepted_at,
+                privacy_policy_version_accepted: version,
+              })
+              .eq("id", session.user.id);
+          } catch {
+            // ignore — non-blocking
+          }
+          sessionStorage.removeItem("pendingTermsAcceptance");
+        }
 
-        if (isNewSignup) {
-          // Show intent dialog for new signups
+        if (await shouldShowIntent(session.user.id)) {
           setShowIntentDialog(true);
         } else {
-          // Existing users go straight to dashboard
           navigate("/dashboard");
         }
       }
@@ -104,6 +154,11 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!termsAccepted) {
+      toast.error("Please agree to the Privacy Policy to continue.");
+      return;
+    }
+
     try {
       const validated = signUpSchema.parse(signUpData);
       setLoading(true);
@@ -111,21 +166,35 @@ const Auth = () => {
       // Mark this as a new sign-up (not an existing user signing in)
       sessionStorage.setItem("isNewSignup", "true");
 
-      const { error } = await supabase.auth.signUp({
+      const acceptedAt = new Date().toISOString();
+      const { data: signUpResult, error } = await supabase.auth.signUp({
         email: validated.email,
         password: validated.password,
         options: {
           emailRedirectTo: `${window.location.origin}/dashboard`,
           data: {
             full_name: validated.fullName,
+            terms_accepted_at: acceptedAt,
+            privacy_policy_version_accepted: PRIVACY_POLICY_VERSION,
           },
         },
       });
 
       if (error) throw error;
 
+      if (signUpResult.user) {
+        await supabase
+          .from("profiles")
+          .update({
+            terms_accepted_at: acceptedAt,
+            privacy_policy_version_accepted: PRIVACY_POLICY_VERSION,
+          })
+          .eq("id", signUpResult.user.id);
+      }
+
       toast.success("Account created! You can now sign in.");
       setSignUpData({ fullName: "", email: "", password: "" });
+      setTermsAccepted(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
@@ -202,7 +271,7 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}/auth`,
         },
       });
 
@@ -214,6 +283,21 @@ const Auth = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleSignUp = async () => {
+    if (!termsAccepted) {
+      toast.error("Please agree to the Privacy Policy to continue.");
+      return;
+    }
+    sessionStorage.setItem(
+      "pendingTermsAcceptance",
+      JSON.stringify({
+        accepted_at: new Date().toISOString(),
+        version: PRIVACY_POLICY_VERSION,
+      }),
+    );
+    await handleGoogleSignIn();
   };
 
   const handleIntentComplete = (intent: "billing" | "hsa" | "both") => {
@@ -375,8 +459,16 @@ const Auth = () => {
                     onChange={(e) =>
                       setSignUpData({ ...signUpData, fullName: e.target.value })
                     }
+                    onBlur={(e) =>
+                      validateSignUpField("fullName", e.target.value)
+                    }
                     required
                   />
+                  {fieldErrors.fullName && (
+                    <p className="text-sm text-destructive">
+                      {fieldErrors.fullName}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
@@ -388,8 +480,14 @@ const Auth = () => {
                     onChange={(e) =>
                       setSignUpData({ ...signUpData, email: e.target.value })
                     }
+                    onBlur={(e) => validateSignUpField("email", e.target.value)}
                     required
                   />
+                  {fieldErrors.email && (
+                    <p className="text-sm text-destructive">
+                      {fieldErrors.email}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Password</Label>
@@ -401,10 +499,55 @@ const Auth = () => {
                     onChange={(e) =>
                       setSignUpData({ ...signUpData, password: e.target.value })
                     }
+                    onBlur={(e) =>
+                      validateSignUpField("password", e.target.value)
+                    }
                     required
                   />
+                  {fieldErrors.password && (
+                    <p className="text-sm text-destructive">
+                      {fieldErrors.password}
+                    </p>
+                  )}
+                  {!fieldErrors.password &&
+                    signUpData.password.length > 0 &&
+                    signUpData.password.length >= 8 && (
+                      <p className="text-sm text-green-600">
+                        Password strength: OK
+                      </p>
+                    )}
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
+                <div className="flex items-start space-x-2 pt-1">
+                  <Checkbox
+                    id="terms-accepted"
+                    checked={termsAccepted}
+                    onCheckedChange={(checked) =>
+                      setTermsAccepted(checked === true)
+                    }
+                    className="mt-0.5"
+                  />
+                  <Label
+                    htmlFor="terms-accepted"
+                    className="text-xs font-normal leading-relaxed text-muted-foreground"
+                  >
+                    I agree to Wellth.ai's{" "}
+                    <a
+                      href="/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline"
+                    >
+                      Privacy Policy
+                    </a>{" "}
+                    and consent to the collection, processing, and storage of my
+                    data as described therein.
+                  </Label>
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loading || !termsAccepted}
+                >
                   {loading ? "Creating account..." : "Create Account"}
                 </Button>
 
@@ -419,8 +562,8 @@ const Auth = () => {
                   type="button"
                   variant="outline"
                   className="w-full"
-                  onClick={handleGoogleSignIn}
-                  disabled={loading}
+                  onClick={handleGoogleSignUp}
+                  disabled={loading || !termsAccepted}
                 >
                   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                     <path

@@ -27,6 +27,7 @@ import {
   Plus,
   Trash2,
   CreditCard,
+  AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
@@ -96,6 +97,9 @@ const Settings = () => {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [bankConnections, setBankConnections] = useState<BankConnection[]>([]);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -161,16 +165,14 @@ const Settings = () => {
       const oldHsaDate = oldProfile?.hsa_opened_date;
       const hsaDateChanged = oldHsaDate !== values.hsaOpenedDate;
 
-      const { error: upsertError } = await supabase
-        .from("profiles")
-        .upsert(
-          {
-            id: user.id,
-            full_name: values.displayName,
-            hsa_opened_date: values.hsaOpenedDate || null,
-          },
-          { onConflict: "id" },
-        );
+      const { error: upsertError } = await supabase.from("profiles").upsert(
+        {
+          id: user.id,
+          full_name: values.displayName,
+          hsa_opened_date: values.hsaOpenedDate || null,
+        },
+        { onConflict: "id" },
+      );
       if (upsertError) throw upsertError;
 
       if (hsaDateChanged && values.hsaOpenedDate) {
@@ -292,6 +294,30 @@ const Settings = () => {
     } catch (error) {
       logError("Error disconnecting bank", error);
       toast.error("Failed to disconnect bank account");
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmationText !== "DELETE MY ACCOUNT") {
+      toast.error("Please type the confirmation phrase exactly.");
+      return;
+    }
+    try {
+      setDeleting(true);
+      const { error } = await supabase.functions.invoke("delete-user-account", {
+        body: { confirmation: "DELETE MY ACCOUNT" },
+      });
+      if (error) throw error;
+
+      await supabase.auth.signOut();
+      toast.success("Your account has been deleted.");
+      navigate("/");
+    } catch (error) {
+      logError("Error deleting account", error);
+      toast.error(
+        "Failed to delete account. Please try again or contact support.",
+      );
+      setDeleting(false);
     }
   };
 
@@ -678,6 +704,85 @@ const Settings = () => {
               <p className="text-sm text-muted-foreground">
                 Notification preferences coming soon
               </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-destructive/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-destructive">
+                <AlertTriangle className="h-5 w-5" />
+                Delete Account
+              </CardTitle>
+              <CardDescription>
+                Permanently delete your account and all associated data.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-4 text-sm text-muted-foreground">
+                This will remove your profile, receipts, transactions, bank
+                connections, and all other data from Wellth.ai. Plaid
+                connections will be revoked. This action cannot be undone.
+              </p>
+              <Dialog
+                open={deleteDialogOpen}
+                onOpenChange={(open) => {
+                  setDeleteDialogOpen(open);
+                  if (!open) setDeleteConfirmationText("");
+                }}
+              >
+                <DialogTrigger asChild>
+                  <Button variant="destructive">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete My Account
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Delete your account?</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      This will permanently delete your account and all
+                      associated data, and revoke any connected bank accounts.
+                      This cannot be undone.
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Type{" "}
+                      <span className="font-mono font-semibold text-foreground">
+                        DELETE MY ACCOUNT
+                      </span>{" "}
+                      to confirm.
+                    </p>
+                    <Input
+                      value={deleteConfirmationText}
+                      onChange={(e) =>
+                        setDeleteConfirmationText(e.target.value)
+                      }
+                      placeholder="DELETE MY ACCOUNT"
+                      autoComplete="off"
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setDeleteDialogOpen(false)}
+                      disabled={deleting}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleDeleteAccount}
+                      disabled={
+                        deleting ||
+                        deleteConfirmationText !== "DELETE MY ACCOUNT"
+                      }
+                    >
+                      {deleting ? "Deleting..." : "Permanently Delete"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
         </div>

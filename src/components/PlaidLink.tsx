@@ -73,8 +73,32 @@ export function PlaidLink({ onSuccess }: PlaidLinkProps) {
   }
 
   return (
-    <Button onClick={() => open()} disabled={!ready || loading}>
-      Connect Bank Account
-    </Button>
+    <div className="space-y-3">
+      <Button onClick={() => open()} disabled={!ready || loading}>
+        Connect Bank Account
+      </Button>
+      <p className="text-xs leading-relaxed text-muted-foreground">
+        By connecting an account, you authorize Wellth.ai to access your account
+        and transaction data via Plaid in accordance with our{" "}
+        <a
+          href="/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary underline"
+        >
+          Privacy Policy
+        </a>{" "}
+        and Plaid's{" "}
+        <a
+          href="https://plaid.com/legal/#end-user-privacy-policy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary underline"
+        >
+          End User Privacy Policy
+        </a>
+        .
+      </p>
+    </div>
   );
 }
