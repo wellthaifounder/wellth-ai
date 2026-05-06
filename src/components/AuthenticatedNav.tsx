@@ -30,6 +30,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useHSA } from "@/contexts/HSAContext";
 import { OnboardingProgressBar } from "@/components/onboarding/OnboardingProgressBar";
+import { FF } from "@/lib/featureFlags";
 
 interface AuthenticatedNavProps {
   unreviewedTransactions?: number;
@@ -275,7 +276,11 @@ export const AuthenticatedNav = ({
         </div>
       </nav>
 
-      <OnboardingProgressBar />
+      {/* Wave 3 experiment: when SCOPE_GET_STARTED_TO_DASHBOARD is on, the
+          Get-Started ribbon only appears on /dashboard. Avoids the "shame
+          bar" effect of seeing 0/3 progress on every authenticated screen. */}
+      {(!FF.SCOPE_GET_STARTED_TO_DASHBOARD ||
+        location.pathname === "/dashboard") && <OnboardingProgressBar />}
     </>
   );
 };

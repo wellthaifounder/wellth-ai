@@ -1,9 +1,11 @@
+import { useEffect, useRef } from "react";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, Upload, Sparkles, Link2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useHSA } from "@/contexts/HSAContext";
+import { analytics } from "@/lib/analytics";
 
 interface OnboardingProgressBarProps {
   compact?: boolean;
@@ -103,10 +105,38 @@ export function OnboardingProgressBar({
   const completedSteps = steps.filter((s) => s.complete).length;
   const progress = (completedSteps / steps.length) * 100;
 
+  // Wave 3 telemetry: fire `get_started_completed` exactly once per user when
+  // all three steps land complete. localStorage guards re-firing across reloads.
+  const COMPLETED_KEY = "getStartedCompletedTracked";
+  const completedFiredRef = useRef(false);
+  useEffect(() => {
+    if (
+      completedSteps === steps.length &&
+      !completedFiredRef.current &&
+      typeof window !== "undefined" &&
+      window.localStorage.getItem(COMPLETED_KEY) !== "true"
+    ) {
+      completedFiredRef.current = true;
+      window.localStorage.setItem(COMPLETED_KEY, "true");
+      analytics.track({
+        type: "get_started_completed",
+        metadata: { totalSteps: steps.length },
+      });
+    }
+  }, [completedSteps, steps.length]);
+
   // Don't show if onboarding is complete
   if (completedSteps === steps.length) {
     return null;
   }
+
+  const trackStepClick = (stepKey: string) => {
+    analytics.track({
+      type: "get_started_step_clicked",
+      action: stepKey,
+      metadata: { step: stepKey, completedBefore: completedSteps },
+    });
+  };
 
   if (compact) {
     return (
@@ -141,7 +171,10 @@ export function OnboardingProgressBar({
                     }`}
                     onClick={
                       !step.complete
-                        ? () => navigate(STEP_ROUTES[step.key])
+                        ? () => {
+                            trackStepClick(step.key);
+                            navigate(STEP_ROUTES[step.key]);
+                          }
                         : undefined
                     }
                     role={!step.complete ? "button" : undefined}

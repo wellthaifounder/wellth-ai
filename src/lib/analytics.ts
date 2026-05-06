@@ -32,7 +32,13 @@ type EventType =
   // Cohort tracking events
   | "user_intent_selected"
   | "billing_cohort_action"
-  | "hsa_cohort_action";
+  | "hsa_cohort_action"
+  // Wave 3 (2026-05) — onboarding consolidation experiment
+  | "onboarding_wizard_shown"
+  | "onboarding_wizard_completed"
+  | "onboarding_wizard_skipped"
+  | "get_started_step_clicked"
+  | "get_started_completed";
 
 interface AnalyticsEvent {
   type: EventType;

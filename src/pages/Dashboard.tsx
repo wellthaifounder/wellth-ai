@@ -23,6 +23,7 @@ import { TotalValueCard } from "@/components/dashboard/TotalValueCard";
 import { HSAHealthCheck } from "@/components/dashboard/HSAHealthCheck";
 import { AttentionBanner } from "@/components/dashboard/AttentionBanner";
 import { useAttentionItems } from "@/hooks/useAttentionItems";
+import { FF } from "@/lib/featureFlags";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -270,13 +271,20 @@ const Dashboard = () => {
     user?.email?.split("@")[0] ||
     "there";
 
-  // Show welcome dialog for first-time users - MUST be before early returns
+  // Show welcome dialog for first-time users - MUST be before early returns.
+  // Wave 3 experiment: when FF.AUTO_DISMISS_ONBOARDING_FOR_BILLING is on,
+  // skip the auto-show for users who picked userIntent === 'billing' — the
+  // HSA-mechanics carousel is dead weight for them. HSA / both still see it.
   useEffect(() => {
+    const skipForBillingIntent =
+      FF.AUTO_DISMISS_ONBOARDING_FOR_BILLING && userIntent === "billing";
+
     if (
       !loading &&
       !isNewUser &&
       stats.expenseCount <= 3 &&
-      !onboarding.hasCompletedOnboarding
+      !onboarding.hasCompletedOnboarding &&
+      !skipForBillingIntent
     ) {
       const timer = setTimeout(() => setShowWelcome(true), 1000);
       return () => clearTimeout(timer);
@@ -286,6 +294,7 @@ const Dashboard = () => {
     isNewUser,
     stats.expenseCount,
     onboarding.hasCompletedOnboarding,
+    userIntent,
   ]);
 
   if (loading) {

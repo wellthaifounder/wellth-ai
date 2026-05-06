@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useOnboarding } from "@/contexts/OnboardingContext";
+import { analytics } from "@/lib/analytics";
 
 interface OnboardingWizardProps {
   open: boolean;
@@ -70,12 +71,44 @@ export function OnboardingWizard({
   const Icon = current.icon;
   const isLast = step === STEPS.length - 1;
 
-  const handleComplete = () => {
+  // Wave 3 telemetry: distinguish shown / completed / skipped. shown fires
+  // once per open. completed = user clicked "Get started" from the last screen.
+  // skipped = user clicked "Skip" from any step before the last.
+  const shownLogged = useRef(false);
+  useEffect(() => {
+    if (open && !shownLogged.current) {
+      shownLogged.current = true;
+      analytics.track({
+        type: "onboarding_wizard_shown",
+        metadata: { totalSteps: STEPS.length },
+      });
+    }
+    if (!open) {
+      shownLogged.current = false;
+    }
+  }, [open]);
+
+  const handleComplete = (reason: "completed" | "skipped" = "completed") => {
+    analytics.track({
+      type:
+        reason === "completed"
+          ? "onboarding_wizard_completed"
+          : "onboarding_wizard_skipped",
+      metadata: { stepReached: step + 1, totalSteps: STEPS.length },
+    });
     completeOnboarding();
     onOpenChange(false);
   };
 
   const handleGoToGuide = () => {
+    analytics.track({
+      type: "onboarding_wizard_completed",
+      metadata: {
+        stepReached: step + 1,
+        totalSteps: STEPS.length,
+        nextDestination: "guide",
+      },
+    });
     completeOnboarding();
     onOpenChange(false);
     navigate("/guide");
@@ -158,7 +191,11 @@ export function OnboardingWizard({
               Back
             </Button>
           ) : (
-            <Button variant="ghost" size="sm" onClick={handleComplete}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleComplete("skipped")}
+            >
               Skip
             </Button>
           )}
@@ -171,7 +208,11 @@ export function OnboardingWizard({
             )}
             <Button
               size="sm"
-              onClick={isLast ? handleComplete : () => setStep(step + 1)}
+              onClick={
+                isLast
+                  ? () => handleComplete("completed")
+                  : () => setStep(step + 1)
+              }
             >
               {isLast ? "Get started" : "Next"}
               {!isLast && <ArrowRight className="h-3.5 w-3.5 ml-1" />}
