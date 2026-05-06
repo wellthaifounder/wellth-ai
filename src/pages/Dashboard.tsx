@@ -60,13 +60,21 @@ const Dashboard = () => {
   // Bill review feature archived - removed pendingReviews and disputeStats
 
   useEffect(() => {
-    // Auth is guaranteed by ProtectedRoute — just load the current user and data
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setUser(session.user);
+    // Auth is guaranteed by ProtectedRoute — just load the current user and data.
+    // The loading gate must always release: previously `setLoading(false)` only
+    // ran inside `if (session)`, so a stalled or session-less getSession kept the
+    // skeleton on screen indefinitely. The 3s safety timeout caps this even if
+    // getSession itself never resolves.
+    const safetyTimeout = setTimeout(() => setLoading(false), 3000);
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (session) setUser(session.user);
+      })
+      .finally(() => {
+        clearTimeout(safetyTimeout);
         setLoading(false);
-      }
-    });
+      });
 
     fetchStats();
     fetchTransactionStats();
@@ -84,7 +92,10 @@ const Dashboard = () => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(safetyTimeout);
+      subscription.unsubscribe();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -280,7 +291,10 @@ const Dashboard = () => {
   if (loading) {
     return (
       <AuthenticatedLayout unreviewedTransactions={0}>
-        <DashboardSkeleton />
+        <div role="status" aria-live="polite" aria-busy="true">
+          <span className="sr-only">Loading your dashboard…</span>
+          <DashboardSkeleton />
+        </div>
       </AuthenticatedLayout>
     );
   }

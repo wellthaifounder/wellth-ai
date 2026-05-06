@@ -25,6 +25,7 @@ import {
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { CollectionCard } from "@/components/collections/CollectionCard";
 import { OrganizeWizard } from "@/components/collections/OrganizeWizard";
+import { withQueryTimeout } from "@/lib/queryHelpers";
 
 interface Collection {
   id: string;
@@ -74,36 +75,43 @@ export default function Collections() {
   const {
     data: collections,
     isLoading,
+    isError,
     refetch,
   } = useQuery({
     queryKey: ["collections"],
-    queryFn: async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+    queryFn: () =>
+      withQueryTimeout(async (signal) => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
 
-      const { data, error } = await supabase
-        .from("collections")
-        .select(
-          `
-          id, title, description, total_billed, total_paid,
-          user_responsibility_override, hsa_eligible_amount,
-          icon, color, status, created_at,
-          invoices:invoices(count),
-          receipts:receipts(count)
-        `,
-        )
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+        const { data, error } = await supabase
+          .from("collections")
+          .select(
+            `
+            id, title, description, total_billed, total_paid,
+            user_responsibility_override, hsa_eligible_amount,
+            icon, color, status, created_at,
+            invoices:invoices(count),
+            receipts:receipts(count)
+          `,
+          )
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .abortSignal(signal);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      return (data || []).map((c: any) => ({
-        ...c,
-        invoice_count: c.invoices?.[0]?.count || 0,
-        document_count: c.receipts?.[0]?.count || 0,
-      })) as Collection[];
+        return (data || []).map((c: any) => ({
+          ...c,
+          invoice_count: c.invoices?.[0]?.count || 0,
+          document_count: c.receipts?.[0]?.count || 0,
+        })) as Collection[];
+      }),
+    meta: {
+      errorMessage:
+        "We had trouble loading your care events. Please try again.",
     },
   });
 
@@ -138,8 +146,31 @@ export default function Collections() {
   if (isLoading) {
     return (
       <AuthenticatedLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
+        <div
+          className="flex items-center justify-center min-h-[400px]"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <span className="sr-only">Loading your care events…</span>
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AuthenticatedLayout>
+    );
+  }
+
+  if (isError) {
+    return (
+      <AuthenticatedLayout>
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          <div className="rounded-lg border bg-card p-12 text-center space-y-3">
+            <p className="text-muted-foreground">
+              We had trouble loading your care events.
+            </p>
+            <Button variant="outline" onClick={() => refetch()}>
+              Try again
+            </Button>
+          </div>
         </div>
       </AuthenticatedLayout>
     );

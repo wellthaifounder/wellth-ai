@@ -90,7 +90,10 @@ export default defineConfig(({ mode }) => ({
             handler: "NetworkFirst",
             options: {
               cacheName: "supabase-api-cache",
-              networkTimeoutSeconds: 10,
+              // 10s was too long: a stalled Supabase response left users on a
+              // skeleton screen for the full duration. 3s falls through to
+              // cached data (or our in-page error boundary) much sooner.
+              networkTimeoutSeconds: 3,
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 5, // 5 minutes

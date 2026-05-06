@@ -1,7 +1,12 @@
 import { lazy, Suspense } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  QueryCache,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+import { toast } from "sonner";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { FeatureRetired } from "@/components/FeatureRetired";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
@@ -71,7 +76,31 @@ const PageLoader = () => (
   </div>
 );
 
-const queryClient = new QueryClient();
+// Global query defaults + toast-on-error. Pages that want a custom error
+// message set `meta: { errorMessage: "..." }` on their useQuery call. Pages
+// that want to handle their own errors (form submissions, etc.) opt out with
+// `meta: { suppressErrorToast: true }`.
+const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (_error, query) => {
+      const meta = query.meta as
+        | { errorMessage?: string; suppressErrorToast?: boolean }
+        | undefined;
+      if (meta?.suppressErrorToast) return;
+      toast.error(
+        meta?.errorMessage ??
+          "We're having trouble loading your data. Please try again.",
+      );
+    },
+  }),
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

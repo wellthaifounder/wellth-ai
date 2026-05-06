@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { logError } from "@/utils/errorHandler";
+import { withQueryTimeout } from "@/lib/queryHelpers";
 import { InboxQueue } from "@/components/ledger/InboxQueue";
 import { CreateCareEventDialog } from "@/components/ledger/CreateCareEventDialog";
 import { ClaimHSADialog } from "@/components/ledger/ClaimHSADialog";
@@ -162,31 +163,40 @@ const Ledger = () => {
   const { data: clusters } = useClusterSuggestions();
   const { data: claimableEvents } = useClaimableEvents();
 
-  const { data: entries, isLoading } = useQuery({
+  const {
+    data: entries,
+    isLoading,
+    isError,
+    refetch: refetchEntries,
+  } = useQuery({
     queryKey: ["ledger-entries"],
-    queryFn: async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+    queryFn: () =>
+      withQueryTimeout(async (signal) => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
 
-      // Query the view directly — RLS on invoices enforces access
-      const { data, error } = await supabase
-        .from("ledger_entries")
-        .select(
-          "invoice_id, user_id, vendor, category, service_date, invoice_date, billed_amount, total_amount, is_hsa_eligible, is_reimbursed, invoice_status, collection_id, invoice_number, invoice_notes, invoice_created_at, total_paid, paid_via_hsa, paid_via_oop, outstanding_balance, payment_count, has_auto_linked, latest_payment_date, linked_transaction_count, match_status, care_event_title",
-        )
-        .eq("user_id", user.id)
-        .order("service_date", { ascending: false })
-        .limit(500);
+        // Query the view directly — RLS on invoices enforces access
+        const { data, error } = await supabase
+          .from("ledger_entries")
+          .select(
+            "invoice_id, user_id, vendor, category, service_date, invoice_date, billed_amount, total_amount, is_hsa_eligible, is_reimbursed, invoice_status, collection_id, invoice_number, invoice_notes, invoice_created_at, total_paid, paid_via_hsa, paid_via_oop, outstanding_balance, payment_count, has_auto_linked, latest_payment_date, linked_transaction_count, match_status, care_event_title",
+          )
+          .eq("user_id", user.id)
+          .order("service_date", { ascending: false })
+          .limit(500)
+          .abortSignal(signal);
 
-      if (error) {
-        logError("Ledger query failed", error);
-        throw error;
-      }
-      return (data || []) as LedgerEntry[];
+        if (error) {
+          logError("Ledger query failed", error);
+          throw error;
+        }
+        return (data || []) as LedgerEntry[];
+      }),
+    meta: {
+      errorMessage: "We had trouble loading your ledger. Please try again.",
     },
-    staleTime: 5 * 60 * 1000,
   });
 
   const toggleSort = (field: SortField) => {
@@ -367,8 +377,31 @@ const Ledger = () => {
   if (isLoading) {
     return (
       <AuthenticatedLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
+        <div
+          className="flex items-center justify-center min-h-[400px]"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <span className="sr-only">Loading your ledger…</span>
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AuthenticatedLayout>
+    );
+  }
+
+  if (isError) {
+    return (
+      <AuthenticatedLayout>
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
+          <div className="rounded-lg border bg-card p-12 text-center space-y-3">
+            <p className="text-muted-foreground">
+              We had trouble loading your ledger.
+            </p>
+            <Button variant="outline" onClick={() => refetchEntries()}>
+              Try again
+            </Button>
+          </div>
         </div>
       </AuthenticatedLayout>
     );

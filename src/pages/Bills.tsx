@@ -24,6 +24,7 @@ import {
 import { Link } from "react-router-dom";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { logError } from "@/utils/errorHandler";
+import { withQueryTimeout } from "@/lib/queryHelpers";
 import { BillsHeroMetrics } from "@/components/bills/BillsHeroMetrics";
 import { useOnboarding } from "@/contexts/OnboardingContext";
 // Bill review feature archived
@@ -59,37 +60,43 @@ const Bills = () => {
   const {
     data: bills,
     isLoading: billsLoading,
+    isError: billsError,
     refetch: refetchBills,
   } = useQuery({
     queryKey: ["bills"],
-    queryFn: async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+    queryFn: () =>
+      withQueryTimeout(async (signal) => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
 
-      const { data, error } = await supabase
-        .from("invoices")
-        .select(
-          `
-          *,
-          payment_transactions (
-            id,
-            payment_date,
-            amount,
-            payment_source,
-            is_reimbursed,
-            reimbursed_date,
-            auto_linked
+        const { data, error } = await supabase
+          .from("invoices")
+          .select(
+            `
+            *,
+            payment_transactions (
+              id,
+              payment_date,
+              amount,
+              payment_source,
+              is_reimbursed,
+              reimbursed_date,
+              auto_linked
+            )
+          `,
           )
-        `,
-        )
-        .eq("user_id", user.id)
-        .order("date", { ascending: false })
-        .limit(500); // Limit to most recent 500 bills for performance
+          .eq("user_id", user.id)
+          .order("date", { ascending: false })
+          .limit(500) // Limit to most recent 500 bills for performance
+          .abortSignal(signal);
 
-      if (error) throw error;
-      return data as Bill[];
+        if (error) throw error;
+        return data as Bill[];
+      }),
+    meta: {
+      errorMessage: "We had trouble loading your bills. Please try again.",
     },
   });
 
@@ -197,8 +204,37 @@ const Bills = () => {
   if (billsLoading) {
     return (
       <AuthenticatedLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
+        <div
+          className="flex items-center justify-center min-h-[400px]"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <span className="sr-only">Loading your bills…</span>
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AuthenticatedLayout>
+    );
+  }
+
+  // If the query errored (timeout or network), the global QueryCache.onError
+  // already surfaced a toast. Render the page in its degraded empty state with
+  // a Retry button so the user has a clear next step.
+  if (billsError) {
+    return (
+      <AuthenticatedLayout>
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          <Card>
+            <CardContent className="text-center py-12 space-y-3">
+              <FileText className="h-12 w-12 mx-auto text-muted-foreground" />
+              <p className="text-muted-foreground">
+                We had trouble loading your bills.
+              </p>
+              <Button variant="outline" onClick={() => refetchBills()}>
+                Try again
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </AuthenticatedLayout>
     );
