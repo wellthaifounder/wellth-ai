@@ -391,6 +391,11 @@ Check subscription with `useSubscription()` hook from `src/contexts/Subscription
 **Issue:** The Plaid token-encryption migration (`20251202201215_encrypt_plaid_tokens.sql`) added `encrypted_access_token` but deferred dropping the legacy `access_token NOT NULL` column to a follow-up migration that was never written. First Plaid Link attempt in a fresh sandbox failed with `null value in column "access_token" violates not-null constraint`.
 **Fix:** Wrote `20260424120000_drop_legacy_plaid_access_token.sql` to drop the legacy column and set `encrypted_access_token NOT NULL`. **Rule:** never split mandatory schema cleanup into "MANUAL STEPS REQUIRED" comments inside a migration. Either include the cleanup in the same migration (when no data needs back-filling) or write the follow-up migration immediately and commit both together. Comment-driven manual steps get forgotten.
 
+### 2026-05-03
+
+**Issue:** Fresh `npx supabase start` failed in two places, blocking new-contributor onboarding and any CI bootstrap. (a) `20241209000000_add_analytics_and_insurance.sql` `ALTER`s `public.profiles` (and adds `is_admin`) before that table is created in `20251005153724_*`. (b) `20251110220722_99e2f0fc-...sql` creates `provider_reviews` with a SELECT policy referencing `public.can_view_provider_review` and a trigger calling `public.update_provider_review_aggregates` — neither function was ever defined in any migration. Production survived because both pre-dated the move to version-controlled migrations.
+**Fix:** Guarded the two ALTERs in `20241209000000` with `DO $$ IF EXISTS (profiles)` blocks; added catch-up migration `20251005154000_catchup_insurance_plan_on_profiles.sql` that runs after profiles is created (idempotent via `ADD COLUMN IF NOT EXISTS`). Added `20251110220721_add_provider_review_function_stubs.sql` defining safe defaults for `can_view_provider_review` and a no-op stub for `update_provider_review_aggregates`, both via `CREATE OR REPLACE` so production behavior is preserved. **Rule:** every migration must be runnable from an empty schema. If a migration depends on tables/functions added in a later migration date-prefix, it has an ordering bug — fix the order or guard with `DO $$` blocks plus a follow-up catch-up migration. Add a CI step that runs `npx supabase db reset` on a clean container to catch regressions.
+
 ---
 
-_Last updated: 2026-04-24_
+_Last updated: 2026-05-03_
