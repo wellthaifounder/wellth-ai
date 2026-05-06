@@ -38,7 +38,9 @@ type EventType =
   | "onboarding_wizard_completed"
   | "onboarding_wizard_skipped"
   | "get_started_step_clicked"
-  | "get_started_completed";
+  | "get_started_completed"
+  // Wave 4 (2026-05) — Bills/Ledger IA collapse experiment
+  | "bills_view_selected";
 
 interface AnalyticsEvent {
   type: EventType;

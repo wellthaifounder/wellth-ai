@@ -133,7 +133,20 @@ const MATCH_CONFIG: Record<string, { label: string; color: string }> = {
 
 type CareEventFilter = "all" | "unassigned";
 
-const Ledger = () => {
+interface LedgerProps {
+  /**
+   * When true, render only the inner content without the AuthenticatedLayout
+   * wrapper. Used by Bills.tsx (Wave 4 IA-collapse experiment) so the ledger
+   * view can render inline under Bills' own AuthenticatedLayout without
+   * double-wrapping nav / sidebar.
+   */
+  embedded?: boolean;
+}
+
+const Ledger = ({ embedded = false }: LedgerProps = {}) => {
+  const Outer: React.ComponentType<{ children: React.ReactNode }> = embedded
+    ? ({ children }) => <>{children}</>
+    : AuthenticatedLayout;
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -376,7 +389,7 @@ const Ledger = () => {
 
   if (isLoading) {
     return (
-      <AuthenticatedLayout>
+      <Outer>
         <div
           className="flex items-center justify-center min-h-[400px]"
           role="status"
@@ -386,13 +399,13 @@ const Ledger = () => {
           <span className="sr-only">Loading your ledger…</span>
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      </AuthenticatedLayout>
+      </Outer>
     );
   }
 
   if (isError) {
     return (
-      <AuthenticatedLayout>
+      <Outer>
         <div className="container mx-auto px-4 py-8 max-w-7xl">
           <div className="rounded-lg border bg-card p-12 text-center space-y-3">
             <p className="text-muted-foreground">
@@ -403,12 +416,12 @@ const Ledger = () => {
             </Button>
           </div>
         </div>
-      </AuthenticatedLayout>
+      </Outer>
     );
   }
 
   return (
-    <AuthenticatedLayout>
+    <Outer>
       <div className="container mx-auto px-4 py-8 max-w-7xl space-y-6">
         {/* Workflow Guide */}
         <WorkflowGuideBanner />
@@ -982,7 +995,7 @@ const Ledger = () => {
           setClaimableEventIds(null);
         }}
       />
-    </AuthenticatedLayout>
+    </Outer>
   );
 };
 

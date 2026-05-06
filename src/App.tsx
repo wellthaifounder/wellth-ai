@@ -18,6 +18,7 @@ import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { FF } from "@/lib/featureFlags";
 import { Loader2 } from "lucide-react";
 
 // Critical pages - load immediately
@@ -476,15 +477,23 @@ const App = () => (
                         }
                       />
 
-                      {/* Unified Ledger View (Phase 2 — parallel to Bills) */}
+                      {/* Unified Ledger View. With FF.BILLS_LEDGER_IA_COLLAPSE
+                          on (Wave 4 IA-collapse experiment), /ledger 301s into
+                          /bills?view=ledger so Bills can render it inline as
+                          a tab. With the flag off, the standalone route is
+                          unchanged. */}
                       <Route
                         path="/ledger"
                         element={
-                          <ProtectedRoute>
-                            <ErrorBoundary>
-                              <Ledger />
-                            </ErrorBoundary>
-                          </ProtectedRoute>
+                          FF.BILLS_LEDGER_IA_COLLAPSE ? (
+                            <Navigate to="/bills?view=ledger" replace />
+                          ) : (
+                            <ProtectedRoute>
+                              <ErrorBoundary>
+                                <Ledger />
+                              </ErrorBoundary>
+                            </ProtectedRoute>
+                          )
                         }
                       />
 

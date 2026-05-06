@@ -8,6 +8,7 @@ import {
   DollarSign,
   MessageCircle,
 } from "lucide-react";
+import { FF } from "@/lib/featureFlags";
 
 interface BottomTabNavigationProps {
   unreviewedTransactions?: number;
@@ -17,10 +18,16 @@ interface BottomTabNavigationProps {
 export const BottomTabNavigation = ({
   showHSAFeatures = false,
 }: BottomTabNavigationProps) => {
+  // Wave 4 IA-collapse experiment: when the flag is on, the Ledger tab points
+  // at /bills?view=ledger so the bottom nav and the IA stay consistent.
+  const ledgerPath = FF.BILLS_LEDGER_IA_COLLAPSE
+    ? "/bills?view=ledger"
+    : "/ledger";
+
   const tabs = showHSAFeatures
     ? [
         { icon: Home, label: "Home", path: "/dashboard", badge: 0 },
-        { icon: BookOpen, label: "Ledger", path: "/ledger", badge: 0 },
+        { icon: BookOpen, label: "Ledger", path: ledgerPath, badge: 0 },
         {
           icon: DollarSign,
           label: "HSA",
@@ -31,7 +38,7 @@ export const BottomTabNavigation = ({
       ]
     : [
         { icon: Home, label: "Home", path: "/dashboard", badge: 0 },
-        { icon: BookOpen, label: "Ledger", path: "/ledger", badge: 0 },
+        { icon: BookOpen, label: "Ledger", path: ledgerPath, badge: 0 },
         {
           icon: FolderHeart,
           label: "Care Events",

@@ -39,6 +39,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { FF } from "@/lib/featureFlags";
 
 interface AppSidebarProps {
   unreviewedTransactions?: number;
@@ -52,15 +53,22 @@ interface MenuItem {
   hsaOnly?: boolean;
 }
 
+// Wave 4 IA-collapse experiment: when FF.BILLS_LEDGER_IA_COLLAPSE is on, the
+// standalone Ledger nav item disappears. Bills owns the ledger view via its
+// `?view=ledger` tab; the standalone /ledger URL still 301s there.
 const coreMenuItems: MenuItem[] = [
   { icon: Home, label: "Home", path: "/dashboard", badgeKey: null },
   { icon: Receipt, label: "Bills", path: "/bills", badgeKey: null },
-  {
-    icon: BookOpen,
-    label: "Ledger",
-    path: "/ledger",
-    badgeKey: null,
-  },
+  ...(FF.BILLS_LEDGER_IA_COLLAPSE
+    ? []
+    : [
+        {
+          icon: BookOpen,
+          label: "Ledger",
+          path: "/ledger",
+          badgeKey: null,
+        },
+      ]),
   {
     icon: FolderHeart,
     label: "Care Events",
