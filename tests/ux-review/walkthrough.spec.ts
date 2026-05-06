@@ -1,0 +1,569 @@
+import { test, expect } from "@playwright/test";
+import {
+  attachConsoleCapture,
+  getConsoleLog,
+  snap,
+  note,
+  resetNotes,
+  stubSession,
+  timed,
+  ROUTES,
+} from "./helpers";
+
+// Single serial run — observations are appended in order to one notes file.
+test.describe.configure({ mode: "serial" });
+
+test.beforeAll(() => {
+  resetNotes();
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// 1. PUBLIC SURFACE — what someone sees before signing up
+// ────────────────────────────────────────────────────────────────────────────
+
+test("public: landing page", async ({ page }) => {
+  attachConsoleCapture(page);
+  const { ms } = await timed(async () => {
+    await page.goto("/");
+    await page.waitForLoadState("networkidle").catch(() => {});
+  });
+  await snap(page, "01-landing");
+
+  const h1 = await page
+    .locator("h1")
+    .first()
+    .innerText()
+    .catch(() => "(no h1)");
+  const ctas = await page
+    .getByRole("link", { name: /get started|sign up|start|try|free/i })
+    .allInnerTexts();
+  const navLinks = await page.locator("nav a").allInnerTexts();
+
+  note(
+    "Public",
+    "Landing page",
+    [
+      `URL: ${page.url()}`,
+      `Title: ${await page.title()}`,
+      `Load to networkidle: ${ms}ms`,
+      `H1: "${h1}"`,
+      `Primary CTAs found (${ctas.length}): ${ctas.slice(0, 6).join(" | ")}`,
+      `Nav links: ${navLinks.join(" | ")}`,
+    ].join("\n"),
+  );
+
+  const errors = getConsoleLog().filter(
+    (l) => l.type === "error" || l.type === "pageerror",
+  );
+  if (errors.length) {
+    note(
+      "Public",
+      "Landing console errors",
+      errors
+        .slice(0, 10)
+        .map((e) => `- [${e.type}] ${e.text}`)
+        .join("\n"),
+    );
+  }
+});
+
+test("public: auth page (signin and signup tabs)", async ({ page }) => {
+  attachConsoleCapture(page);
+  await page.goto("/auth");
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await snap(page, "02-auth-signin");
+
+  const tabs = await page.getByRole("tab").allInnerTexts();
+  const signinFields: string[] = [];
+  for (const id of ["signin-email", "signin-password"]) {
+    const el = page.locator(`#${id}`);
+    if (await el.count()) signinFields.push(id);
+  }
+
+  await page.getByRole("tab", { name: /sign up/i }).click();
+  await snap(page, "03-auth-signup");
+  const signupFields: string[] = [];
+  for (const id of ["signup-name", "signup-email", "signup-password"]) {
+    const el = page.locator(`#${id}`);
+    if (await el.count()) signupFields.push(id);
+  }
+  const termsCheckboxVisible = await page
+    .getByRole("checkbox", { name: /privacy/i })
+    .isVisible()
+    .catch(() => false);
+
+  note(
+    "Public",
+    "Auth page",
+    [
+      `Tabs: ${tabs.join(", ")}`,
+      `Sign-in fields: ${signinFields.join(", ")}`,
+      `Sign-up fields: ${signupFields.join(", ")}`,
+      `Terms checkbox visible on signup: ${termsCheckboxVisible}`,
+    ].join("\n"),
+  );
+
+  // Decision count for Maya to complete signup
+  const decisions = [
+    "Choose Sign In vs Sign Up tab",
+    "Type Full Name",
+    "Type Email",
+    "Type Password (≥8 chars)",
+    "Read & check Privacy Policy box",
+    "Click Create Account (or Continue with Google)",
+  ];
+  note(
+    "Public",
+    "Maya signup decision count",
+    `${decisions.length} discrete decisions / fields:\n- ${decisions.join("\n- ")}`,
+  );
+});
+
+test("public: privacy and calculator pages render", async ({ page }) => {
+  attachConsoleCapture(page);
+  await page.goto("/privacy");
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await snap(page, "04-privacy");
+  const privacyH1 = await page
+    .locator("h1")
+    .first()
+    .innerText()
+    .catch(() => "");
+
+  await page.goto("/calculator");
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await snap(page, "05-calculator");
+  const calcH1 = await page
+    .locator("h1, h2")
+    .first()
+    .innerText()
+    .catch(() => "");
+
+  note(
+    "Public",
+    "Privacy + Calculator",
+    `Privacy H1: "${privacyH1.slice(0, 80)}"\nCalculator first heading: "${calcH1.slice(0, 80)}"`,
+  );
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// 2. MAYA — anxious first-timer with stubbed empty session, intent="hsa"
+// ────────────────────────────────────────────────────────────────────────────
+
+test("Maya: dashboard empty state (HSA intent, no data)", async ({ page }) => {
+  attachConsoleCapture(page);
+  await stubSession(page, {
+    fullName: "Maya Tester",
+    email: "maya@ux-review.local",
+    hasCompletedOnboarding: false,
+  });
+
+  const { ms } = await timed(async () => {
+    await page.goto("/dashboard");
+    await page.waitForLoadState("networkidle").catch(() => {});
+  });
+  await snap(page, "10-maya-dashboard");
+
+  // Inventory the top-fold
+  const headings = await page.locator("h1, h2, h3").allInnerTexts();
+  const buttons = await page.getByRole("button").allInnerTexts();
+
+  // Are multiple onboarding surfaces visible at the same time?
+  const wizardOpen = await page
+    .getByText(/triple tax advantage|wealth-building tool/i)
+    .isVisible()
+    .catch(() => false);
+  const emptyStateVisible = await page
+    .getByText(/upload your first bill/i)
+    .isVisible()
+    .catch(() => false);
+
+  note(
+    "Maya",
+    "Dashboard zero-state",
+    [
+      `Time to dashboard render: ${ms}ms`,
+      `URL: ${page.url()}`,
+      `Headings (${headings.length}):\n  ${headings.slice(0, 12).join("\n  ")}`,
+      `Buttons (${buttons.length}): ${buttons.slice(0, 12).join(" | ")}`,
+      `OnboardingWizard modal visible: ${wizardOpen}`,
+      `EmptyStateOnboarding visible: ${emptyStateVisible}`,
+    ].join("\n"),
+  );
+
+  const errs = getConsoleLog().filter(
+    (l) => l.type === "error" || l.type === "pageerror",
+  );
+  note(
+    "Maya",
+    "Dashboard console errors (expected: supabase 401s — placeholder env)",
+    errs.length === 0
+      ? "(none)"
+      : `${errs.length} errors. First 5:\n${errs
+          .slice(0, 5)
+          .map((e) => `- [${e.type}] ${e.text.slice(0, 200)}`)
+          .join("\n")}`,
+  );
+});
+
+test("Maya: upload-bill wizard UI (no save)", async ({ page }) => {
+  attachConsoleCapture(page);
+  await stubSession(page, { fullName: "Maya Tester" });
+
+  await page.goto("/dashboard");
+  await page.waitForLoadState("networkidle").catch(() => {});
+
+  // Try the EmptyStateOnboarding CTA path
+  const uploadCta = page.getByRole("button", {
+    name: /upload your first bill/i,
+  });
+  if (
+    await uploadCta
+      .first()
+      .isVisible()
+      .catch(() => false)
+  ) {
+    const { ms } = await timed(async () => {
+      await uploadCta.first().click();
+      await page.waitForURL(/bills\/(new|upload)/);
+    });
+    note(
+      "Maya",
+      "Click-to-upload-wizard latency from dashboard CTA",
+      `${ms}ms`,
+    );
+  } else {
+    await page.goto("/bills/new");
+  }
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await snap(page, "11-maya-upload-wizard");
+
+  // Inspect the wizard UI
+  const dropzoneVisible = await page
+    .getByText(/upload documents|drag.*drop/i)
+    .isVisible()
+    .catch(() => false);
+  const continueDisabled = await page
+    .getByRole("button", { name: /continue/i })
+    .isDisabled()
+    .catch(() => true);
+  const stepLabels = await page
+    .locator("text=/^(Upload|Confirm|Saved)$/")
+    .allInnerTexts();
+
+  note(
+    "Maya",
+    "Upload wizard step 1",
+    [
+      `Dropzone visible: ${dropzoneVisible}`,
+      `Continue button disabled before file chosen: ${continueDisabled}`,
+      `Step labels found: ${stepLabels.join(" / ")}`,
+    ].join("\n"),
+  );
+
+  // Compare /bills/new vs /bills/upload
+  await page.goto("/bills/upload");
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await snap(page, "12-maya-upload-wizard-via-upload-route");
+  const dupeContent = await page
+    .getByText(/upload documents|drag.*drop/i)
+    .isVisible()
+    .catch(() => false);
+  note(
+    "Maya",
+    "Dual route confirmation",
+    `/bills/new and /bills/upload both render the same wizard (dropzone visible: ${dupeContent}). Confirms duplicate route in App.tsx.`,
+  );
+});
+
+test("Maya: navigation IA on desktop", async ({ page }) => {
+  attachConsoleCapture(page);
+  await stubSession(page, { fullName: "Maya Tester" });
+  await page.goto("/dashboard");
+  await page.waitForLoadState("networkidle").catch(() => {});
+
+  const sidebarItems = await page
+    .locator("[data-sidebar='sidebar'] a, aside a, nav a")
+    .allInnerTexts();
+  note(
+    "Maya",
+    "Desktop nav inventory",
+    `Found ${sidebarItems.length} nav links. First 20:\n  ${sidebarItems
+      .slice(0, 20)
+      .filter((t) => t.trim())
+      .join("\n  ")}`,
+  );
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// 3. ROUTE COVERAGE — visit every reachable page, capture screenshot + headings
+// ────────────────────────────────────────────────────────────────────────────
+
+test("route coverage: all protected pages with stubbed auth", async ({
+  page,
+}) => {
+  attachConsoleCapture(page);
+  await stubSession(page, { fullName: "Maya Tester" });
+
+  for (const route of ROUTES.protected) {
+    await page.goto(route.path).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 8000 })
+      .catch(() => {});
+    await snap(page, `route-${route.label}`);
+    const heading = await page
+      .locator("h1, h2")
+      .first()
+      .innerText({ timeout: 2000 })
+      .catch(() => "(no heading found)");
+    const url = page.url();
+    note(
+      "Routes",
+      route.path,
+      `→ ${url}\nFirst heading: "${heading.slice(0, 100)}"`,
+    );
+  }
+});
+
+test("route coverage: retired/legacy routes redirect behavior", async ({
+  page,
+}) => {
+  attachConsoleCapture(page);
+  await stubSession(page, { fullName: "Maya Tester" });
+
+  for (const route of ROUTES.retired) {
+    await page.goto(route.path).catch(() => {});
+    await page
+      .waitForLoadState("networkidle", { timeout: 8000 })
+      .catch(() => {});
+    await snap(page, `retired-${route.label}`);
+    const url = page.url();
+    const heading = await page
+      .locator("h1, h2")
+      .first()
+      .innerText({ timeout: 2000 })
+      .catch(() => "(none)");
+    note(
+      "Retired routes",
+      route.path,
+      `Lands on: ${url}\nFirst heading: "${heading.slice(0, 100)}"\n→ Silent redirect with no "this moved" message: ${
+        !heading.toLowerCase().includes("removed") &&
+        !heading.toLowerCase().includes("retired")
+      }`,
+    );
+  }
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// 4. DEREK — HSA optimizer; we look at Settings density and Reports
+// ────────────────────────────────────────────────────────────────────────────
+
+test("Derek: settings sprawl audit", async ({ page }) => {
+  attachConsoleCapture(page);
+  await stubSession(page, {
+    fullName: "Derek Optimizer",
+    email: "derek@ux-review.local",
+    hasCompletedOnboarding: true,
+  });
+
+  await page.goto("/settings");
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await snap(page, "20-derek-settings-top");
+
+  // Scroll through and capture the long-scroll experience
+  const scrollHeight = await page.evaluate(
+    () => document.documentElement.scrollHeight,
+  );
+  const viewportHeight = await page.evaluate(() => window.innerHeight);
+  const screensTall = (scrollHeight / viewportHeight).toFixed(1);
+
+  // Collect every section heading to get a feel for the density
+  const sectionHeadings = await page
+    .locator("h1, h2, h3, [class*='CardTitle']")
+    .allInnerTexts();
+
+  note(
+    "Derek",
+    "Settings density",
+    [
+      `Page total height: ${scrollHeight}px`,
+      `Viewport height: ${viewportHeight}px`,
+      `Page is ${screensTall} screens tall on desktop 1440x900`,
+      `Section headings (${sectionHeadings.length}):\n  ${sectionHeadings
+        .filter((h) => h.trim())
+        .slice(0, 30)
+        .join("\n  ")}`,
+    ].join("\n"),
+  );
+
+  // Scroll to bottom, take a second screenshot
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(500);
+  await snap(page, "21-derek-settings-bottom");
+});
+
+test("Derek: reports empty state (no data)", async ({ page }) => {
+  attachConsoleCapture(page);
+  await stubSession(page, { fullName: "Derek Optimizer" });
+  await page.goto("/reports");
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await snap(page, "22-derek-reports");
+
+  const headings = await page.locator("h1, h2, h3").allInnerTexts();
+  const ctas = await page.getByRole("button").allInnerTexts();
+  note(
+    "Derek",
+    "Reports empty state",
+    `Headings: ${headings.slice(0, 10).join(" | ")}\nCTAs: ${ctas.slice(0, 10).join(" | ")}`,
+  );
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// 5. PRIYA — caregiver; we look at Collections + Bills bulk
+// ────────────────────────────────────────────────────────────────────────────
+
+test("Priya: collections empty state and care-event vocabulary", async ({
+  page,
+}) => {
+  attachConsoleCapture(page);
+  await stubSession(page, {
+    fullName: "Priya Caregiver",
+    email: "priya@ux-review.local",
+    hasCompletedOnboarding: true,
+  });
+
+  await page.goto("/collections");
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await snap(page, "30-priya-collections");
+
+  const headings = await page.locator("h1, h2").allInnerTexts();
+  const usesCareEventLabel = (await page.content()).includes("Care Event");
+  const usesCollectionsLabel = (await page.content())
+    .toLowerCase()
+    .includes("collection");
+
+  note(
+    "Priya",
+    "Vocabulary check on /collections",
+    [
+      `Headings: ${headings.slice(0, 6).join(" | ")}`,
+      `Page uses 'Care Event' label: ${usesCareEventLabel}`,
+      `Page uses 'collection' anywhere: ${usesCollectionsLabel}`,
+      `URL is /collections but UI calls them Care Events — check for vocabulary leak.`,
+    ].join("\n"),
+  );
+
+  await page.goto("/ledger");
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await snap(page, "31-priya-ledger");
+  const ledgerH = await page
+    .locator("h1, h2")
+    .first()
+    .innerText()
+    .catch(() => "");
+  note(
+    "Priya",
+    "Ledger page",
+    `First heading: "${ledgerH.slice(0, 100)}"\nNote: 'Ledger' is unfamiliar consumer vocabulary; Priya may not know what to expect.`,
+  );
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// 6. MOBILE PARITY — same content via mobile viewport
+// ────────────────────────────────────────────────────────────────────────────
+
+test("mobile: dashboard at 390px", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  attachConsoleCapture(page);
+  await stubSession(page, { fullName: "Maya Mobile" });
+
+  await page.goto("/dashboard");
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await snap(page, "40-mobile-dashboard");
+
+  const bottomNavVisible = await page
+    .locator("nav[aria-label='Bottom navigation']")
+    .isVisible()
+    .catch(() => false);
+  const bottomNavTabs = await page
+    .locator(
+      "nav[aria-label='Bottom navigation'] a, nav[aria-label='Bottom navigation'] button",
+    )
+    .allInnerTexts();
+  const sidebarVisible = await page
+    .locator("aside, [data-sidebar='sidebar']")
+    .first()
+    .isVisible()
+    .catch(() => false);
+
+  note(
+    "Mobile",
+    "Mobile dashboard",
+    [
+      `Bottom nav visible: ${bottomNavVisible}`,
+      `Bottom nav tabs: ${bottomNavTabs.join(" | ")}`,
+      `Desktop sidebar visible at 390px: ${sidebarVisible} (should be false)`,
+    ].join("\n"),
+  );
+});
+
+test("mobile: upload wizard ergonomics at 390px", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  attachConsoleCapture(page);
+  await stubSession(page, { fullName: "Maya Mobile" });
+
+  await page.goto("/bills/new");
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await snap(page, "41-mobile-upload-wizard");
+
+  const dropzoneText = await page
+    .getByText(/drag.*drop|upload documents/i)
+    .first()
+    .innerText()
+    .catch(() => "");
+  note(
+    "Mobile",
+    "Upload wizard mobile",
+    `Dropzone text: "${dropzoneText}"\nNote: 'Drag & drop' is desktop language — on mobile, photo capture / 'choose from photos' would be more idiomatic.`,
+  );
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// 7. EDGE CASES
+// ────────────────────────────────────────────────────────────────────────────
+
+test("edge: cancel mid-wizard from upload step", async ({ page }) => {
+  attachConsoleCapture(page);
+  await stubSession(page, { fullName: "Maya Tester" });
+  await page.goto("/bills/new");
+  await page.waitForLoadState("networkidle").catch(() => {});
+
+  // The wizard's cancel only appears if onCancel prop wired. Look for it.
+  const cancelVisible = await page
+    .getByRole("button", { name: /^cancel$/i })
+    .isVisible()
+    .catch(() => false);
+  note(
+    "Edge",
+    "Cancel button on upload step",
+    `Visible: ${cancelVisible}\nIf false: user must use browser back to abandon — friction.`,
+  );
+});
+
+test("edge: 404 page renders for unknown routes", async ({ page }) => {
+  attachConsoleCapture(page);
+  await stubSession(page, { fullName: "Maya Tester" });
+  await page.goto("/this-route-does-not-exist-xyz");
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await snap(page, "50-404");
+  const heading = await page
+    .locator("h1, h2")
+    .first()
+    .innerText()
+    .catch(() => "(none)");
+  note(
+    "Edge",
+    "404 page",
+    `Heading: "${heading}"\nURL preserved: ${page.url()}`,
+  );
+});
