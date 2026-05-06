@@ -11,12 +11,19 @@ interface AuthenticatedLayoutProps {
   children: ReactNode;
   unreviewedTransactions?: number;
   pendingReviews?: number;
+  /**
+   * Suppress the mobile bottom-tab navigation. Use for focused tasks (e.g. the
+   * bill-upload wizard) where the bottom nav would clip primary CTAs at the
+   * bottom of the viewport.
+   */
+  hideBottomNav?: boolean;
 }
 
 export const AuthenticatedLayout = ({
   children,
   unreviewedTransactions = 0,
   pendingReviews = 0,
+  hideBottomNav = false,
 }: AuthenticatedLayoutProps) => {
   // Enable session timeout for security (15 min inactivity, 2 min warning)
   useSessionTimeout(15, 2);
@@ -48,13 +55,17 @@ export const AuthenticatedLayout = ({
           </div>
 
           {/* Main Content */}
-          <main className="flex-1 pb-20 lg:pb-0">{children}</main>
+          <main className={hideBottomNav ? "flex-1" : "flex-1 pb-20 lg:pb-0"}>
+            {children}
+          </main>
 
-          {/* Bottom Tab Navigation - mobile only */}
-          <BottomTabNavigation
-            unreviewedTransactions={unreviewedTransactions}
-            showHSAFeatures={showHSAFeatures}
-          />
+          {/* Bottom Tab Navigation - mobile only, hidden for focused-task pages */}
+          {!hideBottomNav && (
+            <BottomTabNavigation
+              unreviewedTransactions={unreviewedTransactions}
+              showHSAFeatures={showHSAFeatures}
+            />
+          )}
         </div>
       </div>
 

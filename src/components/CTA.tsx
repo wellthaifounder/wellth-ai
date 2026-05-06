@@ -12,7 +12,7 @@ export const CTA = () => {
 
   const handleCTAClick = () => {
     analytics.ctaClick("start_free", "final_cta");
-    navigate("/auth");
+    navigate("/auth?signup=1");
   };
 
   return (

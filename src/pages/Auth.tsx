@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +42,14 @@ const resetSchema = z.object({
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Landing-page CTAs that lead users into a *new* account flow append `?signup=1`
+  // so the right tab is selected on arrival. Direct visits to /auth (e.g. a returning
+  // user typing the URL) still default to Sign In.
+  const initialTab =
+    searchParams.get("signup") === "1" || searchParams.get("tab") === "signup"
+      ? "signup"
+      : "signin";
   const [loading, setLoading] = useState(false);
   const [showReset, setShowReset] = useState(false);
   const [showIntentDialog, setShowIntentDialog] = useState(false);
@@ -364,7 +372,7 @@ const Auth = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
+          <Tabs defaultValue={initialTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>

@@ -89,39 +89,65 @@ const Dashboard = () => {
   }, []);
 
   // Load calculator data if available (for new users)
+  // Source of truth: sessionStorage on the very first visit; thereafter the
+  // projection is persisted to profiles.calculator_projection so it survives
+  // tab close until the user uploads their first bill (at which point the
+  // empty state graduates to the populated dashboard).
   useEffect(() => {
     const loadCalculatorData = async () => {
-      // Only load if user has 0 expenses
-      if (stats.expenseCount > 0) return;
+      // Only load if user has 0 expenses and we have a user
+      if (stats.expenseCount > 0 || !user) return;
 
-      const calculatorDataRaw = sessionStorage.getItem("calculatorData");
-      if (!calculatorDataRaw) return;
+      const sessionRaw = sessionStorage.getItem("calculatorData");
 
-      try {
-        const calculatorData = JSON.parse(calculatorDataRaw);
+      if (sessionRaw) {
+        // First visit — read from sessionStorage and persist to profile.
+        try {
+          const calculatorData = JSON.parse(sessionRaw);
 
-        // Set projected savings from calculator
-        if (calculatorData.estimatedSavings) {
-          setProjectedSavings(calculatorData.estimatedSavings);
-        }
+          if (calculatorData.estimatedSavings) {
+            setProjectedSavings(calculatorData.estimatedSavings);
+          }
 
-        // Pre-fill HSA status from calculator if user indicated they have HSA
-        if (calculatorData.hasHSA && user) {
+          const updates: Record<string, unknown> = {
+            calculator_projection: calculatorData,
+          };
+          if (calculatorData.hasHSA) {
+            updates.has_hsa = true;
+          }
           const { error } = await supabase
             .from("profiles")
-            .update({ has_hsa: true })
+            .update(updates)
             .eq("id", user.id);
+          if (error) logError("Error persisting calculator projection", error);
 
-          if (error) {
-            logError("Error updating HSA status", error);
-          }
+          sessionStorage.removeItem("calculatorData");
+          sessionStorage.removeItem("estimatedSavings");
+        } catch (error) {
+          logError("Error loading calculator data", error);
         }
+        return;
+      }
 
-        // Clear calculator data after using it
-        sessionStorage.removeItem("calculatorData");
-        sessionStorage.removeItem("estimatedSavings");
+      // Returning visit — fall back to profile.
+      try {
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("calculator_projection")
+          .eq("id", user.id)
+          .maybeSingle();
+        if (error) {
+          logError("Error reading calculator_projection from profile", error);
+          return;
+        }
+        const projection = profile?.calculator_projection as {
+          estimatedSavings?: number;
+        } | null;
+        if (projection?.estimatedSavings) {
+          setProjectedSavings(projection.estimatedSavings);
+        }
       } catch (error) {
-        logError("Error loading calculator data", error);
+        logError("Error loading calculator_projection", error);
       }
     };
 

@@ -49,7 +49,7 @@ const features = [
     icon: FileText,
     title: "Organized Records",
     description:
-      "All your bills, receipts, and payments in one searchable place. Organize by collection, category, or date.",
+      "All your bills, receipts, and payments in one searchable place. Organize by care event, category, or date.",
   },
 ];
 

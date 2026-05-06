@@ -2,7 +2,8 @@ import { lazy, Suspense } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { FeatureRetired } from "@/components/FeatureRetired";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { HSAProvider } from "@/contexts/HSAContext";
 import { OnboardingProvider } from "@/contexts/OnboardingContext";
@@ -135,15 +136,10 @@ const App = () => (
                           </ProtectedRoute>
                         }
                       />
+                      {/* /bills/upload was a duplicate of /bills/new — kept as a redirect for any external bookmarks */}
                       <Route
                         path="/bills/upload"
-                        element={
-                          <ProtectedRoute>
-                            <ErrorBoundary>
-                              <NewBillUpload />
-                            </ErrorBoundary>
-                          </ProtectedRoute>
-                        }
+                        element={<Navigate to="/bills/new" replace />}
                       />
                       <Route
                         path="/bills/:id"
@@ -156,12 +152,15 @@ const App = () => (
                         }
                       />
 
-                      {/* Bill Review & Dispute features archived - redirected to bills */}
+                      {/* Bill Review & Dispute features archived — show interstitial, not silent redirect */}
                       <Route
                         path="/bill-reviews/:invoiceId"
                         element={
                           <ProtectedRoute>
-                            <Bills />
+                            <FeatureRetired
+                              feature="Bill Review"
+                              returnTo="/bills"
+                            />
                           </ProtectedRoute>
                         }
                       />
@@ -169,7 +168,10 @@ const App = () => (
                         path="/disputes/:id"
                         element={
                           <ProtectedRoute>
-                            <Bills />
+                            <FeatureRetired
+                              feature="Disputes"
+                              returnTo="/bills"
+                            />
                           </ProtectedRoute>
                         }
                       />
@@ -177,25 +179,29 @@ const App = () => (
                         path="/bills/:invoiceId/dispute"
                         element={
                           <ProtectedRoute>
-                            <Bills />
+                            <FeatureRetired
+                              feature="Disputes"
+                              returnTo="/bills"
+                            />
                           </ProtectedRoute>
                         }
                       />
 
-                      {/* Legacy redirects */}
+                      {/* Legacy URL aliases — /invoices was renamed to /bills with no feature change,
+                          so redirect silently. The retired bill-review and disputes features show
+                          the interstitial instead. */}
                       <Route
                         path="/invoices"
-                        element={
-                          <ProtectedRoute>
-                            <Bills />
-                          </ProtectedRoute>
-                        }
+                        element={<Navigate to="/bills" replace />}
                       />
                       <Route
                         path="/bill-reviews"
                         element={
                           <ProtectedRoute>
-                            <Bills />
+                            <FeatureRetired
+                              feature="Bill Review"
+                              returnTo="/bills"
+                            />
                           </ProtectedRoute>
                         }
                       />
@@ -203,7 +209,10 @@ const App = () => (
                         path="/disputes"
                         element={
                           <ProtectedRoute>
-                            <Bills />
+                            <FeatureRetired
+                              feature="Disputes"
+                              returnTo="/bills"
+                            />
                           </ProtectedRoute>
                         }
                       />

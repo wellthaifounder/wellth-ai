@@ -102,7 +102,7 @@ export const Pricing = () => {
   const handleCTA = (tierName: string) => {
     analytics.pricingView(tierName);
     if (tierName === "Starter") {
-      navigate("/auth");
+      navigate("/auth?signup=1");
     } else if (tierName === "Plus") {
       createCheckoutSession("plus");
     } else if (tierName === "Premium") {

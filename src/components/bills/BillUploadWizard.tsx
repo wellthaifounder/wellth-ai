@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { useDropzone } from "react-dropzone";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -164,6 +165,7 @@ export function BillUploadWizard({
   onComplete,
   onCancel,
 }: BillUploadWizardProps) {
+  const isMobile = useIsMobile();
   const [step, setStep] = useState<Step>("upload");
   const [fileEntries, setFileEntries] = useState<FileEntry[]>([]);
   const [drafts, setDrafts] = useState<BillDraft[]>([]);
@@ -585,11 +587,17 @@ export function BillUploadWizard({
               )}
             />
             <p className="font-medium mb-1">
-              {isDragActive ? "Drop files here" : "Upload documents"}
+              {isDragActive
+                ? "Drop files here"
+                : isMobile
+                  ? "Add a document"
+                  : "Upload documents"}
             </p>
             <p className="text-sm text-muted-foreground">
-              Drag & drop or click to browse · PDF, PNG, JPG up to 10MB · up to{" "}
-              {MAX_FILES} files
+              {isMobile
+                ? "Take a photo or choose a file"
+                : "Drag & drop or click to browse"}{" "}
+              · PDF, PNG, JPG up to 10MB · up to {MAX_FILES} files
             </p>
           </div>
 

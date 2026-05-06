@@ -29,7 +29,7 @@ export const Hero = () => {
 
   const handleAuthClick = () => {
     analytics.ctaClick("start_free", "hero");
-    navigate("/auth");
+    navigate("/auth?signup=1");
   };
 
   return (
@@ -92,7 +92,7 @@ export const Hero = () => {
                 aria-hidden="true"
               />
               <h3 className="font-semibold text-white mb-2 text-sm sm:text-base">
-                Organize by Collection
+                Group by Care Event
               </h3>
               <p className="text-xs sm:text-sm text-white/80">
                 Group related expenses by episode of care or treatment
