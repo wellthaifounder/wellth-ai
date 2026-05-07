@@ -12,6 +12,21 @@ function flag(name: string): boolean {
 }
 
 /**
+ * Like `flag(name)` but defaults to `true` when the env var is unset. Only the
+ * literal value "false" disables. Used after the 2026-05-06 commit-the-defaults
+ * decision: with no live users, the experiment outcomes are predetermined by
+ * intent, so we ship the on-state by default but keep the env override as a
+ * fast escape hatch in case post-launch reality contradicts.
+ */
+function flagOnByDefault(name: string): boolean {
+  const raw = String(import.meta.env[name] ?? "")
+    .trim()
+    .toLowerCase();
+  if (raw === "false") return false;
+  return true;
+}
+
+/**
  * Wave 3 (2026-05) experiment flags. Both default off until telemetry
  * supports the experiment. See docs/ux-review-2026-05.md §3 + §5 pre-mortem.
  */
@@ -23,7 +38,7 @@ export const FF = {
    *
    * Set VITE_FF_AUTO_DISMISS_ONBOARDING_FOR_BILLING=true to enable.
    */
-  AUTO_DISMISS_ONBOARDING_FOR_BILLING: flag(
+  AUTO_DISMISS_ONBOARDING_FOR_BILLING: flagOnByDefault(
     "VITE_FF_AUTO_DISMISS_ONBOARDING_FOR_BILLING",
   ),
 
@@ -34,7 +49,7 @@ export const FF = {
    *
    * Set VITE_FF_SCOPE_GET_STARTED_TO_DASHBOARD=true to enable.
    */
-  SCOPE_GET_STARTED_TO_DASHBOARD: flag(
+  SCOPE_GET_STARTED_TO_DASHBOARD: flagOnByDefault(
     "VITE_FF_SCOPE_GET_STARTED_TO_DASHBOARD",
   ),
 
@@ -49,5 +64,5 @@ export const FF = {
    *
    * Set VITE_FF_BILLS_LEDGER_IA_COLLAPSE=true to enable.
    */
-  BILLS_LEDGER_IA_COLLAPSE: flag("VITE_FF_BILLS_LEDGER_IA_COLLAPSE"),
+  BILLS_LEDGER_IA_COLLAPSE: flagOnByDefault("VITE_FF_BILLS_LEDGER_IA_COLLAPSE"),
 } as const;
