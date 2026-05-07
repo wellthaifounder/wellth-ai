@@ -51,8 +51,11 @@ export function HSAProvider({ children }: { children: ReactNode }) {
         setUserIntent(null);
       } else {
         const date = profile?.hsa_opened_date || null;
+        // Wave 5 (2026-05-06): UserIntentDialog deleted; everyone defaults to
+        // 'both'. Pre-existing users who never picked an intent are treated
+        // the same so HSA features remain visible.
         const intent =
-          (profile?.user_intent as "billing" | "hsa" | "both" | null) || null;
+          (profile?.user_intent as "billing" | "hsa" | "both" | null) ?? "both";
         setHsaOpenedDate(date);
         setHasHSA(!!date);
         setUserIntent(intent);

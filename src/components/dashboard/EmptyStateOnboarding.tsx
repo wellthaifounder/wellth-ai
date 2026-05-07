@@ -1,8 +1,5 @@
-import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import {
   Upload,
@@ -10,52 +7,22 @@ import {
   CheckCircle2,
   TrendingUp,
   DollarSign,
-  CalendarDays,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useHSA } from "@/contexts/HSAContext";
-import { toast } from "sonner";
-import { logError } from "@/utils/errorHandler";
 
 interface EmptyStateOnboardingProps {
   projectedSavings?: number;
 }
 
+// Wave 5 (2026-05-06): The HSA opened-date prompt that used to live here was
+// removed — it now collects lazily via MissingHSADateBanner after the user
+// uploads their first bill. With everyone defaulting to userIntent='both' the
+// upfront prompt would have shown for every new user before they had any
+// reason to care (review §A1.2 / §A4.8). The empty state now leads with the
+// projection (if any) and a single "Upload Your First Bill" CTA.
 export function EmptyStateOnboarding({
   projectedSavings,
 }: EmptyStateOnboardingProps) {
   const navigate = useNavigate();
-  const { userIntent, hsaOpenedDate, refreshHSAStatus } = useHSA();
-  const [hsaDate, setHsaDate] = useState("");
-  const [savingDate, setSavingDate] = useState(false);
-
-  const needsHSADate =
-    (userIntent === "hsa" || userIntent === "both") && !hsaOpenedDate;
-
-  const handleSaveHSADate = async () => {
-    if (!hsaDate) return;
-    setSavingDate(true);
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      const { error } = await supabase
-        .from("profiles")
-        .update({ hsa_opened_date: hsaDate })
-        .eq("id", user.id);
-
-      if (error) throw error;
-      await refreshHSAStatus();
-      toast.success("HSA date saved! You can now track eligible expenses.");
-    } catch (error) {
-      logError("Error saving HSA date from empty state", error);
-      toast.error("Failed to save HSA date. Please try again.");
-    } finally {
-      setSavingDate(false);
-    }
-  };
 
   return (
     <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
@@ -159,71 +126,25 @@ export function EmptyStateOnboarding({
             </div>
           </div>
 
-          {needsHSADate ? (
-            <div className="space-y-4">
-              <div className="bg-primary/5 border border-primary/20 rounded-lg p-5 text-left space-y-3">
-                <div className="flex items-center gap-2">
-                  <CalendarDays className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold">
-                    Set Your HSA Date to Get Started
-                  </h3>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Only expenses after your HSA opened date are eligible for
-                  reimbursement. Set this first so Wellth can accurately track
-                  your savings.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
-                  <div className="space-y-1.5 flex-1 w-full">
-                    <Label htmlFor="empty-hsa-date" className="text-sm">
-                      HSA Opened Date
-                    </Label>
-                    <Input
-                      id="empty-hsa-date"
-                      type="date"
-                      value={hsaDate}
-                      onChange={(e) => setHsaDate(e.target.value)}
-                    />
-                  </div>
-                  <Button
-                    onClick={handleSaveHSADate}
-                    disabled={!hsaDate || savingDate}
-                    className="w-full sm:w-auto"
-                  >
-                    {savingDate ? "Saving..." : "Save HSA Date"}
-                  </Button>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/bills/new")}
-                className="text-muted-foreground"
-              >
-                Skip for now — upload a bill instead
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <Button
-                size="lg"
-                onClick={() => navigate("/bills/new")}
-                className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90"
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Upload Your First Bill
-              </Button>
+          <div className="space-y-3">
+            <Button
+              size="lg"
+              onClick={() => navigate("/bills/new")}
+              className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Upload Your First Bill
+            </Button>
 
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <TrendingUp className="h-4 w-4" />
-                <span>
-                  HSA holders save an average of{" "}
-                  <strong className="text-foreground">$1,800/year</strong> in
-                  taxes
-                </span>
-              </div>
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <TrendingUp className="h-4 w-4" />
+              <span>
+                HSA holders save an average of{" "}
+                <strong className="text-foreground">$1,800/year</strong> in
+                taxes
+              </span>
             </div>
-          )}
+          </div>
 
           <div className="pt-4 border-t">
             <p className="text-xs text-muted-foreground mb-3">

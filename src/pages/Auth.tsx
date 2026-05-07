@@ -17,10 +17,36 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { WellthLogo } from "@/components/WellthLogo";
 import { toast } from "sonner";
 import { z } from "zod";
-import { Separator } from "@/components/ui/separator";
-import { UserIntentDialog } from "@/components/onboarding/UserIntentDialog";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
 
 const PRIVACY_POLICY_VERSION = "2026-04-24";
+
+// Inline Google brand mark. Matches Google's color tokens.
+const GoogleIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+    <path
+      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+      fill="#4285F4"
+    />
+    <path
+      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+      fill="#34A853"
+    />
+    <path
+      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+      fill="#FBBC05"
+    />
+    <path
+      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+      fill="#EA4335"
+    />
+  </svg>
+);
 
 const signUpSchema = z.object({
   fullName: z.string().trim().min(1, "Name is required").max(100),
@@ -52,8 +78,12 @@ const Auth = () => {
       : "signin";
   const [loading, setLoading] = useState(false);
   const [showReset, setShowReset] = useState(false);
-  const [showIntentDialog, setShowIntentDialog] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  // Hybrid auth (Wave 5, 2026-05-06): Google sign-in is the primary CTA;
+  // email/password sits behind a collapsed "More options" toggle. URL param
+  // `?email=1` opens it directly so a forgot-password link can deep-link to
+  // the form.
+  const [emailOpen, setEmailOpen] = useState(searchParams.get("email") === "1");
 
   // Sign up form
   const [signUpData, setSignUpData] = useState({
@@ -96,36 +126,17 @@ const Auth = () => {
   };
 
   useEffect(() => {
-    const shouldShowIntent = async (userId: string): Promise<boolean> => {
-      // Check sessionStorage first (email signup flow)
-      if (sessionStorage.getItem("isNewSignup") === "true") return true;
-
-      // For OAuth returns, check if user_intent is set in their profile
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("user_intent")
-        .eq("id", userId)
-        .single();
-
-      return !profile?.user_intent;
-    };
-
-    // Check if user is already logged in
+    // Wave 5 (2026-05-06): UserIntentDialog deleted. Everyone defaults to
+    // user_intent='both'; users refine it in Settings if they want. Auth
+    // state machine is now: signed-in → /dashboard, no intermediate gate.
     const checkUser = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      if (session) {
-        if (await shouldShowIntent(session.user.id)) {
-          setShowIntentDialog(true);
-        } else {
-          navigate("/dashboard");
-        }
-      }
+      if (session) navigate("/dashboard");
     };
     checkUser();
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -147,12 +158,7 @@ const Auth = () => {
           }
           sessionStorage.removeItem("pendingTermsAcceptance");
         }
-
-        if (await shouldShowIntent(session.user.id)) {
-          setShowIntentDialog(true);
-        } else {
-          navigate("/dashboard");
-        }
+        navigate("/dashboard");
       }
     });
 
@@ -171,9 +177,6 @@ const Auth = () => {
       const validated = signUpSchema.parse(signUpData);
       setLoading(true);
 
-      // Mark this as a new sign-up (not an existing user signing in)
-      sessionStorage.setItem("isNewSignup", "true");
-
       const acceptedAt = new Date().toISOString();
       const { data: signUpResult, error } = await supabase.auth.signUp({
         email: validated.email,
@@ -190,10 +193,15 @@ const Auth = () => {
 
       if (error) throw error;
 
+      // Default user_intent='both' so HSA features are visible without forcing
+      // an intent picker upfront (Wave 5, 2026-05-06). The migration also sets
+      // 'both' as the column default; this explicit write covers the case
+      // where the trigger inserts the row before the user is fully provisioned.
       if (signUpResult.user) {
         await supabase
           .from("profiles")
           .update({
+            user_intent: "both",
             terms_accepted_at: acceptedAt,
             privacy_policy_version_accepted: PRIVACY_POLICY_VERSION,
           })
@@ -273,8 +281,6 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
-      // Mark as new signup for Google OAuth users
-      sessionStorage.setItem("isNewSignup", "true");
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -306,13 +312,6 @@ const Auth = () => {
       }),
     );
     await handleGoogleSignIn();
-  };
-
-  const handleIntentComplete = (intent: "billing" | "hsa" | "both") => {
-    // Clear the new signup flag
-    sessionStorage.removeItem("isNewSignup");
-    // Navigate to dashboard
-    navigate("/dashboard");
   };
 
   if (showReset) {
@@ -378,232 +377,224 @@ const Auth = () => {
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
-                  <Input
-                    id="signin-email"
-                    type="email"
-                    placeholder="name@example.com"
-                    value={signInData.email}
-                    onChange={(e) =>
-                      setSignInData({ ...signInData, email: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
-                  <Input
-                    id="signin-password"
-                    type="password"
-                    value={signInData.password}
-                    onChange={(e) =>
-                      setSignInData({ ...signInData, password: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Signing in..." : "Sign In"}
-                </Button>
+            <TabsContent value="signin" className="space-y-4">
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="w-full"
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+              >
+                <GoogleIcon className="mr-2 h-4 w-4" />
+                Continue with Google
+              </Button>
 
-                <div className="relative">
-                  <Separator className="my-4" />
-                  <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
-                    OR
+              <Collapsible open={emailOpen} onOpenChange={setEmailOpen}>
+                <CollapsibleTrigger className="flex w-full items-center justify-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors py-2">
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform ${emailOpen ? "rotate-180" : ""}`}
+                  />
+                  <span>
+                    {emailOpen ? "Hide email sign-in" : "More options"}
                   </span>
-                </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <form onSubmit={handleSignIn} className="space-y-4 pt-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="signin-email">Email</Label>
+                      <Input
+                        id="signin-email"
+                        type="email"
+                        placeholder="name@example.com"
+                        value={signInData.email}
+                        onChange={(e) =>
+                          setSignInData({
+                            ...signInData,
+                            email: e.target.value,
+                          })
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signin-password">Password</Label>
+                      <Input
+                        id="signin-password"
+                        type="password"
+                        value={signInData.password}
+                        onChange={(e) =>
+                          setSignInData({
+                            ...signInData,
+                            password: e.target.value,
+                          })
+                        }
+                        required
+                      />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? "Signing in..." : "Sign In"}
+                    </Button>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleGoogleSignIn}
-                  disabled={loading}
-                >
-                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                    <path
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      fill="#4285F4"
-                    />
-                    <path
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      fill="#34A853"
-                    />
-                    <path
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                      fill="#FBBC05"
-                    />
-                    <path
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                      fill="#EA4335"
-                    />
-                  </svg>
-                  Continue with Google
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="link"
-                  className="w-full"
-                  onClick={() => setShowReset(true)}
-                >
-                  Forgot password?
-                </Button>
-              </form>
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="w-full"
+                      onClick={() => setShowReset(true)}
+                    >
+                      Forgot password?
+                    </Button>
+                  </form>
+                </CollapsibleContent>
+              </Collapsible>
             </TabsContent>
 
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name">Full Name</Label>
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    placeholder="John Doe"
-                    value={signUpData.fullName}
-                    onChange={(e) =>
-                      setSignUpData({ ...signUpData, fullName: e.target.value })
-                    }
-                    onBlur={(e) =>
-                      validateSignUpField("fullName", e.target.value)
-                    }
-                    required
-                  />
-                  {fieldErrors.fullName && (
-                    <p className="text-sm text-destructive">
-                      {fieldErrors.fullName}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="name@example.com"
-                    value={signUpData.email}
-                    onChange={(e) =>
-                      setSignUpData({ ...signUpData, email: e.target.value })
-                    }
-                    onBlur={(e) => validateSignUpField("email", e.target.value)}
-                    required
-                  />
-                  {fieldErrors.email && (
-                    <p className="text-sm text-destructive">
-                      {fieldErrors.email}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="Min. 8 characters"
-                    value={signUpData.password}
-                    onChange={(e) =>
-                      setSignUpData({ ...signUpData, password: e.target.value })
-                    }
-                    onBlur={(e) =>
-                      validateSignUpField("password", e.target.value)
-                    }
-                    required
-                  />
-                  {fieldErrors.password && (
-                    <p className="text-sm text-destructive">
-                      {fieldErrors.password}
-                    </p>
-                  )}
-                  {!fieldErrors.password &&
-                    signUpData.password.length > 0 &&
-                    signUpData.password.length >= 8 && (
-                      <p className="text-sm text-green-600">
-                        Password strength: OK
-                      </p>
-                    )}
-                </div>
-                <div className="flex items-start space-x-2 pt-1">
-                  <Checkbox
-                    id="terms-accepted"
-                    checked={termsAccepted}
-                    onCheckedChange={(checked) =>
-                      setTermsAccepted(checked === true)
-                    }
-                    className="mt-0.5"
-                  />
-                  <Label
-                    htmlFor="terms-accepted"
-                    className="text-xs font-normal leading-relaxed text-muted-foreground"
+            <TabsContent value="signup" className="space-y-4">
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="w-full"
+                onClick={handleGoogleSignUp}
+                disabled={loading || !termsAccepted}
+              >
+                <GoogleIcon className="mr-2 h-4 w-4" />
+                Continue with Google
+              </Button>
+
+              {/* Terms must be accepted before either auth path. Lives outside
+                  the email collapsible so it gates Google signup too. */}
+              <div className="flex items-start space-x-2 pt-1">
+                <Checkbox
+                  id="terms-accepted"
+                  checked={termsAccepted}
+                  onCheckedChange={(checked) =>
+                    setTermsAccepted(checked === true)
+                  }
+                  className="mt-0.5"
+                />
+                <Label
+                  htmlFor="terms-accepted"
+                  className="text-xs font-normal leading-relaxed text-muted-foreground"
+                >
+                  I agree to Wellth.ai's{" "}
+                  <a
+                    href="/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline"
                   >
-                    I agree to Wellth.ai's{" "}
-                    <a
-                      href="/privacy"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary underline"
-                    >
-                      Privacy Policy
-                    </a>{" "}
-                    and consent to the collection, processing, and storage of my
-                    data as described therein.
-                  </Label>
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={loading || !termsAccepted}
-                >
-                  {loading ? "Creating account..." : "Create Account"}
-                </Button>
+                    Privacy Policy
+                  </a>{" "}
+                  and consent to the collection, processing, and storage of my
+                  data as described therein.
+                </Label>
+              </div>
 
-                <div className="relative">
-                  <Separator className="my-4" />
-                  <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
-                    OR
+              <Collapsible open={emailOpen} onOpenChange={setEmailOpen}>
+                <CollapsibleTrigger className="flex w-full items-center justify-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors py-2">
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform ${emailOpen ? "rotate-180" : ""}`}
+                  />
+                  <span>
+                    {emailOpen ? "Hide email sign-up" : "More options"}
                   </span>
-                </div>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleGoogleSignUp}
-                  disabled={loading || !termsAccepted}
-                >
-                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                    <path
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      fill="#4285F4"
-                    />
-                    <path
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      fill="#34A853"
-                    />
-                    <path
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                      fill="#FBBC05"
-                    />
-                    <path
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                      fill="#EA4335"
-                    />
-                  </svg>
-                  Continue with Google
-                </Button>
-              </form>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <form onSubmit={handleSignUp} className="space-y-4 pt-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-name">Full Name</Label>
+                      <Input
+                        id="signup-name"
+                        type="text"
+                        placeholder="John Doe"
+                        value={signUpData.fullName}
+                        onChange={(e) =>
+                          setSignUpData({
+                            ...signUpData,
+                            fullName: e.target.value,
+                          })
+                        }
+                        onBlur={(e) =>
+                          validateSignUpField("fullName", e.target.value)
+                        }
+                        required
+                      />
+                      {fieldErrors.fullName && (
+                        <p className="text-sm text-destructive">
+                          {fieldErrors.fullName}
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <Input
+                        id="signup-email"
+                        type="email"
+                        placeholder="name@example.com"
+                        value={signUpData.email}
+                        onChange={(e) =>
+                          setSignUpData({
+                            ...signUpData,
+                            email: e.target.value,
+                          })
+                        }
+                        onBlur={(e) =>
+                          validateSignUpField("email", e.target.value)
+                        }
+                        required
+                      />
+                      {fieldErrors.email && (
+                        <p className="text-sm text-destructive">
+                          {fieldErrors.email}
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Password</Label>
+                      <Input
+                        id="signup-password"
+                        type="password"
+                        placeholder="Min. 8 characters"
+                        value={signUpData.password}
+                        onChange={(e) =>
+                          setSignUpData({
+                            ...signUpData,
+                            password: e.target.value,
+                          })
+                        }
+                        onBlur={(e) =>
+                          validateSignUpField("password", e.target.value)
+                        }
+                        required
+                      />
+                      {fieldErrors.password && (
+                        <p className="text-sm text-destructive">
+                          {fieldErrors.password}
+                        </p>
+                      )}
+                      {!fieldErrors.password &&
+                        signUpData.password.length > 0 &&
+                        signUpData.password.length >= 8 && (
+                          <p className="text-sm text-green-600">
+                            Password strength: OK
+                          </p>
+                        )}
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={loading || !termsAccepted}
+                    >
+                      {loading ? "Creating account..." : "Create Account"}
+                    </Button>
+                  </form>
+                </CollapsibleContent>
+              </Collapsible>
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
-
-      {/* User Intent Dialog for New Signups */}
-      <UserIntentDialog
-        open={showIntentDialog}
-        onComplete={handleIntentComplete}
-      />
     </div>
   );
 };
