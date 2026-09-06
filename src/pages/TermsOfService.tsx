@@ -34,7 +34,7 @@ const TermsOfService = () => {
               Reclaim helps you identify healthcare expenses that may be
               eligible for reimbursement from a Health Savings Account (HSA) or
               Flexible Spending Account (FSA), organize supporting
-              documentation, and generate substantiation records. Reclaim is a
+              documentation, and generate Medical Expense Records. Reclaim is a
               recordkeeping and organizational tool. It is{" "}
               <strong>
                 not a tax advisor, financial advisor, accountant, HSA custodian,
@@ -65,7 +65,7 @@ const TermsOfService = () => {
             </h2>
             <p className="text-sm leading-relaxed text-muted-foreground">
               Eligibility determinations, IRS Publication 502 classifications,
-              and substantiation records produced by the Service are estimates
+              and Medical Expense Records produced by the Service are estimates
               and aids, not guarantees. Tax rules change and apply differently
               to each person. You are solely responsible for confirming that an
               expense qualifies, for the timing and substantiation of any
