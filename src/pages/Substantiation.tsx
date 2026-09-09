@@ -89,7 +89,6 @@ import {
   type SubstantiationHeader,
 } from "@/lib/substantiationRecord";
 import { buildClaimPacket, type ClaimPacketReport } from "@/lib/claimPacket";
-import { TaxPackageExport } from "@/components/analytics/TaxPackageExport";
 import { useReimbursementStrategy } from "@/hooks/useReimbursementStrategy";
 import { HSA_CUSTODIANS } from "@/lib/custodianInstructions";
 
@@ -253,7 +252,12 @@ async function producePacket(
       fetchDocument: fetchReceiptBlob,
       onProgress: opts.onProgress,
     });
-    downloadBlob(`${header.recordNumber}-claim-packet.zip`, report.blob);
+    // The filename is the first thing the user sees in their downloads folder,
+    // and it should not call a saved record a claim packet.
+    downloadBlob(
+      `${header.recordNumber}-${header.purpose === "claim" ? "claim-packet" : "record"}.zip`,
+      report.blob,
+    );
   }
   if (opts.pdf && pdfBlob) {
     downloadBlob(`${header.recordNumber}.pdf`, pdfBlob);
@@ -767,6 +771,7 @@ export default function Substantiation() {
         userName,
         totalAmount: record.total_amount,
         expenseCount: record.expense_count,
+        purpose: record.purpose,
         custodian: record.custodian,
         attestedNoDoubleBenefit: record.attested_no_double_benefit,
         attestedAt: record.attested_at,
@@ -1015,6 +1020,7 @@ export default function Substantiation() {
         userName,
         totalAmount: total,
         expenseCount: included.length,
+        purpose,
         // A saved record names no custodian, so the PDF does not print
         // submission instructions for a submission that is not happening.
         custodian: purpose === "claim" ? chosenCustodian : null,
@@ -1681,20 +1687,19 @@ export default function Substantiation() {
           </div>
         )}
 
-        {/* Tax export, moved here 2026-08-20 when /reports was retired.
-            A claim packet goes to the HSA custodian to get money back; this
-            goes to whoever does the user's taxes. Same underlying expenses,
-            different reader — so it belongs on this page, one section down
-            from the claims rather than on an analytics screen of its own. */}
-        <div className="mt-10 pt-8 border-t">
-          <h2 className="text-lg font-semibold mb-1">Tax export</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            A year's worth of qualified expenses in one file, for your records
-            or your accountant. Separate from a claim — nothing here is sent to
-            your custodian.
-          </p>
-          <TaxPackageExport />
-        </div>
+        {/* The "Tax export" section stood here until 2026-09-09. It rendered a
+            second, competing IRS document (TaxPackageExport + taxReportGenerator,
+            both deleted) over the same expenses as the record above it. Retired
+            rather than repaired: it asserted in print that every expense listed
+            "has supporting documentation stored in your Reclaim account" while
+            querying on eligibility alone and never looking at documentation
+            state, so a user with no receipts got a PDF telling the IRS they had
+            them. It also filled Form 8889 line 14b from expenses whose SERVICE
+            date fell in the year, where the line means distributions TAKEN in
+            the year, and stated a flat six-year retention rule that is not the
+            rule. The honest version of what it offered is the record above
+            (per tax year, numbered, snapshotted) plus /expenses/all for the
+            whole-year view including what has already been claimed. */}
 
         <p className="text-xs text-muted-foreground mt-6 text-center max-w-md mx-auto">
           Claim packets are built on your device and never stored on Reclaim's

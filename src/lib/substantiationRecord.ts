@@ -29,6 +29,7 @@ import { custodianSubmissionInstructions } from "@/lib/custodianInstructions";
 import { formatCurrency } from "@/lib/utils";
 import {
   ATTESTATION_STATEMENT,
+  RETENTION_STATEMENT,
   documentLabel,
   type SubstantiationExpenseInput,
   type SubstantiationHeader,
@@ -39,6 +40,7 @@ import {
 // because this module is the established import site for them.
 export {
   ATTESTATION_STATEMENT,
+  RETENTION_STATEMENT,
   DOCUMENT_TYPE_LABELS,
   documentLabel,
   orderForPacket,
@@ -168,8 +170,12 @@ function drawCover(doc: jsPDF, header: SubstantiationHeader) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(110);
+  // The subtitle states what this copy is, because the title cannot: both
+  // documents are Medical Expense Records, and only one of them is being filed.
   doc.text(
-    `Substantiation for HSA distributions · Tax year ${header.taxYear} · ${header.recordNumber}`,
+    header.purpose === "claim"
+      ? `Substantiation for HSA distributions · Tax year ${header.taxYear} · ${header.recordNumber}`
+      : `Kept as evidence — no distribution claimed · Tax year ${header.taxYear} · ${header.recordNumber}`,
     margin,
     116,
   );
@@ -235,10 +241,20 @@ function drawCover(doc: jsPDF, header: SubstantiationHeader) {
     );
   }
 
-  block(
-    "HOW TO SUBMIT THIS CLAIM",
-    custodianSubmissionInstructions(header.custodian),
-  );
+  // A claim closes by telling the holder how to file it. A record closes by
+  // telling them how long it has to survive — the only instruction that makes
+  // sense on a document that is deliberately not being filed. Printing the
+  // submission block on a saved record (which names no custodian, so it fell
+  // through to "contact your HSA provider") contradicted every screen that
+  // produced it.
+  if (header.purpose === "claim") {
+    block(
+      "HOW TO SUBMIT THIS CLAIM",
+      custodianSubmissionInstructions(header.custodian),
+    );
+  } else {
+    block("HOW LONG TO KEEP THIS", RETENTION_STATEMENT);
+  }
 
   // Defensibility footer
   y = doc.internal.pageSize.getHeight() - 140;
