@@ -67,6 +67,7 @@ import {
   FileText,
   FileSpreadsheet,
   FileArchive,
+  Archive,
   Sparkles,
   Download,
   CheckCircle2,
@@ -116,6 +117,8 @@ interface PastRecord {
   expense_count: number;
   formats_generated: string[];
   status: "generated" | "reimbursed" | "voided";
+  /** A document kept as evidence, or a request filed with a custodian. */
+  purpose: "record" | "claim";
   custodian: string | null;
   attested_no_double_benefit: boolean;
   attested_at: string | null;
@@ -271,9 +274,18 @@ async function producePacket(
  * them a rejected claim weeks later, so anything omitted is said out loud here
  * as well as written into MISSING-DOCUMENTS.txt inside the archive.
  */
-function reportPacket(recordNumber: string, report: ClaimPacketReport | null) {
+function reportPacket(
+  recordNumber: string,
+  report: ClaimPacketReport | null,
+  purpose: "record" | "claim",
+) {
   if (!report) {
-    toast.success(`Medical Expense Record ${recordNumber} generated.`);
+    toast.success(
+      purpose === "record"
+        ? `Medical Expense Record ${recordNumber} saved. Nothing was claimed — these expenses are still yours to claim whenever you want.`
+        : `Medical Expense Record ${recordNumber} generated.`,
+      purpose === "record" ? { duration: 8000 } : undefined,
+    );
     return;
   }
   const documents = `${report.documentCount} document${report.documentCount === 1 ? "" : "s"}`;
@@ -293,7 +305,11 @@ function reportPacket(recordNumber: string, report: ClaimPacketReport | null) {
   }
   if (report.undocumented.length > 0) {
     toast.warning(
-      `${recordNumber} packet downloaded with ${documents}. ${report.undocumented.length} expense${report.undocumented.length === 1 ? " has" : "s have"} no supporting document attached — your custodian may ask for one.`,
+      `${recordNumber} packet downloaded with ${documents}. ${report.undocumented.length} expense${report.undocumented.length === 1 ? " has" : "s have"} no supporting document attached — ${
+        purpose === "record"
+          ? "the IRS asks for records showing each distribution paid a qualified expense, so those are the weak ones."
+          : "your custodian may ask for one."
+      }`,
       { duration: 12000 },
     );
     return;
@@ -322,6 +338,14 @@ export default function Substantiation() {
   const [matchActingId, setMatchActingId] = useState<string | null>(null);
 
   // Generate-flow state
+  //
+  // `purpose` is the whole point of this flow now. The same document serves two
+  // intents and only one of them touches the money: a RECORD is evidence you
+  // keep, a CLAIM is a request you file. IRS Notice 2004-50 Q&A-39 lets a
+  // holder defer reimbursement indefinitely provided the records exist, so
+  // saving a record has to be possible without spending anything — and the
+  // expenses in it must stay claimable for as long as the holder wants.
+  const [purpose, setPurpose] = useState<"record" | "claim">("claim");
   const [taxYear, setTaxYear] = useState<number>(CURRENT_TAX_YEAR);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [formatZip, setFormatZip] = useState(true);
@@ -361,7 +385,7 @@ export default function Substantiation() {
         supabase
           .from("substantiation_records")
           .select(
-            "id, record_number, tax_year, generated_at, total_amount, expense_count, formats_generated, status, custodian, attested_no_double_benefit, attested_at",
+            "id, record_number, tax_year, generated_at, total_amount, expense_count, formats_generated, status, purpose, custodian, attested_no_double_benefit, attested_at",
           )
           .eq("user_id", user.id)
           .order("generated_at", { ascending: false })
@@ -408,6 +432,10 @@ export default function Substantiation() {
           expense_count: r.expense_count as number,
           formats_generated: (r.formats_generated as string[]) ?? [],
           status: r.status as "generated" | "reimbursed" | "voided",
+          // Every record written before the column existed was a claim, which
+          // is what the database default says too -- so the fallback here
+          // agrees with it rather than inventing a third answer.
+          purpose: (r.purpose as "record" | "claim" | null) ?? "claim",
           custodian: (r.custodian as string | null) ?? null,
           attested_no_double_benefit: Boolean(r.attested_no_double_benefit),
           attested_at: (r.attested_at as string | null) ?? null,
@@ -462,6 +490,10 @@ export default function Substantiation() {
           (a, b) => b[1] - a[1] || b[0] - a[0],
         )[0];
         setTaxYear(bestYear);
+        // A handover from the Expenses page is someone acting on money, so it
+        // opens on the claim intent. Set explicitly rather than relying on the
+        // default, which a previous trip through this flow may have moved.
+        setPurpose("claim");
         setPhase("generate");
         if (bestCount < handedOver.length) {
           toast.info(
@@ -745,7 +777,9 @@ export default function Substantiation() {
         pdf: false,
         csv: false,
       });
-      reportPacket(record.record_number, report);
+      // The record being re-downloaded knows its own purpose, so the message
+      // describes what this document is rather than what the last one was.
+      reportPacket(record.record_number, report, record.purpose);
     } catch (err) {
       logError("Substantiation.redownloadPacket", err);
       toast.error("Couldn't rebuild that packet. Please try again.");
@@ -791,6 +825,26 @@ export default function Substantiation() {
       if (match) nextSeq = parseInt(match[1], 10) + 1;
     }
     return `RCM-${year}-${String(nextSeq).padStart(4, "0")}`;
+  }
+
+  /**
+   * Open the generate flow for one intent.
+   *
+   * The two entry buttons differ only in what they set here, so there is one
+   * flow and one code path — the alternative, two near-identical screens, is
+   * how the claim path and the record path start drifting apart.
+   */
+  function startGenerate(next: "record" | "claim") {
+    setPurpose(next);
+    setTaxYear(CURRENT_TAX_YEAR);
+    setSelectedIds(new Set(eligibleNow.map((e) => e.id)));
+    setFormatZip(true);
+    setFormatPdf(false);
+    setFormatCsv(false);
+    // Never carried over: an attestation is about the expenses in front of the
+    // user right now.
+    setAttested(false);
+    setPhase("generate");
   }
 
   async function handleGenerate() {
@@ -851,10 +905,11 @@ export default function Substantiation() {
           expense_count: included.length,
           formats_generated: formats,
           status: "generated",
+          purpose,
           // Snapshotted: the record is an account of what was submitted where,
           // so changing custodians later must not rewrite where an old claim
-          // went.
-          custodian: chosenCustodian,
+          // went. A saved record went nowhere, so it names no custodian.
+          custodian: purpose === "claim" ? chosenCustodian : null,
           attested_no_double_benefit: true,
           attested_at: generatedAt,
         })
@@ -899,41 +954,52 @@ export default function Substantiation() {
         throw itemsErr;
       }
 
-      // 3. Transition invoices to SUBMITTED. Only set submitted_record_id
-      // for invoices that don't already have one (first record wins the
-      // back-link).
-      setProgress("Marking expenses as submitted…");
-      const { error: lifeErr } = await supabase
-        .from("invoices")
-        .update({
-          // Workstream B: claim_state drives the derived lifecycle_status.
-          // 'locked_in_request' is what makes the expense unavailable to any
-          // other reimbursement request.
-          claim_state: "locked_in_request",
-          submitted_at: generatedAt,
-          submitted_record_id: recordId,
-        })
-        .in("id", includedIds)
-        .is("submitted_record_id", null);
-      if (lifeErr) {
-        // Don't fully bail — the record was written. Surface a warning.
-        logError("Substantiation: invoice submit update failed", lifeErr);
+      // 3. Transition invoices to SUBMITTED — CLAIMS ONLY.
+      //
+      // This block is the difference between the two intents. Documenting an
+      // expense must leave it exactly as claimable as it was a moment earlier;
+      // a shoebox holder saves a record every year over a pile they will not
+      // touch for decades, and moving those expenses to locked_in_request would
+      // quietly take the money off the table. The database enforces the same
+      // split independently — record-purpose items are excluded from both the
+      // claim lock and claimable_expenses() — so a future call site that
+      // forgets this cannot strand anyone's money.
+      if (purpose === "claim") {
+        // Only set submitted_record_id for invoices that don't already have
+        // one (first record wins the back-link).
+        setProgress("Marking expenses as submitted…");
+        const { error: lifeErr } = await supabase
+          .from("invoices")
+          .update({
+            // Workstream B: claim_state drives the derived lifecycle_status.
+            // 'locked_in_request' is what makes the expense unavailable to any
+            // other reimbursement request.
+            claim_state: "locked_in_request",
+            submitted_at: generatedAt,
+            submitted_record_id: recordId,
+          })
+          .in("id", includedIds)
+          .is("submitted_record_id", null);
+        if (lifeErr) {
+          // Don't fully bail — the record was written. Surface a warning.
+          logError("Substantiation: invoice submit update failed", lifeErr);
+        }
+        // For invoices that already had a submitted_record_id (re-bundled into
+        // a new record), just refresh submitted_at so the lifecycle reflects
+        // the latest activity.
+        await supabase
+          .from("invoices")
+          .update({
+            claim_state: "locked_in_request",
+            submitted_at: generatedAt,
+          })
+          .in("id", includedIds);
       }
-      // For invoices that already had a submitted_record_id (re-bundled into
-      // a new record), just refresh submitted_at so the lifecycle reflects
-      // the latest activity.
-      await supabase
-        .from("invoices")
-        .update({
-          claim_state: "locked_in_request",
-          submitted_at: generatedAt,
-        })
-        .in("id", includedIds);
 
       // 4. Remember the custodian for next time. Best-effort: the claim is
       // already written, and failing to save a preference must not look like a
       // failed claim.
-      if (chosenCustodian) {
+      if (purpose === "claim" && chosenCustodian) {
         const { error: prefErr } = await supabase
           .from("profiles")
           .update({ hsa_custodian: chosenCustodian })
@@ -949,7 +1015,9 @@ export default function Substantiation() {
         userName,
         totalAmount: total,
         expenseCount: included.length,
-        custodian: chosenCustodian,
+        // A saved record names no custodian, so the PDF does not print
+        // submission instructions for a submission that is not happening.
+        custodian: purpose === "claim" ? chosenCustodian : null,
         attestedNoDoubleBenefit: true,
         attestedAt: generatedAt,
       };
@@ -974,7 +1042,7 @@ export default function Substantiation() {
         onProgress: setProgress,
       });
 
-      reportPacket(recordNumber, report);
+      reportPacket(recordNumber, report, purpose);
       await load();
       setPhase("list");
     } catch (err) {
@@ -1037,13 +1105,14 @@ export default function Substantiation() {
 
           <div className="mb-6">
             <h1 className="text-2xl font-semibold mb-1">
-              Generate a Medical Expense Record
+              {purpose === "record"
+                ? "Save a Medical Expense Record"
+                : "Submit a claim"}
             </h1>
             <p className="text-sm text-muted-foreground">
-              One file that proves each expense qualified: every expense with
-              its IRS Publication 502 basis and the date you confirmed it, plus
-              every supporting document attached to it. Send it to your
-              custodian, or keep it for your own records.
+              {purpose === "record"
+                ? "One file that proves each expense qualified: its IRS Publication 502 basis, the date you confirmed it, and every supporting document. Nothing is claimed and nothing moves — these expenses stay yours to claim whenever you want, and you can save a record over them again next year."
+                : "The same file, sent to your custodian as a request for reimbursement. The expenses in it are locked so they can't be claimed twice."}
             </p>
           </div>
 
@@ -1071,28 +1140,36 @@ export default function Substantiation() {
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="custodian">Send this claim to</Label>
-                <Select
-                  value={custodian}
-                  onValueChange={(v) => setCustodian(v)}
-                >
-                  <SelectTrigger id="custodian" className="w-full sm:w-72 mt-1">
-                    <SelectValue placeholder="Choose your HSA custodian" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {HSA_CUSTODIANS.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground mt-1.5">
-                  We'll include their submission steps in the packet where we
-                  have them, and remember your choice for next time.
-                </p>
-              </div>
+              {/* Only a claim goes anywhere, so only a claim names a
+                  custodian. Asking a shoebox holder who they are sending this
+                  to is asking about a submission that is not happening. */}
+              {purpose === "claim" && (
+                <div>
+                  <Label htmlFor="custodian">Send this claim to</Label>
+                  <Select
+                    value={custodian}
+                    onValueChange={(v) => setCustodian(v)}
+                  >
+                    <SelectTrigger
+                      id="custodian"
+                      className="w-full sm:w-72 mt-1"
+                    >
+                      <SelectValue placeholder="Choose your HSA custodian" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {HSA_CUSTODIANS.map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    We'll include their submission steps in the packet where we
+                    have them, and remember your choice for next time.
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label>What to download</Label>
@@ -1105,11 +1182,13 @@ export default function Substantiation() {
                     />
                     <FileArchive className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                     <span>
-                      Claim packet (ZIP)
+                      {purpose === "record"
+                        ? "Everything (ZIP)"
+                        : "Claim packet (ZIP)"}
                       <span className="block text-xs text-muted-foreground">
-                        Everything in one file: the summary, the spreadsheet,
-                        and every supporting document. This is what you send
-                        your custodian.
+                        {purpose === "record"
+                          ? "The summary, the spreadsheet, and every supporting document in one file. This is the one to keep."
+                          : "Everything in one file: the summary, the spreadsheet, and every supporting document. This is what you send your custodian."}
                       </span>
                     </span>
                   </label>
@@ -1147,9 +1226,9 @@ export default function Substantiation() {
                     on Schedule A, or reimbursed by an FSA, HRA, or any other
                     plan.
                     <span className="block text-xs text-muted-foreground mt-1">
-                      Required. Each expense can only be claimed once — this
-                      confirmation goes into the record with the date you made
-                      it.
+                      {purpose === "record"
+                        ? "Required. Two of the three things the IRS asks you to be able to show are this sentence — the record carries it with the date you made it."
+                        : "Required. Each expense can only be claimed once — this confirmation goes into the record with the date you made it."}
                     </span>
                   </span>
                 </label>
@@ -1461,26 +1540,33 @@ export default function Substantiation() {
                 </p>
               )}
             </div>
-            <Button
-              size="lg"
-              variant={isShoebox ? "outline" : "default"}
-              disabled={eligible.length === 0}
-              className="w-full sm:w-auto"
-              onClick={() => {
-                setTaxYear(CURRENT_TAX_YEAR);
-                setSelectedIds(new Set(eligibleNow.map((e) => e.id)));
-                setFormatZip(true);
-                setFormatPdf(false);
-                setFormatCsv(false);
-                // Never carried over from a previous claim: an attestation is
-                // about the expenses in front of the user right now.
-                setAttested(false);
-                setPhase("generate");
-              }}
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              {isShoebox ? "Claim anyway" : "New record"}
-            </Button>
+            {/* Two doors, because there are two intents and only one of them
+                spends anything. Saving the record is offered FIRST to a shoebox
+                holder and second to everyone else — but it is offered to both,
+                because the evidence is what the IRS asks for either way and it
+                is only contemporaneous if it is made now. */}
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+              <Button
+                size="lg"
+                variant={isShoebox ? "default" : "outline"}
+                disabled={eligible.length === 0}
+                className="w-full sm:w-auto"
+                onClick={() => startGenerate("record")}
+              >
+                <Archive className="h-4 w-4 mr-2" />
+                Save the record
+              </Button>
+              <Button
+                size="lg"
+                variant={isShoebox ? "outline" : "default"}
+                disabled={eligible.length === 0}
+                className="w-full sm:w-auto"
+                onClick={() => startGenerate("claim")}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Submit a claim
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -1508,19 +1594,27 @@ export default function Substantiation() {
                       <p className="font-semibold tabular-nums">
                         {r.record_number}
                       </p>
+                      {/* A saved record is not waiting for anything, so it
+                          must not wear a status that says it is. "Awaiting
+                          deposit" over a document the user filed away would be
+                          the app inventing an outstanding task. */}
                       <Badge
                         variant="outline"
                         className={
                           r.status === "reimbursed"
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 text-xs"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800 text-xs"
                             : r.status === "voided"
-                              ? "bg-red-50 text-red-700 border-red-200 text-xs"
-                              : "bg-amber-50 text-amber-700 border-amber-200 text-xs"
+                              ? "bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800 text-xs"
+                              : r.purpose === "record"
+                                ? "bg-muted text-muted-foreground border-border text-xs"
+                                : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800 text-xs"
                         }
                       >
-                        {r.status === "generated"
-                          ? "Awaiting deposit"
-                          : r.status}
+                        {r.status !== "generated"
+                          ? r.status
+                          : r.purpose === "record"
+                            ? "Kept on file"
+                            : "Awaiting deposit"}
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
@@ -1531,9 +1625,11 @@ export default function Substantiation() {
                       {r.total_amount.toFixed(2)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {r.custodian
-                        ? `Sent to ${r.custodian}`
-                        : "No custodian recorded"}
+                      {r.purpose === "record"
+                        ? "Kept as evidence — nothing claimed"
+                        : r.custodian
+                          ? `Sent to ${r.custodian}`
+                          : "No custodian recorded"}
                       {r.attested_no_double_benefit ? " · attested" : ""}
                     </p>
                   </div>
@@ -1558,7 +1654,12 @@ export default function Substantiation() {
                         paid one would put money back into the claimable pool
                         that has already arrived, and a voided one is already
                         withdrawn — so neither offers the button at all rather
-                        than offering it and refusing. */}
+                        than offering it and refusing.
+
+                        A saved record can be discarded too, and the same
+                        function does it: nothing was locked, so voiding one
+                        releases nothing and simply retires the document. It
+                        says "Discard" because there is no claim to withdraw. */}
                     {r.status === "generated" && (
                       <Button
                         size="sm"
@@ -1570,7 +1671,7 @@ export default function Substantiation() {
                         }}
                       >
                         <Undo2 className="h-3.5 w-3.5 mr-1.5" />
-                        Withdraw
+                        {r.purpose === "record" ? "Discard" : "Withdraw"}
                       </Button>
                     )}
                   </div>
@@ -1617,19 +1718,23 @@ export default function Substantiation() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Withdraw {voidTarget?.record_number}?
+              {voidTarget?.purpose === "record" ? "Discard" : "Withdraw"}{" "}
+              {voidTarget?.record_number}?
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-3">
+                {/* A saved record never locked anything, so promising its
+                    expenses "go back to being ready to claim" would describe a
+                    release that is not happening — they never left. */}
                 <p>
-                  Its {voidTarget?.expense_count} expense
-                  {voidTarget?.expense_count === 1 ? "" : "s"} ($
-                  {voidTarget?.total_amount.toFixed(2)}) go back to being ready
-                  to claim, so you can put them in a new claim.
+                  {voidTarget?.purpose === "record"
+                    ? `Its ${voidTarget?.expense_count} expense${voidTarget?.expense_count === 1 ? "" : "s"} ($${voidTarget?.total_amount.toFixed(2)}) are unaffected — nothing was claimed, so nothing comes back. You are retiring the document.`
+                    : `Its ${voidTarget?.expense_count} expense${voidTarget?.expense_count === 1 ? "" : "s"} ($${voidTarget?.total_amount.toFixed(2)}) go back to being ready to claim, so you can put them in a new claim.`}
                 </p>
                 <p>
-                  The claim stays in your history with everything it contained,
-                  and you can still download its packet. Nothing is deleted.
+                  {voidTarget?.purpose === "record"
+                    ? "It stays in your history with everything it contained, and you can still download its packet. Nothing is deleted."
+                    : "The claim stays in your history with everything it contained, and you can still download its packet. Nothing is deleted."}
                 </p>
                 <div className="space-y-1.5 pt-1">
                   <Label htmlFor="void-reason" className="text-foreground">
@@ -1665,7 +1770,9 @@ export default function Substantiation() {
               }}
             >
               {voiding && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Withdraw claim
+              {voidTarget?.purpose === "record"
+                ? "Discard record"
+                : "Withdraw claim"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
