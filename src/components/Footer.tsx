@@ -11,8 +11,8 @@ export const Footer = () => {
             </div>
             <p className="mb-4 text-sm text-muted-foreground">
               Your healthcare expense companion. Track medical spending,
-              organize by episode of care, and maximize your HSA and FSA
-              savings.
+              organize the paperwork behind it, and reclaim what your HSA
+              already owes you.
             </p>
             <p className="text-xs text-muted-foreground">
               © 2026 Reclaim. All rights reserved.
