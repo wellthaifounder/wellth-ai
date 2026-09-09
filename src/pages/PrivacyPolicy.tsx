@@ -16,11 +16,11 @@ const PrivacyPolicy = () => {
             <h2 className="mb-3 text-xl font-semibold">1. Introduction</h2>
             <p className="text-sm leading-relaxed text-muted-foreground">
               Reclaim ("we," "us," or "our") provides a healthcare expense
-              management platform that helps users track HSA/FSA accounts,
-              categorize medical expenses, and manage reimbursements. This
-              Privacy Policy explains how we collect, use, store, and protect
-              your personal information when you use our web and mobile
-              applications (the "Service").
+              management platform that helps users track Health Savings Account
+              (HSA) activity, categorize medical expenses, and manage
+              reimbursements. This Privacy Policy explains how we collect, use,
+              store, and protect your personal information when you use our web
+              and mobile applications (the "Service").
             </p>
           </section>
 
@@ -90,7 +90,7 @@ const PrivacyPolicy = () => {
             <ul className="list-disc space-y-2 pl-6 text-sm leading-relaxed text-muted-foreground">
               <li>To provide, maintain, and improve the Service</li>
               <li>To categorize and analyze your healthcare expenses</li>
-              <li>To identify potential HSA/FSA reimbursement opportunities</li>
+              <li>To identify potential HSA reimbursement opportunities</li>
               <li>To process subscription payments</li>
               <li>
                 To communicate with you about your account and the Service

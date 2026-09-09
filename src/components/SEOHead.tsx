@@ -9,13 +9,21 @@ interface SEOHeadProps {
   canonical?: string;
 }
 
+// These defaults must stay in step with the same tags in `index.html`. This
+// component overwrites them at runtime, so a stale default here silently wins
+// over the correct markup a crawler was first served.
+//
+// HSA only, deliberately. A health FSA or HRA requires the plan administrator
+// to substantiate each claim through an independent third party (CCA
+// 202317020), which is not what this product does — so it must not be
+// marketed as serving those plans. See the Terms, section 2.
 export const SEOHead = ({
-  title = "Reclaim - HSA/FSA Expense Management & Tax Savings",
-  description = "Track medical expenses, organize by episode of care, and optimize your HSA or FSA for maximum tax savings. Free to start.",
-  keywords = "HSA, health savings account, FSA, flexible spending account, medical expense tracking, tax savings, healthcare finance, HSA optimization, reimbursement timing",
-  ogImage = "https://wellth.ai/og-image.jpg",
+  title = "Reclaim - Find unclaimed HSA reimbursements & generate IRS-ready records",
+  description = "Reclaim finds healthcare expenses you can still reimburse from your HSA and generates IRS-ready Medical Expense Records — your audit-proof paper trail.",
+  keywords = "HSA, health savings account, HSA reimbursement, unclaimed HSA, medical expense tracking, IRS substantiation, HSA receipts, tax-free reimbursement, healthcare expense management",
+  ogImage = "https://reclaim.health/reclaim-icon.png",
   ogType = "website",
-  canonical = "https://wellth.ai",
+  canonical = "https://reclaim.health",
 }: SEOHeadProps) => {
   useEffect(() => {
     // Update title
@@ -80,11 +88,9 @@ export const SEOHead = ({
         priceCurrency: "USD",
       },
       operatingSystem: "Web, iOS, Android",
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: "4.8",
-        ratingCount: "1250",
-      },
+      // No aggregateRating. This carried a hardcoded 4.8 from 1,250 ratings —
+      // figures no user ever gave, published to search engines as fact. Do not
+      // reinstate one until it is computed from real reviews.
     };
 
     let scriptTag = document.querySelector(

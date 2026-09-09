@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => ({
         name: "Reclaim - Unclaimed HSA Reimbursements & IRS-Ready Records",
         short_name: "Reclaim",
         description:
-          "Find healthcare expenses you can still reimburse from your HSA and generate IRS-ready Substantiation Records.",
+          "Find healthcare expenses you can still reimburse from your HSA and generate IRS-ready Medical Expense Records.",
         theme_color: "#14b8a6",
         background_color: "#ffffff",
         display: "standalone",

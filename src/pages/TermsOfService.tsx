@@ -32,16 +32,24 @@ const TermsOfService = () => {
             <h2 className="mb-3 text-xl font-semibold">2. What Reclaim Is</h2>
             <p className="text-sm leading-relaxed text-muted-foreground">
               Reclaim helps you identify healthcare expenses that may be
-              eligible for reimbursement from a Health Savings Account (HSA) or
-              Flexible Spending Account (FSA), organize supporting
-              documentation, and generate Medical Expense Records. Reclaim is a
-              recordkeeping and organizational tool. It is{" "}
+              eligible for reimbursement from a Health Savings Account (HSA),
+              organize supporting documentation, and generate Medical Expense
+              Records. Reclaim is a recordkeeping and organizational tool. It is{" "}
               <strong>
                 not a tax advisor, financial advisor, accountant, HSA custodian,
                 or healthcare provider
               </strong>
               , and nothing in the Service constitutes tax, legal, financial, or
               medical advice.
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              <strong>The Service supports HSA distributions only.</strong> It
+              is not built for, and must not be used to substantiate, claims
+              against a health Flexible Spending Account (FSA), a Health
+              Reimbursement Arrangement (HRA), or any other employer-sponsored
+              plan. Those plans require the plan administrator to substantiate
+              every claim through an independent third party, and a record you
+              assemble yourself cannot satisfy that requirement.
             </p>
           </section>
 
@@ -68,9 +76,9 @@ const TermsOfService = () => {
               and Medical Expense Records produced by the Service are estimates
               and aids, not guarantees. Tax rules change and apply differently
               to each person. You are solely responsible for confirming that an
-              expense qualifies, for the timing and substantiation of any
-              HSA/FSA reimbursement you take, and for your own tax filings.
-              Consult a qualified professional before acting. You assume all
+              expense qualifies, for the timing and substantiation of any HSA
+              distribution you take, and for your own tax filings. Consult a
+              qualified professional before acting. You assume all
               responsibility for reimbursements you choose to make.
             </p>
           </section>
