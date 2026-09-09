@@ -96,7 +96,21 @@ interface EligibleExpense {
   id: string;
   vendor: string;
   date: string;
-  amount: number;
+  /**
+   * What the expense cost. What a RECORD documents.
+   *
+   * Separate from `remainingAmount` because an expense the HSA has already paid
+   * for has nothing remaining, and a record is exactly the document that spend
+   * still needs: the distribution happened, and Pub 969 asks the account holder
+   * to be able to show it was qualified.
+   */
+  fullAmount: number;
+  /** What is still owed to the holder. What a CLAIM asks the custodian for. */
+  remainingAmount: number;
+  /** unclaimed | locked_in_request | reimbursed | not_reimbursable. */
+  claimState: string;
+  /** Decided by the database, not reassembled here. See the migration. */
+  claimable: boolean;
   category: string | null;
   patient_name: string | null;
   confirmed_at: string;
@@ -166,6 +180,39 @@ function groupMatches(matches: PendingMatch[]): PendingMatch[][] {
 }
 
 type Phase = "list" | "generate" | "working";
+
+type Purpose = "record" | "claim";
+
+/**
+ * What one expense contributes to a document of this purpose.
+ *
+ * A claim asks for what is still owed; a record documents what was spent. For
+ * an unclaimed expense the two are the same number, which is why this was
+ * invisible until records could cover already-distributed spend.
+ */
+function amountFor(e: EligibleExpense, purpose: Purpose): number {
+  return purpose === "claim" ? e.remainingAmount : e.fullAmount;
+}
+
+/**
+ * Why an expense cannot be claimed, in the user's words — or null if it can.
+ *
+ * Shown against the row rather than hiding it: a record is meant to cover this
+ * spend, and an unexplained line the user cannot claim reads like a bug.
+ */
+function unclaimableReason(e: EligibleExpense): string | null {
+  if (e.claimable) return null;
+  switch (e.claimState) {
+    case "not_reimbursable":
+      return "Paid by HSA card";
+    case "reimbursed":
+      return "Already reimbursed";
+    case "locked_in_request":
+      return "In a live claim";
+    default:
+      return "Not claimable";
+  }
+}
 
 const CURRENT_TAX_YEAR = new Date().getFullYear();
 
@@ -394,12 +441,15 @@ export default function Substantiation() {
           .eq("user_id", user.id)
           .order("generated_at", { ascending: false })
           .limit(50),
-        // Workstream E2: what is claimable is defined once, in the database,
-        // by claimable_expenses() — eligible AND unclaimed AND remaining > 0
-        // AND not already inside a live claim. Assembling that filter here as
-        // well is how the screen and the lock drift apart, and the screen is
-        // the half that cannot enforce anything.
-        supabase.rpc("claimable_expenses"),
+        // The SUPERSET: everything confirmed eligible, whatever has happened to
+        // the money since. A record may cover all of it — HSA-card spend and
+        // already-reimbursed expenses are distributions that still need
+        // substantiating. Each row carries `claimable`, still decided once in
+        // the database, so the narrower claim set is a filter over this rather
+        // than a second query with a second copy of the rule. Assembling that
+        // filter here is how the screen and the lock drift apart, and the
+        // screen is the half that cannot enforce anything.
+        supabase.rpc("substantiatable_expenses"),
         // Workstream E4: re-scan before reading. The Plaid sync only ever
         // matched the deposits of the batch that delivered them, so a record
         // generated after its deposit posted was never matched by anything.
@@ -458,7 +508,10 @@ export default function Substantiation() {
           // used to read invoices.amount, so an expense whose claimable amount
           // had been lowered after an insurance refund (D5) still went to the
           // custodian asking for the full original figure.
-          amount: Number(row.remaining_amount),
+          remainingAmount: Number(row.remaining_amount),
+          fullAmount: Number(row.full_amount),
+          claimState: (row.claim_state as string | null) ?? "unclaimed",
+          claimable: row.claimable === true,
           category: (row.category as string | null) ?? null,
           patient_name: (row.patient_name as string | null) ?? null,
           confirmed_at: (row.confirmed_at as string | null) ?? "",
@@ -474,9 +527,11 @@ export default function Substantiation() {
 
       // Workstream E1. Arriving with a selection already made elsewhere.
       // Anything in it that is not actually claimable is dropped — those
-      // screens select against a looser filter than this one does.
+      // screens select against a looser filter than this one does. Checked
+      // against `claimable` rather than mere presence in `rows`, because rows
+      // is now the wider record set and a handover lands on the claim intent.
       const handedOver = (preselectInvoiceIds ?? []).filter((id) =>
-        rows.some((r) => r.id === id),
+        rows.some((r) => r.id === id && r.claimable),
       );
       if (handedOver.length > 0) {
         setSelectedIds(new Set(handedOver));
@@ -801,13 +856,27 @@ export default function Substantiation() {
     const selected = eligible.filter((e) => selectedIds.has(e.id));
     return {
       count: selected.length,
-      total: selected.reduce((s, e) => s + e.amount, 0),
+      total: selected.reduce((s, e) => s + amountFor(e, purpose), 0),
     };
-  }, [eligible, selectedIds]);
+  }, [eligible, selectedIds, purpose]);
+
+  /**
+   * The pool the current intent may draw from.
+   *
+   * A claim may only cover what is still owed. A record may cover everything
+   * confirmed eligible, including spend the HSA has already paid for — that is
+   * the distribution most in need of a record, and it was the one the picker
+   * could never reach.
+   */
+  const pool = useMemo(
+    () =>
+      purpose === "claim" ? eligible.filter((e) => e.claimable) : eligible,
+    [eligible, purpose],
+  );
 
   const eligibleForYear = useMemo(
-    () => eligible.filter((e) => taxYearOf(e.date) === taxYear),
-    [eligible, taxYear],
+    () => pool.filter((e) => taxYearOf(e.date) === taxYear),
+    [pool, taxYear],
   );
 
   // ── Generate ─────────────────────────────────────────────────────────────
@@ -839,10 +908,25 @@ export default function Substantiation() {
    * flow and one code path — the alternative, two near-identical screens, is
    * how the claim path and the record path start drifting apart.
    */
-  function startGenerate(next: "record" | "claim") {
+  function startGenerate(next: Purpose) {
     setPurpose(next);
     setTaxYear(CURRENT_TAX_YEAR);
-    setSelectedIds(new Set(eligibleNow.map((e) => e.id)));
+    // Built from `next`, not from the `pool` memo, which is still computed
+    // against the previous purpose on this render. A record opens with the
+    // whole year selected — including HSA-card and already-reimbursed spend,
+    // because a year's record that quietly omits the distributions already
+    // taken is incomplete in exactly the way an examiner would notice.
+    setSelectedIds(
+      new Set(
+        eligible
+          .filter(
+            (e) =>
+              taxYearOf(e.date) === CURRENT_TAX_YEAR &&
+              (next === "record" || e.claimable),
+          )
+          .map((e) => e.id),
+      ),
+    );
     setFormatZip(true);
     setFormatPdf(false);
     setFormatCsv(false);
@@ -887,7 +971,7 @@ export default function Substantiation() {
       const included = eligibleForYear.filter((e) =>
         includedIds.includes(e.id),
       );
-      const total = included.reduce((s, e) => s + e.amount, 0);
+      const total = included.reduce((s, e) => s + amountFor(e, purpose), 0);
 
       const formats: string[] = [];
       if (formatZip) formats.push("claim_packet_zip");
@@ -929,7 +1013,7 @@ export default function Substantiation() {
       const itemRows = included.map((e) => ({
         substantiation_record_id: recordId,
         invoice_id: e.id,
-        amount_at_submission: e.amount,
+        amount_at_submission: amountFor(e, purpose),
         vendor_at_submission: e.vendor,
         date_at_submission: e.date,
         patient_name_at_submission: e.patient_name,
@@ -1033,7 +1117,7 @@ export default function Substantiation() {
         date: e.date,
         patientName: e.patient_name,
         category: e.category,
-        amount: e.amount,
+        amount: amountFor(e, purpose),
         ruleName: e.rule_name,
         ruleSectionRef: e.rule_section_ref,
         confirmedAt: e.confirmed_at,
@@ -1117,7 +1201,7 @@ export default function Substantiation() {
             </h1>
             <p className="text-sm text-muted-foreground">
               {purpose === "record"
-                ? "One file that proves each expense qualified: its IRS Publication 502 basis, the date you confirmed it, and every supporting document. Nothing is claimed and nothing moves — these expenses stay yours to claim whenever you want, and you can save a record over them again next year."
+                ? "One file that proves each expense qualified: its IRS Publication 502 basis, the date you confirmed it, and every supporting document. It covers the whole year — including anything your HSA card already paid for, which is a distribution you still have to be able to explain. Nothing is claimed and nothing moves."
                 : "The same file, sent to your custodian as a request for reimbursement. The expenses in it are locked so they can't be claimed twice."}
             </p>
           </div>
@@ -1304,16 +1388,33 @@ export default function Substantiation() {
                         }}
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate text-sm">
-                          {e.vendor}
-                        </p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-medium truncate text-sm">
+                            {e.vendor}
+                          </p>
+                          {/* Only ever appears on the record intent — the claim
+                              pool has no unclaimable rows in it. Without it the
+                              user sees an expense they know they already paid
+                              for and assumes the app is confused. */}
+                          {unclaimableReason(e) && (
+                            <Badge
+                              variant="outline"
+                              className="bg-muted text-muted-foreground border-border text-xs shrink-0"
+                            >
+                              {unclaimableReason(e)}
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-xs text-muted-foreground">
                           {new Date(e.date + "T00:00:00").toLocaleDateString()}{" "}
                           · {e.patient_name ?? "Self"} ·{" "}
                           {e.rule_name ?? "Unclassified"}
                         </p>
                       </div>
-                      <Money value={e.amount} className="text-sm" />
+                      <Money
+                        value={amountFor(e, purpose)}
+                        className="text-sm"
+                      />
                     </label>
                   ))}
                 </div>
@@ -1348,10 +1449,23 @@ export default function Substantiation() {
   }
 
   // ── List view ────────────────────────────────────────────────────────────
-  const eligibleNow = eligible.filter(
+  // The hero figure is money the user can still ask for, so it stays on the
+  // claimable set even though a record may now cover more than that. Adding
+  // HSA-card and already-reimbursed spend to a number captioned "Ready to
+  // submit" would overstate what is actually available by exactly the amount
+  // that has already been paid out.
+  const claimableNow = eligible.filter(
+    (e) => e.claimable && new Date(e.date).getFullYear() === CURRENT_TAX_YEAR,
+  );
+  const claimableNowTotal = claimableNow.reduce(
+    (s, e) => s + e.remainingAmount,
+    0,
+  );
+  // What a record could cover this year — the whole eligible set, which is why
+  // "Save the record" stays available after everything has been claimed.
+  const recordableNow = eligible.filter(
     (e) => new Date(e.date).getFullYear() === CURRENT_TAX_YEAR,
   );
-  const eligibleNowTotal = eligibleNow.reduce((s, e) => s + e.amount, 0);
 
   return (
     <AuthenticatedLayout>
@@ -1532,13 +1646,24 @@ export default function Substantiation() {
                 {isShoebox ? "Substantiated & banked" : "Ready to submit"}
               </p>
               <Money
-                value={eligibleNowTotal}
+                value={claimableNowTotal}
                 className="block text-3xl font-bold"
               />
               <p className="text-sm text-muted-foreground mt-1">
-                {eligibleNow.length} eligible expense
-                {eligibleNow.length === 1 ? "" : "s"} for {CURRENT_TAX_YEAR}
+                {claimableNow.length} eligible expense
+                {claimableNow.length === 1 ? "" : "s"} for {CURRENT_TAX_YEAR}
               </p>
+              {/* Said out loud, because the difference between the two numbers
+                  is the whole point of the wider record: this spend is a
+                  distribution that already happened and still needs evidence,
+                  and nothing else on the page would tell the user it exists. */}
+              {recordableNow.length > claimableNow.length && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  {recordableNow.length - claimableNow.length} more already paid
+                  from the HSA — nothing left to claim, but they still belong in
+                  this year's record.
+                </p>
+              )}
               {isShoebox && (
                 <p className="text-sm text-emerald-800 mt-2">
                   Documented and yours to claim whenever you want — there's no
@@ -1555,6 +1680,8 @@ export default function Substantiation() {
               <Button
                 size="lg"
                 variant={isShoebox ? "default" : "outline"}
+                // Stays available once everything has been claimed: those
+                // distributions are precisely what a record documents.
                 disabled={eligible.length === 0}
                 className="w-full sm:w-auto"
                 onClick={() => startGenerate("record")}
@@ -1565,7 +1692,10 @@ export default function Substantiation() {
               <Button
                 size="lg"
                 variant={isShoebox ? "outline" : "default"}
-                disabled={eligible.length === 0}
+                // Unlike the record, this needs something actually claimable.
+                // It used to share `eligible.length === 0`, which was the same
+                // test only because the two sets were the same set.
+                disabled={!eligible.some((e) => e.claimable)}
                 className="w-full sm:w-auto"
                 onClick={() => startGenerate("claim")}
               >
