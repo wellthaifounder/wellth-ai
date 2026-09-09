@@ -68,6 +68,17 @@ export interface SubstantiationHeader {
   userName: string;
   totalAmount: number;
   expenseCount: number;
+  /**
+   * Which document this is.
+   *
+   * A `claim` is being filed now and closes with instructions for filing it. A
+   * `record` claims nothing — it is kept against a distribution the holder may
+   * take years from now — so it must not print submission instructions for a
+   * submission that is not happening, and closes with retention guidance
+   * instead. Without this the two documents were byte-identical apart from the
+   * custodian name, and a saved record told its reader to go and submit it.
+   */
+  purpose: "record" | "claim";
   /** Who the claim is addressed to, if known. Drives submission instructions. */
   custodian: string | null;
   /** Spec Gate 4 — not deducted on Schedule A, not reimbursed by an FSA/HRA. */
@@ -81,6 +92,24 @@ export interface SubstantiationHeader {
  */
 export const ATTESTATION_STATEMENT =
   "The account holder confirms that no expense in this record was claimed as an itemized medical deduction on Schedule A, and that none was reimbursed by a Flexible Spending Account, a Health Reimbursement Arrangement, or any other plan. Each expense is claimed once, from this HSA only.";
+
+/**
+ * What a kept record says about itself, where a claim says how to submit.
+ *
+ * The dates are the point. Notice 2004-50 Q&A-39 sets no deadline for taking a
+ * distribution against an expense already paid — which is the whole shoebox
+ * strategy — but the permission is explicitly conditional on the holder being
+ * able to produce the records. Once the distribution is taken, the ordinary
+ * assessment periods apply to the return reporting it: three years under
+ * §6501(a), six under §6501(e) where gross income was substantially understated.
+ *
+ * Deliberately not "keep for six years." That number appeared on the retired
+ * tax package as a flat rule; it is neither the floor nor the ceiling, and on a
+ * record whose value is surviving an examination twenty years out it was the
+ * most misleading sentence in the document.
+ */
+export const RETENTION_STATEMENT =
+  "Keep this record, and the documents behind it, for as long as you might still reimburse yourself for these expenses. The IRS sets no deadline for taking an HSA distribution against an expense you have already paid (Notice 2004-50, Q&A-39) — but that permission depends on your being able to produce records like this one. Once you do take the distribution, keep this record until the return reporting it can no longer be examined: generally three years after you file it, and six if income was substantially understated.";
 
 /**
  * The order expenses appear in, everywhere.

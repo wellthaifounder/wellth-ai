@@ -35,6 +35,7 @@ import { logError } from "@/utils/errorHandler";
 import { custodianSubmissionInstructions } from "@/lib/custodianInstructions";
 import {
   ATTESTATION_STATEMENT,
+  RETENTION_STATEMENT,
   documentLabel,
   formatClaimMoney as fmtMoney,
   orderForPacket,
@@ -192,21 +193,35 @@ function buildReadme(
   const lines: string[] = [];
   const rule = "=".repeat(72);
 
+  // The ZIP is the default download -- "this is the one to keep" -- so a saved
+  // record must not open a file titled HSA REIMBURSEMENT CLAIM, report an
+  // "amount claimed", and tell its reader how to submit it. Same split as the
+  // PDF cover, and for the same reason: nothing here is being claimed.
+  const isClaim = header.purpose === "claim";
+
   lines.push(rule);
-  lines.push(`HSA REIMBURSEMENT CLAIM — ${header.recordNumber}`);
+  lines.push(
+    `${isClaim ? "HSA REIMBURSEMENT CLAIM" : "MEDICAL EXPENSE RECORD"} — ${header.recordNumber}`,
+  );
   lines.push(rule);
   lines.push("");
   lines.push(`Account holder    ${header.userName}`);
   lines.push(`Tax year          ${header.taxYear}`);
   lines.push(`Expenses          ${header.expenseCount}`);
-  lines.push(`Amount claimed    ${fmtMoney(header.totalAmount)}`);
+  lines.push(
+    `${isClaim ? "Amount claimed   " : "Amount documented"} ${fmtMoney(header.totalAmount)}`,
+  );
   if (header.custodian) lines.push(`Custodian         ${header.custodian}`);
   lines.push(`Prepared          ${new Date(header.generatedAt).toISOString()}`);
   lines.push("");
 
-  lines.push("HOW TO SUBMIT");
+  lines.push(isClaim ? "HOW TO SUBMIT" : "HOW LONG TO KEEP THIS");
   lines.push("-".repeat(72));
-  lines.push(custodianSubmissionInstructions(header.custodian));
+  lines.push(
+    isClaim
+      ? custodianSubmissionInstructions(header.custodian)
+      : RETENTION_STATEMENT,
+  );
   lines.push("");
 
   if (header.attestedNoDoubleBenefit) {
@@ -222,7 +237,7 @@ function buildReadme(
   lines.push("WHAT IS IN THIS PACKET");
   lines.push("-".repeat(72));
   lines.push(
-    `${header.recordNumber}.pdf   The claim summary. One page per expense with`,
+    `${header.recordNumber}.pdf   The ${isClaim ? "claim" : "record"} summary. One page per expense with`,
   );
   lines.push(
     "                        the patient, date of service, provider, IRS",
