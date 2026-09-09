@@ -1588,8 +1588,15 @@ export default function Substantiation() {
           <div className="space-y-2">
             {pastRecords.map((r) => (
               <Card key={r.id}>
-                <CardContent className="p-4 flex flex-wrap items-center gap-3">
-                  <div className="flex-1 min-w-0">
+                {/* Stacks below sm, side by side above it.
+                    `flex-wrap` alone never wrapped: the text block was
+                    `flex-1 min-w-0` (basis 0, free to shrink below its content)
+                    next to a `shrink-0` button group, so at 390px it took
+                    whatever the ~180px of buttons left it and squeezed the
+                    record number down three lines rather than moving the
+                    buttons to their own row. */}
+                <CardContent className="p-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                  <div className="min-w-0 sm:flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-semibold tabular-nums">
                         {r.record_number}
