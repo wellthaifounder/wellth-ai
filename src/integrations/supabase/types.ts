@@ -1721,6 +1721,27 @@ export type Database = {
           txn_count: number;
         }[];
       };
+      substantiatable_expenses: {
+        Args: never;
+        Returns: {
+          category: string;
+          claim_state: string;
+          claimable: boolean;
+          confirmed_at: string;
+          documentation_state: string;
+          documents: Json;
+          full_amount: number;
+          invoice_id: string;
+          patient_name: string;
+          remaining_amount: number;
+          rule_id: string;
+          rule_name: string;
+          rule_section_ref: string;
+          service_date: string;
+          tax_year: number;
+          vendor: string;
+        }[];
+      };
       sync_expense_documentation_state: {
         Args: { p_invoice_id: string };
         Returns: undefined;
